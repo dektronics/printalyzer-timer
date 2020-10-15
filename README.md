@@ -6,6 +6,9 @@
 
 The Printalyzer is an F-Stop enlarging timer and print exposure meter.
 
+Note: This project is currently a work-in-progress, and early in its
+development.
+
 ## Project Layout
 
 ### Hardware
