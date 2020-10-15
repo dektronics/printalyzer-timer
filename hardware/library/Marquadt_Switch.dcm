@@ -1,0 +1,15 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SW_Key_6425_0101_LED
+D Push button switch with LED
+K switch normally-open pushbutton push-button LED
+F ~
+$ENDCMP
+#
+$CMP SW_Key_6425_1101_013_LED
+D Push button switch with LED
+K switch normally-open pushbutton push-button LED
+F ~
+$ENDCMP
+#
+#End Doc Library
