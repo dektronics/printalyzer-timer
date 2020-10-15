@@ -1,15 +1,39 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP SW_Key_6425_0101
+D Push button switch
+K switch normally-open pushbutton push-button
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf
+$ENDCMP
+#
 $CMP SW_Key_6425_0101_LED
 D Push button switch with LED
 K switch normally-open pushbutton push-button LED
-F ~
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf
+$ENDCMP
+#
+$CMP SW_Key_6425_1101_013
+D Push button switch (/w parallel guide 190.059.013)
+K switch normally-open pushbutton push-button
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf
 $ENDCMP
 #
 $CMP SW_Key_6425_1101_013_LED
-D Push button switch with LED
+D Push button switch with LED (/w parallel guide 190.059.013)
 K switch normally-open pushbutton push-button LED
-F ~
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf
+$ENDCMP
+#
+$CMP SW_Key_6425_1101_023
+D Push button switch (/w parallel guide 190.059.023)
+K switch normally-open pushbutton push-button
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf
+$ENDCMP
+#
+$CMP SW_Key_6425_1101_023_LED
+D Push button switch with LED (/w parallel guide 190.059.023)
+K switch normally-open pushbutton push-button LED
+F https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf
 $ENDCMP
 #
 #End Doc Library
