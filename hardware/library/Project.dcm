@@ -1,5 +1,17 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP RT9193
+D 300mA Ultra-Low Noise, Ultra-Fast CMOS LDO Regulator, Fixed Output 3.3V, SOT-23-5
+K 300mA LDO Regulator Fixed Positive
+F https://www.richtek.com/assets/product_file/RT9193/DS9193-17.pdf
+$ENDCMP
+#
+$CMP STMPS2141
+D Enhanced single channel power switch, 0.5A, SOT-23-5L
+K power switch current
+F https://www.st.com/resource/en/datasheet/stmps2141.pdf
+$ENDCMP
+#
 $CMP TCS3472
 D Color Light-to-Digital Converter with IR Filter, I2C interface, 2.7-3.6V, FN
 K opto color light sensor
