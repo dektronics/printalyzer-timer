@@ -12,6 +12,12 @@ K power switch current
 F https://www.st.com/resource/en/datasheet/stmps2141.pdf
 $ENDCMP
 #
+$CMP TCA8418
+D I2C Controlled Keypad Scan IC
+K Keypad I2C
+F http://www.ti.com/lit/ds/symlink/tca8418.pdf
+$ENDCMP
+#
 $CMP TCS3472
 D Color Light-to-Digital Converter with IR Filter, I2C interface, 2.7-3.6V, FN
 K opto color light sensor
