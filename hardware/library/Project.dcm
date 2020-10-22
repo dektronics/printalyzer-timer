@@ -1,5 +1,11 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP Conn_ST_STDC14
+D ST Debug Connector, standard ARM Cortex-M SWD and JTAG interface plus UART
+K ST STM32 Cortex Debug Connector ARM SWD JTAG
+F https://www.st.com/content/ccc/resource/technical/document/user_manual/group1/99/49/91/b6/b2/3a/46/e5/DM00526767/files/DM00526767.pdf/jcr:content/translations/en.DM00526767.pdf
+$ENDCMP
+#
 $CMP RT9193
 D 300mA Ultra-Low Noise, Ultra-Fast CMOS LDO Regulator, Fixed Output 3.3V, SOT-23-5
 K 300mA LDO Regulator Fixed Positive
