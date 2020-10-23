@@ -5,8 +5,8 @@ $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Printalyzer - Meter Probe"
-Date ""
-Rev "?"
+Date "2020-10-23"
+Rev "A"
 Comp "LogicProbe.org"
 Comment1 "Derek Konigsberg"
 Comment2 ""
