@@ -12,6 +12,12 @@ K ST STM32 Cortex Debug Connector ARM SWD JTAG
 F https://www.st.com/content/ccc/resource/technical/document/user_manual/group1/99/49/91/b6/b2/3a/46/e5/DM00526767/files/DM00526767.pdf/jcr:content/translations/en.DM00526767.pdf
 $ENDCMP
 #
+$CMP M24M01-RMN
+D 1Mbit (128K x 8) I2C Serial EEPROM, 1.8-5.5V, SO-8
+K Nonvolatile Non-Volatile Memory ROM ST
+F https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf
+$ENDCMP
+#
 $CMP RT9193
 D 300mA Ultra-Low Noise, Ultra-Fast CMOS LDO Regulator, Fixed Output 3.3V, SOT-23-5
 K 300mA LDO Regulator Fixed Positive
