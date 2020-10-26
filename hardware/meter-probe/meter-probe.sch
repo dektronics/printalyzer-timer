@@ -229,7 +229,7 @@ U 1 1 5F8CB1BB
 P 6000 1550
 F 0 "J1" H 5950 1850 50  0000 L CNN
 F 1 "Main Board" H 5900 1150 50  0000 L CNN
-F 2 "Connector_Wire:SolderWire-0.1sqmm_1x06_P3.6mm_D0.4mm_OD1mm" H 6000 1550 50  0001 C CNN
+F 2 "lib_fp:SolderWire-0.1sqmm_1x06_Cable" H 6000 1550 50  0001 C CNN
 F 3 "~" H 6000 1550 50  0001 C CNN
 	1    6000 1550
 	1    0    0    -1  
