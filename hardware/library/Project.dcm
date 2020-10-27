@@ -42,6 +42,12 @@ K Nonvolatile Non-Volatile Memory ROM ST
 F https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf
 $ENDCMP
 #
+$CMP NUD3112DMT1G
+D 2-Channel Parallel Integrated Relay, Inductive Load Driver, SC-74-6
+K Relay Driver
+F http://www.onsemi.com/pub/Collateral/NUD3112-D.PDF
+$ENDCMP
+#
 $CMP RT9193
 D 300mA Ultra-Low Noise, Ultra-Fast CMOS LDO Regulator, Fixed Output 3.3V, SOT-23-5
 K 300mA LDO Regulator Fixed Positive
