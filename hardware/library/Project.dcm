@@ -30,6 +30,12 @@ K ESD protection suppression transient
 F https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf
 $ENDCMP
 #
+$CMP G2RL-1A4-DC12
+D Omron G2RL low profile power relay, SPST-NO
+K Single Pole Relay SPST
+F https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf
+$ENDCMP
+#
 $CMP M24M01-RMN
 D 1Mbit (128K x 8) I2C Serial EEPROM, 1.8-5.5V, SO-8
 K Nonvolatile Non-Volatile Memory ROM ST
