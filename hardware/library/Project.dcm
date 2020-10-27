@@ -12,6 +12,12 @@ K ST STM32 Cortex Debug Connector ARM SWD JTAG
 F https://www.st.com/content/ccc/resource/technical/document/user_manual/group1/99/49/91/b6/b2/3a/46/e5/DM00526767/files/DM00526767.pdf/jcr:content/translations/en.DM00526767.pdf
 $ENDCMP
 #
+$CMP ESDALC6V1W5
+D Quad transil array for data protection, SOT323-5L
+K ESD protection suppression transient
+F https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf
+$ENDCMP
+#
 $CMP M24M01-RMN
 D 1Mbit (128K x 8) I2C Serial EEPROM, 1.8-5.5V, SO-8
 K Nonvolatile Non-Volatile Memory ROM ST
