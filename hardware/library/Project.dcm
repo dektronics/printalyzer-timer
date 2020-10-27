@@ -48,6 +48,12 @@ K Relay Driver
 F http://www.onsemi.com/pub/Collateral/NUD3112-D.PDF
 $ENDCMP
 #
+$CMP PSK-6B-S12
+D 12V, 0.5A, 6W, Isolated, AC-DC, Power Supply
+K Miniature Module-type Power Supply CUI
+F https://www.cui.com/product/resource/psk-6b.pdf
+$ENDCMP
+#
 $CMP RT9193
 D 300mA Ultra-Low Noise, Ultra-Fast CMOS LDO Regulator, Fixed Output 3.3V, SOT-23-5
 K 300mA LDO Regulator Fixed Positive
