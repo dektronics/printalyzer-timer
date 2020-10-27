@@ -6,6 +6,18 @@ K Mini-DIN
 F https://www.cuidevices.com/product/resource/digikeypdf/md-sm-series.pdf
 $ENDCMP
 #
+$CMP Conn_PX0580-PC
+D Bulgin IEC320-C14 flange rear mount inlet
+K wall plug 110VAC 220VAC
+F https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf
+$ENDCMP
+#
+$CMP Conn_PX0675-PC
+D Bulgin IEC320-C14 flange rear mount inlet
+K wall plug 110VAC 220VAC
+F https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf
+$ENDCMP
+#
 $CMP Conn_ST_STDC14
 D ST Debug Connector, standard ARM Cortex-M SWD and JTAG interface plus UART
 K ST STM32 Cortex Debug Connector ARM SWD JTAG
