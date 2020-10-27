@@ -231,6 +231,7 @@ F 0 "J1" H 5950 1850 50  0000 L CNN
 F 1 "Main Board" H 5900 1150 50  0000 L CNN
 F 2 "lib_fp:SolderWire-0.1sqmm_1x06_Cable" H 6000 1550 50  0001 C CNN
 F 3 "~" H 6000 1550 50  0001 C CNN
+F 4 "WIRE-TO-BOARD" H 6000 1550 50  0001 C CNN "Description"
 	1    6000 1550
 	1    0    0    -1  
 $EndComp
@@ -367,13 +368,13 @@ U 1 1 5F8EF38B
 P 3500 2900
 F 0 "R4" H 3559 2946 50  0000 L CNN
 F 1 "10K" H 3559 2855 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 3500 2900 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 3500 2900 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3500 2900 50  0001 C CNN
-F 4 "RES SMD 10K OHM 5% 1/8W 0805" H 3500 2900 50  0001 C CNN "Description"
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 3500 2900 50  0001 C CNN "Description"
 F 5 "Vishay Dale" H 3500 2900 50  0001 C CNN "Manufacturer"
-F 6 "CRCW080510K0JNEA" H 3500 2900 50  0001 C CNN "Manufacturer PN"
+F 6 "CRCW060310K0JNEA" H 3500 2900 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 3500 2900 50  0001 C CNN "Supplier"
-F 8 "541-10KACT-ND" H 3500 2900 50  0001 C CNN "Supplier PN"
+F 8 "541-10KGCT-ND" H 3500 2900 50  0001 C CNN "Supplier PN"
 	1    3500 2900
 	1    0    0    -1  
 $EndComp
@@ -383,13 +384,13 @@ U 1 1 5F8F06C6
 P 4200 2900
 F 0 "R5" H 4259 2946 50  0000 L CNN
 F 1 "10K" H 4259 2855 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 4200 2900 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 4200 2900 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4200 2900 50  0001 C CNN
-F 4 "RES SMD 10K OHM 5% 1/8W 0805" H 4200 2900 50  0001 C CNN "Description"
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 4200 2900 50  0001 C CNN "Description"
 F 5 "Vishay Dale" H 4200 2900 50  0001 C CNN "Manufacturer"
-F 6 "CRCW080510K0JNEA" H 4200 2900 50  0001 C CNN "Manufacturer PN"
+F 6 "CRCW060310K0JNEA" H 4200 2900 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 4200 2900 50  0001 C CNN "Supplier"
-F 8 "541-10KACT-ND" H 4200 2900 50  0001 C CNN "Supplier PN"
+F 8 "541-10KGCT-ND" H 4200 2900 50  0001 C CNN "Supplier PN"
 	1    4200 2900
 	1    0    0    -1  
 $EndComp
@@ -429,13 +430,13 @@ U 1 1 5F8FA201
 P 2200 1600
 F 0 "R2" H 2259 1646 50  0000 L CNN
 F 1 "2K" H 2259 1555 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 2200 1600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 2200 1600 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2200 1600 50  0001 C CNN
-F 4 "RES SMD 2K OHM 5% 1/8W 0805" H 2200 1600 50  0001 C CNN "Description"
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 2200 1600 50  0001 C CNN "Description"
 F 5 "Vishay Dale" H 2200 1600 50  0001 C CNN "Manufacturer"
-F 6 "CRCW08052K00JNEA" H 2200 1600 50  0001 C CNN "Manufacturer PN"
+F 6 "CRCW06032K00JNEA" H 2200 1600 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 2200 1600 50  0001 C CNN "Supplier"
-F 8 "541-2.0KACT-ND" H 2200 1600 50  0001 C CNN "Supplier PN"
+F 8 "541-2.0KGCT-ND" H 2200 1600 50  0001 C CNN "Supplier PN"
 	1    2200 1600
 	1    0    0    -1  
 $EndComp
@@ -445,13 +446,13 @@ U 1 1 5F8FA6F9
 P 2450 1600
 F 0 "R3" H 2509 1646 50  0000 L CNN
 F 1 "2K" H 2509 1555 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 2450 1600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 2450 1600 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2450 1600 50  0001 C CNN
-F 4 "RES SMD 2K OHM 5% 1/8W 0805" H 2450 1600 50  0001 C CNN "Description"
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 2450 1600 50  0001 C CNN "Description"
 F 5 "Vishay Dale" H 2450 1600 50  0001 C CNN "Manufacturer"
-F 6 "CRCW08052K00JNEA" H 2450 1600 50  0001 C CNN "Manufacturer PN"
+F 6 "CRCW06032K00JNEA" H 2450 1600 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 2450 1600 50  0001 C CNN "Supplier"
-F 8 "541-2.0KACT-ND" H 2450 1600 50  0001 C CNN "Supplier PN"
+F 8 "541-2.0KGCT-ND" H 2450 1600 50  0001 C CNN "Supplier PN"
 	1    2450 1600
 	1    0    0    -1  
 $EndComp
@@ -461,13 +462,13 @@ U 1 1 5F8FD46B
 P 1600 1400
 F 0 "C4" V 1371 1400 50  0000 C CNN
 F 1 "0.1uF" V 1462 1400 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 1600 1400 50  0001 C CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL21B104KACNNNC_Spec.pdf" H 1600 1400 50  0001 C CNN
-F 4 "CAP CER 0.1UF 25V X7R 0805" H 1600 1400 50  0001 C CNN "Description"
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1600 1400 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 1600 1400 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 1600 1400 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 1600 1400 50  0001 C CNN "Manufacturer"
-F 6 "CL21B104KACNNNC" H 1600 1400 50  0001 C CNN "Manufacturer PN"
+F 6 "CL10B104KA8NNNC" H 1600 1400 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 1600 1400 50  0001 C CNN "Supplier"
-F 8 "1276-1099-1-ND" H 1600 1400 50  0001 C CNN "Supplier PN"
+F 8 "1276-1006-1-ND" H 1600 1400 50  0001 C CNN "Supplier PN"
 	1    1600 1400
 	0    1    1    0   
 $EndComp
@@ -479,13 +480,13 @@ U 1 1 5F8FDA8A
 P 3100 1500
 F 0 "C5" V 2871 1500 50  0000 C CNN
 F 1 "0.1uF" V 2962 1500 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 3100 1500 50  0001 C CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL21B104KACNNNC_Spec.pdf" H 3100 1500 50  0001 C CNN
-F 4 "CAP CER 0.1UF 25V X7R 0805" H 3100 1500 50  0001 C CNN "Description"
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 3100 1500 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 3100 1500 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 3100 1500 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 3100 1500 50  0001 C CNN "Manufacturer"
-F 6 "CL21B104KACNNNC" H 3100 1500 50  0001 C CNN "Manufacturer PN"
+F 6 "CL10B104KA8NNNC" H 3100 1500 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 3100 1500 50  0001 C CNN "Supplier"
-F 8 "1276-1099-1-ND" H 3100 1500 50  0001 C CNN "Supplier PN"
+F 8 "1276-1006-1-ND" H 3100 1500 50  0001 C CNN "Supplier PN"
 	1    3100 1500
 	0    1    1    0   
 $EndComp
@@ -524,13 +525,13 @@ U 1 1 5F91731C
 P 1700 4050
 F 0 "R1" H 1759 4096 50  0000 L CNN
 F 1 "10K" H 1759 4005 50  0000 L CNN
-F 2 "Resistor_SMD:R_0805_2012Metric" H 1700 4050 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 1700 4050 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1700 4050 50  0001 C CNN
-F 4 "RES SMD 10K OHM 5% 1/8W 0805" H 1700 4050 50  0001 C CNN "Description"
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 1700 4050 50  0001 C CNN "Description"
 F 5 "Vishay Dale" H 1700 4050 50  0001 C CNN "Manufacturer"
-F 6 "CRCW080510K0JNEA" H 1700 4050 50  0001 C CNN "Manufacturer PN"
+F 6 "CRCW060310K0JNEA" H 1700 4050 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 1700 4050 50  0001 C CNN "Supplier"
-F 8 "541-10KACT-ND" H 1700 4050 50  0001 C CNN "Supplier PN"
+F 8 "541-10KGCT-ND" H 1700 4050 50  0001 C CNN "Supplier PN"
 	1    1700 4050
 	1    0    0    -1  
 $EndComp
@@ -549,13 +550,13 @@ U 1 1 5F919F34
 P 3000 4200
 F 0 "C1" H 2908 4154 50  0000 R CNN
 F 1 "1uF" H 2908 4245 50  0000 R CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 3000 4200 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2019/03/18/Data%20sheet_CL21B105KAFNNNE.pdf" H 3000 4200 50  0001 C CNN
-F 4 "CAP CER 1UF 25V X7R 0805" H 3000 4200 50  0001 C CNN "Description"
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 3000 4200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10B105KA8NNNC_char.pdf" H 3000 4200 50  0001 C CNN
+F 4 "CAP CER 1UF 25V X7R 0603" H 3000 4200 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 3000 4200 50  0001 C CNN "Manufacturer"
-F 6 "CL21B105KAFNNNE" H 3000 4200 50  0001 C CNN "Manufacturer PN"
+F 6 "CL10B105KA8NNNC" H 3000 4200 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 3000 4200 50  0001 C CNN "Supplier"
-F 8 "1276-1066-1-ND" H 3000 4200 50  0001 C CNN "Supplier PN"
+F 8 "1276-1184-1-ND" H 3000 4200 50  0001 C CNN "Supplier PN"
 	1    3000 4200
 	-1   0    0    1   
 $EndComp
@@ -565,13 +566,13 @@ U 1 1 5F91A815
 P 4600 4200
 F 0 "C2" H 4508 4154 50  0000 R CNN
 F 1 "1uF" H 4508 4245 50  0000 R CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 4600 4200 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2019/03/18/Data%20sheet_CL21B105KAFNNNE.pdf" H 4600 4200 50  0001 C CNN
-F 4 "CAP CER 1UF 25V X7R 0805" H 4600 4200 50  0001 C CNN "Description"
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4600 4200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10B105KA8NNNC_char.pdf" H 4600 4200 50  0001 C CNN
+F 4 "CAP CER 1UF 25V X7R 0603" H 4600 4200 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 4600 4200 50  0001 C CNN "Manufacturer"
-F 6 "CL21B105KAFNNNE" H 4600 4200 50  0001 C CNN "Manufacturer PN"
+F 6 "CL10B105KA8NNNC" H 4600 4200 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 4600 4200 50  0001 C CNN "Supplier"
-F 8 "1276-1066-1-ND" H 4600 4200 50  0001 C CNN "Supplier PN"
+F 8 "1276-1184-1-ND" H 4600 4200 50  0001 C CNN "Supplier PN"
 	1    4600 4200
 	-1   0    0    1   
 $EndComp
@@ -583,12 +584,12 @@ P 4200 4400
 F 0 "C3" H 4108 4354 50  0000 R CNN
 F 1 "22nF" H 4108 4445 50  0000 R CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 4200 4400 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2017/03/07/Data%20sheet_CL21C220JBANNNC.pdf" H 4200 4400 50  0001 C CNN
-F 4 "CAP CER 22PF 50V C0G/NP0 0805" H 4200 4400 50  0001 C CNN "Description"
-F 5 "Samsung Electro-Mechanics" H 4200 4400 50  0001 C CNN "Manufacturer"
-F 6 "CL21C220JBANNNC" H 4200 4400 50  0001 C CNN "Manufacturer PN"
+F 3 "https://product.tdk.com/info/en/documents/chara_sheet/C2012C0G1H223J125AA.pdf" H 4200 4400 50  0001 C CNN
+F 4 "CAP CER 0.022UF 50V C0G 0805" H 4200 4400 50  0001 C CNN "Description"
+F 5 "TDK Corporation" H 4200 4400 50  0001 C CNN "Manufacturer"
+F 6 "C2012C0G1H223J125AA" H 4200 4400 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 4200 4400 50  0001 C CNN "Supplier"
-F 8 "1276-1047-1-ND" H 4200 4400 50  0001 C CNN "Supplier PN"
+F 8 "445-7522-1-ND" H 4200 4400 50  0001 C CNN "Supplier PN"
 	1    4200 4400
 	-1   0    0    1   
 $EndComp
