@@ -4,7 +4,7 @@ EELAYER END
 $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 3 4
-Title "Printalyzer - Main Board"
+Title "Printalyzer - Main Board (User Input)"
 Date ""
 Rev "?"
 Comp "LogicProbe.org"
@@ -14,134 +14,929 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L Marquadt_Switch:SW_Key_6425_1101_023 SW?
+L Marquadt_Switch:SW_Key_6425_1101_023 SW1
 U 1 1 5F8B879A
-P 1200 2000
-F 0 "SW?" H 1200 2285 50  0000 C CNN
-F 1 "Start" H 1200 2194 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_1101_023" H 1200 2200 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 1200 2200 50  0001 C CNN
-	1    1200 2000
+P 1150 1100
+F 0 "SW1" H 1150 1385 50  0000 C CNN
+F 1 "Start" H 1150 1294 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_1101_023" H 1150 1300 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 1150 1300 50  0001 C CNN
+	1    1150 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_1101_023 SW?
+L Marquadt_Switch:SW_Key_6425_1101_023 SW2
 U 1 1 5F8B9734
-P 2100 2000
-F 0 "SW?" H 2100 2285 50  0000 C CNN
-F 1 "Focus" H 2100 2194 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_1101_023" H 2100 2200 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 2100 2200 50  0001 C CNN
-	1    2100 2000
+P 2000 1100
+F 0 "SW2" H 2000 1385 50  0000 C CNN
+F 1 "Focus" H 2000 1294 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_1101_023" H 2000 1300 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 2000 1300 50  0001 C CNN
+	1    2000 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101 SW3
 U 1 1 5F8B9EB7
-P 3800 1650
-F 0 "SW?" H 3800 1935 50  0000 C CNN
-F 1 "Inc Exposure" H 3800 1844 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 3800 1850 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3800 1850 50  0001 C CNN
-	1    3800 1650
+P 3200 1100
+F 0 "SW3" H 3200 1385 50  0000 C CNN
+F 1 "Inc Exposure" H 3200 1294 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101" H 3200 1300 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3200 1300 50  0001 C CNN
+	1    3200 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101 SW6
 U 1 1 5F8BA3E3
-P 3300 2000
-F 0 "SW?" H 3300 2285 50  0000 C CNN
-F 1 "Dec Contrast" H 3300 2194 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 3300 2200 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3300 2200 50  0001 C CNN
-	1    3300 2000
+P 4050 2200
+F 0 "SW6" H 4050 2485 50  0000 C CNN
+F 1 "Dec Contrast" H 4050 2394 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101" H 4050 2400 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4050 2400 50  0001 C CNN
+	1    4050 2200
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101 SW5
 U 1 1 5F8BA80F
-P 4300 2000
-F 0 "SW?" H 4300 2285 50  0000 C CNN
-F 1 "Inc Contrast" H 4300 2194 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 4300 2200 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4300 2200 50  0001 C CNN
-	1    4300 2000
+P 4050 1100
+F 0 "SW5" H 4050 1385 50  0000 C CNN
+F 1 "Inc Contrast" H 4050 1294 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101" H 4050 1300 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4050 1300 50  0001 C CNN
+	1    4050 1100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101 SW4
 U 1 1 5F8BAD5B
-P 3800 2450
-F 0 "SW?" H 3800 2735 50  0000 C CNN
-F 1 "Dec Exposure" H 3800 2644 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 3800 2650 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3800 2650 50  0001 C CNN
-	1    3800 2450
+P 3200 2200
+F 0 "SW4" H 3200 2485 50  0000 C CNN
+F 1 "Dec Exposure" H 3200 2394 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101" H 3200 2400 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3200 2400 50  0001 C CNN
+	1    3200 2200
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101_LED SW7
 U 1 1 5F8BB404
-P 5450 1650
-F 0 "SW?" H 5450 1935 50  0000 C CNN
-F 1 "Test Strip" H 5450 1844 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 5450 1850 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5450 1850 50  0001 C CNN
-	1    5450 1650
+P 5300 1200
+F 0 "SW7" H 5300 1600 50  0000 C CNN
+F 1 "Test Strip" H 5300 1500 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101_LED" H 5300 1400 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5300 1400 50  0001 C CNN
+	1    5300 1200
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101_LED SW8
 U 1 1 5F8BB964
-P 5450 2450
-F 0 "SW?" H 5450 2735 50  0000 C CNN
-F 1 "Add Adjustment" H 5450 2644 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 5450 2650 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5450 2650 50  0001 C CNN
-	1    5450 2450
+P 5300 2300
+F 0 "SW8" H 5300 2700 50  0000 C CNN
+F 1 "Add Adjustment" H 5300 2600 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101_LED" H 5300 2500 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5300 2500 50  0001 C CNN
+	1    5300 2300
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101_LED SW9
 U 1 1 5F8BBE5F
-P 6200 1650
-F 0 "SW?" H 6200 1935 50  0000 C CNN
-F 1 "Cancel" H 6200 1844 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 6200 1850 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6200 1850 50  0001 C CNN
-	1    6200 1650
+P 6300 1200
+F 0 "SW9" H 6300 1600 50  0000 C CNN
+F 1 "Cancel" H 6300 1500 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101_LED" H 6300 1400 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6300 1400 50  0001 C CNN
+	1    6300 1200
 	1    0    0    -1  
 $EndComp
 $Comp
-L Marquadt_Switch:SW_Key_6425_0101 SW?
+L Marquadt_Switch:SW_Key_6425_0101_LED SW10
 U 1 1 5F8BC2B0
-P 6200 2450
-F 0 "SW?" H 6200 2735 50  0000 C CNN
-F 1 "Menu" H 6200 2644 50  0000 C CNN
-F 2 "lib_fp:SW_Key_6425_0101" H 6200 2650 50  0001 C CNN
-F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6200 2650 50  0001 C CNN
-	1    6200 2450
+P 6300 2300
+F 0 "SW10" H 6300 2700 50  0000 C CNN
+F 1 "Menu" H 6300 2600 50  0000 C CNN
+F 2 "lib_fp:SW_Key_6425_0101_LED" H 6300 2500 50  0001 C CNN
+F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6300 2500 50  0001 C CNN
+	1    6300 2300
 	1    0    0    -1  
 $EndComp
 $Comp
 L Project:TCA8418 U?
 U 1 1 5F8B6B00
-P 2000 3850
-F 0 "U?" H 2100 4750 50  0000 C CNN
-F 1 "TCA8418" H 2200 4650 50  0000 C CNN
-F 2 "lib_fp:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm" H 2600 3750 50  0001 C CNN
-F 3 "http://www.ti.com/lit/ds/symlink/tca8418.pdf" H 2000 4789 50  0001 C CNN
-	1    2000 3850
+P 2600 4850
+F 0 "U?" H 2300 5600 50  0000 C CNN
+F 1 "TCA8418" H 2850 4150 50  0000 C CNN
+F 2 "lib_fp:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm" H 3200 4750 50  0001 C CNN
+F 3 "http://www.ti.com/lit/ds/symlink/tca8418.pdf" H 2600 5789 50  0001 C CNN
+	1    2600 4850
 	1    0    0    -1  
 $EndComp
-Text Notes 4450 3200 0    50   Italic 0
-Add indicator LEDs.\nStill need to decide if any will be embedded in buttons,\nor if all will be adjacent and just for locating them in the dark.
-Text Notes 4450 3550 0    50   Italic 0
-Embedded LEDs to show an active mode may\nbe useful in the switch block on the right,\nbut likely not useful elsewhere.
-Text Notes 4450 3700 0    50   Italic 0
+Text Notes 5300 4250 0    50   Italic 0
 Need to do darkroom testing of all LED choices for this.
-Text Notes 2250 4800 0    50   Italic 0
-Meter button and Footswitch should probably route to\nthis controller IC as well.
-Text Notes 2250 4950 0    50   Italic 0
-Blackout-mode rocker could route here, but optional.
+Text HLabel 1250 4350 0    50   BiDi ~ 0
+INT_I2C_SDA
+Text HLabel 1250 4250 0    50   BiDi ~ 0
+INT_I2C_SCL
+Text HLabel 1250 5200 0    50   Input ~ 0
+SENSOR_BTN
+Text HLabel 1250 5300 0    50   Input ~ 0
+FOOTSWITCH
+Text Notes 5300 4550 0    50   Italic 0
+Considering cheap/fancy driver IC for all the LEDs,\nadd after bench testing.
+$Comp
+L power:GND #PWR?
+U 1 1 5FB950F4
+P 2950 3900
+F 0 "#PWR?" H 2950 3650 50  0001 C CNN
+F 1 "GND" H 2955 3727 50  0000 C CNN
+F 2 "" H 2950 3900 50  0001 C CNN
+F 3 "" H 2950 3900 50  0001 C CNN
+	1    2950 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FB97E3E
+P 1700 3800
+F 0 "#PWR?" H 1700 3650 50  0001 C CNN
+F 1 "+3.3V" H 1715 3973 50  0000 C CNN
+F 2 "" H 1700 3800 50  0001 C CNN
+F 3 "" H 1700 3800 50  0001 C CNN
+	1    1700 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FB93B58
+P 2850 3900
+F 0 "C?" V 2621 3900 50  0000 C CNN
+F 1 "0.1uF" V 2712 3900 50  0000 C CNN
+F 2 "" H 2850 3900 50  0001 C CNN
+F 3 "~" H 2850 3900 50  0001 C CNN
+	1    2850 3900
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2600 3800 2600 3900
+Wire Wire Line
+	2750 3900 2600 3900
+Connection ~ 2600 3900
+Wire Wire Line
+	2600 3900 2600 4000
+$Comp
+L power:GND #PWR?
+U 1 1 5FB9A2BC
+P 2550 5650
+F 0 "#PWR?" H 2550 5400 50  0001 C CNN
+F 1 "GND" H 2555 5477 50  0000 C CNN
+F 2 "" H 2550 5650 50  0001 C CNN
+F 3 "" H 2550 5650 50  0001 C CNN
+	1    2550 5650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2650 5650 2550 5650
+Connection ~ 2550 5650
+Wire Wire Line
+	2100 4250 1250 4250
+Wire Wire Line
+	1250 4350 2100 4350
+$Comp
+L Device:R_Small R?
+U 1 1 5FB9F45E
+P 1700 3900
+F 0 "R?" H 1759 3946 50  0000 L CNN
+F 1 "10K" H 1759 3855 50  0000 L CNN
+F 2 "" H 1700 3900 50  0001 C CNN
+F 3 "~" H 1700 3900 50  0001 C CNN
+	1    1700 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_Small R?
+U 1 1 5FB9F770
+P 1950 3900
+F 0 "R?" H 2009 3946 50  0000 L CNN
+F 1 "10K" H 2009 3855 50  0000 L CNN
+F 2 "" H 1950 3900 50  0001 C CNN
+F 3 "~" H 1950 3900 50  0001 C CNN
+	1    1950 3900
+	1    0    0    -1  
+$EndComp
+Text HLabel 1250 4450 0    50   Output ~ 0
+KEY_INT
+Wire Wire Line
+	2100 4450 1950 4450
+Wire Wire Line
+	1950 4000 1950 4450
+Connection ~ 1950 4450
+Wire Wire Line
+	1950 4450 1250 4450
+Wire Wire Line
+	2100 4550 1700 4550
+Wire Wire Line
+	1700 4550 1700 4000
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FBA605C
+P 1950 3800
+F 0 "#PWR?" H 1950 3650 50  0001 C CNN
+F 1 "+3.3V" H 1965 3973 50  0000 C CNN
+F 2 "" H 1950 3800 50  0001 C CNN
+F 3 "" H 1950 3800 50  0001 C CNN
+	1    1950 3800
+	1    0    0    -1  
+$EndComp
+Text Label 3200 4500 0    50   ~ 0
+BTN1
+Text Label 3200 4600 0    50   ~ 0
+BTN2
+Text Label 3200 4700 0    50   ~ 0
+BTN3
+Text Label 3200 4800 0    50   ~ 0
+BTN4
+Text Label 3200 4900 0    50   ~ 0
+BTN5
+Text Label 3200 5000 0    50   ~ 0
+BTN6
+Text Label 3200 5100 0    50   ~ 0
+BTN7
+Text Label 3200 5200 0    50   ~ 0
+BTN8
+Text Label 3200 5300 0    50   ~ 0
+BTN9
+Text Label 3200 5400 0    50   ~ 0
+BTN10
+Wire Wire Line
+	3200 4500 3100 4500
+Wire Wire Line
+	3100 4600 3200 4600
+Wire Wire Line
+	3100 4700 3200 4700
+Wire Wire Line
+	3100 4800 3200 4800
+Wire Wire Line
+	3100 4900 3200 4900
+Wire Wire Line
+	3100 5000 3200 5000
+Wire Wire Line
+	3100 5100 3200 5100
+Wire Wire Line
+	3100 5200 3200 5200
+Wire Wire Line
+	3100 5300 3200 5300
+Wire Wire Line
+	3100 5400 3200 5400
+Text Label 950  1100 2    50   ~ 0
+BTN1
+Text Label 1800 1100 2    50   ~ 0
+BTN2
+Text Label 3000 1100 2    50   ~ 0
+BTN3
+Text Label 3000 2200 2    50   ~ 0
+BTN4
+Text Label 3850 1100 2    50   ~ 0
+BTN5
+Text Label 3850 2200 2    50   ~ 0
+BTN6
+Text Label 5100 1100 2    50   ~ 0
+BTN7
+Text Label 5100 2200 2    50   ~ 0
+BTN8
+Text Label 6100 1100 2    50   ~ 0
+BTN9
+Text Label 6100 2200 2    50   ~ 0
+BTN10
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCDE33
+P 1350 1100
+F 0 "#PWR?" H 1350 850 50  0001 C CNN
+F 1 "GND" H 1355 927 50  0000 C CNN
+F 2 "" H 1350 1100 50  0001 C CNN
+F 3 "" H 1350 1100 50  0001 C CNN
+	1    1350 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCE29B
+P 2200 1100
+F 0 "#PWR?" H 2200 850 50  0001 C CNN
+F 1 "GND" H 2205 927 50  0000 C CNN
+F 2 "" H 2200 1100 50  0001 C CNN
+F 3 "" H 2200 1100 50  0001 C CNN
+	1    2200 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCE634
+P 4250 2200
+F 0 "#PWR?" H 4250 1950 50  0001 C CNN
+F 1 "GND" H 4255 2027 50  0000 C CNN
+F 2 "" H 4250 2200 50  0001 C CNN
+F 3 "" H 4250 2200 50  0001 C CNN
+	1    4250 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCE935
+P 4250 1100
+F 0 "#PWR?" H 4250 850 50  0001 C CNN
+F 1 "GND" H 4255 927 50  0000 C CNN
+F 2 "" H 4250 1100 50  0001 C CNN
+F 3 "" H 4250 1100 50  0001 C CNN
+	1    4250 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCEB60
+P 3400 1100
+F 0 "#PWR?" H 3400 850 50  0001 C CNN
+F 1 "GND" H 3405 927 50  0000 C CNN
+F 2 "" H 3400 1100 50  0001 C CNN
+F 3 "" H 3400 1100 50  0001 C CNN
+	1    3400 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCEE0B
+P 3400 2200
+F 0 "#PWR?" H 3400 1950 50  0001 C CNN
+F 1 "GND" H 3405 2027 50  0000 C CNN
+F 2 "" H 3400 2200 50  0001 C CNN
+F 3 "" H 3400 2200 50  0001 C CNN
+	1    3400 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCF4A2
+P 6600 2200
+F 0 "#PWR?" H 6600 1950 50  0001 C CNN
+F 1 "GND" H 6605 2027 50  0000 C CNN
+F 2 "" H 6600 2200 50  0001 C CNN
+F 3 "" H 6600 2200 50  0001 C CNN
+	1    6600 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCF709
+P 5600 1100
+F 0 "#PWR?" H 5600 850 50  0001 C CNN
+F 1 "GND" H 5605 927 50  0000 C CNN
+F 2 "" H 5600 1100 50  0001 C CNN
+F 3 "" H 5600 1100 50  0001 C CNN
+	1    5600 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBCFB0E
+P 6600 1100
+F 0 "#PWR?" H 6600 850 50  0001 C CNN
+F 1 "GND" H 6605 927 50  0000 C CNN
+F 2 "" H 6600 1100 50  0001 C CNN
+F 3 "" H 6600 1100 50  0001 C CNN
+	1    6600 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x02 J?
+U 1 1 5FBD34EA
+P 8050 1150
+F 0 "J?" H 8000 1250 50  0000 L CNN
+F 1 "Blackout Switch" H 8000 950 50  0000 L CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8050 1150 50  0001 C CNN
+F 3 "~" H 8050 1150 50  0001 C CNN
+	1    8050 1150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FBD3B49
+P 7750 1350
+F 0 "#PWR?" H 7750 1100 50  0001 C CNN
+F 1 "GND" H 7755 1177 50  0000 C CNN
+F 2 "" H 7750 1350 50  0001 C CNN
+F 3 "" H 7750 1350 50  0001 C CNN
+	1    7750 1350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7850 1250 7750 1250
+Wire Wire Line
+	7750 1250 7750 1350
+Text Label 7750 1150 2    50   ~ 0
+BLACKOUT_SW
+Wire Wire Line
+	7850 1150 7750 1150
+Text Label 2000 5400 2    50   ~ 0
+BLACKOUT_SW
+Wire Wire Line
+	2100 5400 2000 5400
+Wire Wire Line
+	2100 5300 1250 5300
+Wire Wire Line
+	1250 5200 2100 5200
+$Comp
+L Device:R_Small R?
+U 1 1 5FBD64D9
+P 1450 3900
+F 0 "R?" H 1509 3946 50  0000 L CNN
+F 1 "10K" H 1509 3855 50  0000 L CNN
+F 2 "" H 1450 3900 50  0001 C CNN
+F 3 "~" H 1450 3900 50  0001 C CNN
+	1    1450 3900
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FBD6A98
+P 1450 3800
+F 0 "#PWR?" H 1450 3650 50  0001 C CNN
+F 1 "+3.3V" H 1465 3973 50  0000 C CNN
+F 2 "" H 1450 3800 50  0001 C CNN
+F 3 "" H 1450 3800 50  0001 C CNN
+	1    1450 3800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2100 5100 1450 5100
+Wire Wire Line
+	1450 4000 1450 4700
+Wire Wire Line
+	2100 5000 1450 5000
+Connection ~ 1450 5000
+Wire Wire Line
+	1450 5000 1450 5100
+Wire Wire Line
+	2100 4900 1450 4900
+Connection ~ 1450 4900
+Wire Wire Line
+	1450 4900 1450 5000
+Wire Wire Line
+	2100 4800 1450 4800
+Connection ~ 1450 4800
+Wire Wire Line
+	1450 4800 1450 4900
+Wire Wire Line
+	2100 4700 1450 4700
+Connection ~ 1450 4700
+Wire Wire Line
+	1450 4700 1450 4800
+$Comp
+L Device:LED_ALT D1
+U 1 1 5FBDF8D6
+P 1150 1650
+F 0 "D1" H 1143 1867 50  0000 C CNN
+F 1 "LED" H 1143 1776 50  0000 C CNN
+F 2 "" H 1150 1650 50  0001 C CNN
+F 3 "~" H 1150 1650 50  0001 C CNN
+	1    1150 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED_ALT D2
+U 1 1 5FBE096E
+P 2000 1650
+F 0 "D2" H 1993 1867 50  0000 C CNN
+F 1 "LED" H 1993 1776 50  0000 C CNN
+F 2 "" H 2000 1650 50  0001 C CNN
+F 3 "~" H 2000 1650 50  0001 C CNN
+	1    2000 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED_ALT D4
+U 1 1 5FBEB435
+P 3200 2750
+F 0 "D4" H 3193 2967 50  0000 C CNN
+F 1 "LED" H 3193 2876 50  0000 C CNN
+F 2 "" H 3200 2750 50  0001 C CNN
+F 3 "~" H 3200 2750 50  0001 C CNN
+	1    3200 2750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED_ALT D3
+U 1 1 5FBEBC62
+P 3200 1650
+F 0 "D3" H 3193 1867 50  0000 C CNN
+F 1 "LED" H 3193 1776 50  0000 C CNN
+F 2 "" H 3200 1650 50  0001 C CNN
+F 3 "~" H 3200 1650 50  0001 C CNN
+	1    3200 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FBFE92B
+P 2200 1600
+F 0 "#PWR?" H 2200 1450 50  0001 C CNN
+F 1 "+3.3V" H 2215 1773 50  0000 C CNN
+F 2 "" H 2200 1600 50  0001 C CNN
+F 3 "" H 2200 1600 50  0001 C CNN
+	1    2200 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2200 1600 2200 1650
+Wire Wire Line
+	2200 1650 2150 1650
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FBFE0C1
+P 1350 1600
+F 0 "#PWR?" H 1350 1450 50  0001 C CNN
+F 1 "+3.3V" H 1365 1773 50  0000 C CNN
+F 2 "" H 1350 1600 50  0001 C CNN
+F 3 "" H 1350 1600 50  0001 C CNN
+	1    1350 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1350 1600 1350 1650
+Wire Wire Line
+	1350 1650 1300 1650
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC01ECD
+P 3400 1600
+F 0 "#PWR?" H 3400 1450 50  0001 C CNN
+F 1 "+3.3V" H 3415 1773 50  0000 C CNN
+F 2 "" H 3400 1600 50  0001 C CNN
+F 3 "" H 3400 1600 50  0001 C CNN
+	1    3400 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 1600 3400 1650
+Wire Wire Line
+	3400 1650 3350 1650
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC0301C
+P 3400 2700
+F 0 "#PWR?" H 3400 2550 50  0001 C CNN
+F 1 "+3.3V" H 3415 2873 50  0000 C CNN
+F 2 "" H 3400 2700 50  0001 C CNN
+F 3 "" H 3400 2700 50  0001 C CNN
+	1    3400 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3400 2700 3400 2750
+Wire Wire Line
+	3400 2750 3350 2750
+$Comp
+L Device:LED_ALT D6
+U 1 1 5FC08730
+P 4050 2750
+F 0 "D6" H 4043 2967 50  0000 C CNN
+F 1 "LED" H 4043 2876 50  0000 C CNN
+F 2 "" H 4050 2750 50  0001 C CNN
+F 3 "~" H 4050 2750 50  0001 C CNN
+	1    4050 2750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC08A80
+P 4250 2700
+F 0 "#PWR?" H 4250 2550 50  0001 C CNN
+F 1 "+3.3V" H 4265 2873 50  0000 C CNN
+F 2 "" H 4250 2700 50  0001 C CNN
+F 3 "" H 4250 2700 50  0001 C CNN
+	1    4250 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4250 2700 4250 2750
+Wire Wire Line
+	4250 2750 4200 2750
+$Comp
+L Device:LED_ALT D5
+U 1 1 5FC0B403
+P 4050 1650
+F 0 "D5" H 4043 1867 50  0000 C CNN
+F 1 "LED" H 4043 1776 50  0000 C CNN
+F 2 "" H 4050 1650 50  0001 C CNN
+F 3 "~" H 4050 1650 50  0001 C CNN
+	1    4050 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC0B77D
+P 4250 1600
+F 0 "#PWR?" H 4250 1450 50  0001 C CNN
+F 1 "+3.3V" H 4265 1773 50  0000 C CNN
+F 2 "" H 4250 1600 50  0001 C CNN
+F 3 "" H 4250 1600 50  0001 C CNN
+	1    4250 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4250 1600 4250 1650
+Wire Wire Line
+	4250 1650 4200 1650
+$Comp
+L Device:LED_ALT D7
+U 1 1 5FC0F9F3
+P 5300 1650
+F 0 "D7" H 5293 1867 50  0000 C CNN
+F 1 "LED" H 5293 1776 50  0000 C CNN
+F 2 "" H 5300 1650 50  0001 C CNN
+F 3 "~" H 5300 1650 50  0001 C CNN
+	1    5300 1650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 1200 5500 1650
+Wire Wire Line
+	5500 1650 5450 1650
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC12DD0
+P 5600 1600
+F 0 "#PWR?" H 5600 1450 50  0001 C CNN
+F 1 "+3.3V" H 5615 1773 50  0000 C CNN
+F 2 "" H 5600 1600 50  0001 C CNN
+F 3 "" H 5600 1600 50  0001 C CNN
+	1    5600 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5600 1600 5600 1650
+Wire Wire Line
+	5600 1650 5500 1650
+Connection ~ 5500 1650
+Wire Wire Line
+	5500 1100 5600 1100
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC17521
+P 2600 3800
+F 0 "#PWR?" H 2600 3650 50  0001 C CNN
+F 1 "+3.3V" H 2615 3973 50  0000 C CNN
+F 2 "" H 2600 3800 50  0001 C CNN
+F 3 "" H 2600 3800 50  0001 C CNN
+	1    2600 3800
+	1    0    0    -1  
+$EndComp
+Text Label 950  1650 2    50   ~ 0
+IND1
+Text Label 1800 1650 2    50   ~ 0
+IND2
+Text Label 3000 1650 2    50   ~ 0
+IND3
+Text Label 3000 2750 2    50   ~ 0
+IND4
+Text Label 3850 1650 2    50   ~ 0
+IND5
+Text Label 3850 2750 2    50   ~ 0
+IND6
+Wire Wire Line
+	950  1650 1000 1650
+Wire Wire Line
+	1800 1650 1850 1650
+Wire Wire Line
+	3000 1650 3050 1650
+Wire Wire Line
+	3000 2750 3050 2750
+Wire Wire Line
+	3850 2750 3900 2750
+Wire Wire Line
+	3850 1650 3900 1650
+Text Label 5100 1650 2    50   ~ 0
+IND7
+Text Label 5100 1200 2    50   ~ 0
+IND7_T
+Wire Wire Line
+	5100 1650 5150 1650
+$Comp
+L Device:LED_ALT D8
+U 1 1 5FC26232
+P 5300 2750
+F 0 "D8" H 5293 2967 50  0000 C CNN
+F 1 "LED" H 5293 2876 50  0000 C CNN
+F 2 "" H 5300 2750 50  0001 C CNN
+F 3 "~" H 5300 2750 50  0001 C CNN
+	1    5300 2750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2300 5500 2750
+Wire Wire Line
+	5500 2750 5450 2750
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC26614
+P 5600 2700
+F 0 "#PWR?" H 5600 2550 50  0001 C CNN
+F 1 "+3.3V" H 5615 2873 50  0000 C CNN
+F 2 "" H 5600 2700 50  0001 C CNN
+F 3 "" H 5600 2700 50  0001 C CNN
+	1    5600 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5600 2700 5600 2750
+Wire Wire Line
+	5600 2750 5500 2750
+Connection ~ 5500 2750
+Text Label 5100 2750 2    50   ~ 0
+IND8
+Wire Wire Line
+	5100 2750 5150 2750
+Text Label 5100 2300 2    50   ~ 0
+IND8_T
+$Comp
+L power:GND #PWR?
+U 1 1 5FC299AB
+P 5600 2200
+F 0 "#PWR?" H 5600 1950 50  0001 C CNN
+F 1 "GND" H 5605 2027 50  0000 C CNN
+F 2 "" H 5600 2200 50  0001 C CNN
+F 3 "" H 5600 2200 50  0001 C CNN
+	1    5600 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 2200 5600 2200
+Wire Wire Line
+	6600 1100 6500 1100
+Wire Wire Line
+	6600 2200 6500 2200
+$Comp
+L Device:LED_ALT D9
+U 1 1 5FC3373D
+P 6300 1650
+F 0 "D9" H 6293 1867 50  0000 C CNN
+F 1 "LED" H 6293 1776 50  0000 C CNN
+F 2 "" H 6300 1650 50  0001 C CNN
+F 3 "~" H 6300 1650 50  0001 C CNN
+	1    6300 1650
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6500 1200 6500 1650
+Wire Wire Line
+	6500 1650 6450 1650
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC33B49
+P 6600 1600
+F 0 "#PWR?" H 6600 1450 50  0001 C CNN
+F 1 "+3.3V" H 6615 1773 50  0000 C CNN
+F 2 "" H 6600 1600 50  0001 C CNN
+F 3 "" H 6600 1600 50  0001 C CNN
+	1    6600 1600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6600 1600 6600 1650
+Wire Wire Line
+	6600 1650 6500 1650
+Connection ~ 6500 1650
+Text Label 6100 1650 2    50   ~ 0
+IND9
+Wire Wire Line
+	6100 1650 6150 1650
+Text Label 6100 1200 2    50   ~ 0
+IND9_T
+$Comp
+L Device:LED_ALT D10
+U 1 1 5FC36F01
+P 6300 2750
+F 0 "D10" H 6293 2967 50  0000 C CNN
+F 1 "LED" H 6293 2876 50  0000 C CNN
+F 2 "" H 6300 2750 50  0001 C CNN
+F 3 "~" H 6300 2750 50  0001 C CNN
+	1    6300 2750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6500 2300 6500 2750
+Wire Wire Line
+	6500 2750 6450 2750
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FC37337
+P 6600 2700
+F 0 "#PWR?" H 6600 2550 50  0001 C CNN
+F 1 "+3.3V" H 6615 2873 50  0000 C CNN
+F 2 "" H 6600 2700 50  0001 C CNN
+F 3 "" H 6600 2700 50  0001 C CNN
+	1    6600 2700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6600 2700 6600 2750
+Wire Wire Line
+	6600 2750 6500 2750
+Connection ~ 6500 2750
+Text Label 6100 2750 2    50   ~ 0
+IND10
+Wire Wire Line
+	6100 2750 6150 2750
+Text Label 6100 2300 2    50   ~ 0
+IND10_T
+Wire Notes Line
+	700  750  700  1800
+Wire Notes Line
+	700  1800 1500 1800
+Wire Notes Line
+	1500 1800 1500 750 
+Wire Notes Line
+	1500 750  700  750 
+Wire Notes Line
+	1550 750  1550 1800
+Wire Notes Line
+	1550 1800 2350 1800
+Wire Notes Line
+	2350 1800 2350 750 
+Wire Notes Line
+	2350 750  1550 750 
+Wire Notes Line
+	5800 1850 5800 2900
+Wire Notes Line
+	5800 2900 6750 2900
+Wire Notes Line
+	6750 2900 6750 1850
+Wire Notes Line
+	6750 1850 5800 1850
+Wire Notes Line
+	3550 750  2750 750 
+Wire Notes Line
+	2750 1800 3550 1800
+Wire Notes Line
+	3550 1800 3550 750 
+Wire Notes Line
+	2750 750  2750 1800
+Wire Notes Line
+	3600 750  3600 1800
+Wire Notes Line
+	3600 1800 4400 1800
+Wire Notes Line
+	4400 1800 4400 750 
+Wire Notes Line
+	4400 750  3600 750 
+Wire Notes Line
+	2750 1850 2750 2900
+Wire Notes Line
+	2750 2900 3550 2900
+Wire Notes Line
+	3550 2900 3550 1850
+Wire Notes Line
+	3550 1850 2750 1850
+Wire Notes Line
+	3600 1850 3600 2900
+Wire Notes Line
+	3600 2900 4400 2900
+Wire Notes Line
+	4400 2900 4400 1850
+Wire Notes Line
+	4400 1850 3600 1850
+Wire Notes Line
+	4800 750  4800 1800
+Wire Notes Line
+	4800 1800 5750 1800
+Wire Notes Line
+	5750 1800 5750 750 
+Wire Notes Line
+	5750 750  4800 750 
+Wire Notes Line
+	4800 1850 4800 2900
+Wire Notes Line
+	4800 2900 5750 2900
+Wire Notes Line
+	5750 2900 5750 1850
+Wire Notes Line
+	5750 1850 4800 1850
+Wire Notes Line
+	5800 750  5800 1800
+Wire Notes Line
+	5800 1800 6750 1800
+Wire Notes Line
+	6750 1800 6750 750 
+Wire Notes Line
+	6750 750  5800 750 
+Wire Notes Line
+	7150 750  7150 1800
+Wire Notes Line
+	7150 1800 8700 1800
+Wire Notes Line
+	8700 1800 8700 750 
+Wire Notes Line
+	8700 750  7150 750 
 $EndSCHEMATC

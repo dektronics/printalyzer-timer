@@ -112,6 +112,11 @@ S 6500 1750 1450 750
 U 5F8B69B5
 F0 "User Input" 50
 F1 "main-board-input.sch" 50
+F2 "INT_I2C_SDA" B L 6500 1850 50 
+F3 "INT_I2C_SCL" B L 6500 1950 50 
+F4 "SENSOR_BTN" I L 6500 2200 50 
+F5 "FOOTSWITCH" I L 6500 2300 50 
+F6 "KEY_INT" O L 6500 2050 50 
 $EndSheet
 $Comp
 L power:GND #PWR0103
@@ -209,10 +214,19 @@ DISP_~RES
 Text Label 9250 4650 2    50   ~ 0
 DISP_~CS
 $Sheet
-S 6500 2750 1450 800 
+S 6500 2750 1450 1100
 U 5FA19AFF
 F0 "Front External Connections" 50
 F1 "main-board-front.sch" 50
+F2 "EXT_I2C_SDA" B L 6500 2850 50 
+F3 "EXT_I2C_SCL" B L 6500 2950 50 
+F4 "SENSOR_BTN" O L 6500 3100 50 
+F5 "SENSOR_INT" O L 6500 3200 50 
+F6 "FOOTSWITCH" O L 6500 3300 50 
+F7 "USB_DRIVE_VBUS" I L 6500 3450 50 
+F8 "USB_VBUS_OC" O L 6500 3550 50 
+F9 "USB_DP" B L 6500 3650 50 
+F10 "USB_DM" B L 6500 3750 50 
 $EndSheet
 $Comp
 L Project:Conn_ST_STDC14 J?
@@ -961,4 +975,62 @@ Wire Wire Line
 Text Notes 2250 7750 0    50   ~ 0
 Can swap connections on ESD\nprotection to optimize routing
 NoConn ~ 1700 6050
+Text Label 5850 2950 0    50   ~ 0
+I2C2_SCL
+Text Label 5850 2850 0    50   ~ 0
+I2C2_SDA
+Text Label 5850 3200 0    50   ~ 0
+SENSOR_~INT
+Text Label 5850 3750 0    50   ~ 0
+USB_OTG_FS_DM
+Text Label 5850 3650 0    50   ~ 0
+USB_OTG_FS_DP
+Text Label 5850 3450 0    50   ~ 0
+USB_DRIVE_VBUS
+Text Label 5850 3550 0    50   ~ 0
+USB_VBUS_OC
+Wire Wire Line
+	6500 2850 5850 2850
+Wire Wire Line
+	5850 2950 6500 2950
+Wire Wire Line
+	5850 3200 6500 3200
+Wire Wire Line
+	6500 3450 5850 3450
+Wire Wire Line
+	5850 3550 6500 3550
+Wire Wire Line
+	5850 3650 6500 3650
+Wire Wire Line
+	5850 3750 6500 3750
+Text Label 5900 2200 0    50   ~ 0
+SENSOR_BTN
+Text Label 5900 2300 0    50   ~ 0
+FOOTSWITCH
+Text Label 5850 3100 0    50   ~ 0
+SENSOR_BTN
+Text Label 5850 3300 0    50   ~ 0
+FOOTSWITCH
+Wire Wire Line
+	6500 2200 5900 2200
+Wire Wire Line
+	5900 2300 6500 2300
+Wire Wire Line
+	5850 3300 6500 3300
+Wire Wire Line
+	5850 3100 6500 3100
+Text Label 5900 1850 0    50   ~ 0
+I2C1_SDA
+Text Label 5900 1950 0    50   ~ 0
+I2C1_SCL
+Wire Wire Line
+	5900 1950 6500 1950
+Wire Wire Line
+	5900 1850 6500 1850
+Text Label 5900 2050 0    50   ~ 0
+KEY_~INT
+Wire Wire Line
+	5900 2050 6500 2050
+Text Notes 6100 4500 0    50   Italic 0
+I2C1 needs pull-up resistors\nI2C2 has pull-ups as part of main-board-front
 $EndSCHEMATC

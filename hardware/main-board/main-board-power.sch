@@ -4,7 +4,7 @@ EELAYER END
 $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 2 4
-Title "Printalyzer - Main Board"
+Title "Printalyzer - Main Board (Power Supply and Control)"
 Date ""
 Rev "?"
 Comp "LogicProbe.org"
