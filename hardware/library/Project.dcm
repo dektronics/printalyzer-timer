@@ -48,6 +48,12 @@ K Relay Driver
 F http://www.onsemi.com/pub/Collateral/NUD3112-D.PDF
 $ENDCMP
 #
+$CMP PAM8904EJP
+D 18Vpp Output Piezo Sounder Driver
+K audio piezo driver
+F https://www.diodes.com/assets/Datasheets/PAM8904E.pdf
+$ENDCMP
+#
 $CMP PSK-6B-S12
 D 12V, 0.5A, 6W, Isolated, AC-DC, Power Supply
 K Miniature Module-type Power Supply CUI
