@@ -5,7 +5,7 @@ $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 1 1
 Title "Printalyzer - Meter Probe"
-Date "2020-10-23"
+Date "2020-10-28"
 Rev "A"
 Comp "LogicProbe.org"
 Comment1 "Derek Konigsberg"
@@ -724,4 +724,56 @@ Wire Wire Line
 	5400 1700 5400 1750
 Wire Wire Line
 	5400 1450 5400 1500
+Text Notes 7850 1450 0    50   ~ 0
+Brown
+Text Notes 7850 1550 0    50   ~ 0
+Red
+Text Notes 7850 1650 0    50   ~ 0
+Orange
+Text Notes 7850 1750 0    50   ~ 0
+Yellow
+Text Notes 7850 1850 0    50   ~ 0
+Green
+Text Notes 7850 1950 0    50   ~ 0
+Black
+Text Notes 7350 1450 0    50   ~ 0
+1
+Text Notes 7350 1550 0    50   ~ 0
+2
+Text Notes 7350 1650 0    50   ~ 0
+3
+Text Notes 7350 1750 0    50   ~ 0
+4
+Text Notes 7350 1850 0    50   ~ 0
+5
+Text Notes 7350 1950 0    50   ~ 0
+6
+Text Notes 7500 1450 0    50   ~ 0
+SDA
+Text Notes 7500 1550 0    50   ~ 0
+~INT
+Text Notes 7500 1650 0    50   ~ 0
+GND
+Text Notes 7500 1750 0    50   ~ 0
++5V
+Text Notes 7500 1850 0    50   ~ 0
+SCL
+Text Notes 7500 1950 0    50   ~ 0
+~BUTTON
+Text Notes 7350 1300 0    50   ~ 0
+Meter Cable Pinout
+Wire Notes Line style solid
+	7450 1325 7450 2000
+Wire Notes Line style solid
+	7300 2000 7300 1200
+Wire Notes Line style solid
+	7300 1200 8150 1200
+Wire Notes Line style solid
+	8150 1200 8150 2000
+Wire Notes Line style solid
+	7300 2000 8150 2000
+Wire Notes Line style solid
+	7300 1325 8150 1325
+Wire Notes Line style solid
+	7825 1325 7825 2000
 $EndSCHEMATC
