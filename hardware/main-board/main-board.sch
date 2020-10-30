@@ -24,88 +24,13 @@ F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/da
 	1    3600 3250
 	1    0    0    -1  
 $EndComp
-$Comp
-L Device:Speaker_Crystal LS?
-U 1 1 5F8D143F
-P 9600 1050
-F 0 "LS?" H 9775 1046 50  0000 L CNN
-F 1 "Speaker_Crystal" H 9775 955 50  0000 L CNN
-F 2 "lib_fp:PKM22EPPH4001-B0" H 9565 1000 50  0001 C CNN
-F 3 "https://www.murata.com/~/media/webrenewal/support/library/catalog/products/sound/p37e.ashx?la=en-us" H 9565 1000 50  0001 C CNN
-F 4 "AUDIO PIEZO TRANSDUCER 30V TH" H 9600 1050 50  0001 C CNN "Description"
-F 5 "Murata Electronics" H 9600 1050 50  0001 C CNN "Manufacturer"
-F 6 "PKM22EPPH4001-B0" H 9600 1050 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 9600 1050 50  0001 C CNN "Supplier"
-F 8 "490-4692-ND" H 9600 1050 50  0001 C CNN "Supplier PN"
-	1    9600 1050
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R_Small R?
-U 1 1 5F8D2514
-P 9100 1100
-F 0 "R?" H 9170 1146 50  0000 L CNN
-F 1 "1K" H 9170 1055 50  0000 L CNN
-F 2 "" V 9030 1100 50  0001 C CNN
-F 3 "~" H 9100 1100 50  0001 C CNN
-	1    9100 1100
-	1    0    0    -1  
-$EndComp
-$Comp
-L Transistor_BJT:2SC1815 Q?
-U 1 1 5F8D3A87
-P 9000 1450
-F 0 "Q?" H 9190 1496 50  0000 L CNN
-F 1 "2SC1815" H 9190 1405 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 9200 1375 50  0001 L CIN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Toshiba%20PDFs/2SC1815.pdf" H 9000 1450 50  0001 L CNN
-	1    9000 1450
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9100 1250 9400 1250
-Wire Wire Line
-	9400 1250 9400 1150
-Wire Wire Line
-	9400 1050 9400 950 
-Wire Wire Line
-	9400 950  9100 950 
-$Comp
-L power:+5V #PWR0101
-U 1 1 5F8D6021
-P 9100 900
-F 0 "#PWR0101" H 9100 750 50  0001 C CNN
-F 1 "+5V" H 9115 1073 50  0000 C CNN
-F 2 "" H 9100 900 50  0001 C CNN
-F 3 "" H 9100 900 50  0001 C CNN
-	1    9100 900 
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9100 900  9100 950 
-Connection ~ 9100 950 
-$Comp
-L power:GND #PWR0102
-U 1 1 5F8D7106
-P 9100 1700
-F 0 "#PWR0102" H 9100 1450 50  0001 C CNN
-F 1 "GND" H 9105 1527 50  0000 C CNN
-F 2 "" H 9100 1700 50  0001 C CNN
-F 3 "" H 9100 1700 50  0001 C CNN
-	1    9100 1700
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9100 1650 9100 1700
-Text GLabel 8700 1450 0    50   Input ~ 0
-BUZZER
-Wire Wire Line
-	8800 1450 8700 1450
 $Sheet
 S 6500 700  1450 750 
 U 5F8B674D
 F0 "Power Supply and Control" 50
 F1 "main-board-power.sch" 50
+F2 "RELAY_ENLARGER" I L 6500 800 50 
+F3 "RELAY_SAFELIGHT" I L 6500 900 50 
 $EndSheet
 $Sheet
 S 6500 1750 1450 750 
@@ -254,8 +179,6 @@ F 3 "~" H 9700 3950 50  0001 C CNN
 	1    9700 3950
 	1    0    0    -1  
 $EndComp
-Text Notes 9250 1850 0    50   Italic 0
-Find a suitable SMD transistor\nto drive the speaker, or some\nother driver circuit.
 $Comp
 L Device:Crystal_GND24 Y?
 U 1 1 5F94F8E6
@@ -339,20 +262,20 @@ NoConn ~ 1450 3000
 $Comp
 L Project:M24M01-RMN U?
 U 1 1 5F950792
-P 8800 2550
-F 0 "U?" H 8800 3031 50  0000 C CNN
-F 1 "M24M01-RMN" H 8800 2940 50  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 8800 2900 50  0001 C CNN
-F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf" H 8850 2050 50  0001 C CNN
-	1    8800 2550
+P 6000 5900
+F 0 "U?" H 5800 6150 50  0000 C CNN
+F 1 "M24M01-RMN" H 6300 5650 50  0000 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 6000 6250 50  0001 C CNN
+F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf" H 6050 5400 50  0001 C CNN
+	1    6000 5900
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:L_Small L?
 U 1 1 5F951860
 P 4650 900
-F 0 "L?" V 4469 900 50  0000 C CNN
-F 1 "600 Ohm" V 4560 900 50  0000 C CNN
+F 0 "L?" V 4850 900 50  0000 C CNN
+F 1 "600 Ohm" V 4750 900 50  0000 C CNN
 F 2 "Inductor_SMD:L_0603_1608Metric" H 4650 900 50  0001 C CNN
 F 3 "https://www.yuden.co.jp/productdata/catalog/mlci07_e.pdf" H 4650 900 50  0001 C CNN
 F 4 "FERRITE BEAD 600 OHM 0603 1LN" H 4650 900 50  0001 C CNN "Description"
@@ -361,7 +284,7 @@ F 6 "BK1608HS601-T" H 4650 900 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 4650 900 50  0001 C CNN "Supplier"
 F 8 "587-1874-1-ND" H 4650 900 50  0001 C CNN "Supplier PN"
 	1    4650 900 
-	0    1    1    0   
+	0    -1   -1   0   
 $EndComp
 $Comp
 L power:+3.3V #PWR0107
@@ -745,18 +668,12 @@ Wire Wire Line
 	4300 2250 5000 2250
 Wire Wire Line
 	4300 2150 5000 2150
-Text Label 2800 3750 2    50   ~ 0
+Text Label 2250 3750 0    50   ~ 0
 DISP_~RES
-Wire Wire Line
-	2150 3750 2900 3750
-Text Label 2800 3450 2    50   ~ 0
+Text Label 2250 3450 0    50   ~ 0
 USB_DRIVE_VBUS
-Text Label 2800 3550 2    50   ~ 0
+Text Label 2250 3550 0    50   ~ 0
 USB_VBUS_OC
-Wire Wire Line
-	2150 3450 2900 3450
-Wire Wire Line
-	2150 3550 2900 3550
 Text Label 4400 3650 0    50   ~ 0
 SENSOR_~INT
 Wire Wire Line
@@ -765,14 +682,8 @@ Text Label 4400 4450 0    50   ~ 0
 I2C2_SCL
 Wire Wire Line
 	4300 4450 5000 4450
-Text Label 2800 4250 2    50   ~ 0
+Text Label 2250 4250 0    50   ~ 0
 RELAY_ENLG
-Text Label 2800 4150 2    50   ~ 0
-RELAY_SFLT
-Wire Wire Line
-	2150 4150 2900 4150
-Wire Wire Line
-	2150 4250 2900 4250
 Text Label 4400 2550 0    50   ~ 0
 ENC_CH1
 Text Label 4400 2650 0    50   ~ 0
@@ -813,8 +724,6 @@ Text Label 4400 3950 0    50   ~ 0
 KEY_~INT
 Text Label 4400 4050 0    50   ~ 0
 USART1_TX
-Text Label 4400 4150 0    50   ~ 0
-I2C1_SDA
 Text Label 4400 4250 0    50   ~ 0
 I2C1_SCL
 Text Label 4400 4350 0    50   ~ 0
@@ -822,20 +731,11 @@ I2C2_SDA
 Wire Wire Line
 	4300 4350 5000 4350
 Wire Wire Line
-	4300 4250 5000 4250
-Wire Wire Line
-	4300 4150 5000 4150
-Wire Wire Line
 	4300 4050 5000 4050
 Wire Wire Line
 	4300 3950 5000 3950
 Text Notes 4450 4700 0    50   Italic 0
 May need 4 GPIOs for LED driver\n(One on a TIM channel)
-Wire Wire Line
-	9100 950  9100 1000
-Wire Wire Line
-	9100 1200 9100 1250
-Connection ~ 9100 1250
 Wire Wire Line
 	2200 6250 2850 6250
 NoConn ~ 2200 6950
@@ -1031,6 +931,359 @@ Text Label 5900 2050 0    50   ~ 0
 KEY_~INT
 Wire Wire Line
 	5900 2050 6500 2050
-Text Notes 6100 4500 0    50   Italic 0
-I2C1 needs pull-up resistors\nI2C2 has pull-ups as part of main-board-front
+Text Notes 5100 4450 0    50   ~ 0
+I2C2 has pull-ups as part of main-board-front
+Text Label 5950 900  0    50   ~ 0
+RELAY_SFLT
+Text Label 5950 800  0    50   ~ 0
+RELAY_ENLG
+Wire Wire Line
+	6500 800  5950 800 
+Wire Wire Line
+	6500 900  5950 900 
+Text Label 2250 4150 0    50   ~ 0
+RELAY_SFLT
+Wire Wire Line
+	2900 3450 2250 3450
+Wire Wire Line
+	2900 3550 2250 3550
+Wire Wire Line
+	2900 3750 2250 3750
+Wire Wire Line
+	2900 4150 2250 4150
+Wire Wire Line
+	2900 4250 2250 4250
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FA693EA
+P 6000 5350
+F 0 "#PWR?" H 6000 5200 50  0001 C CNN
+F 1 "+3.3V" H 6015 5523 50  0000 C CNN
+F 2 "" H 6000 5350 50  0001 C CNN
+F 3 "" H 6000 5350 50  0001 C CNN
+	1    6000 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FA699B6
+P 6150 5450
+F 0 "C?" V 6300 5300 50  0000 L CNN
+F 1 "0.1uF" V 6200 5200 50  0000 L CNN
+F 2 "" H 6150 5450 50  0001 C CNN
+F 3 "~" H 6150 5450 50  0001 C CNN
+	1    6150 5450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FA6B086
+P 6250 5450
+F 0 "#PWR?" H 6250 5200 50  0001 C CNN
+F 1 "GND" H 6255 5277 50  0000 C CNN
+F 2 "" H 6250 5450 50  0001 C CNN
+F 3 "" H 6250 5450 50  0001 C CNN
+	1    6250 5450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6000 5600 6000 5450
+Wire Wire Line
+	6050 5450 6000 5450
+Connection ~ 6000 5450
+Wire Wire Line
+	6000 5450 6000 5350
+$Comp
+L power:GND #PWR?
+U 1 1 5FA90C2E
+P 6000 6200
+F 0 "#PWR?" H 6000 5950 50  0001 C CNN
+F 1 "GND" H 6005 6027 50  0000 C CNN
+F 2 "" H 6000 6200 50  0001 C CNN
+F 3 "" H 6000 6200 50  0001 C CNN
+	1    6000 6200
+	1    0    0    -1  
+$EndComp
+Text Label 4400 4150 0    50   ~ 0
+I2C1_SDA
+Text Label 6800 5800 2    50   ~ 0
+I2C1_SDA
+Text Label 6800 5900 2    50   ~ 0
+I2C1_SCL
+$Comp
+L Device:R_Small R?
+U 1 1 5FA91E20
+P 5150 4000
+F 0 "R?" H 5209 4046 50  0000 L CNN
+F 1 "2K" H 5209 3955 50  0000 L CNN
+F 2 "" H 5150 4000 50  0001 C CNN
+F 3 "~" H 5150 4000 50  0001 C CNN
+	1    5150 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R_Small R?
+U 1 1 5FA9230A
+P 5400 4000
+F 0 "R?" H 5459 4046 50  0000 L CNN
+F 1 "2K" H 5459 3955 50  0000 L CNN
+F 2 "" H 5400 4000 50  0001 C CNN
+F 3 "~" H 5400 4000 50  0001 C CNN
+	1    5400 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5150 4150 5150 4100
+Wire Wire Line
+	4300 4150 5150 4150
+Wire Wire Line
+	5400 4250 5400 4100
+Wire Wire Line
+	4300 4250 5400 4250
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FAB8BA0
+P 5400 3800
+F 0 "#PWR?" H 5400 3650 50  0001 C CNN
+F 1 "+3.3V" H 5415 3973 50  0000 C CNN
+F 2 "" H 5400 3800 50  0001 C CNN
+F 3 "" H 5400 3800 50  0001 C CNN
+	1    5400 3800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5400 3900 5400 3850
+Wire Wire Line
+	5150 3900 5150 3850
+Wire Wire Line
+	5150 3850 5400 3850
+Connection ~ 5400 3850
+Wire Wire Line
+	5400 3850 5400 3800
+Wire Wire Line
+	6400 5800 6800 5800
+Wire Wire Line
+	6400 5900 6800 5900
+Wire Wire Line
+	6400 6000 6650 6000
+$Comp
+L power:GND #PWR?
+U 1 1 5FB2CC3B
+P 5550 6050
+F 0 "#PWR?" H 5550 5800 50  0001 C CNN
+F 1 "GND" H 5555 5877 50  0000 C CNN
+F 2 "" H 5550 6050 50  0001 C CNN
+F 3 "" H 5550 6050 50  0001 C CNN
+	1    5550 6050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FB2D122
+P 6650 6050
+F 0 "#PWR?" H 6650 5800 50  0001 C CNN
+F 1 "GND" H 6655 5877 50  0000 C CNN
+F 2 "" H 6650 6050 50  0001 C CNN
+F 3 "" H 6650 6050 50  0001 C CNN
+	1    6650 6050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6650 6000 6650 6050
+Wire Wire Line
+	5600 5900 5550 5900
+Wire Wire Line
+	5550 5900 5550 6000
+Wire Wire Line
+	5600 6000 5550 6000
+Connection ~ 5550 6000
+Wire Wire Line
+	5550 6000 5550 6050
+$Comp
+L Project:PAM8904EJP U?
+U 1 1 5FB60707
+P 8900 1550
+F 0 "U?" H 8650 2050 50  0000 C CNN
+F 1 "PAM8904EJP" H 9200 1000 50  0000 C CNN
+F 2 "lib_fp:U-QFN3030-12_Type-A" H 8900 550 50  0001 C CNN
+F 3 "https://www.diodes.com/assets/Datasheets/PAM8904E.pdf" H 8900 1550 50  0001 C CNN
+F 4 "AUDIO HIGH VOLT U-QFN3030-16" H 8900 1550 50  0001 C CNN "Description"
+F 5 "Diodes Incorporated" H 8900 1550 50  0001 C CNN "Manufacturer"
+F 6 "PAM8904EJER" H 8900 1550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 8900 1550 50  0001 C CNN "Supplier"
+F 8 "31-PAM8904EJERCT-ND" H 8900 1550 50  0001 C CNN "Supplier PN"
+	1    8900 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Speaker_Crystal LS?
+U 1 1 5FB6070D
+P 10000 1850
+AR Path="/5FB5745F/5FB6070D" Ref="LS?"  Part="1" 
+AR Path="/5FB6070D" Ref="LS1"  Part="1" 
+F 0 "LS1" H 10175 1846 50  0000 L CNN
+F 1 "Buzzer" H 10175 1755 50  0000 L CNN
+F 2 "lib_fp:PKM22EPPH4001-B0" H 9965 1800 50  0001 C CNN
+F 3 "https://www.murata.com/~/media/webrenewal/support/library/catalog/products/sound/p37e.ashx?la=en-us" H 9965 1800 50  0001 C CNN
+F 4 "AUDIO PIEZO TRANSDUCER 30V TH" H 10000 1850 50  0001 C CNN "Description"
+F 5 "Murata Electronics" H 10000 1850 50  0001 C CNN "Manufacturer"
+F 6 "PKM22EPPH4001-B0" H 10000 1850 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 10000 1850 50  0001 C CNN "Supplier"
+F 8 "490-4692-ND" H 10000 1850 50  0001 C CNN "Supplier PN"
+	1    10000 1850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FB6071E
+P 9100 900
+F 0 "C?" V 8871 900 50  0000 C CNN
+F 1 "2.2uF" V 8962 900 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9100 900 50  0001 C CNN
+F 3 "~" H 9100 900 50  0001 C CNN
+F 4 "CAP CER 2.2UF 25V X5R 0805" H 9100 900 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 9100 900 50  0001 C CNN "Manufacturer"
+F 6 "CL21A225KAFNNNG" H 9100 900 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9100 900 50  0001 C CNN "Supplier"
+F 8 "1276-6458-1-ND" H 9100 900 50  0001 C CNN "Supplier PN"
+	1    9100 900 
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FB60729
+P 9550 1400
+F 0 "C?" H 9642 1446 50  0000 L CNN
+F 1 "1uF" H 9642 1355 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 9550 1400 50  0001 C CNN
+F 3 "~" H 9550 1400 50  0001 C CNN
+F 4 "CAP CER 1UF 25V X7R 0603" H 9550 1400 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 9550 1400 50  0001 C CNN "Manufacturer"
+F 6 "CL10B105KA8NNNC" H 9550 1400 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9550 1400 50  0001 C CNN "Supplier"
+F 8 "1276-1184-1-ND" H 9550 1400 50  0001 C CNN "Supplier PN"
+	1    9550 1400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FB60734
+P 9550 1650
+F 0 "C?" H 9642 1696 50  0000 L CNN
+F 1 "1uF" H 9642 1605 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 9550 1650 50  0001 C CNN
+F 3 "~" H 9550 1650 50  0001 C CNN
+F 4 "CAP CER 1UF 25V X7R 0603" H 9550 1650 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 9550 1650 50  0001 C CNN "Manufacturer"
+F 6 "CL10B105KA8NNNC" H 9550 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9550 1650 50  0001 C CNN "Supplier"
+F 8 "1276-1184-1-ND" H 9550 1650 50  0001 C CNN "Supplier PN"
+	1    9550 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C_Small C?
+U 1 1 5FB6073F
+P 9900 1300
+F 0 "C?" H 9992 1346 50  0000 L CNN
+F 1 "2.2uF" H 9992 1255 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9900 1300 50  0001 C CNN
+F 3 "~" H 9900 1300 50  0001 C CNN
+F 4 "CAP CER 2.2UF 25V X5R 0805" H 9900 1300 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 9900 1300 50  0001 C CNN "Manufacturer"
+F 6 "CL21A225KAFNNNG" H 9900 1300 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9900 1300 50  0001 C CNN "Supplier"
+F 8 "1276-6458-1-ND" H 9900 1300 50  0001 C CNN "Supplier PN"
+	1    9900 1300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5FB60745
+P 8900 2150
+F 0 "#PWR?" H 8900 1900 50  0001 C CNN
+F 1 "GND" H 8905 1977 50  0000 C CNN
+F 2 "" H 8900 2150 50  0001 C CNN
+F 3 "" H 8900 2150 50  0001 C CNN
+	1    8900 2150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8900 1000 8900 900 
+Wire Wire Line
+	9000 900  8900 900 
+Connection ~ 8900 900 
+Wire Wire Line
+	8900 900  8900 800 
+$Comp
+L power:GND #PWR?
+U 1 1 5FB6077A
+P 9300 900
+F 0 "#PWR?" H 9300 650 50  0001 C CNN
+F 1 "GND" H 9305 727 50  0000 C CNN
+F 2 "" H 9300 900 50  0001 C CNN
+F 3 "" H 9300 900 50  0001 C CNN
+	1    9300 900 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9200 900  9300 900 
+Wire Wire Line
+	9300 1350 9400 1350
+Wire Wire Line
+	9400 1350 9400 1300
+Wire Wire Line
+	9400 1300 9550 1300
+Wire Wire Line
+	9300 1450 9400 1450
+Wire Wire Line
+	9400 1450 9400 1500
+Wire Wire Line
+	9400 1500 9550 1500
+Wire Wire Line
+	9300 1600 9400 1600
+Wire Wire Line
+	9400 1600 9400 1550
+Wire Wire Line
+	9400 1550 9550 1550
+Wire Wire Line
+	9300 1700 9400 1700
+Wire Wire Line
+	9400 1700 9400 1750
+Wire Wire Line
+	9400 1750 9550 1750
+Wire Wire Line
+	9300 1200 9900 1200
+$Comp
+L power:GND #PWR?
+U 1 1 5FB6078E
+P 9900 1400
+F 0 "#PWR?" H 9900 1150 50  0001 C CNN
+F 1 "GND" H 9905 1227 50  0000 C CNN
+F 2 "" H 9900 1400 50  0001 C CNN
+F 3 "" H 9900 1400 50  0001 C CNN
+	1    9900 1400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9300 1850 9800 1850
+Wire Wire Line
+	9800 1950 9300 1950
+$Comp
+L power:+3.3V #PWR?
+U 1 1 5FBD6808
+P 8900 800
+F 0 "#PWR?" H 8900 650 50  0001 C CNN
+F 1 "+3.3V" H 8915 973 50  0000 C CNN
+F 2 "" H 8900 800 50  0001 C CNN
+F 3 "" H 8900 800 50  0001 C CNN
+	1    8900 800 
+	1    0    0    -1  
+$EndComp
+Text Label 8250 1600 0    50   ~ 0
+BUZZ
+Wire Wire Line
+	8500 1600 8250 1600
+Text Notes 9000 2250 0    50   ~ 0
+Connect 1-2 GPIOs for buzzer gain
 $EndSCHEMATC
