@@ -33,7 +33,7 @@ F2 "RELAY_ENLARGER" I L 6500 800 50
 F3 "RELAY_SAFELIGHT" I L 6500 900 50 
 $EndSheet
 $Sheet
-S 6500 1750 1450 750 
+S 6500 1750 1450 1100
 U 5F8B69B5
 F0 "User Input" 50
 F1 "main-board-input.sch" 50
@@ -41,7 +41,11 @@ F2 "INT_I2C_SDA" B L 6500 1850 50
 F3 "INT_I2C_SCL" B L 6500 1950 50 
 F4 "SENSOR_BTN" I L 6500 2200 50 
 F5 "FOOTSWITCH" I L 6500 2300 50 
-F6 "KEY_INT" O L 6500 2050 50 
+F6 "LED_SDI" I L 6500 2450 50 
+F7 "LED_CLK" I L 6500 2550 50 
+F8 "LED_LE" I L 6500 2650 50 
+F9 "LED_~OE" I L 6500 2750 50 
+F10 "KEY_~INT" O L 6500 2050 50 
 $EndSheet
 $Comp
 L power:GND #PWR0103
@@ -139,19 +143,19 @@ DISP_~RES
 Text Label 9250 4650 2    50   ~ 0
 DISP_~CS
 $Sheet
-S 6500 2750 1450 1100
+S 6500 3150 1450 1100
 U 5FA19AFF
 F0 "Front External Connections" 50
 F1 "main-board-front.sch" 50
-F2 "EXT_I2C_SDA" B L 6500 2850 50 
-F3 "EXT_I2C_SCL" B L 6500 2950 50 
-F4 "SENSOR_BTN" O L 6500 3100 50 
-F5 "SENSOR_INT" O L 6500 3200 50 
-F6 "FOOTSWITCH" O L 6500 3300 50 
-F7 "USB_DRIVE_VBUS" I L 6500 3450 50 
-F8 "USB_VBUS_OC" O L 6500 3550 50 
-F9 "USB_DP" B L 6500 3650 50 
-F10 "USB_DM" B L 6500 3750 50 
+F2 "EXT_I2C_SDA" B L 6500 3250 50 
+F3 "EXT_I2C_SCL" B L 6500 3350 50 
+F4 "SENSOR_BTN" O L 6500 3500 50 
+F5 "SENSOR_INT" O L 6500 3600 50 
+F6 "FOOTSWITCH" O L 6500 3700 50 
+F7 "USB_DRIVE_VBUS" I L 6500 3850 50 
+F8 "USB_VBUS_OC" O L 6500 3950 50 
+F9 "USB_DP" B L 6500 4050 50 
+F10 "USB_DM" B L 6500 4150 50 
 $EndSheet
 $Comp
 L Project:Conn_ST_STDC14 J?
@@ -734,8 +738,6 @@ Wire Wire Line
 	4300 4050 5000 4050
 Wire Wire Line
 	4300 3950 5000 3950
-Text Notes 4450 4700 0    50   Italic 0
-May need 4 GPIOs for LED driver\n(One on a TIM channel)
 Wire Wire Line
 	2200 6250 2850 6250
 NoConn ~ 2200 6950
@@ -875,72 +877,72 @@ Wire Wire Line
 Text Notes 2250 7750 0    50   ~ 0
 Can swap connections on ESD\nprotection to optimize routing
 NoConn ~ 1700 6050
-Text Label 5850 2950 0    50   ~ 0
+Text Label 5850 3350 0    50   ~ 0
 I2C2_SCL
-Text Label 5850 2850 0    50   ~ 0
+Text Label 5850 3250 0    50   ~ 0
 I2C2_SDA
-Text Label 5850 3200 0    50   ~ 0
+Text Label 5850 3600 0    50   ~ 0
 SENSOR_~INT
-Text Label 5850 3750 0    50   ~ 0
+Text Label 5850 4150 0    50   ~ 0
 USB_OTG_FS_DM
-Text Label 5850 3650 0    50   ~ 0
+Text Label 5850 4050 0    50   ~ 0
 USB_OTG_FS_DP
-Text Label 5850 3450 0    50   ~ 0
+Text Label 5850 3850 0    50   ~ 0
 USB_DRIVE_VBUS
-Text Label 5850 3550 0    50   ~ 0
+Text Label 5850 3950 0    50   ~ 0
 USB_VBUS_OC
 Wire Wire Line
-	6500 2850 5850 2850
+	6500 3250 5850 3250
 Wire Wire Line
-	5850 2950 6500 2950
+	5850 3350 6500 3350
 Wire Wire Line
-	5850 3200 6500 3200
+	5850 3600 6500 3600
 Wire Wire Line
-	6500 3450 5850 3450
+	6500 3850 5850 3850
 Wire Wire Line
-	5850 3550 6500 3550
+	5850 3950 6500 3950
 Wire Wire Line
-	5850 3650 6500 3650
+	5850 4050 6500 4050
 Wire Wire Line
-	5850 3750 6500 3750
-Text Label 5900 2200 0    50   ~ 0
+	5850 4150 6500 4150
+Text Label 5850 2200 0    50   ~ 0
 SENSOR_BTN
-Text Label 5900 2300 0    50   ~ 0
+Text Label 5850 2300 0    50   ~ 0
 FOOTSWITCH
-Text Label 5850 3100 0    50   ~ 0
+Text Label 5850 3500 0    50   ~ 0
 SENSOR_BTN
-Text Label 5850 3300 0    50   ~ 0
+Text Label 5850 3700 0    50   ~ 0
 FOOTSWITCH
 Wire Wire Line
-	6500 2200 5900 2200
+	6500 2200 5850 2200
 Wire Wire Line
-	5900 2300 6500 2300
+	5850 2300 6500 2300
 Wire Wire Line
-	5850 3300 6500 3300
+	5850 3700 6500 3700
 Wire Wire Line
-	5850 3100 6500 3100
-Text Label 5900 1850 0    50   ~ 0
+	5850 3500 6500 3500
+Text Label 5850 1850 0    50   ~ 0
 I2C1_SDA
-Text Label 5900 1950 0    50   ~ 0
+Text Label 5850 1950 0    50   ~ 0
 I2C1_SCL
 Wire Wire Line
-	5900 1950 6500 1950
+	5850 1950 6500 1950
 Wire Wire Line
-	5900 1850 6500 1850
-Text Label 5900 2050 0    50   ~ 0
+	5850 1850 6500 1850
+Text Label 5850 2050 0    50   ~ 0
 KEY_~INT
 Wire Wire Line
-	5900 2050 6500 2050
+	5850 2050 6500 2050
 Text Notes 5100 4450 0    50   ~ 0
 I2C2 has pull-ups as part of main-board-front
-Text Label 5950 900  0    50   ~ 0
+Text Label 5850 900  0    50   ~ 0
 RELAY_SFLT
-Text Label 5950 800  0    50   ~ 0
+Text Label 5850 800  0    50   ~ 0
 RELAY_ENLG
 Wire Wire Line
-	6500 800  5950 800 
+	6500 800  5850 800 
 Wire Wire Line
-	6500 900  5950 900 
+	6500 900  5850 900 
 Text Label 2250 4150 0    50   ~ 0
 RELAY_SFLT
 Wire Wire Line
@@ -1286,4 +1288,36 @@ Wire Wire Line
 	8500 1600 8250 1600
 Text Notes 9000 2250 0    50   ~ 0
 Connect 1-2 GPIOs for buzzer gain
+Text Label 2250 4050 0    50   ~ 0
+LED_CLK
+Text Label 2250 3950 0    50   ~ 0
+LED_~OE
+Text Label 4400 4850 0    50   ~ 0
+LED_SDI
+Text Label 4400 4750 0    50   ~ 0
+LED_LE
+Wire Wire Line
+	2250 4050 2900 4050
+Wire Wire Line
+	2250 3950 2900 3950
+Wire Wire Line
+	4300 4750 5000 4750
+Wire Wire Line
+	4300 4850 5000 4850
+Text Label 5850 2750 0    50   ~ 0
+LED_~OE
+Text Label 5850 2550 0    50   ~ 0
+LED_CLK
+Text Label 5850 2650 0    50   ~ 0
+LED_LE
+Text Label 5850 2450 0    50   ~ 0
+LED_SDI
+Wire Wire Line
+	6500 2450 5850 2450
+Wire Wire Line
+	6500 2550 5850 2550
+Wire Wire Line
+	6500 2650 5850 2650
+Wire Wire Line
+	6500 2750 5850 2750
 $EndSCHEMATC

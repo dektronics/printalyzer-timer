@@ -72,6 +72,12 @@ K power switch current
 F https://www.st.com/resource/en/datasheet/stmps2141.pdf
 $ENDCMP
 #
+$CMP STP16CPC26
+D 16-bit constant current LED sink driver
+K Shift Register LED driver 16 bit
+F https://www.st.com/resource/en/datasheet/stp16cpc26.pdf
+$ENDCMP
+#
 $CMP TCA8418
 D I2C Controlled Keypad Scan IC
 K Keypad I2C
