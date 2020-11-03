@@ -47,8 +47,13 @@ AR Path="/5FA4F8E7" Ref="U?"  Part="1"
 AR Path="/5FA19AFF/5FA4F8E7" Ref="U9"  Part="1" 
 F 0 "U9" H 3150 2167 50  0000 C CNN
 F 1 "P82B96" H 3150 2076 50  0000 C CNN
-F 2 "" H 3150 1550 50  0001 C CNN
-F 3 "http://www.nxp.com/documents/data_sheet/P82B96.pdf" H 3150 1550 50  0001 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 3150 1550 50  0001 C CNN
+F 3 "http://www.ti.com/general/docs/suppproductinfo.tsp?distId=10&gotoUrl=http%3A%2F%2Fwww.ti.com%2Flit%2Fgpn%2Fp82b96" H 3150 1550 50  0001 C CNN
+F 4 "IC REDRIVER I2C 1CH 400KHZ 8SOIC" H 3150 1550 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 3150 1550 50  0001 C CNN "Manufacturer"
+F 6 "P82B96DR" H 3150 1550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 1550 50  0001 C CNN "Supplier"
+F 8 "296-20942-1-ND" H 3150 1550 50  0001 C CNN "Supplier PN"
 	1    3150 1550
 	1    0    0    -1  
 $EndComp
@@ -65,8 +70,13 @@ AR Path="/5FA4F8F1" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F8F1" Ref="R10"  Part="1" 
 F 0 "R10" H 4320 1196 50  0000 L CNN
 F 1 "2K" H 4320 1105 50  0000 L CNN
-F 2 "" V 4180 1150 50  0001 C CNN
-F 3 "~" H 4250 1150 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 4180 1150 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4250 1150 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 4250 1150 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4250 1150 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 4250 1150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4250 1150 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 4250 1150 50  0001 C CNN "Supplier PN"
 	1    4250 1150
 	1    0    0    -1  
 $EndComp
@@ -78,8 +88,13 @@ AR Path="/5FA4F8F7" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F8F7" Ref="R9"  Part="1" 
 F 0 "R9" H 4070 1196 50  0000 L CNN
 F 1 "2K" H 4070 1105 50  0000 L CNN
-F 2 "" V 3930 1150 50  0001 C CNN
-F 3 "~" H 4000 1150 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3930 1150 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4000 1150 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 4000 1150 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4000 1150 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 4000 1150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4000 1150 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 4000 1150 50  0001 C CNN "Supplier PN"
 	1    4000 1150
 	1    0    0    -1  
 $EndComp
@@ -133,8 +148,13 @@ AR Path="/5FA4F911" Ref="C?"  Part="1"
 AR Path="/5FA19AFF/5FA4F911" Ref="C26"  Part="1" 
 F 0 "C26" H 2465 1146 50  0000 L CNN
 F 1 "0.1uF" H 2465 1055 50  0000 L CNN
-F 2 "" H 2388 950 50  0001 C CNN
-F 3 "~" H 2350 1100 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2388 950 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2350 1100 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 2350 1100 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 2350 1100 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 2350 1100 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2350 1100 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 2350 1100 50  0001 C CNN "Supplier PN"
 	1    2350 1100
 	0    1    1    0   
 $EndComp
@@ -168,8 +188,13 @@ AR Path="/5FA4F924" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F924" Ref="R12"  Part="1" 
 F 0 "R12" H 1920 1296 50  0000 L CNN
 F 1 "2K" H 1920 1205 50  0000 L CNN
-F 2 "" V 1780 1250 50  0001 C CNN
-F 3 "~" H 1850 1250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1780 1250 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1850 1250 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 1850 1250 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1850 1250 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 1850 1250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1850 1250 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 1850 1250 50  0001 C CNN "Supplier PN"
 	1    1850 1250
 	1    0    0    -1  
 $EndComp
@@ -181,8 +206,13 @@ AR Path="/5FA4F92A" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F92A" Ref="R11"  Part="1" 
 F 0 "R11" H 1670 1296 50  0000 L CNN
 F 1 "2K" H 1670 1205 50  0000 L CNN
-F 2 "" V 1530 1250 50  0001 C CNN
-F 3 "~" H 1600 1250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1530 1250 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1600 1250 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 1600 1250 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1600 1250 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 1600 1250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1600 1250 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 1600 1250 50  0001 C CNN "Supplier PN"
 	1    1600 1250
 	1    0    0    -1  
 $EndComp
@@ -303,6 +333,11 @@ F 0 "Q1" V 3399 2550 50  0000 C CNN
 F 1 "BSS138" V 3490 2550 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 2475 50  0001 L CIN
 F 3 "https://www.onsemi.com/pub/Collateral/BSS138-D.PDF" H 3150 2550 50  0001 L CNN
+F 4 "MOSFET N-CH 50V 220MA SOT-23" H 3150 2550 50  0001 C CNN "Description"
+F 5 "ON Semiconductor" H 3150 2550 50  0001 C CNN "Manufacturer"
+F 6 "BSS138" H 3150 2550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 2550 50  0001 C CNN "Supplier"
+F 8 "BSS138CT-ND" H 3150 2550 50  0001 C CNN "Supplier PN"
 	1    3150 2550
 	0    1    1    0   
 $EndComp
@@ -316,6 +351,11 @@ F 0 "Q2" V 3399 3300 50  0000 C CNN
 F 1 "BSS138" V 3490 3300 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 3225 50  0001 L CIN
 F 3 "https://www.onsemi.com/pub/Collateral/BSS138-D.PDF" H 3150 3300 50  0001 L CNN
+F 4 "MOSFET N-CH 50V 220MA SOT-23" H 3150 3300 50  0001 C CNN "Description"
+F 5 "ON Semiconductor" H 3150 3300 50  0001 C CNN "Manufacturer"
+F 6 "BSS138" H 3150 3300 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 3300 50  0001 C CNN "Supplier"
+F 8 "BSS138CT-ND" H 3150 3300 50  0001 C CNN "Supplier PN"
 	1    3150 3300
 	0    1    1    0   
 $EndComp
@@ -327,8 +367,13 @@ AR Path="/5FA4F975" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F975" Ref="R13"  Part="1" 
 F 0 "R13" H 2870 2496 50  0000 L CNN
 F 1 "10K" H 2870 2405 50  0000 L CNN
-F 2 "" V 2730 2450 50  0001 C CNN
-F 3 "~" H 2800 2450 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2730 2450 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2800 2450 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 2800 2450 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 2800 2450 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 2800 2450 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2800 2450 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 2800 2450 50  0001 C CNN "Supplier PN"
 	1    2800 2450
 	1    0    0    -1  
 $EndComp
@@ -340,8 +385,13 @@ AR Path="/5FA4F97B" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F97B" Ref="R14"  Part="1" 
 F 0 "R14" H 3570 2496 50  0000 L CNN
 F 1 "10K" H 3570 2405 50  0000 L CNN
-F 2 "" V 3430 2450 50  0001 C CNN
-F 3 "~" H 3500 2450 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3430 2450 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3500 2450 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 3500 2450 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3500 2450 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 3500 2450 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3500 2450 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 3500 2450 50  0001 C CNN "Supplier PN"
 	1    3500 2450
 	1    0    0    -1  
 $EndComp
@@ -353,8 +403,13 @@ AR Path="/5FA4F981" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F981" Ref="R15"  Part="1" 
 F 0 "R15" H 2870 3246 50  0000 L CNN
 F 1 "10K" H 2870 3155 50  0000 L CNN
-F 2 "" V 2730 3200 50  0001 C CNN
-F 3 "~" H 2800 3200 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2730 3200 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2800 3200 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 2800 3200 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 2800 3200 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 2800 3200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2800 3200 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 2800 3200 50  0001 C CNN "Supplier PN"
 	1    2800 3200
 	1    0    0    -1  
 $EndComp
@@ -366,8 +421,13 @@ AR Path="/5FA4F987" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA4F987" Ref="R16"  Part="1" 
 F 0 "R16" H 3570 3246 50  0000 L CNN
 F 1 "10K" H 3570 3155 50  0000 L CNN
-F 2 "" V 3430 3200 50  0001 C CNN
-F 3 "~" H 3500 3200 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3430 3200 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3500 3200 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 3500 3200 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3500 3200 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 3500 3200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3500 3200 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 3500 3200 50  0001 C CNN "Supplier PN"
 	1    3500 3200
 	1    0    0    -1  
 $EndComp
@@ -481,6 +541,11 @@ F 0 "U12" V 4100 6300 50  0000 R CNN
 F 1 "USBLC6-2SC6" V 3400 6400 50  0000 R CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 3750 6050 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/usblc6-2.pdf" H 3950 6900 50  0001 C CNN
+F 4 "TVS DIODE 5.25V 17V SOT23-6" H 3750 6550 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 3750 6550 50  0001 C CNN "Manufacturer"
+F 6 "USBLC6-2SC6" H 3750 6550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3750 6550 50  0001 C CNN "Supplier"
+F 8 "497-5235-1-ND" H 3750 6550 50  0001 C CNN "Supplier PN"
 	1    3750 6550
 	0    -1   -1   0   
 $EndComp
@@ -494,6 +559,11 @@ F 0 "U11" H 2450 6317 50  0000 C CNN
 F 1 "STMPS2141" H 2450 6226 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-5" H 2450 6300 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/stmps2141.pdf" H 2250 6200 50  0001 C CNN
+F 4 "IC PWR SWITCH N-CHAN 1:1 SOT23-5" H 2450 5950 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 2450 5950 50  0001 C CNN "Manufacturer"
+F 6 "STMPS2141STR" H 2450 5950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2450 5950 50  0001 C CNN "Supplier"
+F 8 "497-6933-1-ND" H 2450 5950 50  0001 C CNN "Supplier PN"
 	1    2450 5950
 	1    0    0    -1  
 $EndComp
@@ -505,8 +575,13 @@ AR Path="/5FA5B3DC" Ref="J?"  Part="1"
 AR Path="/5FA19AFF/5FA5B3DC" Ref="J7"  Part="1" 
 F 0 "J7" H 4920 6539 50  0000 R CNN
 F 1 "USB_A" H 4920 6448 50  0000 R CNN
-F 2 "" H 5300 6500 50  0001 C CNN
-F 3 " ~" H 5300 6500 50  0001 C CNN
+F 2 "Connector_USB:USB_A_Molex_67643_Horizontal" H 5300 6500 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/676430910_sd.pdf" H 5300 6500 50  0001 C CNN
+F 4 "CONN RCPT TYPEA 4POS R/A" H 5150 6550 50  0001 C CNN "Description"
+F 5 "Molex" H 5150 6550 50  0001 C CNN "Manufacturer"
+F 6 "0676432910" H 5150 6550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5150 6550 50  0001 C CNN "Supplier"
+F 8 "WM11258-ND" H 5150 6550 50  0001 C CNN "Supplier PN"
 	1    5150 6550
 	-1   0    0    -1  
 $EndComp
@@ -573,8 +648,13 @@ AR Path="/5FA5B407" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA5B407" Ref="R19"  Part="1" 
 F 0 "R19" H 3020 5596 50  0000 L CNN
 F 1 "47K" H 3020 5505 50  0000 L CNN
-F 2 "" V 2880 5550 50  0001 C CNN
-F 3 "~" H 2950 5550 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2880 5550 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/28773/crcwce3.pdf" H 2950 5550 50  0001 C CNN
+F 4 "RES 47K OHM 5% 1/10W 0603" H 2950 5550 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 2950 5550 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060347K0JNEAC" H 2950 5550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2950 5550 50  0001 C CNN "Supplier"
+F 8 "541-4061-1-ND" H 2950 5550 50  0001 C CNN "Supplier PN"
 	1    2950 5550
 	1    0    0    -1  
 $EndComp
@@ -605,8 +685,13 @@ AR Path="/5FA5B416" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5FA5B416" Ref="R20"  Part="1" 
 F 0 "R20" H 1870 5896 50  0000 L CNN
 F 1 "10K" H 1870 5805 50  0000 L CNN
-F 2 "" V 1730 5850 50  0001 C CNN
-F 3 "~" H 1800 5850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1730 5850 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1800 5850 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 1800 5850 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1800 5850 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 1800 5850 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1800 5850 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 1800 5850 50  0001 C CNN "Supplier PN"
 	1    1800 5850
 	1    0    0    -1  
 $EndComp
@@ -708,8 +793,13 @@ U 1 1 5F988495
 P 3150 6700
 F 0 "C27" H 3242 6746 50  0000 L CNN
 F 1 "0.1uF" H 3242 6655 50  0000 L CNN
-F 2 "" H 3150 6700 50  0001 C CNN
-F 3 "~" H 3150 6700 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 3150 6700 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 3150 6700 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 3150 6700 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3150 6700 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 3150 6700 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 6700 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 3150 6700 50  0001 C CNN "Supplier PN"
 	1    3150 6700
 	1    0    0    -1  
 $EndComp
@@ -723,8 +813,13 @@ U 1 1 5F9A4F1A
 P 6450 2900
 F 0 "J6" H 6400 3000 50  0000 L CNN
 F 1 "Footswitch" H 6400 2700 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 6450 2900 50  0001 C CNN
-F 3 "~" H 6450 2900 50  0001 C CNN
+F 2 "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical" H 6450 2900 50  0001 C CNN
+F 3 "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf" H 6450 2900 50  0001 C CNN
+F 4 "CONN HEADER VERT 2POS 2MM" H 6450 2900 50  0001 C CNN "Description"
+F 5 "JST Sales America Inc." H 6450 2900 50  0001 C CNN "Manufacturer"
+F 6 "B2B-PH-K-S(LF)(SN)" H 6450 2900 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6450 2900 50  0001 C CNN "Supplier"
+F 8 "455-1704-ND" H 6450 2900 50  0001 C CNN "Supplier PN"
 	1    6450 2900
 	1    0    0    -1  
 $EndComp
@@ -755,6 +850,11 @@ F 0 "Q3" V 3399 4050 50  0000 C CNN
 F 1 "BSS138" V 3490 4050 50  0000 C CNN
 F 2 "Package_TO_SOT_SMD:SOT-23" H 3350 3975 50  0001 L CIN
 F 3 "https://www.onsemi.com/pub/Collateral/BSS138-D.PDF" H 3150 4050 50  0001 L CNN
+F 4 "MOSFET N-CH 50V 220MA SOT-23" H 3150 4050 50  0001 C CNN "Description"
+F 5 "ON Semiconductor" H 3150 4050 50  0001 C CNN "Manufacturer"
+F 6 "BSS138" H 3150 4050 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 4050 50  0001 C CNN "Supplier"
+F 8 "BSS138CT-ND" H 3150 4050 50  0001 C CNN "Supplier PN"
 	1    3150 4050
 	0    1    1    0   
 $EndComp
@@ -766,8 +866,13 @@ AR Path="/5F9C76EB" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5F9C76EB" Ref="R17"  Part="1" 
 F 0 "R17" H 2870 3996 50  0000 L CNN
 F 1 "10K" H 2870 3905 50  0000 L CNN
-F 2 "" V 2730 3950 50  0001 C CNN
-F 3 "~" H 2800 3950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2730 3950 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2800 3950 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 2800 3950 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 2800 3950 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 2800 3950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2800 3950 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 2800 3950 50  0001 C CNN "Supplier PN"
 	1    2800 3950
 	1    0    0    -1  
 $EndComp
@@ -779,8 +884,13 @@ AR Path="/5F9C76F5" Ref="R?"  Part="1"
 AR Path="/5FA19AFF/5F9C76F5" Ref="R18"  Part="1" 
 F 0 "R18" H 3570 3996 50  0000 L CNN
 F 1 "10K" H 3570 3905 50  0000 L CNN
-F 2 "" V 3430 3950 50  0001 C CNN
-F 3 "~" H 3500 3950 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3430 3950 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3500 3950 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 3500 3950 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 3500 3950 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 3500 3950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3500 3950 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 3500 3950 50  0001 C CNN "Supplier PN"
 	1    3500 3950
 	1    0    0    -1  
 $EndComp
@@ -838,6 +948,11 @@ F 0 "D13" V 5104 3555 50  0000 L CNN
 F 1 "ESDALC6V1W5" V 5195 3555 50  0000 L CNN
 F 2 "lib_fp:SOT323-5L" H 5150 2925 50  0001 C CNN
 F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf" H 5150 3350 50  0001 C CNN
+F 4 "TVS DIODE 3V SOT323-5" H 5150 3300 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 5150 3300 50  0001 C CNN "Manufacturer"
+F 6 "ESDALC6V1W5" H 5150 3300 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5150 3300 50  0001 C CNN "Supplier"
+F 8 "497-7231-1-ND" H 5150 3300 50  0001 C CNN "Supplier PN"
 	1    5150 3300
 	0    1    1    0   
 $EndComp
@@ -851,6 +966,11 @@ F 0 "U10" V 5500 1450 50  0000 R CNN
 F 1 "USBLC6-2SC6" V 4800 1550 50  0000 R CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 5150 1200 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/usblc6-2.pdf" H 5350 2050 50  0001 C CNN
+F 4 "TVS DIODE 5.25V 17V SOT23-6" H 5150 1700 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 5150 1700 50  0001 C CNN "Manufacturer"
+F 6 "USBLC6-2SC6" H 5150 1700 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5150 1700 50  0001 C CNN "Supplier"
+F 8 "497-5235-1-ND" H 5150 1700 50  0001 C CNN "Supplier PN"
 	1    5150 1700
 	0    -1   -1   0   
 $EndComp
@@ -1008,4 +1128,14 @@ Wire Notes Line style solid
 	7500 1175 8100 1175
 Wire Notes Line style solid
 	7700 1175 7700 1850
+Text Notes 4800 3950 0    50   Italic 0
+TVS array likely has wrong\nclamping voltage here
+Wire Notes Line
+	4700 3050 4700 4000
+Wire Notes Line
+	4700 4000 5950 4000
+Wire Notes Line
+	5950 4000 5950 3050
+Wire Notes Line
+	5950 3050 4700 3050
 $EndSCHEMATC

@@ -21,6 +21,11 @@ F 0 "SW1" H 1150 1385 50  0000 C CNN
 F 1 "Start" H 1150 1294 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_1101_023" H 1150 1300 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 1150 1300 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 1150 1100 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 1150 1100 50  0001 C CNN "Manufacturer"
+F 6 "6425.1101" H 1150 1100 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 1150 1100 50  0001 C CNN "Supplier"
+F 8 "979-6425.1101" H 1150 1100 50  0001 C CNN "Supplier PN"
 	1    1150 1100
 	1    0    0    -1  
 $EndComp
@@ -32,6 +37,11 @@ F 0 "SW2" H 2000 1385 50  0000 C CNN
 F 1 "Focus" H 2000 1294 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_1101_023" H 2000 1300 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 2000 1300 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 2000 1100 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 2000 1100 50  0001 C CNN "Manufacturer"
+F 6 "6425.1101" H 2000 1100 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 2000 1100 50  0001 C CNN "Supplier"
+F 8 "979-6425.1101" H 2000 1100 50  0001 C CNN "Supplier PN"
 	1    2000 1100
 	1    0    0    -1  
 $EndComp
@@ -43,6 +53,11 @@ F 0 "SW3" H 3200 1385 50  0000 C CNN
 F 1 "Inc Exposure" H 3200 1294 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3200 1300 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3200 1300 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 3200 1100 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 3200 1100 50  0001 C CNN "Manufacturer"
+F 6 "6425.0101" H 3200 1100 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 3200 1100 50  0001 C CNN "Supplier"
+F 8 "979-6425.0101" H 3200 1100 50  0001 C CNN "Supplier PN"
 	1    3200 1100
 	1    0    0    -1  
 $EndComp
@@ -54,6 +69,11 @@ F 0 "SW6" H 4050 2485 50  0000 C CNN
 F 1 "Dec Contrast" H 4050 2394 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 4050 2400 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4050 2400 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 4050 2200 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 4050 2200 50  0001 C CNN "Manufacturer"
+F 6 "6425.0101" H 4050 2200 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 4050 2200 50  0001 C CNN "Supplier"
+F 8 "979-6425.0101" H 4050 2200 50  0001 C CNN "Supplier PN"
 	1    4050 2200
 	1    0    0    -1  
 $EndComp
@@ -65,6 +85,11 @@ F 0 "SW5" H 4050 1385 50  0000 C CNN
 F 1 "Inc Contrast" H 4050 1294 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 4050 1300 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4050 1300 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 4050 1100 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 4050 1100 50  0001 C CNN "Manufacturer"
+F 6 "6425.0101" H 4050 1100 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 4050 1100 50  0001 C CNN "Supplier"
+F 8 "979-6425.0101" H 4050 1100 50  0001 C CNN "Supplier PN"
 	1    4050 1100
 	1    0    0    -1  
 $EndComp
@@ -76,6 +101,11 @@ F 0 "SW4" H 3200 2485 50  0000 C CNN
 F 1 "Dec Exposure" H 3200 2394 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3200 2400 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3200 2400 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO" H 3200 2200 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 3200 2200 50  0001 C CNN "Manufacturer"
+F 6 "6425.0101" H 3200 2200 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 3200 2200 50  0001 C CNN "Supplier"
+F 8 "979-6425.0101" H 3200 2200 50  0001 C CNN "Supplier PN"
 	1    3200 2200
 	1    0    0    -1  
 $EndComp
@@ -87,6 +117,11 @@ F 0 "SW7" H 5300 1600 50  0000 C CNN
 F 1 "Test Strip" H 5300 1500 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 5300 1400 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5300 1400 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO RED LED" H 5300 1200 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 5300 1200 50  0001 C CNN "Manufacturer"
+F 6 "6425.3111" H 5300 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 5300 1200 50  0001 C CNN "Supplier"
+F 8 "979-6425.3111" H 5300 1200 50  0001 C CNN "Supplier PN"
 	1    5300 1200
 	1    0    0    -1  
 $EndComp
@@ -98,6 +133,11 @@ F 0 "SW8" H 5300 2700 50  0000 C CNN
 F 1 "Add Adjustment" H 5300 2600 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 5300 2500 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5300 2500 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO RED LED" H 5300 2300 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 5300 2300 50  0001 C CNN "Manufacturer"
+F 6 "6425.3111" H 5300 2300 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 5300 2300 50  0001 C CNN "Supplier"
+F 8 "979-6425.3111" H 5300 2300 50  0001 C CNN "Supplier PN"
 	1    5300 2300
 	1    0    0    -1  
 $EndComp
@@ -109,6 +149,11 @@ F 0 "SW9" H 6300 1600 50  0000 C CNN
 F 1 "Cancel" H 6300 1500 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 6300 1400 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6300 1400 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO RED LED" H 6300 1200 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 6300 1200 50  0001 C CNN "Manufacturer"
+F 6 "6425.3111" H 6300 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 6300 1200 50  0001 C CNN "Supplier"
+F 8 "979-6425.3111" H 6300 1200 50  0001 C CNN "Supplier PN"
 	1    6300 1200
 	1    0    0    -1  
 $EndComp
@@ -120,6 +165,11 @@ F 0 "SW10" H 6300 2700 50  0000 C CNN
 F 1 "Menu" H 6300 2600 50  0000 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 6300 2500 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 6300 2500 50  0001 C CNN
+F 4 "PUSHBUTTON SPNO RED LED" H 6300 2300 50  0001 C CNN "Description"
+F 5 "Marquardt Switches" H 6300 2300 50  0001 C CNN "Manufacturer"
+F 6 "6425.3111" H 6300 2300 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 6300 2300 50  0001 C CNN "Supplier"
+F 8 "979-6425.3111" H 6300 2300 50  0001 C CNN "Supplier PN"
 	1    6300 2300
 	1    0    0    -1  
 $EndComp
@@ -174,8 +224,13 @@ U 1 1 5FB9F45E
 P 1700 3600
 F 0 "R6" H 1759 3646 50  0000 L CNN
 F 1 "10K" H 1759 3555 50  0000 L CNN
-F 2 "" H 1700 3600 50  0001 C CNN
-F 3 "~" H 1700 3600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 1700 3600 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1700 3600 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 1700 3600 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1700 3600 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 1700 3600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1700 3600 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 1700 3600 50  0001 C CNN "Supplier PN"
 	1    1700 3600
 	1    0    0    -1  
 $EndComp
@@ -185,8 +240,13 @@ U 1 1 5FB9F770
 P 1950 3600
 F 0 "R7" H 2009 3646 50  0000 L CNN
 F 1 "10K" H 2009 3555 50  0000 L CNN
-F 2 "" H 1950 3600 50  0001 C CNN
-F 3 "~" H 1950 3600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 1950 3600 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1950 3600 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 1950 3600 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1950 3600 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 1950 3600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1950 3600 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 1950 3600 50  0001 C CNN "Supplier PN"
 	1    1950 3600
 	1    0    0    -1  
 $EndComp
@@ -379,8 +439,13 @@ U 1 1 5FBD34EA
 P 8050 1150
 F 0 "J4" H 8000 1250 50  0000 L CNN
 F 1 "Blackout Switch" H 8000 950 50  0000 L CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical" H 8050 1150 50  0001 C CNN
-F 3 "~" H 8050 1150 50  0001 C CNN
+F 2 "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical" H 8050 1150 50  0001 C CNN
+F 3 "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf" H 8050 1150 50  0001 C CNN
+F 4 "CONN HEADER VERT 2POS 2MM" H 8050 1150 50  0001 C CNN "Description"
+F 5 "JST Sales America Inc." H 8050 1150 50  0001 C CNN "Manufacturer"
+F 6 "B2B-PH-K-S(LF)(SN)" H 8050 1150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 8050 1150 50  0001 C CNN "Supplier"
+F 8 "455-1704-ND" H 8050 1150 50  0001 C CNN "Supplier PN"
 	1    8050 1150
 	1    0    0    -1  
 $EndComp
@@ -417,8 +482,13 @@ U 1 1 5FBD64D9
 P 1450 3600
 F 0 "R5" H 1509 3646 50  0000 L CNN
 F 1 "10K" H 1509 3555 50  0000 L CNN
-F 2 "" H 1450 3600 50  0001 C CNN
-F 3 "~" H 1450 3600 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 1450 3600 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1450 3600 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 1450 3600 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 1450 3600 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 1450 3600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1450 3600 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 1450 3600 50  0001 C CNN "Supplier PN"
 	1    1450 3600
 	1    0    0    -1  
 $EndComp
@@ -463,8 +533,13 @@ U 1 1 5FBDF8D6
 P 1150 1650
 F 0 "D1" H 1143 1867 50  0000 C CNN
 F 1 "LED" H 1143 1776 50  0000 C CNN
-F 2 "" H 1150 1650 50  0001 C CNN
-F 3 "~" H 1150 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 1150 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 1150 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 1150 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 1150 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 1150 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1150 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 1150 1650 50  0001 C CNN "Supplier PN"
 	1    1150 1650
 	1    0    0    -1  
 $EndComp
@@ -474,8 +549,13 @@ U 1 1 5FBE096E
 P 2000 1650
 F 0 "D2" H 1993 1867 50  0000 C CNN
 F 1 "LED" H 1993 1776 50  0000 C CNN
-F 2 "" H 2000 1650 50  0001 C CNN
-F 3 "~" H 2000 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 2000 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 2000 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 2000 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 2000 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 2000 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2000 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 2000 1650 50  0001 C CNN "Supplier PN"
 	1    2000 1650
 	1    0    0    -1  
 $EndComp
@@ -485,8 +565,13 @@ U 1 1 5FBEB435
 P 3200 2750
 F 0 "D4" H 3193 2967 50  0000 C CNN
 F 1 "LED" H 3193 2876 50  0000 C CNN
-F 2 "" H 3200 2750 50  0001 C CNN
-F 3 "~" H 3200 2750 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 3200 2750 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 3200 2750 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 3200 2750 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 3200 2750 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 3200 2750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3200 2750 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 3200 2750 50  0001 C CNN "Supplier PN"
 	1    3200 2750
 	1    0    0    -1  
 $EndComp
@@ -496,8 +581,13 @@ U 1 1 5FBEBC62
 P 3200 1650
 F 0 "D3" H 3193 1867 50  0000 C CNN
 F 1 "LED" H 3193 1776 50  0000 C CNN
-F 2 "" H 3200 1650 50  0001 C CNN
-F 3 "~" H 3200 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 3200 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 3200 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 3200 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 3200 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 3200 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3200 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 3200 1650 50  0001 C CNN "Supplier PN"
 	1    3200 1650
 	1    0    0    -1  
 $EndComp
@@ -567,8 +657,13 @@ U 1 1 5FC08730
 P 4050 2750
 F 0 "D6" H 4043 2967 50  0000 C CNN
 F 1 "LED" H 4043 2876 50  0000 C CNN
-F 2 "" H 4050 2750 50  0001 C CNN
-F 3 "~" H 4050 2750 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 4050 2750 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 4050 2750 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 4050 2750 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 4050 2750 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 4050 2750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4050 2750 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 4050 2750 50  0001 C CNN "Supplier PN"
 	1    4050 2750
 	1    0    0    -1  
 $EndComp
@@ -593,8 +688,13 @@ U 1 1 5FC0B403
 P 4050 1650
 F 0 "D5" H 4043 1867 50  0000 C CNN
 F 1 "LED" H 4043 1776 50  0000 C CNN
-F 2 "" H 4050 1650 50  0001 C CNN
-F 3 "~" H 4050 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 4050 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 4050 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 4050 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 4050 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 4050 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4050 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 4050 1650 50  0001 C CNN "Supplier PN"
 	1    4050 1650
 	1    0    0    -1  
 $EndComp
@@ -619,8 +719,13 @@ U 1 1 5FC0F9F3
 P 5300 1650
 F 0 "D7" H 5293 1867 50  0000 C CNN
 F 1 "LED" H 5293 1776 50  0000 C CNN
-F 2 "" H 5300 1650 50  0001 C CNN
-F 3 "~" H 5300 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 5300 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 5300 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 5300 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 5300 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 5300 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5300 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 5300 1650 50  0001 C CNN "Supplier PN"
 	1    5300 1650
 	1    0    0    -1  
 $EndComp
@@ -693,8 +798,13 @@ U 1 1 5FC26232
 P 5300 2750
 F 0 "D8" H 5293 2967 50  0000 C CNN
 F 1 "LED" H 5293 2876 50  0000 C CNN
-F 2 "" H 5300 2750 50  0001 C CNN
-F 3 "~" H 5300 2750 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 5300 2750 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 5300 2750 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 5300 2750 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 5300 2750 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 5300 2750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5300 2750 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 5300 2750 50  0001 C CNN "Supplier PN"
 	1    5300 2750
 	1    0    0    -1  
 $EndComp
@@ -747,8 +857,13 @@ U 1 1 5FC3373D
 P 6300 1650
 F 0 "D9" H 6293 1867 50  0000 C CNN
 F 1 "LED" H 6293 1776 50  0000 C CNN
-F 2 "" H 6300 1650 50  0001 C CNN
-F 3 "~" H 6300 1650 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 6300 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 6300 1650 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 6300 1650 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 6300 1650 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 6300 1650 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6300 1650 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 6300 1650 50  0001 C CNN "Supplier PN"
 	1    6300 1650
 	1    0    0    -1  
 $EndComp
@@ -784,8 +899,13 @@ U 1 1 5FC36F01
 P 6300 2750
 F 0 "D10" H 6293 2967 50  0000 C CNN
 F 1 "LED" H 6293 2876 50  0000 C CNN
-F 2 "" H 6300 2750 50  0001 C CNN
-F 3 "~" H 6300 2750 50  0001 C CNN
+F 2 "LED_THT:LED_D5.0mm" H 6300 2750 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Lite-On%20PDFs/LTL-4223.pdf" H 6300 2750 50  0001 C CNN
+F 4 "LED RED DIFFUSED T-1 3/4 T/H" H 6300 2750 50  0001 C CNN "Description"
+F 5 "Lite-On Inc." H 6300 2750 50  0001 C CNN "Manufacturer"
+F 6 "LTL-4223" H 6300 2750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6300 2750 50  0001 C CNN "Supplier"
+F 8 "160-1127-ND" H 6300 2750 50  0001 C CNN "Supplier PN"
 	1    6300 2750
 	1    0    0    -1  
 $EndComp
@@ -926,8 +1046,13 @@ U 1 1 5FB93B58
 P 2850 3600
 F 0 "C25" V 2621 3600 50  0000 C CNN
 F 1 "0.1uF" V 2712 3600 50  0000 C CNN
-F 2 "" H 2850 3600 50  0001 C CNN
-F 3 "~" H 2850 3600 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2850 3600 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2850 3600 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 2850 3600 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 2850 3600 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 2850 3600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2850 3600 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 2850 3600 50  0001 C CNN "Supplier PN"
 	1    2850 3600
 	0    1    1    0   
 $EndComp
@@ -950,6 +1075,11 @@ F 0 "U7" H 2300 5300 50  0000 C CNN
 F 1 "TCA8418" H 2850 3850 50  0000 C CNN
 F 2 "lib_fp:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm" H 3200 4450 50  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/tca8418.pdf" H 2600 5489 50  0001 C CNN
+F 4 "IC KEYPAD SCAN DEVICE I2C 24WQFN" H 2600 4550 50  0001 C CNN "Description"
+F 5 "Texas Instruments" H 2600 4550 50  0001 C CNN "Manufacturer"
+F 6 "TCA8418RTWR" H 2600 4550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2600 4550 50  0001 C CNN "Supplier"
+F 8 "296-25223-1-ND" H 2600 4550 50  0001 C CNN "Supplier PN"
 	1    2600 4550
 	1    0    0    -1  
 $EndComp
@@ -977,8 +1107,13 @@ U 1 1 5FA04193
 P 5200 3450
 F 0 "C24" V 4971 3450 50  0000 C CNN
 F 1 "0.1uF" V 5062 3450 50  0000 C CNN
-F 2 "" H 5200 3450 50  0001 C CNN
-F 3 "~" H 5200 3450 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5200 3450 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 5200 3450 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 5200 3450 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 5200 3450 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 5200 3450 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5200 3450 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 5200 3450 50  0001 C CNN "Supplier PN"
 	1    5200 3450
 	0    1    1    0   
 $EndComp
@@ -999,8 +1134,13 @@ U 1 1 5FA0D816
 P 4350 4400
 F 0 "R8" H 4409 4446 50  0000 L CNN
 F 1 "4.3K" H 4409 4355 50  0000 L CNN
-F 2 "" H 4350 4400 50  0001 C CNN
-F 3 "~" H 4350 4400 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 4350 4400 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4350 4400 50  0001 C CNN
+F 4 "RES SMD 4.3K OHM 5% 1/10W 0603" H 4350 4400 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 4350 4400 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06034K30JNEA" H 4350 4400 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4350 4400 50  0001 C CNN "Supplier"
+F 8 "541-4.3KGCT-ND" H 4350 4400 50  0001 C CNN "Supplier PN"
 	1    4350 4400
 	1    0    0    -1  
 $EndComp

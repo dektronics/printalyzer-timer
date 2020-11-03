@@ -283,8 +283,13 @@ U 1 1 5F9EB67B
 P 3100 4150
 F 0 "C3" H 3192 4196 50  0000 L CNN
 F 1 "10uF" H 3192 4105 50  0000 L CNN
-F 2 "" H 3100 4150 50  0001 C CNN
-F 3 "~" H 3100 4150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3100 4150 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 3100 4150 50  0001 C CNN
+F 4 "CAP CER 10UF 25V X5R 0805" H 3100 4150 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3100 4150 50  0001 C CNN "Manufacturer"
+F 6 "CL21A106KAYNNNG" H 3100 4150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3100 4150 50  0001 C CNN "Supplier"
+F 8 "1276-6454-1-ND" H 3100 4150 50  0001 C CNN "Supplier PN"
 	1    3100 4150
 	1    0    0    -1  
 $EndComp
@@ -294,8 +299,13 @@ U 1 1 5F9EDFC4
 P 3100 5150
 F 0 "C6" H 3192 5196 50  0000 L CNN
 F 1 "10uF" H 3192 5105 50  0000 L CNN
-F 2 "" H 3100 5150 50  0001 C CNN
-F 3 "~" H 3100 5150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3100 5150 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 3100 5150 50  0001 C CNN
+F 4 "CAP CER 10UF 25V X5R 0805" H 3100 5150 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3100 5150 50  0001 C CNN "Manufacturer"
+F 6 "CL21A106KAYNNNG" H 3100 5150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3100 5150 50  0001 C CNN "Supplier"
+F 8 "1276-6454-1-ND" H 3100 5150 50  0001 C CNN "Supplier PN"
 	1    3100 5150
 	1    0    0    -1  
 $EndComp

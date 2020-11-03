@@ -21,6 +21,11 @@ F 0 "U4" H 3050 4900 50  0000 C CNN
 F 1 "STM32F411RETx" H 4150 1500 50  0000 C CNN
 F 2 "Package_QFP:LQFP-64_10x10mm_P0.5mm" H 3000 1550 50  0001 R CNN
 F 3 "http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/DM00115249.pdf" H 3600 3250 50  0001 C CNN
+F 4 "IC MCU 32BIT 512KB FLASH 64LQFP" H 3600 3250 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 3600 3250 50  0001 C CNN "Manufacturer"
+F 6 "STM32F411RET6" H 3600 3250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3600 3250 50  0001 C CNN "Supplier"
+F 8 "497-14909-ND" H 3600 3250 50  0001 C CNN "Supplier PN"
 	1    3600 3250
 	1    0    0    -1  
 $EndComp
@@ -164,7 +169,12 @@ P 1700 6750
 F 0 "J2" H 1257 6796 50  0000 R CNN
 F 1 "STDC14" H 1257 6705 50  0000 R CNN
 F 2 "lib_fp:Samtec_FTSH-107-01-L-DV-K-A_2x07_P1.27mm" H 1700 5650 50  0001 C CNN
-F 3 "https://www.st.com/content/ccc/resource/technical/document/user_manual/group1/99/49/91/b6/b2/3a/46/e5/DM00526767/files/DM00526767.pdf/jcr:content/translations/en.DM00526767.pdf" V 1350 5500 50  0001 C CNN
+F 3 "https://www.mouser.com/datasheet/2/527/ftsh_smt-1316912.pdf" V 1350 5500 50  0001 C CNN
+F 4 "CONN HEADER SMD 14POS 1.27MM" H 1700 6750 50  0001 C CNN "Description"
+F 5 "Samtec Inc." H 1700 6750 50  0001 C CNN "Manufacturer"
+F 6 "FTSH-107-01-L-DV-K-A" H 1700 6750 50  0001 C CNN "Manufacturer PN"
+F 7 "Mouser" H 1700 6750 50  0001 C CNN "Supplier"
+F 8 "200-FTSH10701LDVKA" H 1700 6750 50  0001 C CNN "Supplier PN"
 	1    1700 6750
 	1    0    0    -1  
 $EndComp
@@ -179,7 +189,12 @@ P 9700 3950
 F 0 "J3" H 9650 4950 50  0000 L CNN
 F 1 "NHD OLED Connector" H 9500 2850 50  0000 L CNN
 F 2 "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical" H 9700 3950 50  0001 C CNN
-F 3 "~" H 9700 3950 50  0001 C CNN
+F 3 "https://drawings-pdf.s3.amazonaws.com/10492.pdf" H 9700 3950 50  0001 C CNN
+F 4 "CONN HDR 20POS 0.1 GOLD PCB" H 9700 3950 50  0001 C CNN "Description"
+F 5 "Sullins Connector Solutions" H 9700 3950 50  0001 C CNN "Manufacturer"
+F 6 "PPPC201LFBN-RC" H 9700 3950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 9700 3950 50  0001 C CNN "Supplier"
+F 8 "PPPC201LFBN-RC" H 9700 3950 50  0001 C CNN "Supplier PN"
 	1    9700 3950
 	1    0    0    -1  
 $EndComp
@@ -205,8 +220,13 @@ U 1 1 5F9506A3
 P 1200 3550
 F 0 "C21" H 1292 3596 50  0000 L CNN
 F 1 "8pF" H 1292 3505 50  0000 L CNN
-F 2 "" H 1200 3550 50  0001 C CNN
-F 3 "~" H 1200 3550 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1200 3550 50  0001 C CNN
+F 3 "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf" H 1200 3550 50  0001 C CNN
+F 4 "CAP CER 8PF 50V NPO 0603" H 1200 3550 50  0001 C CNN "Description"
+F 5 "Yageo" H 1200 3550 50  0001 C CNN "Manufacturer"
+F 6 "CC0603CRNPO9BN8R0" H 1200 3550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1200 3550 50  0001 C CNN "Supplier"
+F 8 "311-3864-1-ND" H 1200 3550 50  0001 C CNN "Supplier PN"
 	1    1200 3550
 	1    0    0    -1  
 $EndComp
@@ -216,8 +236,13 @@ U 1 1 5F950FD6
 P 1700 3550
 F 0 "C22" H 1792 3596 50  0000 L CNN
 F 1 "8pF" H 1792 3505 50  0000 L CNN
-F 2 "" H 1700 3550 50  0001 C CNN
-F 3 "~" H 1700 3550 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1700 3550 50  0001 C CNN
+F 3 "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf" H 1700 3550 50  0001 C CNN
+F 4 "CAP CER 8PF 50V NPO 0603" H 1700 3550 50  0001 C CNN "Description"
+F 5 "Yageo" H 1700 3550 50  0001 C CNN "Manufacturer"
+F 6 "CC0603CRNPO9BN8R0" H 1700 3550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1700 3550 50  0001 C CNN "Supplier"
+F 8 "311-3864-1-ND" H 1700 3550 50  0001 C CNN "Supplier PN"
 	1    1700 3550
 	1    0    0    -1  
 $EndComp
@@ -271,6 +296,11 @@ F 0 "U6" H 5800 6150 50  0000 C CNN
 F 1 "M24M01-RMN" H 6300 5650 50  0000 C CNN
 F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 6000 6250 50  0001 C CNN
 F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf" H 6050 5400 50  0001 C CNN
+F 4 "IC EEPROM 1M I2C 1MHZ 8SO" H 6000 5900 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 6000 5900 50  0001 C CNN "Manufacturer"
+F 6 "M24M01-RMN6TP" H 6000 5900 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6000 5900 50  0001 C CNN "Supplier"
+F 8 "497-6351-1-ND" H 6000 5900 50  0001 C CNN "Supplier PN"
 	1    6000 5900
 	1    0    0    -1  
 $EndComp
@@ -307,8 +337,13 @@ U 1 1 5F9656F7
 P 4450 1250
 F 0 "C14" H 4542 1296 50  0000 L CNN
 F 1 "0.1uF" H 4542 1205 50  0000 L CNN
-F 2 "" H 4450 1250 50  0001 C CNN
-F 3 "~" H 4450 1250 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4450 1250 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 4450 1250 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 4450 1250 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 4450 1250 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 4450 1250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4450 1250 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 4450 1250 50  0001 C CNN "Supplier PN"
 	1    4450 1250
 	1    0    0    -1  
 $EndComp
@@ -318,8 +353,13 @@ U 1 1 5F965D4A
 P 4850 1250
 F 0 "C15" H 4942 1296 50  0000 L CNN
 F 1 "1uF" H 4942 1205 50  0000 L CNN
-F 2 "" H 4850 1250 50  0001 C CNN
-F 3 "~" H 4850 1250 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4850 1250 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 4850 1250 50  0001 C CNN
+F 4 "CAP CER 1UF 25V X7R 0603" H 4850 1250 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 4850 1250 50  0001 C CNN "Manufacturer"
+F 6 "CL10B105KA8NNNC" H 4850 1250 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 4850 1250 50  0001 C CNN "Supplier"
+F 8 "1276-1184-1-ND" H 4850 1250 50  0001 C CNN "Supplier PN"
 	1    4850 1250
 	1    0    0    -1  
 $EndComp
@@ -364,8 +404,13 @@ U 1 1 5F97FD14
 P 3000 1200
 F 0 "C13" H 3092 1246 50  0000 L CNN
 F 1 "0.1uF" H 3092 1155 50  0000 L CNN
-F 2 "" H 3000 1200 50  0001 C CNN
-F 3 "~" H 3000 1200 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 3000 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 3000 1200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 3000 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 3000 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 3000 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3000 1200 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 3000 1200 50  0001 C CNN "Supplier PN"
 	1    3000 1200
 	1    0    0    -1  
 $EndComp
@@ -375,8 +420,13 @@ U 1 1 5F980A35
 P 2600 1200
 F 0 "C12" H 2692 1246 50  0000 L CNN
 F 1 "0.1uF" H 2692 1155 50  0000 L CNN
-F 2 "" H 2600 1200 50  0001 C CNN
-F 3 "~" H 2600 1200 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2600 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2600 1200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 2600 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 2600 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 2600 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2600 1200 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 2600 1200 50  0001 C CNN "Supplier PN"
 	1    2600 1200
 	1    0    0    -1  
 $EndComp
@@ -386,8 +436,13 @@ U 1 1 5F980D6F
 P 2200 1200
 F 0 "C11" H 2292 1246 50  0000 L CNN
 F 1 "0.1uF" H 2292 1155 50  0000 L CNN
-F 2 "" H 2200 1200 50  0001 C CNN
-F 3 "~" H 2200 1200 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2200 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2200 1200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 2200 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 2200 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 2200 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2200 1200 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 2200 1200 50  0001 C CNN "Supplier PN"
 	1    2200 1200
 	1    0    0    -1  
 $EndComp
@@ -397,8 +452,13 @@ U 1 1 5F9811DA
 P 1800 1200
 F 0 "C10" H 1892 1246 50  0000 L CNN
 F 1 "0.1uF" H 1892 1155 50  0000 L CNN
-F 2 "" H 1800 1200 50  0001 C CNN
-F 3 "~" H 1800 1200 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1800 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 1800 1200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 1800 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 1800 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 1800 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1800 1200 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 1800 1200 50  0001 C CNN "Supplier PN"
 	1    1800 1200
 	1    0    0    -1  
 $EndComp
@@ -408,8 +468,13 @@ U 1 1 5F981EC3
 P 1400 1200
 F 0 "C9" H 1492 1246 50  0000 L CNN
 F 1 "0.1uF" H 1492 1155 50  0000 L CNN
-F 2 "" H 1400 1200 50  0001 C CNN
-F 3 "~" H 1400 1200 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1400 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 1400 1200 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 1400 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 1400 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 1400 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1400 1200 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 1400 1200 50  0001 C CNN "Supplier PN"
 	1    1400 1200
 	1    0    0    -1  
 $EndComp
@@ -507,9 +572,14 @@ L Device:C_Small C8
 U 1 1 5F9A4479
 P 1000 1200
 F 0 "C8" H 1092 1246 50  0000 L CNN
-F 1 "10 uF" H 1092 1155 50  0000 L CNN
-F 2 "" H 1000 1200 50  0001 C CNN
-F 3 "~" H 1000 1200 50  0001 C CNN
+F 1 "10uF" H 1092 1155 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 1000 1200 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 1000 1200 50  0001 C CNN
+F 4 "CAP CER 10UF 25V X5R 0805" H 1000 1200 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 1000 1200 50  0001 C CNN "Manufacturer"
+F 6 "CL21A106KAYNNNG" H 1000 1200 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1000 1200 50  0001 C CNN "Supplier"
+F 8 "1276-6454-1-ND" H 1000 1200 50  0001 C CNN "Supplier PN"
 	1    1000 1200
 	1    0    0    -1  
 $EndComp
@@ -566,8 +636,13 @@ U 1 1 5F9B3310
 P 2350 2150
 F 0 "R1" H 2409 2196 50  0000 L CNN
 F 1 "10K" H 2409 2105 50  0000 L CNN
-F 2 "" H 2350 2150 50  0001 C CNN
-F 3 "~" H 2350 2150 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 2350 2150 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 2350 2150 50  0001 C CNN
+F 4 "RES SMD 10K OHM 5% 1/10W 0603" H 2350 2150 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 2350 2150 50  0001 C CNN "Manufacturer"
+F 6 "CRCW060310K0JNEA" H 2350 2150 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2350 2150 50  0001 C CNN "Supplier"
+F 8 "541-10KGCT-ND" H 2350 2150 50  0001 C CNN "Supplier PN"
 	1    2350 2150
 	1    0    0    -1  
 $EndComp
@@ -625,8 +700,13 @@ U 1 1 5F9CAEBD
 P 1950 1950
 F 0 "C19" H 2042 1996 50  0000 L CNN
 F 1 "0.1uF" H 2042 1905 50  0000 L CNN
-F 2 "" H 1950 1950 50  0001 C CNN
-F 3 "~" H 1950 1950 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 1950 1950 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 1950 1950 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 1950 1950 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 1950 1950 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 1950 1950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 1950 1950 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 1950 1950 50  0001 C CNN "Supplier PN"
 	1    1950 1950
 	1    0    0    -1  
 $EndComp
@@ -742,32 +822,6 @@ Wire Wire Line
 	2200 6250 2850 6250
 NoConn ~ 2200 6950
 $Comp
-L Device:R_Small R4
-U 1 1 5FB1FF43
-P 1100 7450
-F 0 "R4" V 904 7450 50  0000 C CNN
-F 1 "100" V 995 7450 50  0000 C CNN
-F 2 "" H 1100 7450 50  0001 C CNN
-F 3 "~" H 1100 7450 50  0001 C CNN
-	1    1100 7450
-	0    1    1    0   
-$EndComp
-Wire Wire Line
-	1200 7450 1450 7450
-$Comp
-L power:GND #PWR013
-U 1 1 5FB271F5
-P 950 7500
-F 0 "#PWR013" H 950 7250 50  0001 C CNN
-F 1 "GND" H 955 7327 50  0000 C CNN
-F 2 "" H 950 7500 50  0001 C CNN
-F 3 "" H 950 7500 50  0001 C CNN
-	1    950  7500
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	950  7450 950  7500
-$Comp
 L power:GND #PWR014
 U 1 1 5FB2CF53
 P 1600 7500
@@ -778,8 +832,6 @@ F 3 "" H 1600 7500 50  0001 C CNN
 	1    1600 7500
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	1000 7450 950  7450
 Wire Wire Line
 	1700 7450 1600 7450
 Wire Wire Line
@@ -793,6 +845,11 @@ F 0 "D11" H 3150 6992 50  0000 C CNN
 F 1 "ESDALC6V1W5" H 3150 6901 50  0000 C CNN
 F 2 "lib_fp:SOT323-5L" H 3150 6225 50  0001 C CNN
 F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf" H 3150 6650 50  0001 C CNN
+F 4 "TVS DIODE 3V SOT323-5" H 3150 6600 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 3150 6600 50  0001 C CNN "Manufacturer"
+F 6 "ESDALC6V1W5" H 3150 6600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 6600 50  0001 C CNN "Supplier"
+F 8 "497-7231-1-ND" H 3150 6600 50  0001 C CNN "Supplier PN"
 	1    3150 6600
 	1    0    0    -1  
 $EndComp
@@ -804,6 +861,11 @@ F 0 "D12" H 3150 7692 50  0000 C CNN
 F 1 "ESDALC6V1W5" H 3150 7601 50  0000 C CNN
 F 2 "lib_fp:SOT323-5L" H 3150 6925 50  0001 C CNN
 F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf" H 3150 7350 50  0001 C CNN
+F 4 "TVS DIODE 3V SOT323-5" H 3150 7300 50  0001 C CNN "Description"
+F 5 "STMicroelectronics" H 3150 7300 50  0001 C CNN "Manufacturer"
+F 6 "ESDALC6V1W5" H 3150 7300 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3150 7300 50  0001 C CNN "Supplier"
+F 8 "497-7231-1-ND" H 3150 7300 50  0001 C CNN "Supplier PN"
 	1    3150 7300
 	1    0    0    -1  
 $EndComp
@@ -972,8 +1034,13 @@ U 1 1 5FA699B6
 P 6150 5450
 F 0 "C23" V 6300 5300 50  0000 L CNN
 F 1 "0.1uF" V 6200 5200 50  0000 L CNN
-F 2 "" H 6150 5450 50  0001 C CNN
-F 3 "~" H 6150 5450 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 6150 5450 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 6150 5450 50  0001 C CNN
+F 4 "CAP CER 0.1UF 25V X7R 0603" H 6150 5450 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 6150 5450 50  0001 C CNN "Manufacturer"
+F 6 "CL10B104KA8NNNC" H 6150 5450 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6150 5450 50  0001 C CNN "Supplier"
+F 8 "1276-1006-1-ND" H 6150 5450 50  0001 C CNN "Supplier PN"
 	1    6150 5450
 	0    -1   -1   0   
 $EndComp
@@ -1018,8 +1085,13 @@ U 1 1 5FA91E20
 P 5150 4000
 F 0 "R2" H 5209 4046 50  0000 L CNN
 F 1 "2K" H 5209 3955 50  0000 L CNN
-F 2 "" H 5150 4000 50  0001 C CNN
-F 3 "~" H 5150 4000 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 5150 4000 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 5150 4000 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 5150 4000 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 5150 4000 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 5150 4000 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5150 4000 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 5150 4000 50  0001 C CNN "Supplier PN"
 	1    5150 4000
 	1    0    0    -1  
 $EndComp
@@ -1029,8 +1101,13 @@ U 1 1 5FA9230A
 P 5400 4000
 F 0 "R3" H 5459 4046 50  0000 L CNN
 F 1 "2K" H 5459 3955 50  0000 L CNN
-F 2 "" H 5400 4000 50  0001 C CNN
-F 3 "~" H 5400 4000 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" H 5400 4000 50  0001 C CNN
+F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 5400 4000 50  0001 C CNN
+F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 5400 4000 50  0001 C CNN "Description"
+F 5 "Vishay Dale" H 5400 4000 50  0001 C CNN "Manufacturer"
+F 6 "CRCW06032K00JNEA" H 5400 4000 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5400 4000 50  0001 C CNN "Supplier"
+F 8 "541-2.0KGCT-ND" H 5400 4000 50  0001 C CNN "Supplier PN"
 	1    5400 4000
 	1    0    0    -1  
 $EndComp
@@ -1142,7 +1219,7 @@ P 9100 900
 F 0 "C7" V 8871 900 50  0000 C CNN
 F 1 "2.2uF" V 8962 900 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 9100 900 50  0001 C CNN
-F 3 "~" H 9100 900 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 9100 900 50  0001 C CNN
 F 4 "CAP CER 2.2UF 25V X5R 0805" H 9100 900 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 9100 900 50  0001 C CNN "Manufacturer"
 F 6 "CL21A225KAFNNNG" H 9100 900 50  0001 C CNN "Manufacturer PN"
@@ -1158,7 +1235,7 @@ P 9550 1400
 F 0 "C17" H 9642 1446 50  0000 L CNN
 F 1 "1uF" H 9642 1355 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 9550 1400 50  0001 C CNN
-F 3 "~" H 9550 1400 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 9550 1400 50  0001 C CNN
 F 4 "CAP CER 1UF 25V X7R 0603" H 9550 1400 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 9550 1400 50  0001 C CNN "Manufacturer"
 F 6 "CL10B105KA8NNNC" H 9550 1400 50  0001 C CNN "Manufacturer PN"
@@ -1174,7 +1251,7 @@ P 9550 1650
 F 0 "C18" H 9642 1696 50  0000 L CNN
 F 1 "1uF" H 9642 1605 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 9550 1650 50  0001 C CNN
-F 3 "~" H 9550 1650 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 9550 1650 50  0001 C CNN
 F 4 "CAP CER 1UF 25V X7R 0603" H 9550 1650 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 9550 1650 50  0001 C CNN "Manufacturer"
 F 6 "CL10B105KA8NNNC" H 9550 1650 50  0001 C CNN "Manufacturer PN"
@@ -1190,7 +1267,7 @@ P 9900 1300
 F 0 "C16" H 9992 1346 50  0000 L CNN
 F 1 "2.2uF" H 9992 1255 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 9900 1300 50  0001 C CNN
-F 3 "~" H 9900 1300 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 9900 1300 50  0001 C CNN
 F 4 "CAP CER 2.2UF 25V X5R 0805" H 9900 1300 50  0001 C CNN "Description"
 F 5 "Samsung Electro-Mechanics" H 9900 1300 50  0001 C CNN "Manufacturer"
 F 6 "CL21A225KAFNNNG" H 9900 1300 50  0001 C CNN "Manufacturer PN"
@@ -1370,4 +1447,21 @@ F 3 "~" H 2650 2150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 2650 2150
+Wire Notes Line
+	5050 2500 5050 2700
+Wire Notes Line
+	5050 2700 5550 2700
+Wire Notes Line
+	5550 2700 5550 2500
+Wire Notes Line
+	5550 2500 5050 2500
+Wire Notes Line
+	8450 1500 8450 1250
+Wire Notes Line
+	8450 1250 8050 1250
+Wire Notes Line
+	8050 1250 8050 1500
+Wire Notes Line
+	8050 1500 8450 1500
+NoConn ~ 1450 7450
 $EndSCHEMATC
