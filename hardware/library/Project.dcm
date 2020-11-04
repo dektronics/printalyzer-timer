@@ -24,6 +24,12 @@ K ST STM32 Cortex Debug Connector ARM SWD JTAG
 F https://www.st.com/content/ccc/resource/technical/document/user_manual/group1/99/49/91/b6/b2/3a/46/e5/DM00526767/files/DM00526767.pdf/jcr:content/translations/en.DM00526767.pdf
 $ENDCMP
 #
+$CMP DT2636-04S
+D Low Capacitance TVS Diode Array, 5.5V Standoff, 4 Channels, SOT-363
+K usb esd protection suppression transient
+F https://www.diodes.com/assets/Datasheets/DT2636-04S.pdf
+$ENDCMP
+#
 $CMP ESDALC6V1W5
 D Quad transil array for data protection, SOT323-5L
 K ESD protection suppression transient

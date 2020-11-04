@@ -941,22 +941,6 @@ Wire Wire Line
 	2600 4150 2800 4150
 Connection ~ 2800 4150
 $Comp
-L Project:ESDALC6V1W5 D13
-U 1 1 5F9DF2EA
-P 5150 3300
-F 0 "D13" V 5104 3555 50  0000 L CNN
-F 1 "ESDALC6V1W5" V 5195 3555 50  0000 L CNN
-F 2 "lib_fp:SOT323-5L" H 5150 2925 50  0001 C CNN
-F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/32/30/02/e6/ac/0f/46/c2/CD00002946.pdf/files/CD00002946.pdf/jcr:content/translations/en.CD00002946.pdf" H 5150 3350 50  0001 C CNN
-F 4 "TVS DIODE 3V SOT323-5" H 5150 3300 50  0001 C CNN "Description"
-F 5 "STMicroelectronics" H 5150 3300 50  0001 C CNN "Manufacturer"
-F 6 "ESDALC6V1W5" H 5150 3300 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 5150 3300 50  0001 C CNN "Supplier"
-F 8 "497-7231-1-ND" H 5150 3300 50  0001 C CNN "Supplier PN"
-	1    5150 3300
-	0    1    1    0   
-$EndComp
-$Comp
 L Power_Protection:USBLC6-2SC6 U?
 U 1 1 5F9E0AB3
 P 5150 1700
@@ -1060,18 +1044,18 @@ NoConn ~ 5300 3100
 $Comp
 L power:GND #PWR?
 U 1 1 5FA61E9F
-P 5150 3550
+P 5200 3750
 AR Path="/5FA61E9F" Ref="#PWR?"  Part="1" 
 AR Path="/5FA19AFF/5FA61E9F" Ref="#PWR072"  Part="1" 
-F 0 "#PWR072" H 5150 3300 50  0001 C CNN
-F 1 "GND" H 5155 3377 50  0000 C CNN
-F 2 "" H 5150 3550 50  0001 C CNN
-F 3 "" H 5150 3550 50  0001 C CNN
-	1    5150 3550
+F 0 "#PWR072" H 5200 3500 50  0001 C CNN
+F 1 "GND" H 5205 3577 50  0000 C CNN
+F 2 "" H 5200 3750 50  0001 C CNN
+F 3 "" H 5200 3750 50  0001 C CNN
+	1    5200 3750
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5150 3500 5150 3550
+	5200 3700 5200 3750
 Text HLabel 1350 1450 0    50   BiDi ~ 0
 EXT_I2C_SDA
 Text HLabel 1350 1650 0    50   BiDi ~ 0
@@ -1128,14 +1112,20 @@ Wire Notes Line style solid
 	7500 1175 8100 1175
 Wire Notes Line style solid
 	7700 1175 7700 1850
-Text Notes 4800 3950 0    50   Italic 0
-TVS array likely has wrong\nclamping voltage here
-Wire Notes Line
-	4700 3050 4700 4000
-Wire Notes Line
-	4700 4000 5950 4000
-Wire Notes Line
-	5950 4000 5950 3050
-Wire Notes Line
-	5950 3050 4700 3050
+$Comp
+L Project:DT2636-04S D13
+U 1 1 5FAA8A21
+P 5200 3400
+F 0 "D13" H 5480 3446 50  0000 L CNN
+F 1 "DT2636-04S" H 5480 3355 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-363_SC-70-6" H 5500 3350 50  0001 L CNN
+F 3 "https://www.diodes.com/assets/Datasheets/DT2636-04S.pdf" H 5525 3075 50  0001 C CNN
+F 4 "TVS DIODE 5.5V 9V SOT363" H 5200 3400 50  0001 C CNN "Description"
+F 5 "Diodes Incorporated" H 5200 3400 50  0001 C CNN "Manufacturer"
+F 6 "DT2636-04S-7" H 5200 3400 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 5200 3400 50  0001 C CNN "Supplier"
+F 8 "DT2636-04S-7DICT-ND" H 5200 3400 50  0001 C CNN "Supplier PN"
+	1    5200 3400
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
