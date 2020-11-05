@@ -752,7 +752,7 @@ Wire Wire Line
 Wire Wire Line
 	8450 3100 8450 2650
 Wire Wire Line
-	3400 3050 3700 3050
+	3400 3050 3450 3050
 $Comp
 L power:PWR_FLAG #FLG0101
 U 1 1 5FB6C483
@@ -805,7 +805,7 @@ F 3 "~" H 6700 1800 50  0001 C CNN
 $EndComp
 Connection ~ 6700 1800
 Wire Wire Line
-	3400 2850 3700 2850
+	3400 2850 3450 2850
 $Comp
 L power:PWR_FLAG #FLG0105
 U 1 1 5FB783F6
@@ -840,4 +840,54 @@ F 3 "~" H 1600 1600 50  0001 C CNN
 	0    1    1    0   
 $EndComp
 Connection ~ 1600 1600
+$Comp
+L Connector:TestPoint TP2
+U 1 1 5FA674FF
+P 3450 2850
+F 0 "TP2" H 3508 2922 50  0000 L CNN
+F 1 "TestPoint" H 3392 2967 50  0001 R CNN
+F 2 "" H 3650 2850 50  0001 C CNN
+F 3 "~" H 3650 2850 50  0001 C CNN
+	1    3450 2850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP3
+U 1 1 5FA67E89
+P 3100 4000
+F 0 "TP3" H 3158 4072 50  0000 L CNN
+F 1 "TestPoint" H 3042 4117 50  0001 R CNN
+F 2 "" H 3300 4000 50  0001 C CNN
+F 3 "~" H 3300 4000 50  0001 C CNN
+	1    3100 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP4
+U 1 1 5FA6866C
+P 3100 5000
+F 0 "TP4" H 3158 5072 50  0000 L CNN
+F 1 "TestPoint" H 3042 5117 50  0001 R CNN
+F 2 "" H 3300 5000 50  0001 C CNN
+F 3 "~" H 3300 5000 50  0001 C CNN
+	1    3100 5000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector:TestPoint TP1
+U 1 1 5FA68D53
+P 3450 3050
+F 0 "TP1" H 3392 3122 50  0000 R CNN
+F 1 "TestPoint" H 3392 3167 50  0001 R CNN
+F 2 "" H 3650 3050 50  0001 C CNN
+F 3 "~" H 3650 3050 50  0001 C CNN
+	1    3450 3050
+	-1   0    0    1   
+$EndComp
+Connection ~ 3450 2850
+Wire Wire Line
+	3450 2850 3700 2850
+Connection ~ 3450 3050
+Wire Wire Line
+	3450 3050 3700 3050
 $EndSCHEMATC
