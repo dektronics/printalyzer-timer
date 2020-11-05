@@ -1324,7 +1324,12 @@ P 7650 1600
 F 0 "C28" H 7742 1646 50  0000 L CNN
 F 1 "0.01uF" H 7742 1555 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 7650 1600 50  0001 C CNN
-F 3 "~" H 7650 1600 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 7650 1600 50  0001 C CNN
+F 4 "CAP CER 10000PF 25V X7R 0603" H 7650 1600 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 7650 1600 50  0001 C CNN "Manufacturer"
+F 6 "CL10B103KA8NNNC" H 7650 1600 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 7650 1600 50  0001 C CNN "Supplier"
+F 8 "1276-1132-1-ND" H 7650 1600 50  0001 C CNN "Supplier PN"
 	1    7650 1600
 	1    0    0    -1  
 $EndComp
@@ -1406,7 +1411,12 @@ P 7650 2500
 F 0 "C29" H 7742 2546 50  0000 L CNN
 F 1 "0.01uF" H 7742 2455 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 7650 2500 50  0001 C CNN
-F 3 "~" H 7650 2500 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 7650 2500 50  0001 C CNN
+F 4 "CAP CER 10000PF 25V X7R 0603" H 7650 2500 50  0001 C CNN "Description"
+F 5 "Samsung Electro-Mechanics" H 7650 2500 50  0001 C CNN "Manufacturer"
+F 6 "CL10B103KA8NNNC" H 7650 2500 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 7650 2500 50  0001 C CNN "Supplier"
+F 8 "1276-1132-1-ND" H 7650 2500 50  0001 C CNN "Supplier PN"
 	1    7650 2500
 	1    0    0    -1  
 $EndComp
