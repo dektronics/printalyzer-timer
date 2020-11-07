@@ -720,7 +720,7 @@ Connection ~ 1950 1750
 Text Label 2300 6250 0    50   ~ 0
 RESET
 Text Label 4400 1950 0    50   ~ 0
-BUZZ
+BUZZ_DIN
 Wire Wire Line
 	4300 1950 5000 1950
 Text Label 4400 2150 0    50   ~ 0
@@ -1328,12 +1328,6 @@ F 3 "" H 8900 800 50  0001 C CNN
 	1    8900 800 
 	1    0    0    -1  
 $EndComp
-Text Label 8250 1600 0    50   ~ 0
-BUZZ
-Wire Wire Line
-	8500 1600 8250 1600
-Text Notes 9000 2250 0    50   ~ 0
-Connect 1-2 GPIOs for buzzer gain
 Text Label 2250 4050 0    50   ~ 0
 LED_CLK
 Text Label 2250 3950 0    50   ~ 0
@@ -1366,8 +1360,6 @@ Wire Wire Line
 	6550 2900 5900 2900
 Wire Wire Line
 	6550 3000 5900 3000
-NoConn ~ 4300 1750
-NoConn ~ 4300 1850
 NoConn ~ 4300 2050
 NoConn ~ 4300 3450
 NoConn ~ 4300 3550
@@ -1384,10 +1376,6 @@ NoConn ~ 2900 3850
 NoConn ~ 2900 3650
 NoConn ~ 2900 3350
 NoConn ~ 2900 3150
-NoConn ~ 8500 1350
-NoConn ~ 8500 1450
-Text Notes 8100 1450 0    50   Italic 0
-Gain EN\npins TBD
 $Comp
 L power:PWR_FLAG #FLG0108
 U 1 1 5FB7BB20
@@ -1412,14 +1400,6 @@ F 3 "~" H 2650 2150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Connection ~ 2650 2150
-Wire Notes Line
-	8450 1500 8450 1250
-Wire Notes Line
-	8450 1250 8050 1250
-Wire Notes Line
-	8050 1250 8050 1500
-Wire Notes Line
-	8050 1500 8450 1500
 NoConn ~ 1450 7450
 Wire Wire Line
 	5900 4350 6550 4350
@@ -1462,4 +1442,24 @@ Wire Wire Line
 	5900 2200 6550 2200
 Wire Wire Line
 	5900 2300 6550 2300
+Text Label 4400 1850 0    50   ~ 0
+BUZZ_EN2
+Text Label 4400 1750 0    50   ~ 0
+BUZZ_EN1
+Wire Wire Line
+	4300 1850 5000 1850
+Wire Wire Line
+	4300 1750 5000 1750
+Text Label 8100 1600 0    50   ~ 0
+BUZZ_DIN
+Text Label 8100 1350 0    50   ~ 0
+BUZZ_EN1
+Text Label 8100 1450 0    50   ~ 0
+BUZZ_EN2
+Wire Wire Line
+	8500 1350 8100 1350
+Wire Wire Line
+	8500 1450 8100 1450
+Wire Wire Line
+	8500 1600 8100 1600
 $EndSCHEMATC
