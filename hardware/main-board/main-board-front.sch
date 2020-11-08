@@ -1071,9 +1071,9 @@ USB_DRIVE_VBUS
 Text HLabel 1350 5900 0    50   Output ~ 0
 USB_VBUS_OC
 Text HLabel 1350 6250 0    50   BiDi ~ 0
-USB_DP
+USB_D+
 Text HLabel 1350 6450 0    50   BiDi ~ 0
-USB_DM
+USB_D-
 Text Notes 7450 1150 0    50   ~ 0
 Meter Pinout
 Text Notes 7550 1300 2    50   ~ 0
@@ -1150,4 +1150,8 @@ Wire Notes Line
 	5400 6950 5400 4700
 Wire Notes Line
 	5400 4700 600  4700
+Text Label 3650 5650 0    50   ~ 0
+USB_CONN_D+
+Text Label 3650 6650 0    50   ~ 0
+USB_CONN_D-
 $EndSCHEMATC
