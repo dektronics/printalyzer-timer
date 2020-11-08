@@ -745,10 +745,10 @@ Text Label 2000 3400 0    50   ~ 0
 USB_DRIVE_VBUS
 Text Label 2000 3500 0    50   ~ 0
 USB_VBUS_OC
-Text Label 4150 3600 0    50   ~ 0
+Text Label 4150 3500 0    50   ~ 0
 SENSOR_~INT
 Wire Wire Line
-	4050 3600 4750 3600
+	4050 3500 4750 3500
 Text Label 4150 4400 0    50   ~ 0
 I2C2_SCL
 Wire Wire Line
@@ -1358,7 +1358,6 @@ Wire Wire Line
 	6500 3000 5850 3000
 NoConn ~ 4050 2000
 NoConn ~ 4050 3400
-NoConn ~ 4050 3500
 NoConn ~ 4050 3800
 NoConn ~ 4050 4500
 NoConn ~ 4050 4600
@@ -1640,4 +1639,5 @@ Text Notes 650  700  0    50   ~ 0
 Microcontroller
 Text Notes 3350 5650 0    50   ~ 0
 EEPROM
+NoConn ~ 4050 3600
 $EndSCHEMATC
