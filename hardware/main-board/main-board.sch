@@ -55,99 +55,25 @@ F11 "ENC_A" O L 6500 2200 50
 F12 "ENC_B" O L 6500 2300 50 
 $EndSheet
 $Comp
-L power:GND #PWR0103
-U 1 1 5F8B9F00
-P 9550 4950
-F 0 "#PWR0103" H 9550 4700 50  0001 C CNN
-F 1 "GND" H 9555 4777 50  0000 C CNN
-F 2 "" H 9550 4950 50  0001 C CNN
-F 3 "" H 9550 4950 50  0001 C CNN
-	1    9550 4950
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:+3.3V #PWR0104
 U 1 1 5F8BA7DD
-P 9500 2900
-F 0 "#PWR0104" H 9500 2750 50  0001 C CNN
-F 1 "+3.3V" H 9515 3073 50  0000 C CNN
-F 2 "" H 9500 2900 50  0001 C CNN
-F 3 "" H 9500 2900 50  0001 C CNN
-	1    9500 2900
+P 9600 2900
+F 0 "#PWR0104" H 9600 2750 50  0001 C CNN
+F 1 "+3.3V" H 9615 3073 50  0000 C CNN
+F 2 "" H 9600 2900 50  0001 C CNN
+F 3 "" H 9600 2900 50  0001 C CNN
+	1    9600 2900
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	9650 3050 9500 3050
-Wire Wire Line
-	9500 3050 9500 2900
-NoConn ~ 9650 3150
-NoConn ~ 9650 3750
-NoConn ~ 9650 4350
-NoConn ~ 9650 4650
-Wire Wire Line
-	9650 2950 9550 2950
-Wire Wire Line
-	9550 2950 9550 3350
-Wire Wire Line
-	9650 3350 9550 3350
-Connection ~ 9550 3350
-Wire Wire Line
-	9550 3350 9550 3450
-Wire Wire Line
-	9650 3450 9550 3450
-Connection ~ 9550 3450
-Wire Wire Line
-	9650 3850 9550 3850
-Connection ~ 9550 3850
-Wire Wire Line
-	9550 3850 9550 3950
-Wire Wire Line
-	9650 3950 9550 3950
-Connection ~ 9550 3950
-Wire Wire Line
-	9550 3950 9550 4050
-Wire Wire Line
-	9650 4050 9550 4050
-Connection ~ 9550 4050
-Wire Wire Line
-	9550 4050 9550 4150
-Wire Wire Line
-	9650 4150 9550 4150
-Connection ~ 9550 4150
-Wire Wire Line
-	9550 4150 9550 4250
-Wire Wire Line
-	9650 4250 9550 4250
-Connection ~ 9550 4250
-Wire Wire Line
-	9550 4250 9550 4750
-Wire Wire Line
-	9650 4750 9550 4750
-Connection ~ 9550 4750
-Wire Wire Line
-	9550 4750 9550 4850
-Wire Wire Line
-	9650 4850 9550 4850
-Connection ~ 9550 4850
-Wire Wire Line
-	9550 4850 9550 4950
-Wire Wire Line
-	9650 3250 8950 3250
-Wire Wire Line
-	9650 3550 8950 3550
-Wire Wire Line
-	9650 4450 8950 4450
-Wire Wire Line
-	9650 4550 8950 4550
-Text Label 8950 3250 0    50   ~ 0
+Text Label 8400 3150 0    50   ~ 0
 DISP_D~C
-Text Label 8950 3550 0    50   ~ 0
+Text Label 8400 3300 0    50   ~ 0
 DISP_SPI_SCK
-Text Label 8950 3650 0    50   ~ 0
+Text Label 8400 3400 0    50   ~ 0
 DISP_SPI_MOSI
-Text Label 8950 4450 0    50   ~ 0
+Text Label 8400 3550 0    50   ~ 0
 DISP_~RES
-Text Label 8950 4550 0    50   ~ 0
+Text Label 8400 3650 0    50   ~ 0
 DISP_~CS
 $Comp
 L Project:Conn_ST_STDC14 J2
@@ -163,26 +89,6 @@ F 6 "FTSH-107-01-L-DV-K-A" H 1350 6400 50  0001 C CNN "Manufacturer PN"
 F 7 "Mouser" H 1350 6400 50  0001 C CNN "Supplier"
 F 8 "200-FTSH10701LDVKA" H 1350 6400 50  0001 C CNN "Supplier PN"
 	1    1350 6400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	9550 3450 9550 3850
-Wire Wire Line
-	9650 3650 8950 3650
-$Comp
-L Connector_Generic:Conn_01x20 J3
-U 1 1 5F8B8832
-P 9850 3850
-F 0 "J3" H 9800 4850 50  0000 L CNN
-F 1 "NHD OLED Connector" H 9600 2750 50  0000 L CNN
-F 2 "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical" H 9850 3850 50  0001 C CNN
-F 3 "https://drawings-pdf.s3.amazonaws.com/10492.pdf" H 9850 3850 50  0001 C CNN
-F 4 "CONN HDR 20POS 0.1 GOLD PCB" H 9850 3850 50  0001 C CNN "Description"
-F 5 "Sullins Connector Solutions" H 9850 3850 50  0001 C CNN "Manufacturer"
-F 6 "PPPC201LFBN-RC" H 9850 3850 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 9850 3850 50  0001 C CNN "Supplier"
-F 8 "PPPC201LFBN-RC" H 9850 3850 50  0001 C CNN "Supplier PN"
-	1    9850 3850
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1460,139 +1366,87 @@ Wire Wire Line
 $Comp
 L Mechanical:MountingHole_Pad H1
 U 1 1 5FA7B7EA
-P 10050 5500
-F 0 "H1" V 10050 5650 50  0000 L CNN
-F 1 "MountingHole_Pad" V 10095 5650 50  0001 L CNN
-F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5500 50  0001 C CNN
-F 3 "~" H 10050 5500 50  0001 C CNN
-	1    10050 5500
+P 10050 5000
+F 0 "H1" V 10050 5150 50  0000 L CNN
+F 1 "MountingHole_Pad" V 10095 5150 50  0001 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5000 50  0001 C CNN
+F 3 "~" H 10050 5000 50  0001 C CNN
+	1    10050 5000
 	0    1    1    0   
-$EndComp
-$Comp
-L Mechanical:MountingHole H5
-U 1 1 5FA7D43F
-P 10100 3000
-F 0 "H5" H 10200 3000 50  0000 L CNN
-F 1 "MountingHole" H 10200 2955 50  0001 L CNN
-F 2 "MountingHole:MountingHole_2.7mm_M2.5_Pad" H 10100 3000 50  0001 C CNN
-F 3 "~" H 10100 3000 50  0001 C CNN
-	1    10100 3000
-	1    0    0    -1  
 $EndComp
 $Comp
 L Mechanical:MountingHole_Pad H2
 U 1 1 5FA7DE48
-P 10050 5700
-F 0 "H2" V 10050 5850 50  0000 L CNN
-F 1 "MountingHole_Pad" V 10095 5850 50  0001 L CNN
-F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5700 50  0001 C CNN
-F 3 "~" H 10050 5700 50  0001 C CNN
-	1    10050 5700
+P 10050 5200
+F 0 "H2" V 10050 5350 50  0000 L CNN
+F 1 "MountingHole_Pad" V 10095 5350 50  0001 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5200 50  0001 C CNN
+F 3 "~" H 10050 5200 50  0001 C CNN
+	1    10050 5200
 	0    1    1    0   
 $EndComp
 $Comp
 L Mechanical:MountingHole_Pad H3
 U 1 1 5FA7E086
-P 10050 5900
-F 0 "H3" V 10050 6050 50  0000 L CNN
-F 1 "MountingHole_Pad" V 10095 6050 50  0001 L CNN
-F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5900 50  0001 C CNN
-F 3 "~" H 10050 5900 50  0001 C CNN
-	1    10050 5900
+P 10050 5400
+F 0 "H3" V 10050 5550 50  0000 L CNN
+F 1 "MountingHole_Pad" V 10095 5550 50  0001 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5400 50  0001 C CNN
+F 3 "~" H 10050 5400 50  0001 C CNN
+	1    10050 5400
 	0    1    1    0   
 $EndComp
 $Comp
 L Mechanical:MountingHole_Pad H4
 U 1 1 5FA7E48D
-P 10050 6100
-F 0 "H4" V 10050 6250 50  0000 L CNN
-F 1 "MountingHole_Pad" V 10095 6250 50  0001 L CNN
-F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 6100 50  0001 C CNN
-F 3 "~" H 10050 6100 50  0001 C CNN
-	1    10050 6100
+P 10050 5600
+F 0 "H4" V 10050 5750 50  0000 L CNN
+F 1 "MountingHole_Pad" V 10095 5750 50  0001 L CNN
+F 2 "MountingHole:MountingHole_3.2mm_M3_Pad_Via" H 10050 5600 50  0001 C CNN
+F 3 "~" H 10050 5600 50  0001 C CNN
+	1    10050 5600
 	0    1    1    0   
-$EndComp
-$Comp
-L Mechanical:MountingHole H6
-U 1 1 5FA7E88B
-P 10100 3200
-F 0 "H6" H 10200 3200 50  0000 L CNN
-F 1 "MountingHole" H 10200 3155 50  0001 L CNN
-F 2 "MountingHole:MountingHole_2.7mm_M2.5_Pad" H 10100 3200 50  0001 C CNN
-F 3 "~" H 10100 3200 50  0001 C CNN
-	1    10100 3200
-	1    0    0    -1  
-$EndComp
-$Comp
-L Mechanical:MountingHole H7
-U 1 1 5FA7EB33
-P 10100 3400
-F 0 "H7" H 10200 3400 50  0000 L CNN
-F 1 "MountingHole" H 10200 3355 50  0001 L CNN
-F 2 "MountingHole:MountingHole_2.7mm_M2.5_Pad" H 10100 3400 50  0001 C CNN
-F 3 "~" H 10100 3400 50  0001 C CNN
-	1    10100 3400
-	1    0    0    -1  
-$EndComp
-$Comp
-L Mechanical:MountingHole H8
-U 1 1 5FA7ED33
-P 10100 3600
-F 0 "H8" H 10200 3600 50  0000 L CNN
-F 1 "MountingHole" H 10200 3555 50  0001 L CNN
-F 2 "MountingHole:MountingHole_2.7mm_M2.5_Pad" H 10100 3600 50  0001 C CNN
-F 3 "~" H 10100 3600 50  0001 C CNN
-	1    10100 3600
-	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR0101
 U 1 1 5FAB16F8
-P 9850 6200
-F 0 "#PWR0101" H 9850 5950 50  0001 C CNN
-F 1 "GND" H 9855 6027 50  0000 C CNN
-F 2 "" H 9850 6200 50  0001 C CNN
-F 3 "" H 9850 6200 50  0001 C CNN
-	1    9850 6200
+P 9850 5700
+F 0 "#PWR0101" H 9850 5450 50  0001 C CNN
+F 1 "GND" H 9855 5527 50  0000 C CNN
+F 2 "" H 9850 5700 50  0001 C CNN
+F 3 "" H 9850 5700 50  0001 C CNN
+	1    9850 5700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9950 5500 9850 5500
+	9950 5000 9850 5000
 Wire Wire Line
-	9850 5500 9850 5700
+	9850 5000 9850 5200
 Wire Wire Line
-	9950 5700 9850 5700
-Connection ~ 9850 5700
+	9950 5200 9850 5200
+Connection ~ 9850 5200
 Wire Wire Line
-	9850 5700 9850 5900
+	9850 5200 9850 5400
 Wire Wire Line
-	9950 5900 9850 5900
-Connection ~ 9850 5900
+	9950 5400 9850 5400
+Connection ~ 9850 5400
 Wire Wire Line
-	9850 5900 9850 6100
+	9850 5400 9850 5600
 Wire Wire Line
-	9950 6100 9850 6100
-Connection ~ 9850 6100
+	9950 5600 9850 5600
+Connection ~ 9850 5600
 Wire Wire Line
-	9850 6100 9850 6200
-Text Notes 9650 5400 0    50   ~ 0
+	9850 5600 9850 5700
+Text Notes 9650 4900 0    50   ~ 0
 Enclosure Mounting
 Wire Notes Line
-	8900 2500 8900 5200
+	9600 4800 9600 5950
 Wire Notes Line
-	8900 5200 10450 5200
+	9600 5950 10450 5950
 Wire Notes Line
-	10450 5200 10450 2500
+	10450 5950 10450 4800
 Wire Notes Line
-	10450 2500 8900 2500
-Wire Notes Line
-	9600 5300 9600 6450
-Wire Notes Line
-	9600 6450 10450 6450
-Wire Notes Line
-	10450 6450 10450 5300
-Wire Notes Line
-	10450 5300 9600 5300
+	10450 4800 9600 4800
 Text Notes 600  5650 0    50   ~ 0
 Debug Connector
 Wire Notes Line
@@ -1631,7 +1485,7 @@ Wire Notes Line
 	5500 5400 550  5400
 Wire Notes Line
 	550  5400 550  550 
-Text Notes 8950 2650 0    50   ~ 0
+Text Notes 8300 2650 0    50   ~ 0
 Display Connection & Mounting
 Text Notes 8300 700  0    50   ~ 0
 Piezo Buzzer
@@ -1640,4 +1494,103 @@ Microcontroller
 Text Notes 3350 5650 0    50   ~ 0
 EEPROM
 NoConn ~ 4050 3600
+$Comp
+L Project:NHD-3.12-25664UC J3
+U 1 1 5FAED40D
+P 9600 3600
+F 0 "J3" H 9200 4250 50  0000 L CNN
+F 1 "NHD-3.12-25664UC" V 10150 3200 50  0000 L CNN
+F 2 "lib_fp:NHD-3.12-25664" H 9600 2350 50  0001 C CNN
+F 3 "https://www.newhavendisplay.com/specs/NHD-3.12-25664UCY2.pdf" H 9200 4050 50  0001 C CNN
+	1    9600 3600
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8400 3150 9000 3150
+Wire Wire Line
+	9000 3300 8400 3300
+Wire Wire Line
+	9000 3400 8400 3400
+Wire Wire Line
+	9000 3550 8400 3550
+Wire Wire Line
+	9000 3650 8400 3650
+$Comp
+L power:GND #PWR0102
+U 1 1 5FB5C409
+P 8900 4000
+F 0 "#PWR0102" H 8900 3750 50  0001 C CNN
+F 1 "GND" H 8905 3827 50  0000 C CNN
+F 2 "" H 8900 4000 50  0001 C CNN
+F 3 "" H 8900 4000 50  0001 C CNN
+	1    8900 4000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9000 3800 8900 3800
+Wire Wire Line
+	8900 3800 8900 3900
+Wire Wire Line
+	9000 3900 8900 3900
+Connection ~ 8900 3900
+Wire Wire Line
+	8900 3900 8900 4000
+$Comp
+L power:GND #PWR0103
+U 1 1 5FB79A1D
+P 9250 4450
+F 0 "#PWR0103" H 9250 4200 50  0001 C CNN
+F 1 "GND" H 9255 4277 50  0000 C CNN
+F 2 "" H 9250 4450 50  0001 C CNN
+F 3 "" H 9250 4450 50  0001 C CNN
+	1    9250 4450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9250 4350 9250 4400
+Wire Wire Line
+	9350 4350 9350 4400
+Wire Wire Line
+	9350 4400 9250 4400
+Connection ~ 9250 4400
+Wire Wire Line
+	9250 4400 9250 4450
+Wire Wire Line
+	9450 4350 9450 4400
+Wire Wire Line
+	9450 4400 9350 4400
+Connection ~ 9350 4400
+Wire Wire Line
+	9550 4350 9550 4400
+Wire Wire Line
+	9550 4400 9450 4400
+Connection ~ 9450 4400
+Wire Wire Line
+	9650 4350 9650 4400
+Wire Wire Line
+	9650 4400 9550 4400
+Connection ~ 9550 4400
+Wire Wire Line
+	9750 4350 9750 4400
+Wire Wire Line
+	9750 4400 9650 4400
+Connection ~ 9650 4400
+Wire Wire Line
+	9850 4350 9850 4400
+Wire Wire Line
+	9850 4400 9750 4400
+Connection ~ 9750 4400
+Wire Wire Line
+	9950 4350 9950 4400
+Wire Wire Line
+	9950 4400 9850 4400
+Connection ~ 9850 4400
+Wire Notes Line
+	8250 2500 8250 4700
+Wire Notes Line
+	8250 4700 10450 4700
+Wire Notes Line
+	10450 4700 10450 2500
+Wire Notes Line
+	10450 2500 8250 2500
 $EndSCHEMATC

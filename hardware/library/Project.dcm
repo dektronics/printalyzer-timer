@@ -48,6 +48,12 @@ K Nonvolatile Non-Volatile Memory ROM ST
 F https://www.st.com/content/ccc/resource/technical/document/datasheet/group0/cb/91/ba/7d/0b/c1/4d/f6/CD00147128/files/CD00147128.pdf/jcr:content/translations/en.CD00147128.pdf
 $ENDCMP
 #
+$CMP NHD-3.12-25664UC
+D NHD 3.12" Graphic OLED Display Module, Serial Interface
+K oled display module
+F https://www.newhavendisplay.com/specs/NHD-3.12-25664UCY2.pdf
+$ENDCMP
+#
 $CMP NUD3112DMT1G
 D 2-Channel Parallel Integrated Relay, Inductive Load Driver, SC-74-6
 K Relay Driver
