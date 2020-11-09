@@ -68,8 +68,8 @@ U 1 1 5FA4F8F1
 P 4150 1150
 AR Path="/5FA4F8F1" Ref="R?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F8F1" Ref="R10"  Part="1" 
-F 0 "R10" H 4220 1196 50  0000 L CNN
-F 1 "2K" H 4220 1105 50  0000 L CNN
+F 0 "R10" H 4200 1200 50  0000 L CNN
+F 1 "2K" H 4200 1100 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 4080 1150 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 4150 1150 50  0001 C CNN
 F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 4150 1150 50  0001 C CNN "Description"
@@ -86,8 +86,8 @@ U 1 1 5FA4F8F7
 P 3900 1150
 AR Path="/5FA4F8F7" Ref="R?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F8F7" Ref="R9"  Part="1" 
-F 0 "R9" H 3970 1196 50  0000 L CNN
-F 1 "2K" H 3970 1105 50  0000 L CNN
+F 0 "R9" H 3950 1200 50  0000 L CNN
+F 1 "2K" H 3950 1100 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 3830 1150 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 3900 1150 50  0001 C CNN
 F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 3900 1150 50  0001 C CNN "Description"
@@ -146,8 +146,8 @@ U 1 1 5FA4F911
 P 2250 1100
 AR Path="/5FA4F911" Ref="C?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F911" Ref="C26"  Part="1" 
-F 0 "C26" H 2365 1146 50  0000 L CNN
-F 1 "0.1uF" H 2365 1055 50  0000 L CNN
+F 0 "C26" H 2350 1150 50  0000 L CNN
+F 1 "0.1uF" H 2350 1050 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 950 50  0001 C CNN
 F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2250 1100 50  0001 C CNN
 F 4 "CAP CER 0.1UF 25V X7R 0603" H 2250 1100 50  0001 C CNN "Description"
@@ -186,8 +186,8 @@ U 1 1 5FA4F924
 P 1750 1250
 AR Path="/5FA4F924" Ref="R?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F924" Ref="R12"  Part="1" 
-F 0 "R12" H 1820 1296 50  0000 L CNN
-F 1 "2K" H 1820 1205 50  0000 L CNN
+F 0 "R12" H 1800 1300 50  0000 L CNN
+F 1 "2K" H 1800 1200 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 1680 1250 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1750 1250 50  0001 C CNN
 F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 1750 1250 50  0001 C CNN "Description"
@@ -204,8 +204,8 @@ U 1 1 5FA4F92A
 P 1500 1250
 AR Path="/5FA4F92A" Ref="R?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F92A" Ref="R11"  Part="1" 
-F 0 "R11" H 1570 1296 50  0000 L CNN
-F 1 "2K" H 1570 1205 50  0000 L CNN
+F 0 "R11" H 1550 1300 50  0000 L CNN
+F 1 "2K" H 1550 1200 50  0000 L CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 1430 1250 50  0001 C CNN
 F 3 "https://www.vishay.com/docs/20035/dcrcwe3.pdf" H 1500 1250 50  0001 C CNN
 F 4 "RES SMD 2K OHM 5% 1/10W 0603" H 1500 1250 50  0001 C CNN "Description"
@@ -537,7 +537,7 @@ U 1 1 5FA5B3D0
 P 3450 6150
 AR Path="/5FA5B3D0" Ref="U?"  Part="1" 
 AR Path="/5FA19AFF/5FA5B3D0" Ref="U12"  Part="1" 
-F 0 "U12" V 3800 5900 50  0000 R CNN
+F 0 "U12" V 3800 6500 50  0000 R CNN
 F 1 "USBLC6-2SC6" V 3100 6000 50  0000 R CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 3450 5650 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/usblc6-2.pdf" H 3650 6500 50  0001 C CNN
@@ -573,8 +573,8 @@ U 1 1 5FA5B3DC
 P 4850 6150
 AR Path="/5FA5B3DC" Ref="J?"  Part="1" 
 AR Path="/5FA19AFF/5FA5B3DC" Ref="J7"  Part="1" 
-F 0 "J7" H 4620 6139 50  0000 R CNN
-F 1 "USB_A" H 4620 6048 50  0000 R CNN
+F 0 "J7" H 4900 6600 50  0000 R CNN
+F 1 "USB_A" H 4950 6500 50  0000 R CNN
 F 2 "Connector_USB:USB_A_Molex_67643_Horizontal" H 5000 6100 50  0001 C CNN
 F 3 "https://www.molex.com/pdm_docs/sd/676430910_sd.pdf" H 5000 6100 50  0001 C CNN
 F 4 "CONN RCPT TYPEA 4POS R/A" H 4850 6150 50  0001 C CNN "Description"
@@ -771,16 +771,14 @@ Wire Wire Line
 	4850 6550 4850 6650
 Connection ~ 4850 6550
 Text Notes 5550 4950 0    50   ~ 0
-Follow datasheet layout guidance for\nall ESD suppression components.
+Follow datasheet layout guidance for\nall ESD suppression components
 Wire Wire Line
 	2550 5450 2850 5450
 Wire Wire Line
 	2850 5450 2850 6150
 Connection ~ 2850 6150
 Wire Wire Line
-	3350 5750 2700 5750
-Wire Wire Line
-	2700 5750 2700 6250
+	2700 5650 2700 6250
 Wire Wire Line
 	2700 6250 1350 6250
 Wire Wire Line
@@ -791,8 +789,8 @@ $Comp
 L Device:C_Small C27
 U 1 1 5F988495
 P 2850 6300
-F 0 "C27" H 2942 6346 50  0000 L CNN
-F 1 "0.1uF" H 2942 6255 50  0000 L CNN
+F 0 "C27" H 2925 6325 50  0000 L CNN
+F 1 "0.1uF" H 2925 6250 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2850 6300 50  0001 C CNN
 F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2850 6300 50  0001 C CNN
 F 4 "CAP CER 0.1UF 25V X7R 0603" H 2850 6300 50  0001 C CNN "Description"
@@ -946,7 +944,7 @@ U 1 1 5F9E0AB3
 P 5050 1700
 AR Path="/5F9E0AB3" Ref="U?"  Part="1" 
 AR Path="/5FA19AFF/5F9E0AB3" Ref="U10"  Part="1" 
-F 0 "U10" V 5400 1450 50  0000 R CNN
+F 0 "U10" V 5400 2050 50  0000 R CNN
 F 1 "USBLC6-2SC6" V 4700 1550 50  0000 R CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 5050 1200 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/usblc6-2.pdf" H 5250 2050 50  0001 C CNN
@@ -1074,44 +1072,44 @@ Text HLabel 1350 6250 0    50   BiDi ~ 0
 USB_D+
 Text HLabel 1350 6450 0    50   BiDi ~ 0
 USB_D-
-Text Notes 7450 1150 0    50   ~ 0
+Text Notes 7400 1150 0    50   ~ 0
 Meter Pinout
-Text Notes 7550 1300 2    50   ~ 0
+Text Notes 7500 1300 2    50   ~ 0
 1
-Text Notes 7550 1400 2    50   ~ 0
+Text Notes 7500 1400 2    50   ~ 0
 2
-Text Notes 7550 1500 2    50   ~ 0
+Text Notes 7500 1500 2    50   ~ 0
 3
-Text Notes 7550 1600 2    50   ~ 0
+Text Notes 7500 1600 2    50   ~ 0
 4
-Text Notes 7550 1700 2    50   ~ 0
+Text Notes 7500 1700 2    50   ~ 0
 5
-Text Notes 7550 1800 2    50   ~ 0
+Text Notes 7500 1800 2    50   ~ 0
 6
-Text Notes 7650 1300 0    50   ~ 0
+Text Notes 7600 1300 0    50   ~ 0
 SDA
-Text Notes 7650 1400 0    50   ~ 0
+Text Notes 7600 1400 0    50   ~ 0
 ~INT
-Text Notes 7650 1500 0    50   ~ 0
+Text Notes 7600 1500 0    50   ~ 0
 GND
-Text Notes 7650 1600 0    50   ~ 0
+Text Notes 7600 1600 0    50   ~ 0
 +5V
-Text Notes 7650 1700 0    50   ~ 0
+Text Notes 7600 1700 0    50   ~ 0
 SCL
-Text Notes 7650 1800 0    50   ~ 0
+Text Notes 7600 1800 0    50   ~ 0
 ~BUTTON
 Wire Notes Line style solid
-	7400 1050 7400 1850
+	7350 1050 7350 1850
 Wire Notes Line style solid
-	7400 1850 8000 1850
+	7350 1850 7950 1850
 Wire Notes Line style solid
-	8000 1850 8000 1050
+	7950 1850 7950 1050
 Wire Notes Line style solid
-	8000 1050 7400 1050
+	7950 1050 7350 1050
 Wire Notes Line style solid
-	7400 1175 8000 1175
+	7350 1175 7950 1175
 Wire Notes Line style solid
-	7600 1175 7600 1850
+	7550 1175 7550 1850
 $Comp
 L Project:DT2636-04S D13
 U 1 1 5FAA8A21
@@ -1129,7 +1127,7 @@ F 8 "DT2636-04S-7DICT-ND" H 5100 3400 50  0001 C CNN "Supplier PN"
 	1    0    0    -1  
 $EndComp
 Text Notes 6300 3400 0    50   ~ 0
-J6 is a wire-to-board connection from\na panel-mounted 3.5mm jack
+J6 is a connector that connects to\na panel-mounted 3.5mm jack
 Text Notes 700  750  0    50   ~ 0
 Meter Probe & Footswitch Input
 Wire Notes Line
@@ -1154,4 +1152,8 @@ Text Label 3650 5650 0    50   ~ 0
 USB_CONN_D+
 Text Label 3650 6650 0    50   ~ 0
 USB_CONN_D-
+Wire Wire Line
+	2700 5650 3350 5650
+Wire Wire Line
+	3350 5650 3350 5750
 $EndSCHEMATC

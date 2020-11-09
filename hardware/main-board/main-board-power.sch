@@ -37,8 +37,8 @@ U 1 1 5F98F474
 P 7750 1250
 AR Path="/5F98F474" Ref="P2"  Part="1" 
 AR Path="/5F8B674D/5F98F474" Ref="P2"  Part="1" 
-F 0 "P2" H 7750 1600 50  0000 C CNN
-F 1 "Enlarger Power Output" H 7750 1500 50  0000 C CNN
+F 0 "P2" H 7750 1575 50  0000 C CNN
+F 1 "Enlarger Power Output" H 7750 1475 50  0000 C CNN
 F 2 "lib_fp:Bulgin_PX0580-PC" H 7750 760 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 1250 50  0001 C CNN
 F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 1250 50  0001 C CNN "Description"
@@ -55,8 +55,8 @@ U 1 1 5F98FD81
 P 7750 2550
 AR Path="/5F98FD81" Ref="P3"  Part="1" 
 AR Path="/5F8B674D/5F98FD81" Ref="P3"  Part="1" 
-F 0 "P3" H 7750 2900 50  0000 C CNN
-F 1 "Safelight Power Output" H 7750 2800 50  0000 C CNN
+F 0 "P3" H 7750 2875 50  0000 C CNN
+F 1 "Safelight Power Output" H 7750 2775 50  0000 C CNN
 F 2 "lib_fp:Bulgin_PX0580-PC" H 7750 2060 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 2550 50  0001 C CNN
 F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 2550 50  0001 C CNN "Description"
@@ -103,8 +103,8 @@ $Comp
 L Project:G2RL-1A4-DC12 K1
 U 1 1 5F996900
 P 6200 1300
-F 0 "K1" H 6530 1346 50  0000 L CNN
-F 1 "Enlarger Relay" H 5800 950 50  0000 L CNN
+F 0 "K1" H 6525 1350 50  0000 L CNN
+F 1 "Enlarger Relay" H 6525 1250 50  0000 L CNN
 F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6550 1250 50  0001 L CNN
 F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6200 1300 50  0001 C CNN
 F 4 "RELAY GEN PURPOSE SPST 12A 12V" H 6200 1300 50  0001 C CNN "Description"
@@ -118,17 +118,17 @@ $EndComp
 $Comp
 L Project:G2RL-1A4-DC12 K2
 U 1 1 5F996F15
-P 6550 2550
-F 0 "K2" H 6880 2596 50  0000 L CNN
-F 1 "Safelight Relay" H 6150 2200 50  0000 L CNN
-F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6900 2500 50  0001 L CNN
-F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6550 2550 50  0001 C CNN
-F 4 "RELAY GEN PURPOSE SPST 12A 12V" H 6550 2550 50  0001 C CNN "Description"
-F 5 "Omron" H 6550 2550 50  0001 C CNN "Manufacturer"
-F 6 "G2RL-1A4 DC12" H 6550 2550 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 6550 2550 50  0001 C CNN "Supplier"
-F 8 "Z2923-ND" H 6550 2550 50  0001 C CNN "Supplier PN"
-	1    6550 2550
+P 6400 2550
+F 0 "K2" H 6725 2600 50  0000 L CNN
+F 1 "Safelight Relay" H 6725 2500 50  0000 L CNN
+F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6750 2500 50  0001 L CNN
+F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6400 2550 50  0001 C CNN
+F 4 "RELAY GEN PURPOSE SPST 12A 12V" H 6400 2550 50  0001 C CNN "Description"
+F 5 "Omron" H 6400 2550 50  0001 C CNN "Manufacturer"
+F 6 "G2RL-1A4 DC12" H 6400 2550 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 6400 2550 50  0001 C CNN "Supplier"
+F 8 "Z2923-ND" H 6400 2550 50  0001 C CNN "Supplier PN"
+	1    6400 2550
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -151,8 +151,8 @@ $Comp
 L Project:PSK-6B-S12 PS1
 U 1 1 5F98EA9A
 P 2550 2850
-F 0 "PS1" H 2550 3217 50  0000 C CNN
-F 1 "PSK-6B-S12" H 2550 3126 50  0000 C CNN
+F 0 "PS1" H 2550 3100 50  0000 C CNN
+F 1 "PSK-6B-S12" H 2550 2600 50  0000 C CNN
 F 2 "lib_fp:Converter_ACDC_CUI_PSK-6B" H 2550 2500 50  0001 C CNN
 F 3 "https://www.cui.com/product/resource/psk-6b.pdf" H 2550 2450 50  0001 C CNN
 F 4 "AC/DC CONVERTER 12V 6W" H 2550 2850 50  0001 C CNN "Description"
@@ -181,12 +181,12 @@ $EndComp
 $Comp
 L power:+12V #PWR022
 U 1 1 5F9D78AE
-P 6350 2250
-F 0 "#PWR022" H 6350 2100 50  0001 C CNN
-F 1 "+12V" H 6365 2423 50  0000 C CNN
-F 2 "" H 6350 2250 50  0001 C CNN
-F 3 "" H 6350 2250 50  0001 C CNN
-	1    6350 2250
+P 6200 2250
+F 0 "#PWR022" H 6200 2100 50  0001 C CNN
+F 1 "+12V" H 6215 2423 50  0000 C CNN
+F 2 "" H 6200 2250 50  0001 C CNN
+F 3 "" H 6200 2250 50  0001 C CNN
+	1    6200 2250
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -208,8 +208,6 @@ Wire Wire Line
 	5700 2000 5900 2000
 Wire Wire Line
 	5900 2000 5900 2850
-Wire Wire Line
-	5900 2850 6350 2850
 $Comp
 L power:GND #PWR026
 U 1 1 5F9DE431
@@ -462,8 +460,6 @@ Wire Wire Line
 Connection ~ 1400 4250
 Wire Wire Line
 	1400 4250 1000 4250
-Text Notes 900  5700 0    50   ~ 0
-Power input components have specifications\ndescribed in the regulator datasheet.
 $Comp
 L Device:C_Small C5
 U 1 1 5FA170F2
@@ -731,12 +727,12 @@ $EndComp
 $Comp
 L power:LINE #PWR023
 U 1 1 5FA43CF0
-P 6750 2250
-F 0 "#PWR023" H 6750 2100 50  0001 C CNN
-F 1 "LINE" H 6765 2423 50  0000 C CNN
-F 2 "" H 6750 2250 50  0001 C CNN
-F 3 "" H 6750 2250 50  0001 C CNN
-	1    6750 2250
+P 6600 2250
+F 0 "#PWR023" H 6600 2100 50  0001 C CNN
+F 1 "LINE" H 6615 2423 50  0000 C CNN
+F 2 "" H 6600 2250 50  0001 C CNN
+F 3 "" H 6600 2250 50  0001 C CNN
+	1    6600 2250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -746,9 +742,9 @@ Wire Wire Line
 Wire Wire Line
 	8150 1700 8150 1250
 Wire Wire Line
-	6750 2850 6750 3000
+	6600 2850 6600 3000
 Wire Wire Line
-	6750 3000 8150 3000
+	6600 3000 8150 3000
 Wire Wire Line
 	8150 3000 8150 2550
 Wire Wire Line
@@ -783,15 +779,15 @@ $EndComp
 $Comp
 L power:PWR_FLAG #FLG0103
 U 1 1 5FB701AC
-P 6750 3000
-F 0 "#FLG0103" H 6750 3075 50  0001 C CNN
-F 1 "PWR_FLAG" H 6750 3173 50  0001 C CNN
-F 2 "" H 6750 3000 50  0001 C CNN
-F 3 "~" H 6750 3000 50  0001 C CNN
-	1    6750 3000
+P 6600 3000
+F 0 "#FLG0103" H 6600 3075 50  0001 C CNN
+F 1 "PWR_FLAG" H 6600 3173 50  0001 C CNN
+F 2 "" H 6600 3000 50  0001 C CNN
+F 3 "~" H 6600 3000 50  0001 C CNN
+	1    6600 3000
 	-1   0    0    1   
 $EndComp
-Connection ~ 6750 3000
+Connection ~ 6600 3000
 $Comp
 L power:PWR_FLAG #FLG0104
 U 1 1 5FB7300A
@@ -924,4 +920,8 @@ Text Notes 3250 3750 0    50   ~ 0
 F1 is a fast-blow fuse rated for 5A @ 250V
 Text Notes 3250 3900 0    50   ~ 0
 F2 is a slow-blow fuse rated for 500mA
+Wire Wire Line
+	5900 2850 6200 2850
+Text Notes 650  5800 0    50   ~ 0
+Power input components have specifications\nthat may differ from components with similar\nvalues used elsewhere
 $EndSCHEMATC
