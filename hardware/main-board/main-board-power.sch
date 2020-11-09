@@ -39,7 +39,7 @@ AR Path="/5F98F474" Ref="P2"  Part="1"
 AR Path="/5F8B674D/5F98F474" Ref="P2"  Part="1" 
 F 0 "P2" H 7750 1575 50  0000 C CNN
 F 1 "Enlarger Power Output" H 7750 1475 50  0000 C CNN
-F 2 "lib_fp:Bulgin_PX0580-PC" H 7750 760 50  0001 C CNN
+F 2 "lib_fp:Bulgin_PX0675-PC" H 7750 760 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 1250 50  0001 C CNN
 F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 1250 50  0001 C CNN "Description"
 F 5 "Bulgin" H 7750 1250 50  0001 C CNN "Manufacturer"
@@ -57,7 +57,7 @@ AR Path="/5F98FD81" Ref="P3"  Part="1"
 AR Path="/5F8B674D/5F98FD81" Ref="P3"  Part="1" 
 F 0 "P3" H 7750 2875 50  0000 C CNN
 F 1 "Safelight Power Output" H 7750 2775 50  0000 C CNN
-F 2 "lib_fp:Bulgin_PX0580-PC" H 7750 2060 50  0001 C CNN
+F 2 "lib_fp:Bulgin_PX0675-PC" H 7750 2060 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 2550 50  0001 C CNN
 F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 2550 50  0001 C CNN "Description"
 F 5 "Bulgin" H 7750 2550 50  0001 C CNN "Manufacturer"
@@ -81,7 +81,7 @@ F 6 "FX0457" H 1700 2100 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 1700 2100 50  0001 C CNN "Supplier"
 F 8 "708-1898-ND" H 1700 2100 50  0001 C CNN "Supplier PN"
 	1    1700 2100
-	0    -1   -1   0   
+	0    1    -1   0   
 $EndComp
 $Comp
 L Device:Fuse F2
@@ -667,7 +667,7 @@ U 1 1 5FA44A38
 P 1150 2100
 F 0 "J1" H 1150 2335 50  0000 C CNN
 F 1 "Power Switch" H 1150 2244 50  0000 C CNN
-F 2 "Connector_Wire:SolderWire-1sqmm_1x02_P5.4mm_D1.4mm_OD2.7mm" H 1150 2100 50  0001 C CNN
+F 2 "Connector_Wire:SolderWire-1.5sqmm_1x02_P7.8mm_D1.7mm_OD3.9mm" H 1150 2100 50  0001 C CNN
 F 3 "~" H 1150 2100 50  0001 C CNN
 	1    1150 2100
 	1    0    0    -1  

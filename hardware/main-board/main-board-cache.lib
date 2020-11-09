@@ -593,7 +593,7 @@ ENDDEF
 DEF Project_Conn_PX0675-PC P 0 0 Y Y 1 F N
 F0 "P" 0 170 50 H V C BNN
 F1 "Project_Conn_PX0675-PC" 430 -170 50 H V C BNN
-F2 "lib_fp:Bulgin_PX0580-PC" 0 -560 50 H I C CNN
+F2 "lib_fp:Bulgin_PX0675-PC" 0 -560 50 H I C CNN
 F3 "" 400 -70 50 H I C CNN
 DRAW
 S -130 50 -90 -40 0 1 0 N

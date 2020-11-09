@@ -771,10 +771,10 @@ Wire Wire Line
 Wire Wire Line
 	1850 6400 2600 6400
 Wire Wire Line
-	1850 6800 2450 6800
+	1850 6800 2400 6800
 Wire Wire Line
-	1850 6900 2400 6900
-NoConn ~ 2600 7100
+	1850 6900 2450 6900
+NoConn ~ 2600 7000
 $Comp
 L power:GND #PWR012
 U 1 1 5F9D5CF7
@@ -818,17 +818,7 @@ USART1_RX
 Text Label 1950 6900 0    50   ~ 0
 USART1_TX
 Wire Wire Line
-	2400 6900 2400 7000
-Wire Wire Line
-	2400 7000 2600 7000
-Wire Wire Line
-	2450 6800 2450 6900
-Wire Wire Line
-	2450 6900 2600 6900
-Wire Wire Line
-	2500 5900 2500 6800
-Wire Wire Line
-	2500 6800 2600 6800
+	2500 5900 2500 6900
 Text Notes 1900 7400 0    50   ~ 0
 Can swap connections on ESD\nprotection to optimize routing
 NoConn ~ 1350 5700
@@ -1601,4 +1591,14 @@ Wire Notes Line
 	8150 4700 5600 4700
 Wire Notes Line
 	5600 4700 5600 550 
+Wire Wire Line
+	2500 6900 2600 6900
+Wire Wire Line
+	2450 6900 2450 6800
+Wire Wire Line
+	2450 6800 2600 6800
+Wire Wire Line
+	2400 6800 2400 7100
+Wire Wire Line
+	2400 7100 2600 7100
 $EndSCHEMATC

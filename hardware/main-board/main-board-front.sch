@@ -944,8 +944,8 @@ U 1 1 5F9E0AB3
 P 5050 1700
 AR Path="/5F9E0AB3" Ref="U?"  Part="1" 
 AR Path="/5FA19AFF/5F9E0AB3" Ref="U10"  Part="1" 
-F 0 "U10" V 5400 2050 50  0000 R CNN
-F 1 "USBLC6-2SC6" V 4700 1550 50  0000 R CNN
+F 0 "U10" V 4700 2050 50  0000 R CNN
+F 1 "USBLC6-2SC6" V 5400 1550 50  0000 R CNN
 F 2 "Package_TO_SOT_SMD:SOT-23-6" H 5050 1200 50  0001 C CNN
 F 3 "https://www.st.com/resource/en/datasheet/usblc6-2.pdf" H 5250 2050 50  0001 C CNN
 F 4 "TVS DIODE 5.25V 17V SOT23-6" H 5050 1700 50  0001 C CNN "Description"
@@ -954,7 +954,7 @@ F 6 "USBLC6-2SC6" H 5050 1700 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 5050 1700 50  0001 C CNN "Supplier"
 F 8 "497-5235-1-ND" H 5050 1700 50  0001 C CNN "Supplier PN"
 	1    5050 1700
-	0    -1   -1   0   
+	0    -1   1    0   
 $EndComp
 Wire Wire Line
 	5800 1250 5800 900 
