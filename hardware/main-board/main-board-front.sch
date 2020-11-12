@@ -790,14 +790,14 @@ L Device:C_Small C27
 U 1 1 5F988495
 P 2850 6300
 F 0 "C27" H 2925 6325 50  0000 L CNN
-F 1 "0.1uF" H 2925 6250 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2850 6300 50  0001 C CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf" H 2850 6300 50  0001 C CNN
-F 4 "CAP CER 0.1UF 25V X7R 0603" H 2850 6300 50  0001 C CNN "Description"
-F 5 "Samsung Electro-Mechanics" H 2850 6300 50  0001 C CNN "Manufacturer"
-F 6 "CL10B104KA8NNNC" H 2850 6300 50  0001 C CNN "Manufacturer PN"
+F 1 "4.7uF" H 2925 6250 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 2850 6300 50  0001 C CNN
+F 3 "https://search.murata.co.jp/Ceramy/image/img/A01X/G101/ENG/GRM21BC71H475KE11-01.pdf" H 2850 6300 50  0001 C CNN
+F 4 "CAP CER 4.7UF 50V X7S 0805" H 2850 6300 50  0001 C CNN "Description"
+F 5 "Murata Electronics" H 2850 6300 50  0001 C CNN "Manufacturer"
+F 6 "GRM21BC71H475KE11L" H 2850 6300 50  0001 C CNN "Manufacturer PN"
 F 7 "Digi-Key" H 2850 6300 50  0001 C CNN "Supplier"
-F 8 "1276-1006-1-ND" H 2850 6300 50  0001 C CNN "Supplier PN"
+F 8 "490-12757-1-ND" H 2850 6300 50  0001 C CNN "Supplier PN"
 	1    2850 6300
 	1    0    0    -1  
 $EndComp

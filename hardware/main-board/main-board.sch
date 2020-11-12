@@ -95,8 +95,8 @@ $Comp
 L Device:Crystal_GND24 Y1
 U 1 1 5F94F8E6
 P 1200 3150
-F 0 "Y1" H 1250 3350 50  0000 L CNN
-F 1 "16MHz" H 1225 2950 50  0000 L CNN
+F 0 "Y1" H 1200 3550 50  0000 C CNN
+F 1 "16MHz" H 1200 3450 50  0000 C CNN
 F 2 "lib_fp:Crystal_SMD_Kyocera_CX3225GB" H 1200 3150 50  0001 C CNN
 F 3 "http://prdct-search.kyocera.co.jp/crystal-ic/catalog/en/cx3225gb_e.pdf" H 1200 3150 50  0001 C CNN
 F 4 "CRYSTAL 16.0000MHZ 8PF SMD" H 1200 3150 50  0001 C CNN "Description"
@@ -179,8 +179,6 @@ F 3 "" H 1500 3600 50  0001 C CNN
 	1    1500 3600
 	1    0    0    -1  
 $EndComp
-NoConn ~ 1200 3350
-NoConn ~ 1200 2950
 $Comp
 L Project:M24M01-RMN U6
 U 1 1 5F950792
@@ -1601,4 +1599,28 @@ Wire Wire Line
 	2400 6800 2400 7100
 Wire Wire Line
 	2400 7100 2600 7100
+$Comp
+L power:GND #PWR?
+U 1 1 5FAE5C8E
+P 1200 3450
+F 0 "#PWR?" H 1200 3200 50  0001 C CNN
+F 1 "GND" H 1205 3277 50  0000 C CNN
+F 2 "" H 1200 3450 50  0001 C CNN
+F 3 "" H 1200 3450 50  0001 C CNN
+	1    1200 3450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1200 2950 1200 2900
+Wire Wire Line
+	1200 2900 1400 2900
+Wire Wire Line
+	1400 2900 1400 3400
+Wire Wire Line
+	1400 3400 1200 3400
+Wire Wire Line
+	1200 3350 1200 3400
+Connection ~ 1200 3400
+Wire Wire Line
+	1200 3400 1200 3450
 $EndSCHEMATC
