@@ -253,14 +253,15 @@ P 6550 1550
 AR Path="/5FA4F940" Ref="J?"  Part="1" 
 AR Path="/5FA19AFF/5FA4F940" Ref="J5"  Part="1" 
 F 0 "J5" H 6550 1965 50  0000 C CNN
-F 1 "Meter Probe" H 6550 1874 50  0000 C CNN
+F 1 "Mini-DIN 6-pin" H 6550 1874 50  0001 C CNN
 F 2 "lib_fp:CUI_MD-60SM" H 6550 950 50  0001 C CNN
 F 3 "https://www.cuidevices.com/product/resource/digikeypdf/md-sm-series.pdf" H 6550 1550 50  0001 C CNN
-F 4 "CONN RCPT FMALE MINI DIN 6P SLDR" H 6550 1550 50  0001 C CNN "Description"
-F 5 "CUI Devices" H 6550 1550 50  0001 C CNN "Manufacturer"
-F 6 "MD-60SM" H 6550 1550 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 6550 1550 50  0001 C CNN "Supplier"
-F 8 "CP-2260-ND" H 6550 1550 50  0001 C CNN "Supplier PN"
+F 4 "Meter Probe" H 6550 1875 50  0000 C CNN "User Label"
+F 5 "CONN RCPT FMALE MINI DIN 6P SLDR" H 6550 1550 50  0001 C CNN "Description"
+F 6 "CUI Devices" H 6550 1550 50  0001 C CNN "Manufacturer"
+F 7 "MD-60SM" H 6550 1550 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 6550 1550 50  0001 C CNN "Supplier"
+F 9 "CP-2260-ND" H 6550 1550 50  0001 C CNN "Supplier PN"
 	1    6550 1550
 	1    0    0    -1  
 $EndComp
@@ -810,14 +811,15 @@ L Connector_Generic:Conn_01x02 J6
 U 1 1 5F9A4F1A
 P 6350 2900
 F 0 "J6" H 6300 3000 50  0000 L CNN
-F 1 "Footswitch" H 6300 2700 50  0000 L CNN
+F 1 "Conn_01x02" H 6300 2700 50  0001 L CNN
 F 2 "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical" H 6350 2900 50  0001 C CNN
 F 3 "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf" H 6350 2900 50  0001 C CNN
-F 4 "CONN HEADER VERT 2POS 2MM" H 6350 2900 50  0001 C CNN "Description"
-F 5 "JST Sales America Inc." H 6350 2900 50  0001 C CNN "Manufacturer"
-F 6 "B2B-PH-K-S(LF)(SN)" H 6350 2900 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 6350 2900 50  0001 C CNN "Supplier"
-F 8 "455-1704-ND" H 6350 2900 50  0001 C CNN "Supplier PN"
+F 4 "Footswitch" H 6300 2700 50  0000 L CNN "User Label"
+F 5 "CONN HEADER VERT 2POS 2MM" H 6350 2900 50  0001 C CNN "Description"
+F 6 "JST Sales America Inc." H 6350 2900 50  0001 C CNN "Manufacturer"
+F 7 "B2B-PH-K-S(LF)(SN)" H 6350 2900 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 6350 2900 50  0001 C CNN "Supplier"
+F 9 "455-1704-ND" H 6350 2900 50  0001 C CNN "Supplier PN"
 	1    6350 2900
 	1    0    0    -1  
 $EndComp

@@ -19,15 +19,16 @@ U 1 1 5F98E141
 P 1150 1200
 AR Path="/5F98E141" Ref="P1"  Part="1" 
 AR Path="/5F8B674D/5F98E141" Ref="P1"  Part="1" 
-F 0 "P1" H 1150 1550 50  0000 C CNN
-F 1 "Mains Power Input" H 1150 1450 50  0000 C CNN
+F 0 "P1" H 1150 1525 50  0000 C CNN
+F 1 "IEC320-C14" H 1250 1050 50  0000 L CNN
 F 2 "lib_fp:Bulgin_PX0580-PC" H 1150 710 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 1550 1200 50  0001 C CNN
-F 4 "PWR ENT RCPT IEC320-C14 PNL SLDR" H 1150 1200 50  0001 C CNN "Description"
-F 5 "Bulgin" H 1150 1200 50  0001 C CNN "Manufacturer"
-F 6 "PX0580/PC" H 1150 1200 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 1150 1200 50  0001 C CNN "Supplier"
-F 8 "708-1341-ND" H 1150 1200 50  0001 C CNN "Supplier PN"
+F 4 "Mains Power Input" H 1150 1425 50  0000 C CNN "User Label"
+F 5 "PWR ENT RCPT IEC320-C14 PNL SLDR" H 1150 1200 50  0001 C CNN "Description"
+F 6 "Bulgin" H 1150 1200 50  0001 C CNN "Manufacturer"
+F 7 "PX0580/PC" H 1150 1200 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 1150 1200 50  0001 C CNN "Supplier"
+F 9 "708-1341-ND" H 1150 1200 50  0001 C CNN "Supplier PN"
 	1    1150 1200
 	1    0    0    -1  
 $EndComp
@@ -38,14 +39,15 @@ P 7750 1250
 AR Path="/5F98F474" Ref="P2"  Part="1" 
 AR Path="/5F8B674D/5F98F474" Ref="P2"  Part="1" 
 F 0 "P2" H 7750 1575 50  0000 C CNN
-F 1 "Enlarger Power Output" H 7750 1475 50  0000 C CNN
+F 1 "IEC320-C13" H 7850 1100 50  0000 L CNN
 F 2 "lib_fp:Bulgin_PX0675-PC" H 7750 760 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 1250 50  0001 C CNN
-F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 1250 50  0001 C CNN "Description"
-F 5 "Bulgin" H 7750 1250 50  0001 C CNN "Manufacturer"
-F 6 "PX0675/PC" H 7750 1250 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 7750 1250 50  0001 C CNN "Supplier"
-F 8 "708-1351-ND" H 7750 1250 50  0001 C CNN "Supplier PN"
+F 4 "Enlarger Power Output" H 7750 1475 50  0000 C CNN "User Label"
+F 5 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 1250 50  0001 C CNN "Description"
+F 6 "Bulgin" H 7750 1250 50  0001 C CNN "Manufacturer"
+F 7 "PX0675/PC" H 7750 1250 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 7750 1250 50  0001 C CNN "Supplier"
+F 9 "708-1351-ND" H 7750 1250 50  0001 C CNN "Supplier PN"
 	1    7750 1250
 	1    0    0    -1  
 $EndComp
@@ -56,14 +58,15 @@ P 7750 2550
 AR Path="/5F98FD81" Ref="P3"  Part="1" 
 AR Path="/5F8B674D/5F98FD81" Ref="P3"  Part="1" 
 F 0 "P3" H 7750 2875 50  0000 C CNN
-F 1 "Safelight Power Output" H 7750 2775 50  0000 C CNN
+F 1 "IEC320-C13" H 7850 2400 50  0000 L CNN
 F 2 "lib_fp:Bulgin_PX0675-PC" H 7750 2060 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/IEC_connectors.pdf" H 8150 2550 50  0001 C CNN
-F 4 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 2550 50  0001 C CNN "Description"
-F 5 "Bulgin" H 7750 2550 50  0001 C CNN "Manufacturer"
-F 6 "PX0675/PC" H 7750 2550 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 7750 2550 50  0001 C CNN "Supplier"
-F 8 "708-1351-ND" H 7750 2550 50  0001 C CNN "Supplier PN"
+F 4 "Safelight Power Output" H 7750 2775 50  0000 C CNN "User Label"
+F 5 "PWR ENT RCPT IEC320-2-2F PANEL" H 7750 2550 50  0001 C CNN "Description"
+F 6 "Bulgin" H 7750 2550 50  0001 C CNN "Manufacturer"
+F 7 "PX0675/PC" H 7750 2550 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 7750 2550 50  0001 C CNN "Supplier"
+F 9 "708-1351-ND" H 7750 2550 50  0001 C CNN "Supplier PN"
 	1    7750 2550
 	1    0    0    -1  
 $EndComp
@@ -71,15 +74,16 @@ $Comp
 L Device:Fuse F1
 U 1 1 5F99293E
 P 1700 2100
-F 0 "F1" V 1900 2050 50  0000 L CNN
-F 1 "Main Fuse" V 1800 1900 50  0000 L CNN
+F 0 "F1" V 1925 2050 50  0000 L CNN
+F 1 "Fuse" V 1800 1900 50  0001 L CNN
 F 2 "Fuse:Fuseholder_Cylinder-5x20mm_Bulgin_FX0457_Horizontal_Closed" V 1630 2100 50  0001 C CNN
 F 3 "https://www.bulgin.com/products/pub/media/bulgin/data/Fuseholders.pdf" H 1700 2100 50  0001 C CNN
-F 4 "FUSE HLDR CARTRIDGE 250V 10A PCB" H 1700 2100 50  0001 C CNN "Description"
-F 5 "Bulgin" H 1700 2100 50  0001 C CNN "Manufacturer"
-F 6 "FX0457" H 1700 2100 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 1700 2100 50  0001 C CNN "Supplier"
-F 8 "708-1898-ND" H 1700 2100 50  0001 C CNN "Supplier PN"
+F 4 "Main Fuse" V 1825 2100 50  0000 C CNN "User Label"
+F 5 "FUSE HLDR CARTRIDGE 250V 10A PCB" H 1700 2100 50  0001 C CNN "Description"
+F 6 "Bulgin" H 1700 2100 50  0001 C CNN "Manufacturer"
+F 7 "FX0457" H 1700 2100 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 1700 2100 50  0001 C CNN "Supplier"
+F 9 "708-1898-ND" H 1700 2100 50  0001 C CNN "Supplier PN"
 	1    1700 2100
 	0    1    -1   0   
 $EndComp
@@ -87,15 +91,16 @@ $Comp
 L Device:Fuse F2
 U 1 1 5F992D5F
 P 2000 2450
-F 0 "F2" H 2060 2496 50  0000 L CNN
-F 1 "Internal Fuse" H 2060 2405 50  0000 L CNN
+F 0 "F2" H 2075 2400 50  0000 L CNN
+F 1 "Fuse" H 2060 2405 50  0001 L CNN
 F 2 "Fuse:Fuseholder_Cylinder-5x20mm_Schurter_0031_8201_Horizontal_Open" V 1930 2450 50  0001 C CNN
 F 3 "http://www.schurterinc.com/bundles/snceschurter/epim/_ProdPool_/newDS/en/typ_OGN.pdf" H 2000 2450 50  0001 C CNN
-F 4 "FUSE BLOK CARTRIDGE 500V 10A PCB" H 2000 2450 50  0001 C CNN "Description"
-F 5 "Schurter Inc." H 2000 2450 50  0001 C CNN "Manufacturer"
-F 6 "0031.8201" H 2000 2450 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 2000 2450 50  0001 C CNN "Supplier"
-F 8 "486-1258-ND" H 2000 2450 50  0001 C CNN "Supplier PN"
+F 4 "Internal Fuse" H 2300 2500 50  0000 C CNN "User Label"
+F 5 "FUSE BLOK CARTRIDGE 500V 10A PCB" H 2000 2450 50  0001 C CNN "Description"
+F 6 "Schurter Inc." H 2000 2450 50  0001 C CNN "Manufacturer"
+F 7 "0031.8201" H 2000 2450 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 2000 2450 50  0001 C CNN "Supplier"
+F 9 "486-1258-ND" H 2000 2450 50  0001 C CNN "Supplier PN"
 	1    2000 2450
 	-1   0    0    1   
 $EndComp
@@ -103,32 +108,17 @@ $Comp
 L Project:G2RL-1A4-DC12 K1
 U 1 1 5F996900
 P 6200 1300
-F 0 "K1" H 6525 1350 50  0000 L CNN
-F 1 "Enlarger Relay" H 6525 1250 50  0000 L CNN
+F 0 "K1" H 6525 1400 50  0000 L CNN
+F 1 "SPST-NO" H 6525 1300 50  0000 L CNN
 F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6550 1250 50  0001 L CNN
 F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6200 1300 50  0001 C CNN
-F 4 "RELAY GEN PURPOSE SPST 12A 12V" H 6200 1300 50  0001 C CNN "Description"
-F 5 "Omron" H 6200 1300 50  0001 C CNN "Manufacturer"
-F 6 "G2RL-1A4 DC12" H 6200 1300 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 6200 1300 50  0001 C CNN "Supplier"
-F 8 "Z2923-ND" H 6200 1300 50  0001 C CNN "Supplier PN"
+F 4 "Enlarger Relay" H 6525 1200 50  0000 L CNN "User Label"
+F 5 "RELAY GEN PURPOSE SPST 12A 12V" H 6200 1300 50  0001 C CNN "Description"
+F 6 "Omron" H 6200 1300 50  0001 C CNN "Manufacturer"
+F 7 "G2RL-1A4 DC12" H 6200 1300 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 6200 1300 50  0001 C CNN "Supplier"
+F 9 "Z2923-ND" H 6200 1300 50  0001 C CNN "Supplier PN"
 	1    6200 1300
-	1    0    0    -1  
-$EndComp
-$Comp
-L Project:G2RL-1A4-DC12 K2
-U 1 1 5F996F15
-P 6400 2550
-F 0 "K2" H 6725 2600 50  0000 L CNN
-F 1 "Safelight Relay" H 6725 2500 50  0000 L CNN
-F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6750 2500 50  0001 L CNN
-F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6400 2550 50  0001 C CNN
-F 4 "RELAY GEN PURPOSE SPST 12A 12V" H 6400 2550 50  0001 C CNN "Description"
-F 5 "Omron" H 6400 2550 50  0001 C CNN "Manufacturer"
-F 6 "G2RL-1A4 DC12" H 6400 2550 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 6400 2550 50  0001 C CNN "Supplier"
-F 8 "Z2923-ND" H 6400 2550 50  0001 C CNN "Supplier PN"
-	1    6400 2550
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -139,11 +129,12 @@ F 0 "U3" H 5250 2350 50  0000 C CNN
 F 1 "NUD3112DMT1G" H 5250 1450 50  0000 C CNN
 F 2 "Package_SO:SC-74-6_1.5x2.9mm_P0.95mm" H 4450 1300 50  0001 L CNN
 F 3 "http://www.onsemi.com/pub/Collateral/NUD3112-D.PDF" H 5250 1800 50  0001 C CNN
-F 4 "IC PWR DRIVER N-CHANNEL 1:1 SC74" H 5250 1900 50  0001 C CNN "Description"
-F 5 "ON Semiconductor" H 5250 1900 50  0001 C CNN "Manufacturer"
-F 6 "NUD3112DMT1G" H 5250 1900 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 5250 1900 50  0001 C CNN "Supplier"
-F 8 "NUD3112DMT1GOSCT-ND" H 5250 1900 50  0001 C CNN "Supplier PN"
+F 4 "Relay Driver" H 5250 1350 50  0000 C CNN "User Label"
+F 5 "IC PWR DRIVER N-CHANNEL 1:1 SC74" H 5250 1900 50  0001 C CNN "Description"
+F 6 "ON Semiconductor" H 5250 1900 50  0001 C CNN "Manufacturer"
+F 7 "NUD3112DMT1G" H 5250 1900 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 5250 1900 50  0001 C CNN "Supplier"
+F 9 "NUD3112DMT1GOSCT-ND" H 5250 1900 50  0001 C CNN "Supplier PN"
 	1    5250 1900
 	1    0    0    -1  
 $EndComp
@@ -666,9 +657,10 @@ L Switch:SW_SPST J1
 U 1 1 5FA44A38
 P 1150 2100
 F 0 "J1" H 1150 2335 50  0000 C CNN
-F 1 "Power Switch" H 1150 2244 50  0000 C CNN
+F 1 "SW_SPST" H 1150 2244 50  0001 C CNN
 F 2 "Connector_Wire:SolderWire-1.5sqmm_1x02_P7.8mm_D1.7mm_OD3.9mm" H 1150 2100 50  0001 C CNN
 F 3 "~" H 1150 2100 50  0001 C CNN
+F 4 "Power Switch" H 1150 2225 50  0000 C CNN "User Label"
 	1    1150 2100
 	1    0    0    -1  
 $EndComp
@@ -738,15 +730,15 @@ $EndComp
 Wire Wire Line
 	6400 1600 6400 1700
 Wire Wire Line
-	6400 1700 8150 1700
+	6400 1700 8400 1700
 Wire Wire Line
-	8150 1700 8150 1250
+	8400 1700 8400 1250
 Wire Wire Line
 	6600 2850 6600 3000
 Wire Wire Line
-	6600 3000 8150 3000
+	6600 3000 8400 3000
 Wire Wire Line
-	8150 3000 8150 2550
+	8400 3000 8400 2550
 Wire Wire Line
 	2950 2950 3000 2950
 $Comp
@@ -787,7 +779,6 @@ F 3 "~" H 6600 3000 50  0001 C CNN
 	1    6600 3000
 	-1   0    0    1   
 $EndComp
-Connection ~ 6600 3000
 $Comp
 L power:PWR_FLAG #FLG0104
 U 1 1 5FB7300A
@@ -799,7 +790,6 @@ F 3 "~" H 6400 1700 50  0001 C CNN
 	1    6400 1700
 	-1   0    0    1   
 $EndComp
-Connection ~ 6400 1700
 Wire Wire Line
 	2950 2750 3000 2750
 $Comp
@@ -901,11 +891,11 @@ Wire Notes Line
 Wire Notes Line
 	3800 600  3800 3300
 Wire Notes Line
-	3800 3300 8350 3300
+	3800 3300 8600 3300
 Wire Notes Line
-	8350 3300 8350 600 
+	8600 3300 8600 600 
 Wire Notes Line
-	8350 600  3800 600 
+	8600 600  3800 600 
 Wire Notes Line
 	600  3450 600  5850
 Wire Notes Line
@@ -924,4 +914,27 @@ Wire Wire Line
 	5900 2850 6200 2850
 Text Notes 650  5800 0    50   ~ 0
 Power input components have specifications\nthat may differ from components with similar\nvalues used elsewhere
+Connection ~ 6600 3000
+Connection ~ 6400 1700
+Wire Wire Line
+	8150 1250 8400 1250
+Wire Wire Line
+	8150 2550 8400 2550
+$Comp
+L Project:G2RL-1A4-DC12 K2
+U 1 1 5F996F15
+P 6400 2550
+F 0 "K2" H 6725 2650 50  0000 L CNN
+F 1 "SPST-NO" H 6725 2550 50  0000 L CNN
+F 2 "lib_fp:Relay_SPST_Omron_G2RL-1A" H 6750 2500 50  0001 L CNN
+F 3 "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf" H 6400 2550 50  0001 C CNN
+F 4 "Safelight Relay" H 6725 2450 50  0000 L CNN "User Label"
+F 5 "RELAY GEN PURPOSE SPST 12A 12V" H 6400 2550 50  0001 C CNN "Description"
+F 6 "Omron" H 6400 2550 50  0001 C CNN "Manufacturer"
+F 7 "G2RL-1A4 DC12" H 6400 2550 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 6400 2550 50  0001 C CNN "Supplier"
+F 9 "Z2923-ND" H 6400 2550 50  0001 C CNN "Supplier PN"
+	1    6400 2550
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC

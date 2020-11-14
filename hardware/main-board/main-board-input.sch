@@ -18,14 +18,15 @@ L Marquadt_Switch:SW_Key_6425_1101_023 SW1
 U 1 1 5F8B879A
 P 1150 1050
 F 0 "SW1" H 1150 1335 50  0000 C CNN
-F 1 "Start" H 1150 1244 50  0000 C CNN
+F 1 "SW_Push_Long" H 1150 1244 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_1101_023" H 1150 1250 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 1150 1250 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 1150 1050 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 1150 1050 50  0001 C CNN "Manufacturer"
-F 6 "6425.1101" H 1150 1050 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 1150 1050 50  0001 C CNN "Supplier"
-F 8 "979-6425.1101" H 1150 1050 50  0001 C CNN "Supplier PN"
+F 4 "Start" H 1150 1250 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 1150 1050 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 1150 1050 50  0001 C CNN "Manufacturer"
+F 7 "6425.1101" H 1150 1050 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 1150 1050 50  0001 C CNN "Supplier"
+F 9 "979-6425.1101" H 1150 1050 50  0001 C CNN "Supplier PN"
 	1    1150 1050
 	1    0    0    -1  
 $EndComp
@@ -34,14 +35,15 @@ L Marquadt_Switch:SW_Key_6425_1101_023 SW2
 U 1 1 5F8B9734
 P 2000 1050
 F 0 "SW2" H 2000 1335 50  0000 C CNN
-F 1 "Focus" H 2000 1244 50  0000 C CNN
+F 1 "SW_Push_Long" H 2000 1244 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_1101_023" H 2000 1250 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64251101_00_K.pdf" H 2000 1250 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 2000 1050 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 2000 1050 50  0001 C CNN "Manufacturer"
-F 6 "6425.1101" H 2000 1050 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 2000 1050 50  0001 C CNN "Supplier"
-F 8 "979-6425.1101" H 2000 1050 50  0001 C CNN "Supplier PN"
+F 4 "Focus" H 2000 1250 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 2000 1050 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 2000 1050 50  0001 C CNN "Manufacturer"
+F 7 "6425.1101" H 2000 1050 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 2000 1050 50  0001 C CNN "Supplier"
+F 9 "979-6425.1101" H 2000 1050 50  0001 C CNN "Supplier PN"
 	1    2000 1050
 	1    0    0    -1  
 $EndComp
@@ -50,14 +52,15 @@ L Marquadt_Switch:SW_Key_6425_0101 SW3
 U 1 1 5F8B9EB7
 P 3000 1050
 F 0 "SW3" H 3000 1335 50  0000 C CNN
-F 1 "Inc Exposure" H 3000 1244 50  0000 C CNN
+F 1 "SW_Push" H 3000 1244 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3000 1250 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3000 1250 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 3000 1050 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 3000 1050 50  0001 C CNN "Manufacturer"
-F 6 "6425.0101" H 3000 1050 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 3000 1050 50  0001 C CNN "Supplier"
-F 8 "979-6425.0101" H 3000 1050 50  0001 C CNN "Supplier PN"
+F 4 "Inc Exposure" H 3000 1250 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 3000 1050 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 3000 1050 50  0001 C CNN "Manufacturer"
+F 7 "6425.0101" H 3000 1050 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 3000 1050 50  0001 C CNN "Supplier"
+F 9 "979-6425.0101" H 3000 1050 50  0001 C CNN "Supplier PN"
 	1    3000 1050
 	1    0    0    -1  
 $EndComp
@@ -66,14 +69,15 @@ L Marquadt_Switch:SW_Key_6425_0101 SW6
 U 1 1 5F8BA3E3
 P 3850 2150
 F 0 "SW6" H 3850 2435 50  0000 C CNN
-F 1 "Dec Contrast" H 3850 2344 50  0000 C CNN
+F 1 "SW_Push" H 3850 2344 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3850 2350 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3850 2350 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 3850 2150 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 3850 2150 50  0001 C CNN "Manufacturer"
-F 6 "6425.0101" H 3850 2150 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 3850 2150 50  0001 C CNN "Supplier"
-F 8 "979-6425.0101" H 3850 2150 50  0001 C CNN "Supplier PN"
+F 4 "Dec Contrast" H 3850 2350 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 3850 2150 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 3850 2150 50  0001 C CNN "Manufacturer"
+F 7 "6425.0101" H 3850 2150 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 3850 2150 50  0001 C CNN "Supplier"
+F 9 "979-6425.0101" H 3850 2150 50  0001 C CNN "Supplier PN"
 	1    3850 2150
 	1    0    0    -1  
 $EndComp
@@ -82,14 +86,15 @@ L Marquadt_Switch:SW_Key_6425_0101 SW5
 U 1 1 5F8BA80F
 P 3850 1050
 F 0 "SW5" H 3850 1335 50  0000 C CNN
-F 1 "Inc Contrast" H 3850 1244 50  0000 C CNN
+F 1 "SW_Push" H 3850 1244 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3850 1250 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3850 1250 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 3850 1050 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 3850 1050 50  0001 C CNN "Manufacturer"
-F 6 "6425.0101" H 3850 1050 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 3850 1050 50  0001 C CNN "Supplier"
-F 8 "979-6425.0101" H 3850 1050 50  0001 C CNN "Supplier PN"
+F 4 "Inc Contrast" H 3850 1250 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 3850 1050 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 3850 1050 50  0001 C CNN "Manufacturer"
+F 7 "6425.0101" H 3850 1050 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 3850 1050 50  0001 C CNN "Supplier"
+F 9 "979-6425.0101" H 3850 1050 50  0001 C CNN "Supplier PN"
 	1    3850 1050
 	1    0    0    -1  
 $EndComp
@@ -98,14 +103,15 @@ L Marquadt_Switch:SW_Key_6425_0101 SW4
 U 1 1 5F8BAD5B
 P 3000 2150
 F 0 "SW4" H 3000 2435 50  0000 C CNN
-F 1 "Dec Exposure" H 3000 2344 50  0000 C CNN
+F 1 "SW_Push" H 3000 2344 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101" H 3000 2350 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 3000 2350 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO" H 3000 2150 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 3000 2150 50  0001 C CNN "Manufacturer"
-F 6 "6425.0101" H 3000 2150 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 3000 2150 50  0001 C CNN "Supplier"
-F 8 "979-6425.0101" H 3000 2150 50  0001 C CNN "Supplier PN"
+F 4 "Dec Exposure" H 3000 2350 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO" H 3000 2150 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 3000 2150 50  0001 C CNN "Manufacturer"
+F 7 "6425.0101" H 3000 2150 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 3000 2150 50  0001 C CNN "Supplier"
+F 9 "979-6425.0101" H 3000 2150 50  0001 C CNN "Supplier PN"
 	1    3000 2150
 	1    0    0    -1  
 $EndComp
@@ -114,14 +120,15 @@ L Marquadt_Switch:SW_Key_6425_0101_LED SW7
 U 1 1 5F8BB404
 P 4900 1150
 F 0 "SW7" H 4900 1550 50  0000 C CNN
-F 1 "Test Strip" H 4900 1450 50  0000 C CNN
+F 1 "SW_Push_LED" H 4900 1450 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 4900 1350 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4900 1350 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO RED LED" H 4900 1150 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 4900 1150 50  0001 C CNN "Manufacturer"
-F 6 "6425.3111" H 4900 1150 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 4900 1150 50  0001 C CNN "Supplier"
-F 8 "979-6425.3111" H 4900 1150 50  0001 C CNN "Supplier PN"
+F 4 "Test Strip" H 4900 1450 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO RED LED" H 4900 1150 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 4900 1150 50  0001 C CNN "Manufacturer"
+F 7 "6425.3111" H 4900 1150 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 4900 1150 50  0001 C CNN "Supplier"
+F 9 "979-6425.3111" H 4900 1150 50  0001 C CNN "Supplier PN"
 	1    4900 1150
 	1    0    0    -1  
 $EndComp
@@ -130,14 +137,15 @@ L Marquadt_Switch:SW_Key_6425_0101_LED SW8
 U 1 1 5F8BB964
 P 4900 2250
 F 0 "SW8" H 4900 2650 50  0000 C CNN
-F 1 "Add Adjustment" H 4900 2550 50  0000 C CNN
+F 1 "SW_Push_LED" H 4900 2550 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 4900 2450 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 4900 2450 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO RED LED" H 4900 2250 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 4900 2250 50  0001 C CNN "Manufacturer"
-F 6 "6425.3111" H 4900 2250 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 4900 2250 50  0001 C CNN "Supplier"
-F 8 "979-6425.3111" H 4900 2250 50  0001 C CNN "Supplier PN"
+F 4 "Add Adjustment" H 4900 2550 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO RED LED" H 4900 2250 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 4900 2250 50  0001 C CNN "Manufacturer"
+F 7 "6425.3111" H 4900 2250 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 4900 2250 50  0001 C CNN "Supplier"
+F 9 "979-6425.3111" H 4900 2250 50  0001 C CNN "Supplier PN"
 	1    4900 2250
 	1    0    0    -1  
 $EndComp
@@ -146,14 +154,15 @@ L Marquadt_Switch:SW_Key_6425_0101_LED SW9
 U 1 1 5F8BBE5F
 P 5900 1150
 F 0 "SW9" H 5900 1550 50  0000 C CNN
-F 1 "Cancel" H 5900 1450 50  0000 C CNN
+F 1 "SW_Push_LED" H 5900 1450 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 5900 1350 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5900 1350 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO RED LED" H 5900 1150 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 5900 1150 50  0001 C CNN "Manufacturer"
-F 6 "6425.3111" H 5900 1150 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 5900 1150 50  0001 C CNN "Supplier"
-F 8 "979-6425.3111" H 5900 1150 50  0001 C CNN "Supplier PN"
+F 4 "Cancel" H 5900 1450 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO RED LED" H 5900 1150 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 5900 1150 50  0001 C CNN "Manufacturer"
+F 7 "6425.3111" H 5900 1150 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 5900 1150 50  0001 C CNN "Supplier"
+F 9 "979-6425.3111" H 5900 1150 50  0001 C CNN "Supplier PN"
 	1    5900 1150
 	1    0    0    -1  
 $EndComp
@@ -162,14 +171,15 @@ L Marquadt_Switch:SW_Key_6425_0101_LED SW10
 U 1 1 5F8BC2B0
 P 5900 2250
 F 0 "SW10" H 5900 2650 50  0000 C CNN
-F 1 "Menu" H 5900 2550 50  0000 C CNN
+F 1 "SW_Push_LED" H 5900 2550 50  0001 C CNN
 F 2 "lib_fp:SW_Key_6425_0101_LED" H 5900 2450 50  0001 C CNN
 F 3 "https://www.marquardt-switches.com/PLM-uploads/kzeichnung/64250101_00_K.pdf" H 5900 2450 50  0001 C CNN
-F 4 "PUSHBUTTON SPNO RED LED" H 5900 2250 50  0001 C CNN "Description"
-F 5 "Marquardt Switches" H 5900 2250 50  0001 C CNN "Manufacturer"
-F 6 "6425.3111" H 5900 2250 50  0001 C CNN "Manufacturer PN"
-F 7 "Mouser" H 5900 2250 50  0001 C CNN "Supplier"
-F 8 "979-6425.3111" H 5900 2250 50  0001 C CNN "Supplier PN"
+F 4 "Menu" H 5900 2550 50  0000 C CNN "User Label"
+F 5 "PUSHBUTTON SPNO RED LED" H 5900 2250 50  0001 C CNN "Description"
+F 6 "Marquardt Switches" H 5900 2250 50  0001 C CNN "Manufacturer"
+F 7 "6425.3111" H 5900 2250 50  0001 C CNN "Manufacturer PN"
+F 8 "Mouser" H 5900 2250 50  0001 C CNN "Supplier"
+F 9 "979-6425.3111" H 5900 2250 50  0001 C CNN "Supplier PN"
 	1    5900 2250
 	1    0    0    -1  
 $EndComp
@@ -438,14 +448,15 @@ L Connector_Generic:Conn_01x02 J4
 U 1 1 5FBD34EA
 P 7450 3400
 F 0 "J4" H 7400 3500 50  0000 L CNN
-F 1 "Blackout Switch" H 7400 3200 50  0000 L CNN
+F 1 "Conn_01x02" H 7400 3200 50  0001 L CNN
 F 2 "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical" H 7450 3400 50  0001 C CNN
 F 3 "http://www.jst-mfg.com/product/pdf/eng/ePH.pdf" H 7450 3400 50  0001 C CNN
-F 4 "CONN HEADER VERT 2POS 2MM" H 7450 3400 50  0001 C CNN "Description"
-F 5 "JST Sales America Inc." H 7450 3400 50  0001 C CNN "Manufacturer"
-F 6 "B2B-PH-K-S(LF)(SN)" H 7450 3400 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 7450 3400 50  0001 C CNN "Supplier"
-F 8 "455-1704-ND" H 7450 3400 50  0001 C CNN "Supplier PN"
+F 4 "Blackout Switch" H 7575 3200 50  0000 C CNN "User Label"
+F 5 "CONN HEADER VERT 2POS 2MM" H 7450 3400 50  0001 C CNN "Description"
+F 6 "JST Sales America Inc." H 7450 3400 50  0001 C CNN "Manufacturer"
+F 7 "B2B-PH-K-S(LF)(SN)" H 7450 3400 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 7450 3400 50  0001 C CNN "Supplier"
+F 9 "455-1704-ND" H 7450 3400 50  0001 C CNN "Supplier PN"
 	1    7450 3400
 	1    0    0    -1  
 $EndComp
@@ -1245,14 +1256,15 @@ L Device:Rotary_Encoder_Switch SW11
 U 1 1 5FA5A5AD
 P 8150 1450
 F 0 "SW11" H 8150 1817 50  0000 C CNN
-F 1 "Rotary Encoder" H 8150 1726 50  0000 C CNN
+F 1 "Rotary_Encoder_Switch" H 8150 1726 50  0001 C CNN
 F 2 "lib_fp:RotaryEncoder_CUI_ACZ11BR1E-Switch_Vertical_H15mm" H 8000 1610 50  0001 C CNN
 F 3 "https://www.cuidevices.com/product/resource/digikeypdf/acz11.pdf" H 8150 1710 50  0001 C CNN
-F 4 "ROTARY ENCODER INCREMENT 20PPR" H 8150 1450 50  0001 C CNN "Description"
-F 5 "CUI Devices" H 8150 1450 50  0001 C CNN "Manufacturer"
-F 6 "ACZ11BR1E-15FD1-20C" H 8150 1450 50  0001 C CNN "Manufacturer PN"
-F 7 "Digi-Key" H 8150 1450 50  0001 C CNN "Supplier"
-F 8 "102-1767-ND" H 8150 1450 50  0001 C CNN "Supplier PN"
+F 4 "Rotary Encoder" H 8150 1725 50  0000 C CNN "User Label"
+F 5 "ROTARY ENCODER INCREMENT 20PPR" H 8150 1450 50  0001 C CNN "Description"
+F 6 "CUI Devices" H 8150 1450 50  0001 C CNN "Manufacturer"
+F 7 "ACZ11BR1E-15FD1-20C" H 8150 1450 50  0001 C CNN "Manufacturer PN"
+F 8 "Digi-Key" H 8150 1450 50  0001 C CNN "Supplier"
+F 9 "102-1767-ND" H 8150 1450 50  0001 C CNN "Supplier PN"
 	1    8150 1450
 	1    0    0    -1  
 $EndComp
