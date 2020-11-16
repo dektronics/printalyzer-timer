@@ -821,8 +821,13 @@ U 1 1 5FA674FF
 P 3000 2750
 F 0 "TP2" H 3058 2822 50  0000 L CNN
 F 1 "TestPoint" H 2942 2867 50  0001 R CNN
-F 2 "TestPoint:TestPoint_Plated_Hole_D2.0mm" H 3200 2750 50  0001 C CNN
-F 3 "~" H 3200 2750 50  0001 C CNN
+F 2 "TestPoint:TestPoint_Keystone_5005-5009_Compact" H 3200 2750 50  0001 C CNN
+F 3 "http://www.keyelco.com/product-pdf.cfm?p=1314" H 3200 2750 50  0001 C CNN
+F 4 "PC TEST POINT COMPACT BLACK" H 3000 2750 50  0001 C CNN "Description"
+F 5 "Keystone Electronics" H 3000 2750 50  0001 C CNN "Manufacturer"
+F 6 "5006" H 3000 2750 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3000 2750 50  0001 C CNN "Supplier"
+F 8 "36-5006-ND" H 3000 2750 50  0001 C CNN "Supplier PN"
 	1    3000 2750
 	1    0    0    -1  
 $EndComp
@@ -832,8 +837,13 @@ U 1 1 5FA67E89
 P 2450 3950
 F 0 "TP3" H 2508 4022 50  0000 L CNN
 F 1 "TestPoint" H 2392 4067 50  0001 R CNN
-F 2 "TestPoint:TestPoint_Plated_Hole_D2.0mm" H 2650 3950 50  0001 C CNN
-F 3 "~" H 2650 3950 50  0001 C CNN
+F 2 "TestPoint:TestPoint_Keystone_5005-5009_Compact" H 2650 3950 50  0001 C CNN
+F 3 "http://www.keyelco.com/product-pdf.cfm?p=1314" H 2650 3950 50  0001 C CNN
+F 4 "PC TEST POINT COMPACT BLACK" H 2450 3950 50  0001 C CNN "Description"
+F 5 "Keystone Electronics" H 2450 3950 50  0001 C CNN "Manufacturer"
+F 6 "5006" H 2450 3950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2450 3950 50  0001 C CNN "Supplier"
+F 8 "36-5006-ND" H 2450 3950 50  0001 C CNN "Supplier PN"
 	1    2450 3950
 	1    0    0    -1  
 $EndComp
@@ -843,8 +853,13 @@ U 1 1 5FA6866C
 P 2450 4950
 F 0 "TP4" H 2508 5022 50  0000 L CNN
 F 1 "TestPoint" H 2392 5067 50  0001 R CNN
-F 2 "TestPoint:TestPoint_Plated_Hole_D2.0mm" H 2650 4950 50  0001 C CNN
-F 3 "~" H 2650 4950 50  0001 C CNN
+F 2 "TestPoint:TestPoint_Keystone_5005-5009_Compact" H 2650 4950 50  0001 C CNN
+F 3 "http://www.keyelco.com/product-pdf.cfm?p=1314" H 2650 4950 50  0001 C CNN
+F 4 "PC TEST POINT COMPACT BLACK" H 2450 4950 50  0001 C CNN "Description"
+F 5 "Keystone Electronics" H 2450 4950 50  0001 C CNN "Manufacturer"
+F 6 "5006" H 2450 4950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 2450 4950 50  0001 C CNN "Supplier"
+F 8 "36-5006-ND" H 2450 4950 50  0001 C CNN "Supplier PN"
 	1    2450 4950
 	1    0    0    -1  
 $EndComp
@@ -854,8 +869,13 @@ U 1 1 5FA68D53
 P 3000 2950
 F 0 "TP1" H 2942 3022 50  0000 R CNN
 F 1 "TestPoint" H 2942 3067 50  0001 R CNN
-F 2 "TestPoint:TestPoint_Plated_Hole_D2.0mm" H 3200 2950 50  0001 C CNN
-F 3 "~" H 3200 2950 50  0001 C CNN
+F 2 "TestPoint:TestPoint_Keystone_5005-5009_Compact" H 3200 2950 50  0001 C CNN
+F 3 "http://www.keyelco.com/product-pdf.cfm?p=1314" H 3200 2950 50  0001 C CNN
+F 4 "PC TEST POINT COMPACT BLACK" H 3000 2950 50  0001 C CNN "Description"
+F 5 "Keystone Electronics" H 3000 2950 50  0001 C CNN "Manufacturer"
+F 6 "5006" H 3000 2950 50  0001 C CNN "Manufacturer PN"
+F 7 "Digi-Key" H 3000 2950 50  0001 C CNN "Supplier"
+F 8 "36-5006-ND" H 3000 2950 50  0001 C CNN "Supplier PN"
 	1    3000 2950
 	-1   0    0    1   
 $EndComp
