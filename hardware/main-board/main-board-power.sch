@@ -5,8 +5,8 @@ $Descr USLetter 11000 8500
 encoding utf-8
 Sheet 2 4
 Title "Printalyzer - Main Board (Power Supply and Control)"
-Date ""
-Rev "?"
+Date "2020-11-16"
+Rev "A"
 Comp "LogicProbe.org"
 Comment1 "Derek Konigsberg"
 Comment2 ""
