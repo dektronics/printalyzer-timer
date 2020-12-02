@@ -29,38 +29,3 @@
  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ******************************************************************************
-
- Universal 8bit Graphics Library V2
-
- Path: esp32/components/u8g2
- Upstream: https://github.com/olikraus/u8g2
- License: Two-clause BSD license, fonts under other licenses
-          (see project for details)
-
- Library has been modified as necessary for project integration purposes.
-
-******************************************************************************
-
- zlib Data Compression Library
-
- Path: esp32/components/zlib
- Upstream: https://zlib.net/
- License: BSD-style (see project for details)
-
- A subset of the library, only containing pieces necessary for integration,
- has been included.
-
-******************************************************************************
-
- SNTP client module (from lwIP)
-
- Path: esp32/components/my_sntp
- Upstream: https://github.com/espressif/esp-idf/tree/master/components/lwip/apps/sntp
- License: BSD
-
- This is the SNTP implementation from Espressif's ESP-IDF (via lwIP),
- modified to prevent symbol name conflicts and to add features
- necessary for this application. If those features are ever added to
- the upstream version, then this one will be removed.
-
-******************************************************************************
