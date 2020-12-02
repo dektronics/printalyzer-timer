@@ -5,6 +5,7 @@
 
 #include "fatfs.h"
 #include "board_config.h"
+#include "main_task.h"
 
 UART_HandleTypeDef huart1;
 
@@ -350,13 +351,13 @@ int main(void)
     fatfs_init();
 
     /* Initialize the FreeRTOS scheduler */
-    //osKernelInitialize();
+    osKernelInitialize();
 
     /* Create the default task */
-    //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+    main_task_init();
 
     /* Start the FreeRTOS scheduler */
-    //osKernelStart();
+    osKernelStart();
 
     while (1) {
     }
