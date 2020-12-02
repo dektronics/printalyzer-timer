@@ -64,8 +64,8 @@ mkdir -p "${PROJDIR}/external/drivers/stm32f4xx/include"
 cp -r "${CUBEDIR}/Drivers/STM32F4xx_HAL_Driver/Inc/"* "${PROJDIR}/external/drivers/stm32f4xx/include/"
 
 mkdir -p "${PROJDIR}/external/drivers/cmsis/include"
-cp -r "${CUBEDIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include"* "${PROJDIR}/external/drivers/cmsis/include/"
-cp -r "${CUBEDIR}/Drivers/CMSIS/Include"* "${PROJDIR}/external/drivers/cmsis/include/"
+cp -r "${CUBEDIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/"* "${PROJDIR}/external/drivers/cmsis/include/"
+cp -r "${CUBEDIR}/Drivers/CMSIS/Include/"* "${PROJDIR}/external/drivers/cmsis/include/"
 
 #
 # External USB support code
