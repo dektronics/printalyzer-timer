@@ -23,7 +23,7 @@
 /*-----------------------------------------------------------------------------/
 / Additional user header to be used
 /-----------------------------------------------------------------------------*/
-#include "main.h"
+//FIXME #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "usbh_core.h"
 #include "usbh_msc.h"

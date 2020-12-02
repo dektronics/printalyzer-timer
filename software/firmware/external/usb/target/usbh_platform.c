@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : usbh_platform.c
@@ -17,14 +16,10 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stm32f4xx_hal.h>
 #include "usbh_platform.h"
-
-/* USER CODE BEGIN INCLUDE */
-
-/* USER CODE END INCLUDE */
 
 /**
   * @brief  Drive VBUS.
@@ -50,5 +45,3 @@ void MX_DriverVbusFS(uint8_t state)
   /* USER CODE END PREPARE_GPIO_DATA_VBUS_FS */
   HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)data);
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
