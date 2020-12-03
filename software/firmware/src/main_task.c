@@ -9,9 +9,20 @@
 #include <esp_log.h>
 
 #include "usb_host.h"
+#include "display.h"
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
+
+/* Peripheral handles initialized before this task is started */
+extern UART_HandleTypeDef huart1;
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
+extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim9;
 
 static void main_task_start(void *argument);
 
@@ -26,6 +37,20 @@ static const char *TAG = "main_task";
 void main_task_init(void)
 {
     main_task_handle = osThreadNew(main_task_start, NULL, &main_task_attributes);
+}
+
+void main_task_display_init()
+{
+    const u8g2_display_handle_t display_handle = {
+        .hspi = &hspi1,
+        .reset_gpio_port = DISP_RES_GPIO_Port,
+        .reset_gpio_pin = DISP_RES_Pin,
+        .cs_gpio_port = DISP_CS_GPIO_Port,
+        .cs_gpio_pin = DISP_CS_Pin,
+        .dc_gpio_port = DISP_DC_GPIO_Port,
+        .dc_gpio_pin = DISP_DC_Pin
+    };
+    display_init(&display_handle);
 }
 
 void main_task_start(void *argument)
@@ -60,6 +85,10 @@ void main_task_start(void *argument)
     if (usb_host_init() != USBH_OK) {
         ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
     }
+
+    /* Initialize the display */
+    main_task_display_init();
+    display_draw_logo();
 
     for (;;) {
         // do nothing
