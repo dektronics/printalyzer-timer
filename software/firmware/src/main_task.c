@@ -109,6 +109,9 @@ void main_task_start(void *argument)
     led_set_enabled(LED_ILLUM_ALL);
     led_set_brightness(1);
 
+    /* Rotary encoder */
+    HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+
     for (;;) {
         // do nothing
     }
