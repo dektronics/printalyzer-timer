@@ -15,12 +15,17 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdbool.h>
 #include "esp_log.h"
-#include "soc/soc_memory_layout.h"  // for esp_ptr_byte_accessible
-
 
 //print number of bytes per line for esp_log_buffer_char and esp_log_buffer_hex
 #define BYTES_PER_LINE 16
+
+static bool esp_ptr_byte_accessible(const void *p)
+{
+    // Stub due to lack of an equivalent to the ESP32 byte alignment check
+    return true;
+}
 
 void esp_log_buffer_hex_internal(const char *tag, const void *buffer, uint16_t buff_len,
                                  esp_log_level_t log_level)

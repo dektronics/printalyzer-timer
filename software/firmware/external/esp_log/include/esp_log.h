@@ -17,15 +17,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
-#include "esp_rom_sys.h"
-#include "sdkconfig.h"
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/ets_sys.h" // will be removed in idf v5.0
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/ets_sys.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/ets_sys.h"
-#endif
+#include "esp_log_config.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -247,7 +239,7 @@ void esp_log_writev(esp_log_level_t level, const char* tag, const char* format, 
 #define esp_log_buffer_char     ESP_LOG_BUFFER_CHAR
 
 
-#if CONFIG_LOG_COLORS
+#ifdef CONFIG_LOG_COLORS
 #define LOG_COLOR_BLACK   "30"
 #define LOG_COLOR_RED     "31"
 #define LOG_COLOR_GREEN   "32"
@@ -272,8 +264,8 @@ void esp_log_writev(esp_log_level_t level, const char* tag, const char* format, 
 #define LOG_RESET_COLOR
 #endif //CONFIG_LOG_COLORS
 
-#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%d) %s: " format LOG_RESET_COLOR "\n"
-#define LOG_SYSTEM_TIME_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%s) %s: " format LOG_RESET_COLOR "\n"
+#define LOG_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%ld) %s: " format LOG_RESET_COLOR "\r\n"
+#define LOG_SYSTEM_TIME_FORMAT(letter, format)  LOG_COLOR_ ## letter #letter " (%s) %s: " format LOG_RESET_COLOR "\r\n"
 
 /** @endcond */
 
@@ -327,7 +319,7 @@ void esp_log_writev(esp_log_level_t level, const char* tag, const char* format, 
  *
  * @see ``printf``
  */
-#if CONFIG_LOG_TIMESTAMP_SOURCE_RTOS
+#ifdef CONFIG_LOG_TIMESTAMP_SOURCE_RTOS
 #define ESP_LOG_LEVEL(level, tag, format, ...) do {                     \
         if (level==ESP_LOG_ERROR )          { esp_log_write(ESP_LOG_ERROR,      tag, LOG_FORMAT(E, format), esp_log_timestamp(), tag, ##__VA_ARGS__); } \
         else if (level==ESP_LOG_WARN )      { esp_log_write(ESP_LOG_WARN,       tag, LOG_FORMAT(W, format), esp_log_timestamp(), tag, ##__VA_ARGS__); } \

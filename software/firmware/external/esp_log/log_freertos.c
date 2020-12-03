@@ -15,13 +15,16 @@
 #include <stdint.h>
 #include <time.h>
 #include <sys/time.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "soc/cpu.h"  // for esp_cpu_get_ccount()
+#include <FreeRTOS.h>
+#include <task.h>
+#include <semphr.h>
+#include <stdio.h>
+#include <cmsis_os2.h>
+
+#include "stm32f4xx_hal.h"
+
 #include "esp_log.h"
 #include "esp_log_private.h"
-
 
 // Maximum time to wait for the mutex in a logging statement.
 #define MAX_MUTEX_WAIT_MS 10
@@ -53,7 +56,7 @@ void esp_log_impl_unlock(void)
 char *esp_log_system_timestamp(void)
 {
     static char buffer[18] = {0};
-    static _lock_t bufferLock = 0;
+    static osMutexId_t bufferLock = 0;
 
     if (xTaskGetSchedulerState() == taskSCHEDULER_NOT_STARTED) {
         uint32_t timestamp = esp_log_early_timestamp();
@@ -69,6 +72,9 @@ char *esp_log_system_timestamp(void)
                 break;
             }
         }
+        if (bufferLock == 0) {
+            bufferLock = osMutexNew(NULL);
+        }
         return buffer;
     } else {
         struct timeval tv;
@@ -77,14 +83,14 @@ char *esp_log_system_timestamp(void)
         gettimeofday(&tv, NULL);
         localtime_r(&tv.tv_sec, &timeinfo);
 
-        _lock_acquire(&bufferLock);
+        osMutexAcquire(bufferLock, 0);
         snprintf(buffer, sizeof(buffer),
                  "%02d:%02d:%02d.%03ld",
                  timeinfo.tm_hour,
                  timeinfo.tm_min,
                  timeinfo.tm_sec,
                  tv.tv_usec / 1000);
-        _lock_release(&bufferLock);
+        osMutexRelease(bufferLock);
 
         return buffer;
     }
@@ -96,21 +102,14 @@ uint32_t esp_log_timestamp(void)
         return esp_log_early_timestamp();
     }
     static uint32_t base = 0;
-    if (base == 0 && xPortGetCoreID() == 0) {
+    if (base == 0) {
         base = esp_log_early_timestamp();
     }
-    TickType_t tick_count = xPortInIsrContext() ? xTaskGetTickCountFromISR() : xTaskGetTickCount();
+    TickType_t tick_count = xPortIsInsideInterrupt() ? xTaskGetTickCountFromISR() : xTaskGetTickCount();
     return base + tick_count * (1000 / configTICK_RATE_HZ);
 }
 
-/* FIXME: define an API for getting the timestamp in soc/hal IDF-2351 */
 uint32_t esp_log_early_timestamp(void)
 {
-#if CONFIG_IDF_TARGET_ESP32
-    /* ESP32 ROM stores separate clock rate values for each CPU, but we want the PRO CPU value always */
-    extern uint32_t g_ticks_per_us_pro;
-    return esp_cpu_get_ccount() / (g_ticks_per_us_pro * 1000);
-#else
-    return esp_cpu_get_ccount() / (ets_get_cpu_frequency() * 1000);
-#endif
+    return HAL_GetTick();
 }
