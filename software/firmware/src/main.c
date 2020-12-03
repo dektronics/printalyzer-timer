@@ -391,6 +391,21 @@ int main(void)
     }
 }
 
+/**
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called when the TIM11 interrupt takes place,
+ * inside HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick()
+ * to increment a global variable "uwTick" that is used as application
+ * time base.
+ * @param  htim TIM handle
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM11) {
+        HAL_IncTick();
+    }
+}
+
 void Error_Handler(void)
 {
     __disable_irq();

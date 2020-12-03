@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+#include <esp_log.h>
+
 #include "usb_host.h"
 #include "board_config.h"
 
@@ -19,6 +21,8 @@ const osThreadAttr_t main_task_attributes = {
     .stack_size = 2048 * 4
 };
 
+static const char *TAG = "main_task";
+
 void main_task_init(void)
 {
     main_task_handle = osThreadNew(main_task_start, NULL, &main_task_attributes);
@@ -28,10 +32,7 @@ void main_task_start(void *argument)
 {
     UNUSED(argument);
 
-    if (usb_host_init() != USBH_OK) {
-        printf("Unable to initialize USB host\r\n");
-    }
-
+    /* Print various startup log messages */
     printf("---- STM32 Startup ----\r\n");
     uint32_t hal_ver = HAL_GetHalVersion();
     uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
@@ -53,5 +54,14 @@ void main_task_start(void *argument)
             uniqueId[10], uniqueId[11]);
 
     printf("-----------------------\r\n");
+    fflush(stdout);
 
+    /* Initialize the USB host framework */
+    if (usb_host_init() != USBH_OK) {
+        ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
+    }
+
+    for (;;) {
+        // do nothing
+    }
 }
