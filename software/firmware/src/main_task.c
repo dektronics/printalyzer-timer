@@ -10,6 +10,7 @@
 
 #include "usb_host.h"
 #include "display.h"
+#include "led.h"
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
@@ -53,6 +54,19 @@ void main_task_display_init()
     display_init(&display_handle);
 }
 
+void main_task_led_init()
+{
+    const stp16cpc26_handle_t led_handle = {
+        .hspi = &hspi2,
+        .le_gpio_port = LED_LE_GPIO_Port,
+        .le_gpio_pin = LED_LE_Pin,
+        .oe_tim = &htim3,
+        .oe_tim_channel = TIM_CHANNEL_1,
+    };
+
+    led_init(&led_handle);
+}
+
 void main_task_start(void *argument)
 {
     UNUSED(argument);
@@ -89,6 +103,11 @@ void main_task_start(void *argument)
     /* Initialize the display */
     main_task_display_init();
     display_draw_logo();
+
+    main_task_led_init();
+
+    led_set_enabled(LED_ILLUM_ALL);
+    led_set_brightness(1);
 
     for (;;) {
         // do nothing
