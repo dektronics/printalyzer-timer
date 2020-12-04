@@ -15,6 +15,7 @@
 #include "led.h"
 #include "keypad.h"
 #include "buzzer.h"
+#include "relay.h"
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
@@ -93,6 +94,17 @@ void main_task_buzzer_init()
     buzzer_init(&buzzer_handle);
 }
 
+void main_task_relay_init()
+{
+    const relay_handle_t relay_handle = {
+        .enlarger_gpio_port = RELAY_ENLG_GPIO_Port,
+        .enlarger_gpio_pin = RELAY_ENLG_Pin,
+        .safelight_gpio_port = RELAY_SFLT_GPIO_Port,
+        .safelight_gpio_pin = RELAY_SFLT_Pin
+    };
+    relay_init(&relay_handle);
+}
+
 void main_task_start(void *argument)
 {
     UNUSED(argument);
@@ -144,6 +156,9 @@ void main_task_start(void *argument)
     /* Piezo buzzer */
     main_task_buzzer_init();
 
+    /* Relay driver */
+    main_task_relay_init();
+
     /* GPIO queue task */
     gpio_event_queue = xQueueCreate(10, sizeof(uint16_t));
     gpio_queue_task_handle = osThreadNew(gpio_queue_task, NULL, &gpio_queue_task_attributes);
@@ -175,6 +190,17 @@ void main_task_start(void *argument)
                 /* Focus pressed */
                 //ESP_LOGI(TAG, "-->Focus pressed");
             }
+
+#if 0
+            /* Relay driver testing */
+            if (keypad_event.key == KEYPAD_START) {
+                /* Start pressed */
+                relay_enlarger_enable(keypad_event.pressed);
+            } else if (keypad_event.key == KEYPAD_FOCUS) {
+                /* Focus pressed */
+                relay_safelight_enable(keypad_event.pressed);
+            }
+#endif
         }
     }
 }
