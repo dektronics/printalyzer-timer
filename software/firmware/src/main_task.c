@@ -14,6 +14,7 @@
 #include "display.h"
 #include "led.h"
 #include "keypad.h"
+#include "buzzer.h"
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
@@ -79,6 +80,19 @@ void main_task_led_init()
     led_init(&led_handle);
 }
 
+void main_task_buzzer_init()
+{
+    const pam8904e_handle_t buzzer_handle = {
+        .en1_gpio_port = BUZZ_EN1_GPIO_Port,
+        .en1_gpio_pin = BUZZ_EN1_Pin,
+        .en2_gpio_port = BUZZ_EN2_GPIO_Port,
+        .en2_gpio_pin = BUZZ_EN2_Pin,
+        .din_tim = &htim9,
+        .din_tim_channel = TIM_CHANNEL_1
+    };
+    buzzer_init(&buzzer_handle);
+}
+
 void main_task_start(void *argument)
 {
     UNUSED(argument);
@@ -127,6 +141,9 @@ void main_task_start(void *argument)
     /* Keypad controller */
     keypad_init(&hi2c1);
 
+    /* Piezo buzzer */
+    main_task_buzzer_init();
+
     /* GPIO queue task */
     gpio_event_queue = xQueueCreate(10, sizeof(uint16_t));
     gpio_queue_task_handle = osThreadNew(gpio_queue_task, NULL, &gpio_queue_task_attributes);
@@ -138,6 +155,15 @@ void main_task_start(void *argument)
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+    /* Startup beep */
+    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
+    buzzer_start();
+    osDelay(100);
+    buzzer_stop();
+    buzzer_set_volume(BUZZER_VOLUME_OFF);
+
+    ESP_LOGI(TAG, "Startup complete");
 
     for (;;) {
         keypad_event_t keypad_event;
