@@ -32,6 +32,8 @@
 #include <sys/times.h>
 #include <stm32f4xx_hal.h>
 
+#define STDOUT_FILENO 1
+#define STDERR_FILENO 2
 
 /* Variables */
 //#undef errno
@@ -82,13 +84,18 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-        __io_putchar(*ptr++);
+    if (file == STDOUT_FILENO || file == STDERR_FILENO) {
+        HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
+        if (status == HAL_OK) {
+            return len;
+        } else {
+            errno = EIO;
+            return -1;
+        }
+    } else {
+        errno = EBADF;
+        return -1;
     }
-    return len;
 }
 
 int _close(int file)

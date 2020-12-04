@@ -6,20 +6,20 @@
 #include <stdbool.h>
 
 typedef enum {
-    KEY_START = 105,
-    KEY_FOCUS = 106,
-    KEY_INC_EXPOSURE = 107,
-    KEY_DEC_EXPOSURE = 108,
-    KEY_INC_CONTRAST = 109,
-    KEY_DEC_CONTRAST = 110,
-    KEY_ADD_ADJUSTMENT = 112,
-    KEY_TEST_STRIP = 111,
-    KEY_CANCEL = 0, /* not working */
-    KEY_MENU = 0, /* not working */
-    KEY_ENCODER = 97,
-    KEY_BLACKOUT = 98,
-    KEY_FOOTSWITCH = 99,
-    KEY_METER_PROBE = 0, /* not working */
+    KEYPAD_START = 105,
+    KEYPAD_FOCUS = 106,
+    KEYPAD_INC_EXPOSURE = 107,
+    KEYPAD_DEC_EXPOSURE = 108,
+    KEYPAD_INC_CONTRAST = 109,
+    KEYPAD_DEC_CONTRAST = 110,
+    KEYPAD_ADD_ADJUSTMENT = 112,
+    KEYPAD_TEST_STRIP = 111,
+    KEYPAD_CANCEL = 0, /* not working */
+    KEYPAD_MENU = 0, /* not working */
+    KEYPAD_ENCODER = 97,
+    KEYPAD_BLACKOUT = 98,
+    KEYPAD_FOOTSWITCH = 99,
+    KEYPAD_METER_PROBE = 0, /* not working */
 } keypad_key_t;
 
 /**
@@ -31,7 +31,7 @@ typedef enum {
  * Key code 200 is the capacitive touch pad
  */
 typedef struct {
-    uint8_t key;
+    keypad_key_t key;
     bool pressed;
 } keypad_event_t;
 

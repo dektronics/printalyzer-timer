@@ -142,10 +142,12 @@ void main_task_start(void *argument)
     for (;;) {
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
-            if (keypad_event.pressed && keypad_event.key == KEY_START) {
+            if (keypad_event.pressed && keypad_event.key == KEYPAD_START) {
                 /* Start pressed */
-            } else if (keypad_event.pressed && keypad_event.key == KEY_FOCUS) {
+                //ESP_LOGI(TAG, "-->Start pressed");
+            } else if (keypad_event.pressed && keypad_event.key == KEYPAD_FOCUS) {
                 /* Focus pressed */
+                //ESP_LOGI(TAG, "-->Focus pressed");
             }
         }
     }

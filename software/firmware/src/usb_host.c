@@ -7,6 +7,8 @@
 
 #include <esp_log.h>
 
+#include "keypad.h"
+
 static const char *TAG = "main_task";
 
 USBH_HandleTypeDef hUsbHostFS;
@@ -87,7 +89,65 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
      * This callback is defined with weak linkage in the USB Host library,
      * so we use it by declaring it here.
      */
-    //TODO handle events from HID devices
+    if(USBH_HID_GetDeviceType(phost) == HID_KEYBOARD) {
+        uint8_t key;
+        HID_KEYBD_Info_TypeDef *keyboard_info;
+        keyboard_info = USBH_HID_GetKeybdInfo(phost);
+        key = USBH_HID_GetASCIICode(keyboard_info);
+        ESP_LOGD(TAG, "Keyboard: key='%c', code=0x%02X", key, keyboard_info->keys[0]);
+
+        keypad_event_t keypad_event = {
+            .key = 0,
+            .pressed = true
+        };
+        switch (keyboard_info->keys[0]) {
+        case KEY_UPARROW:
+            keypad_event.key = KEYPAD_INC_EXPOSURE;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_DOWNARROW:
+            keypad_event.key = KEYPAD_DEC_EXPOSURE;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_LEFTARROW:
+            keypad_event.key = KEYPAD_DEC_CONTRAST;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_RIGHTARROW:
+            keypad_event.key = KEYPAD_INC_CONTRAST;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_SPACEBAR:
+            keypad_event.key = KEYPAD_FOCUS;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_ENTER:
+            keypad_event.key = KEYPAD_START;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_A:
+        case KEY_EQUAL_PLUS:
+        case KEY_KEYPAD_PLUS:
+            keypad_event.key = KEYPAD_ADD_ADJUSTMENT;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_T:
+        case KEY_8_ASTERISK:
+            keypad_event.key = KEYPAD_TEST_STRIP;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_F1:
+            keypad_event.key = KEYPAD_MENU;
+            keypad_inject_event(&keypad_event);
+            break;
+        case KEY_ESCAPE:
+            keypad_event.key = KEYPAD_CANCEL;
+            keypad_inject_event(&keypad_event);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 void usb_msc_active()
