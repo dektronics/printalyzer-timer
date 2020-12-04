@@ -12,6 +12,7 @@
 #define USB_DRIVE_VBUS_GPIO_Port GPIOC
 #define USB_VBUS_OC_Pin          GPIO_PIN_2
 #define USB_VBUS_OC_GPIO_Port    GPIOC
+#define USB_VBUS_OC_EXTI_IRQn    EXTI2_IRQn
 
 /* Pin mapping for piezo driver */
 #define BUZZ_EN1_Pin             GPIO_PIN_0
@@ -36,6 +37,7 @@
 /* Pin mapping for meter sensor interrupt */
 #define SENSOR_INT_Pin           GPIO_PIN_1
 #define SENSOR_INT_GPIO_Port     GPIOB
+#define SENSOR_INT_EXTI_IRQn     EXTI1_IRQn
 
 /* Pin mapping for LED driver */
 #define LED_LE_Pin               GPIO_PIN_14
