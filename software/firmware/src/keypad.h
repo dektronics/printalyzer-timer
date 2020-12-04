@@ -14,12 +14,12 @@ typedef enum {
     KEYPAD_DEC_CONTRAST = 110,
     KEYPAD_ADD_ADJUSTMENT = 112,
     KEYPAD_TEST_STRIP = 111,
-    KEYPAD_CANCEL = 0, /* not working */
-    KEYPAD_MENU = 0, /* not working */
+    KEYPAD_CANCEL = 113,
+    KEYPAD_MENU = 114,
     KEYPAD_ENCODER = 97,
     KEYPAD_BLACKOUT = 98,
     KEYPAD_FOOTSWITCH = 99,
-    KEYPAD_METER_PROBE = 0, /* not working */
+    KEYPAD_METER_PROBE = 100
 } keypad_key_t;
 
 /**
