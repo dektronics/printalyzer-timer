@@ -62,5 +62,6 @@
 /* Pin mapping for keypad controller */
 #define KEY_INT_Pin              GPIO_PIN_5
 #define KEY_INT_GPIO_Port        GPIOB
+#define KEY_INT_EXTI_IRQn        EXTI9_5_IRQn
 
 #endif /* BOARD_CONFIG_H */

@@ -156,7 +156,7 @@ void gpio_init(void)
 
     /* Configure GPIO pins: SENSOR_INT_Pin KEY_INT_Pin */
     GPIO_InitStruct.Pin = SENSOR_INT_Pin|KEY_INT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -404,6 +404,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM11) {
         HAL_IncTick();
     }
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    main_task_notify_gpio_int(GPIO_Pin);
 }
 
 void Error_Handler(void)

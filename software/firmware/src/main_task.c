@@ -2,18 +2,23 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <queue.h>
 #include <cmsis_os.h>
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include <esp_log.h>
 
 #include "usb_host.h"
 #include "display.h"
 #include "led.h"
+#include "keypad.h"
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
+osThreadId_t gpio_queue_task_handle;
+static xQueueHandle gpio_event_queue = NULL;
 
 /* Peripheral handles initialized before this task is started */
 extern UART_HandleTypeDef huart1;
@@ -26,11 +31,18 @@ extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
 
 static void main_task_start(void *argument);
+static void gpio_queue_task(void *argument);
 
 const osThreadAttr_t main_task_attributes = {
     .name = "main_task",
     .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 2048 * 4
+};
+
+const osThreadAttr_t gpio_queue_task_attributes = {
+    .name = "gpio_queue_task",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 2048
 };
 
 static const char *TAG = "main_task";
@@ -112,7 +124,52 @@ void main_task_start(void *argument)
     /* Rotary encoder */
     HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 
+    /* Keypad controller */
+    keypad_init(&hi2c1);
+
+    /* GPIO queue task */
+    gpio_event_queue = xQueueCreate(10, sizeof(uint16_t));
+    gpio_queue_task_handle = osThreadNew(gpio_queue_task, NULL, &gpio_queue_task_attributes);
+
+    /* Enable interrupts */
+    HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
     for (;;) {
-        // do nothing
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
+            if (keypad_event.pressed && keypad_event.key == KEY_START) {
+                /* Start pressed */
+            } else if (keypad_event.pressed && keypad_event.key == KEY_FOCUS) {
+                /* Focus pressed */
+            }
+        }
     }
+}
+
+void gpio_queue_task(void *argument)
+{
+    uint16_t gpio_pin;
+    for (;;) {
+        if(xQueueReceive(gpio_event_queue, &gpio_pin, portMAX_DELAY)) {
+            if (gpio_pin == USB_VBUS_OC_Pin) {
+                /* USB VBUS OverCurrent */
+                ESP_LOGD(TAG, "USB VBUS OverCurrent interrupt");
+            } else if (gpio_pin == SENSOR_INT_Pin) {
+                /* Sensor interrupt */
+                ESP_LOGD(TAG, "Sensor interrupt");
+            } else if(gpio_pin == KEY_INT_Pin) {
+                /* Keypad controller interrupt */
+                keypad_int_event_handler();
+            } else {
+                ESP_LOGI(TAG, "GPIO[%d] interrupt", gpio_pin);
+            }
+        }
+    }
+}
+
+void main_task_notify_gpio_int(uint16_t gpio_pin)
+{
+    uint16_t foo = gpio_pin;
+    xQueueSendFromISR(gpio_event_queue, &foo, NULL);
 }
