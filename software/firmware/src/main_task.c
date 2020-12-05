@@ -215,7 +215,10 @@ void gpio_queue_task(void *argument)
                 ESP_LOGD(TAG, "USB VBUS OverCurrent interrupt");
             } else if (gpio_pin == SENSOR_INT_Pin) {
                 /* Sensor interrupt */
-                ESP_LOGD(TAG, "Sensor interrupt");
+                GPIO_PinState state = HAL_GPIO_ReadPin(SENSOR_INT_GPIO_Port, SENSOR_INT_Pin);
+                if (state == GPIO_PIN_RESET) {
+                    ESP_LOGD(TAG, "Sensor interrupt");
+                }
             } else if(gpio_pin == KEY_INT_Pin) {
                 /* Keypad controller interrupt */
                 keypad_int_event_handler();
@@ -228,6 +231,5 @@ void gpio_queue_task(void *argument)
 
 void main_task_notify_gpio_int(uint16_t gpio_pin)
 {
-    uint16_t foo = gpio_pin;
-    xQueueSendFromISR(gpio_event_queue, &foo, NULL);
+    xQueueSendFromISR(gpio_event_queue, &gpio_pin, NULL);
 }
