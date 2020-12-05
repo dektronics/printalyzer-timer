@@ -19,7 +19,9 @@ typedef enum {
     KEYPAD_ENCODER = 97,
     KEYPAD_BLACKOUT = 98,
     KEYPAD_FOOTSWITCH = 99,
-    KEYPAD_METER_PROBE = 100
+    KEYPAD_METER_PROBE = 100,
+    KEYPAD_ENCODER_CCW = 200,
+    KEYPAD_ENCODER_CW = 201
 } keypad_key_t;
 
 /**
@@ -28,7 +30,7 @@ typedef enum {
  * Key codes 1..80 are from the keypad array
  * Key codes 97..104 are for Row GPI key events
  * Key codes 105..114 are for Column GPI key events
- * Key code 200 is the capacitive touch pad
+ * Key codes 200..255 are injected from other sources
  */
 typedef struct {
     keypad_key_t key;

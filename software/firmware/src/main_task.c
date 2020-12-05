@@ -16,6 +16,8 @@
 #include "keypad.h"
 #include "buzzer.h"
 #include "relay.h"
+#include "m24m01.h" //TODO remove after testing
+#include "tcs3472.h" //TODO remove after testing
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
@@ -148,7 +150,7 @@ void main_task_start(void *argument)
     led_set_brightness(1);
 
     /* Rotary encoder */
-    HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
+    HAL_TIM_Encoder_Start_IT(&htim1, TIM_CHANNEL_ALL);
 
     /* Keypad controller */
     keypad_init(&hi2c1);
@@ -182,7 +184,7 @@ void main_task_start(void *argument)
 
     for (;;) {
         keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
+        if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_event.pressed && keypad_event.key == KEYPAD_START) {
                 /* Start pressed */
                 //ESP_LOGI(TAG, "-->Start pressed");
@@ -190,17 +192,6 @@ void main_task_start(void *argument)
                 /* Focus pressed */
                 //ESP_LOGI(TAG, "-->Focus pressed");
             }
-
-#if 0
-            /* Relay driver testing */
-            if (keypad_event.key == KEYPAD_START) {
-                /* Start pressed */
-                relay_enlarger_enable(keypad_event.pressed);
-            } else if (keypad_event.key == KEYPAD_FOCUS) {
-                /* Focus pressed */
-                relay_safelight_enable(keypad_event.pressed);
-            }
-#endif
         }
     }
 }
@@ -222,6 +213,20 @@ void gpio_queue_task(void *argument)
             } else if(gpio_pin == KEY_INT_Pin) {
                 /* Keypad controller interrupt */
                 keypad_int_event_handler();
+            } else if (gpio_pin == ENC_CH1_Pin) {
+                /* Encoder counter interrupt, counter-clockwise rotation */
+                keypad_event_t keypad_event = {
+                    .key = KEYPAD_ENCODER_CCW,
+                    .pressed = true
+                };
+                keypad_inject_event(&keypad_event);
+            } else if (gpio_pin == ENC_CH2_Pin) {
+                /* Encoder counter interrupt, clockwise rotation */
+                keypad_event_t keypad_event = {
+                    .key = KEYPAD_ENCODER_CW,
+                    .pressed = true
+                };
+                keypad_inject_event(&keypad_event);
             } else {
                 ESP_LOGI(TAG, "GPIO[%d] interrupt", gpio_pin);
             }

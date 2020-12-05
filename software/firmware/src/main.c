@@ -269,11 +269,11 @@ void tim1_init(void)
     sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC1Filter = 0xF;
+    sConfig.IC1Filter = 0x0F;
     sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
     sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
     sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC2Filter = 0xF;
+    sConfig.IC2Filter = 0x0F;
 
     if (HAL_TIM_Encoder_Init(&htim1, &sConfig) != HAL_OK) {
         Error_Handler();
@@ -409,6 +409,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     main_task_notify_gpio_int(GPIO_Pin);
+}
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM1) {
+        if (!(__HAL_TIM_GET_COUNTER(&htim1) & 0x00000001)) {
+            if(__HAL_TIM_IS_TIM_COUNTING_DOWN(&htim1)) {
+                main_task_notify_gpio_int(ENC_CH1_Pin);
+            } else {
+                main_task_notify_gpio_int(ENC_CH2_Pin);
+            }
+        }
+    }
 }
 
 void Error_Handler(void)

@@ -150,14 +150,16 @@ void EXTI9_5_IRQHandler(void)
  */
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
-    /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
-
-    /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
     HAL_TIM_IRQHandler(&htim1);
     HAL_TIM_IRQHandler(&htim11);
-    /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
+}
 
-    /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 1 */
+/**
+ * @brief This function handles TIM1 capture compare interrupt.
+ */
+void TIM1_CC_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
@@ -165,11 +167,5 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
  */
 void OTG_FS_IRQHandler(void)
 {
-    /* USER CODE BEGIN OTG_FS_IRQn 0 */
-
-    /* USER CODE END OTG_FS_IRQn 0 */
     HAL_HCD_IRQHandler(&hhcd_USB_OTG_FS);
-    /* USER CODE BEGIN OTG_FS_IRQn 1 */
-
-    /* USER CODE END OTG_FS_IRQn 1 */
 }

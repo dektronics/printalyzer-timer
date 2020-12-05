@@ -27,7 +27,7 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     keypad_i2c = hi2c;
 
     // Create the queue for key events
-    keypad_event_queue = xQueueCreate(10, sizeof(keypad_event_t));
+    keypad_event_queue = xQueueCreate(20, sizeof(keypad_event_t));
     if (!keypad_event_queue) {
         return HAL_ERROR;
     }
