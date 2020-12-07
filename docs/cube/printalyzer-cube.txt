@@ -1,6 +1,6 @@
 Configuration	printalyzer-cube
 STM32CubeMX 	6.1.0
-Date	12/02/2020
+Date	12/07/2020
 MCU	STM32F411RETx
 
 
@@ -146,7 +146,7 @@ STM32Cube MCU packages and embedded software packs : Copy only the necessary lib
 Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
 Backup previously generated files when re-generating : No
 Delete previously generated files when not re-generated : Yes
-Set all free pins as analog (to optimize the power consumption) : No
+Set all free pins as analog (to optimize the power consumption) : Yes
 
 
 Toolchains Settings : 
