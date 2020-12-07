@@ -16,8 +16,6 @@
 #include "keypad.h"
 #include "buzzer.h"
 #include "relay.h"
-#include "m24m01.h" //TODO remove after testing
-#include "tcs3472.h" //TODO remove after testing
 #include "board_config.h"
 
 osThreadId_t main_task_handle;
@@ -181,16 +179,23 @@ void main_task_start(void *argument)
     buzzer_set_volume(BUZZER_VOLUME_OFF);
 
     ESP_LOGI(TAG, "Startup complete");
+    osDelay(500);
+
+    /* Startup display elements */
+    display_main_elements_t elements = {
+        .tone_graph = 0,
+        .contrast_grade = DISPLAY_GRADE_2_HALF,
+        .time_seconds = 15,
+        .time_milliseconds = 0,
+        .fraction_digits = 1
+    };
+    display_draw_main_elements(&elements);
 
     for (;;) {
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-            if (keypad_event.pressed && keypad_event.key == KEYPAD_START) {
-                /* Start pressed */
-                //ESP_LOGI(TAG, "-->Start pressed");
-            } else if (keypad_event.pressed && keypad_event.key == KEYPAD_FOCUS) {
-                /* Focus pressed */
-                //ESP_LOGI(TAG, "-->Focus pressed");
+            if (keypad_event.pressed) {
+                //TODO Handle keypad events
             }
         }
     }

@@ -22,7 +22,7 @@ typedef enum {
 
 #define DISPLAY_TONE_UNDER 0x10000
 #define DISPLAY_TONE_OVER  0x00001
-#define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x10000 << (-1 * x) : (0x10000 >> x))
+#define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
 
 typedef struct {
     uint32_t tone_graph;

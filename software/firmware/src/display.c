@@ -411,7 +411,9 @@ void display_draw_tone_graph(uint32_t tone_graph)
     uint32_t mask = 0x08000;
     uint16_t x_offset = 9;
     do {
-        u8g2_DrawBox(&u8g2, x_offset, 0, 14, 5);
+        if (tone_graph & mask) {
+            u8g2_DrawBox(&u8g2, x_offset, 0, 14, 5);
+        }
         x_offset += 16;
         mask = mask >> 1;
     } while (mask != 0x00001);
@@ -557,7 +559,7 @@ void display_draw_main_elements(const display_main_elements_t *elements)
 {
     // This is just a rough attempt to figure out the display.
     // It will need to be cleaned up for efficiency when redrawing
-    // the time in a loop.
+    // the time counter in a loop.
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);

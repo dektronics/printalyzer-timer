@@ -24,7 +24,7 @@ void u8g2_stm32_hal_init(u8g2_t *u8g2, const u8g2_display_handle_t *u8g2_display
 
 uint8_t u8g2_stm32_spi_byte_cb(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
-	//STM_LOGD(TAG, "spi_byte_cb: Received a msg: %d, arg_int: %d, arg_ptr: %p", msg, arg_int, arg_ptr);
+	//ESP_LOGD(TAG, "spi_byte_cb: Received a msg: %d, arg_int: %d, arg_ptr: %p", msg, arg_int, arg_ptr);
 
 	switch (msg) {
 	case U8X8_MSG_BYTE_SET_DC:
