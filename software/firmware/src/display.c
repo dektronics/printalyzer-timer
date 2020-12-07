@@ -474,6 +474,7 @@ void display_draw_contrast_grade(display_grade_t grade)
     case DISPLAY_GRADE_5:
         display_draw_digit(x, y, 5);
         break;
+    case DISPLAY_GRADE_NONE:
     default:
         return;
     }

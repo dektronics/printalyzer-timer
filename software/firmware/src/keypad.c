@@ -16,6 +16,8 @@ static I2C_HandleTypeDef *keypad_i2c;
 static xQueueHandle keypad_event_queue = NULL;
 static bool keypad_initialized = false;
 
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+
 HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
 {
     HAL_StatusTypeDef ret = HAL_OK;

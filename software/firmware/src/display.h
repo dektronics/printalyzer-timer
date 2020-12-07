@@ -17,7 +17,8 @@ typedef enum {
     DISPLAY_GRADE_3_HALF,
     DISPLAY_GRADE_4,
     DISPLAY_GRADE_4_HALF,
-    DISPLAY_GRADE_5
+    DISPLAY_GRADE_5,
+    DISPLAY_GRADE_NONE
 } display_grade_t;
 
 #define DISPLAY_TONE_UNDER 0x10000
