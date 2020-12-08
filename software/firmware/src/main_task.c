@@ -197,30 +197,67 @@ void main_task_start(void *argument)
     convert_exposure_to_display(&elements, &exposure_state);
     display_draw_main_elements(&elements);
 
-    TickType_t cancel_press = 0;
+    bool adj_inc_mode = false;
+    bool adj_inc_mode_swallow_release_up = false;
+    bool adj_inc_mode_swallow_release_down = false;
     for (;;) {
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-            if (keypad_event.pressed) {
-                if (keypad_event.key == KEYPAD_INC_EXPOSURE) {
-                    exposure_adj_increase(&exposure_state);
-                } else if (keypad_event.key == KEYPAD_DEC_EXPOSURE) {
-                    exposure_adj_decrease(&exposure_state);
-                } else if (keypad_event.key == KEYPAD_INC_CONTRAST) {
-                    exposure_contrast_increase(&exposure_state);
-                } else if (keypad_event.key == KEYPAD_DEC_CONTRAST) {
-                    exposure_contrast_decrease(&exposure_state);
-                } else if (keypad_event.key == KEYPAD_CANCEL) {
-                    cancel_press = xTaskGetTickCount();
+            //TODO Create something that takes key events and states and creates enumerated actions
+
+            // Swallow release events from button combos that put us into
+            // an alternate UI mode.
+            if (adj_inc_mode_swallow_release_up && keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
+                adj_inc_mode_swallow_release_up = false;
+                continue;
+            }
+            if (adj_inc_mode_swallow_release_down && keypad_event.key == KEYPAD_DEC_EXPOSURE && !keypad_event.pressed) {
+                adj_inc_mode_swallow_release_down = false;
+                continue;
+            }
+
+            if (adj_inc_mode) {
+                if (keypad_event.key == KEYPAD_INC_EXPOSURE
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                    ESP_LOGI(TAG, "--> Inc adjustment increment");
+                }
+                else if (keypad_event.key == KEYPAD_DEC_EXPOSURE
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                    ESP_LOGI(TAG, "--> Dec adjustment increment");
+                }
+                else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                    adj_inc_mode = false;
+                    adj_inc_mode_swallow_release_up = false;
+                    adj_inc_mode_swallow_release_down = false;
+                    ESP_LOGI(TAG, "--> Adjust increment mode finished");
                 }
             } else {
-                if (keypad_event.key == KEYPAD_CANCEL) {
-                    TickType_t cancel_release = xTaskGetTickCount();
-                    if (cancel_press > 0 && cancel_press < cancel_release
-                        && (cancel_release - cancel_press) < (2000 * portTICK_PERIOD_MS)) {
-                        exposure_state_defaults(&exposure_state);
-                    }
-                    cancel_press = 0;
+                if (keypad_event.key == KEYPAD_INC_EXPOSURE
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                        exposure_adj_increase(&exposure_state);
+                }
+                else if (keypad_event.key == KEYPAD_DEC_EXPOSURE
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                        exposure_adj_decrease(&exposure_state);
+                }
+                else if (keypad_event.key == KEYPAD_INC_CONTRAST
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                    exposure_contrast_increase(&exposure_state);
+                }
+                else if (keypad_event.key == KEYPAD_DEC_CONTRAST
+                    && (!keypad_event.pressed || keypad_event.repeated)) {
+                    exposure_contrast_decrease(&exposure_state);
+                }
+                else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                    exposure_state_defaults(&exposure_state);
+                }
+                else if (((keypad_event.key == KEYPAD_INC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_DEC_EXPOSURE))
+                    || (keypad_event.key == KEYPAD_DEC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_INC_EXPOSURE)))
+                    && keypad_event.pressed && !adj_inc_mode) {
+                    adj_inc_mode = true;
+                    adj_inc_mode_swallow_release_up = true;
+                    adj_inc_mode_swallow_release_down = true;
+                    ESP_LOGI(TAG, "--> Adjust increment mode");
                 }
             }
         }

@@ -5,6 +5,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+/**
+ * Mapping of key codes
+ *
+ * Key codes 1..80 are from the keypad array
+ * Key codes 97..104 are for Row GPI key events
+ * Key codes 105..114 are for Column GPI key events
+ * Key codes 200..255 are injected from other sources
+ */
 typedef enum {
     KEYPAD_START = 105,
     KEYPAD_FOCUS = 106,
@@ -24,17 +32,11 @@ typedef enum {
     KEYPAD_ENCODER_CW = 201
 } keypad_key_t;
 
-/**
- * Represents a key press or release event
- *
- * Key codes 1..80 are from the keypad array
- * Key codes 97..104 are for Row GPI key events
- * Key codes 105..114 are for Column GPI key events
- * Key codes 200..255 are injected from other sources
- */
 typedef struct {
     keypad_key_t key;
     bool pressed;
+    bool repeated;
+    uint16_t keypad_state;
 } keypad_event_t;
 
 HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c);
@@ -43,6 +45,8 @@ HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);
 HAL_StatusTypeDef keypad_clear_events();
 HAL_StatusTypeDef keypad_flush_events();
 HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait);
+
+bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key);
 
 HAL_StatusTypeDef keypad_int_event_handler();
 
