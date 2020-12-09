@@ -46,5 +46,6 @@ void display_draw_test_pattern(bool mode);
 void display_draw_logo();
 
 void display_draw_main_elements(const display_main_elements_t *elements);
+void display_draw_stop_increment(uint8_t increment_den);
 
 #endif /* DISPLAY_H */

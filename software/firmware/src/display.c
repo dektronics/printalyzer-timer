@@ -484,7 +484,7 @@ void display_draw_contrast_grade(display_grade_t grade)
         u8g2_DrawLine(&u8g2, x + 46, y + 26, x + 64, y + 26);
         u8g2_DrawLine(&u8g2, x + 45, y + 27, x + 65, y + 27);
         u8g2_DrawLine(&u8g2, x + 46, y + 28, x + 64, y + 28);
-        display_draw_tdigit(x + 48, y + 31, 2);
+        display_draw_tdigit(x + 49, y + 31, 2);
     }
 }
 
@@ -572,6 +572,58 @@ void display_draw_main_elements(const display_main_elements_t *elements)
     display_draw_counter_time(elements->time_seconds,
         elements->time_milliseconds,
         elements->fraction_digits);
+
+    u8g2_SendBuffer(&u8g2);
+}
+
+void display_draw_stop_increment(uint8_t increment_den)
+{
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetFont(&u8g2, u8g2_font_logisoso34_tf);
+    u8g2_SetFontMode(&u8g2, 0);
+
+    u8g2_uint_t x = 50;
+    u8g2_uint_t y = 8;
+
+    // Clamp the denominator at 99, which is a value beyond
+    // what we ever expect to actually display.
+    if (increment_den > 99) {
+        increment_den = 99;
+    }
+
+    if (increment_den >= 20) {
+        // 1/DD stops (1/20 - 1/99)
+        display_draw_tdigit(x + 7, y, 1);
+        u8g2_DrawLine(&u8g2, x + 2, y + 26, x + 37, y + 26);
+        u8g2_DrawLine(&u8g2, x + 1, y + 27, x + 38, y + 27);
+        u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 37, y + 28);
+        display_draw_tdigit(x + 5, y + 31, increment_den % 100 / 10);
+        display_draw_tdigit(x + 22, y + 31, increment_den % 10);
+    } else if (increment_den >= 10) {
+        // 1/DD stops (1/10 - 1/19)
+        display_draw_tdigit(x + 7, y, 1);
+        u8g2_DrawLine(&u8g2, x + 8, y + 26, x + 32, y + 26);
+        u8g2_DrawLine(&u8g2, x + 7, y + 27, x + 33, y + 27);
+        u8g2_DrawLine(&u8g2, x + 8, y + 28, x + 32, y + 28);
+        display_draw_tdigit(x + 0, y + 31, increment_den % 100 / 10);
+        display_draw_tdigit(x + 17, y + 31, increment_den % 10);
+    } else if (increment_den > 1) {
+        // 1/D stops
+        display_draw_tdigit(x + 7, y, 1);
+        u8g2_DrawLine(&u8g2, x + 10, y + 26, x + 28, y + 26);
+        u8g2_DrawLine(&u8g2, x + 9, y + 27, x + 29, y + 27);
+        u8g2_DrawLine(&u8g2, x + 10, y + 28, x + 28, y + 28);
+        display_draw_tdigit(x + 13, y + 31, increment_den);
+    } else {
+        // 1 stop
+        display_draw_digit(x, y, 1);
+    }
+
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+    u8g2_DrawUTF8(&u8g2, x + 56, y + 46, "Stop");
 
     u8g2_SendBuffer(&u8g2);
 }

@@ -200,6 +200,7 @@ void main_task_start(void *argument)
     bool adj_inc_mode = false;
     bool adj_inc_mode_swallow_release_up = false;
     bool adj_inc_mode_swallow_release_down = false;
+    int stop_inc_den = 4;
     for (;;) {
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
@@ -219,17 +220,46 @@ void main_task_start(void *argument)
             if (adj_inc_mode) {
                 if (keypad_event.key == KEYPAD_INC_EXPOSURE
                     && (!keypad_event.pressed || keypad_event.repeated)) {
-                    ESP_LOGI(TAG, "--> Inc adjustment increment");
+                    if (stop_inc_den == 1) {
+                        stop_inc_den = 2;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_HALF;
+                    } else if (stop_inc_den == 2) {
+                        stop_inc_den = 3;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_THIRD;
+                    } else if (stop_inc_den == 3) {
+                        stop_inc_den = 4;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_QUARTER;
+                    } else if (stop_inc_den == 4) {
+                        stop_inc_den = 6;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_SIXTH;
+                    } else if (stop_inc_den == 6) {
+                        stop_inc_den = 12;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_TWELFTH;
+                    }
                 }
                 else if (keypad_event.key == KEYPAD_DEC_EXPOSURE
                     && (!keypad_event.pressed || keypad_event.repeated)) {
-                    ESP_LOGI(TAG, "--> Dec adjustment increment");
+                    if (stop_inc_den == 12) {
+                        stop_inc_den = 6;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_SIXTH;
+                    } else if (stop_inc_den == 6) {
+                        stop_inc_den = 4;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_QUARTER;
+                    } else if (stop_inc_den == 4) {
+                        stop_inc_den = 3;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_THIRD;
+                    } else if (stop_inc_den == 3) {
+                        stop_inc_den = 2;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_HALF;
+                    } else if (stop_inc_den == 2) {
+                        stop_inc_den = 1;
+                        exposure_state.adjustment_increment = EXPOSURE_ADJ_WHOLE;
+                    }
                 }
                 else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                     adj_inc_mode = false;
                     adj_inc_mode_swallow_release_up = false;
                     adj_inc_mode_swallow_release_down = false;
-                    ESP_LOGI(TAG, "--> Adjust increment mode finished");
                 }
             } else {
                 if (keypad_event.key == KEYPAD_INC_EXPOSURE
@@ -250,6 +280,7 @@ void main_task_start(void *argument)
                 }
                 else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                     exposure_state_defaults(&exposure_state);
+                    stop_inc_den = 4;
                 }
                 else if (((keypad_event.key == KEYPAD_INC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_DEC_EXPOSURE))
                     || (keypad_event.key == KEYPAD_DEC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_INC_EXPOSURE)))
@@ -257,12 +288,15 @@ void main_task_start(void *argument)
                     adj_inc_mode = true;
                     adj_inc_mode_swallow_release_up = true;
                     adj_inc_mode_swallow_release_down = true;
-                    ESP_LOGI(TAG, "--> Adjust increment mode");
                 }
             }
         }
-        convert_exposure_to_display(&elements, &exposure_state);
-        display_draw_main_elements(&elements);
+        if (adj_inc_mode) {
+            display_draw_stop_increment(stop_inc_den);
+        } else {
+            convert_exposure_to_display(&elements, &exposure_state);
+            display_draw_main_elements(&elements);
+        }
     }
 }
 
