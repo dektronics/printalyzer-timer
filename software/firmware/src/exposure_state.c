@@ -60,6 +60,78 @@ void exposure_contrast_decrease(exposure_state_t *state)
     }
 }
 
+void exposure_adj_increment_increase(exposure_state_t *state)
+{
+    if (!state) { return; }
+
+    switch (state->adjustment_increment) {
+    case EXPOSURE_ADJ_SIXTH:
+        state->adjustment_increment = EXPOSURE_ADJ_TWELFTH;
+        break;
+    case EXPOSURE_ADJ_QUARTER:
+        state->adjustment_increment = EXPOSURE_ADJ_SIXTH;
+        break;
+    case EXPOSURE_ADJ_THIRD:
+        state->adjustment_increment = EXPOSURE_ADJ_QUARTER;
+        break;
+    case EXPOSURE_ADJ_HALF:
+        state->adjustment_increment = EXPOSURE_ADJ_THIRD;
+        break;
+    case EXPOSURE_ADJ_WHOLE:
+        state->adjustment_increment = EXPOSURE_ADJ_HALF;
+        break;
+    default:
+        break;
+    }
+}
+
+void exposure_adj_increment_decrease(exposure_state_t *state)
+{
+    if (!state) { return; }
+
+    switch (state->adjustment_increment) {
+    case EXPOSURE_ADJ_TWELFTH:
+        state->adjustment_increment = EXPOSURE_ADJ_SIXTH;
+        break;
+    case EXPOSURE_ADJ_SIXTH:
+        state->adjustment_increment = EXPOSURE_ADJ_QUARTER;
+        break;
+    case EXPOSURE_ADJ_QUARTER:
+        state->adjustment_increment = EXPOSURE_ADJ_THIRD;
+        break;
+    case EXPOSURE_ADJ_THIRD:
+        state->adjustment_increment = EXPOSURE_ADJ_HALF;
+        break;
+    case EXPOSURE_ADJ_HALF:
+        state->adjustment_increment = EXPOSURE_ADJ_WHOLE;
+        break;
+    default:
+        break;
+    }
+}
+
+uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+
+    switch (state->adjustment_increment) {
+    case EXPOSURE_ADJ_TWELFTH:
+        return 12;
+    case EXPOSURE_ADJ_SIXTH:
+        return 6;
+    case EXPOSURE_ADJ_QUARTER:
+        return 4;
+    case EXPOSURE_ADJ_THIRD:
+        return 3;
+    case EXPOSURE_ADJ_HALF:
+        return 2;
+    case EXPOSURE_ADJ_WHOLE:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 void exposure_recalculate(exposure_state_t *state)
 {
     float stops = state->adjustment_value / 12.0f;

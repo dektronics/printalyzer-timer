@@ -5,6 +5,8 @@
 #ifndef EXPOSURE_STATE_H
 #define EXPOSURE_STATE_H
 
+#include <stdint.h>
+
 typedef enum {
     CONTRAST_GRADE_00,
     CONTRAST_GRADE_0,
@@ -38,9 +40,15 @@ typedef struct __exposure_state_t {
 } exposure_state_t;
 
 void exposure_state_defaults(exposure_state_t *state);
+
 void exposure_adj_increase(exposure_state_t *state);
 void exposure_adj_decrease(exposure_state_t *state);
+
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
+
+void exposure_adj_increment_increase(exposure_state_t *state);
+void exposure_adj_increment_decrease(exposure_state_t *state);
+uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state);
 
 #endif /* EXPOSURE_STATE_H */

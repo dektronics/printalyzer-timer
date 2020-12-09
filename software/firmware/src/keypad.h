@@ -47,6 +47,8 @@ HAL_StatusTypeDef keypad_flush_events();
 HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait);
 
 bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key);
+bool keypad_is_key_released_or_repeated(const keypad_event_t *event, keypad_key_t key);
+bool keypad_is_key_combo_pressed(const keypad_event_t *event, keypad_key_t key1, keypad_key_t key2);
 
 HAL_StatusTypeDef keypad_int_event_handler();
 

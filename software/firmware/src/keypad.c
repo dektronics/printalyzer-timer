@@ -389,8 +389,34 @@ void keypad_button_repeat_timer_callback(TimerHandle_t xTimer)
 
 bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key)
 {
+    if (!event) { return false; }
+
     int index = keypad_keycode_to_index(key);
     if (index < KEYPAD_INDEX_MAX && event && event->keypad_state & (1 << index)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool keypad_is_key_released_or_repeated(const keypad_event_t *event, keypad_key_t key)
+{
+    if (!event) { return false; }
+
+    if (event->key == key && (!event->pressed || event->repeated)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool keypad_is_key_combo_pressed(const keypad_event_t *event, keypad_key_t key1, keypad_key_t key2)
+{
+    if (!event) { return false; }
+
+    if (((event->key == key1 && keypad_is_key_pressed(event, key2))
+        || (event->key == key2 && keypad_is_key_pressed(event, key1)))
+        && event->pressed) {
         return true;
     } else {
         return false;

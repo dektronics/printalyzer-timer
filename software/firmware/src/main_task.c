@@ -18,7 +18,7 @@
 #include "buzzer.h"
 #include "relay.h"
 #include "board_config.h"
-#include "exposure_state.h"
+#include "state_controller.h"
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
@@ -36,7 +36,6 @@ extern TIM_HandleTypeDef htim9;
 
 static void main_task_start(void *argument);
 static void gpio_queue_task(void *argument);
-static void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure);
 
 const osThreadAttr_t main_task_attributes = {
     .name = "main_task",
@@ -184,180 +183,11 @@ void main_task_start(void *argument)
     ESP_LOGI(TAG, "Startup complete");
     osDelay(500);
 
-    /* Startup display elements */
-    display_main_elements_t elements = {
-        .tone_graph = 0,
-        .contrast_grade = DISPLAY_GRADE_2_HALF,
-        .time_seconds = 15,
-        .time_milliseconds = 0,
-        .fraction_digits = 1
-    };
-    exposure_state_t exposure_state;
-    exposure_state_defaults(&exposure_state);
-    convert_exposure_to_display(&elements, &exposure_state);
-    display_draw_main_elements(&elements);
+    /* Initialize state controller */
+    state_controller_init();
 
-    bool adj_inc_mode = false;
-    bool adj_inc_mode_swallow_release_up = false;
-    bool adj_inc_mode_swallow_release_down = false;
-    int stop_inc_den = 4;
-    for (;;) {
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-            //TODO Create something that takes key events and states and creates enumerated actions
-
-            // Swallow release events from button combos that put us into
-            // an alternate UI mode.
-            if (adj_inc_mode_swallow_release_up && keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
-                adj_inc_mode_swallow_release_up = false;
-                continue;
-            }
-            if (adj_inc_mode_swallow_release_down && keypad_event.key == KEYPAD_DEC_EXPOSURE && !keypad_event.pressed) {
-                adj_inc_mode_swallow_release_down = false;
-                continue;
-            }
-
-            if (adj_inc_mode) {
-                if (keypad_event.key == KEYPAD_INC_EXPOSURE
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                    if (stop_inc_den == 1) {
-                        stop_inc_den = 2;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_HALF;
-                    } else if (stop_inc_den == 2) {
-                        stop_inc_den = 3;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_THIRD;
-                    } else if (stop_inc_den == 3) {
-                        stop_inc_den = 4;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_QUARTER;
-                    } else if (stop_inc_den == 4) {
-                        stop_inc_den = 6;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_SIXTH;
-                    } else if (stop_inc_den == 6) {
-                        stop_inc_den = 12;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_TWELFTH;
-                    }
-                }
-                else if (keypad_event.key == KEYPAD_DEC_EXPOSURE
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                    if (stop_inc_den == 12) {
-                        stop_inc_den = 6;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_SIXTH;
-                    } else if (stop_inc_den == 6) {
-                        stop_inc_den = 4;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_QUARTER;
-                    } else if (stop_inc_den == 4) {
-                        stop_inc_den = 3;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_THIRD;
-                    } else if (stop_inc_den == 3) {
-                        stop_inc_den = 2;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_HALF;
-                    } else if (stop_inc_den == 2) {
-                        stop_inc_den = 1;
-                        exposure_state.adjustment_increment = EXPOSURE_ADJ_WHOLE;
-                    }
-                }
-                else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                    adj_inc_mode = false;
-                    adj_inc_mode_swallow_release_up = false;
-                    adj_inc_mode_swallow_release_down = false;
-                }
-            } else {
-                if (keypad_event.key == KEYPAD_INC_EXPOSURE
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                        exposure_adj_increase(&exposure_state);
-                }
-                else if (keypad_event.key == KEYPAD_DEC_EXPOSURE
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                        exposure_adj_decrease(&exposure_state);
-                }
-                else if (keypad_event.key == KEYPAD_INC_CONTRAST
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                    exposure_contrast_increase(&exposure_state);
-                }
-                else if (keypad_event.key == KEYPAD_DEC_CONTRAST
-                    && (!keypad_event.pressed || keypad_event.repeated)) {
-                    exposure_contrast_decrease(&exposure_state);
-                }
-                else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                    exposure_state_defaults(&exposure_state);
-                    stop_inc_den = 4;
-                }
-                else if (((keypad_event.key == KEYPAD_INC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_DEC_EXPOSURE))
-                    || (keypad_event.key == KEYPAD_DEC_EXPOSURE && keypad_is_key_pressed(&keypad_event, KEYPAD_INC_EXPOSURE)))
-                    && keypad_event.pressed && !adj_inc_mode) {
-                    adj_inc_mode = true;
-                    adj_inc_mode_swallow_release_up = true;
-                    adj_inc_mode_swallow_release_down = true;
-                }
-            }
-        }
-        if (adj_inc_mode) {
-            display_draw_stop_increment(stop_inc_den);
-        } else {
-            convert_exposure_to_display(&elements, &exposure_state);
-            display_draw_main_elements(&elements);
-        }
-    }
-}
-
-void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure)
-{
-    switch (exposure->contrast_grade) {
-    case CONTRAST_GRADE_00:
-        elements->contrast_grade = DISPLAY_GRADE_00;
-        break;
-    case CONTRAST_GRADE_0:
-        elements->contrast_grade = DISPLAY_GRADE_0;
-        break;
-    case CONTRAST_GRADE_0_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_0_HALF;
-        break;
-    case CONTRAST_GRADE_1:
-        elements->contrast_grade = DISPLAY_GRADE_1;
-        break;
-    case CONTRAST_GRADE_1_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_1_HALF;
-        break;
-    case CONTRAST_GRADE_2:
-        elements->contrast_grade = DISPLAY_GRADE_2;
-        break;
-    case CONTRAST_GRADE_2_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_2_HALF;
-        break;
-    case CONTRAST_GRADE_3:
-        elements->contrast_grade = DISPLAY_GRADE_3;
-        break;
-    case CONTRAST_GRADE_3_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_3_HALF;
-        break;
-    case CONTRAST_GRADE_4:
-        elements->contrast_grade = DISPLAY_GRADE_4;
-        break;
-    case CONTRAST_GRADE_4_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_4_HALF;
-        break;
-    case CONTRAST_GRADE_5:
-        elements->contrast_grade = DISPLAY_GRADE_5;
-        break;
-    default:
-        elements->contrast_grade = DISPLAY_GRADE_NONE;
-        break;
-    }
-
-    float seconds;
-    float fractional;
-    fractional = modff(exposure->adjusted_time, &seconds);
-    elements->time_seconds = seconds;
-    elements->time_milliseconds = fractional * 1000.0f;
-
-    if (exposure->adjusted_time < 10) {
-        elements->fraction_digits = 2;
-
-    } else if (exposure->adjusted_time < 100) {
-        elements->fraction_digits = 1;
-    } else {
-        elements->fraction_digits = 0;
-    }
+    /* Main state controller loop, which should never exit */
+    state_controller_loop();
 }
 
 void gpio_queue_task(void *argument)
