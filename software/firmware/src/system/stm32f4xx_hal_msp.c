@@ -318,6 +318,8 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         /* TIM1 interrupt Init */
+        HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 0, 0);
+        HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
         HAL_NVIC_SetPriority(TIM1_CC_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
         /* USER CODE BEGIN TIM1_MspInit 1 */

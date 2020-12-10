@@ -413,7 +413,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
-    if (htim->Instance == TIM1) {
+    if (htim->Instance == TIM1 && HAL_NVIC_GetActive(TIM1_CC_IRQn)) {
         if (!(__HAL_TIM_GET_COUNTER(&htim1) & 0x00000001)) {
             if(__HAL_TIM_IS_TIM_COUNTING_DOWN(&htim1)) {
                 main_task_notify_gpio_int(ENC_CH1_Pin);
