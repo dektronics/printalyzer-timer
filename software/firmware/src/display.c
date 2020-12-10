@@ -11,6 +11,9 @@
 
 static const char *TAG = "display";
 
+/* Library function declarations */
+void u8g2_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s);
+
 typedef enum {
     seg_a,
     seg_b,
@@ -563,10 +566,6 @@ void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t 
 
 void display_draw_main_elements(const display_main_elements_t *elements)
 {
-    // This is just a rough attempt to figure out the display.
-    // It will need to be cleaned up for efficiency when redrawing
-    // the time counter in a loop.
-
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
@@ -631,6 +630,57 @@ void display_draw_stop_increment(uint8_t increment_den)
     u8g2_DrawUTF8(&u8g2, x + 56, y + 46, "Stop");
 
     u8g2_SendBuffer(&u8g2);
+}
+
+void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements)
+{
+    bool clean_display = true;
+    bool time_changed = true;
+    bool send_buffer = false;
+
+    if (prev_elements) {
+        clean_display = false;
+        if (elements->fraction_digits == prev_elements->fraction_digits) {
+            if (elements->time_seconds == prev_elements->time_seconds
+                && elements->time_milliseconds == prev_elements->time_milliseconds) {
+                time_changed = false;
+            }
+        }
+    }
+
+    if (clean_display) {
+        u8g2_SetDrawColor(&u8g2, 0);
+        u8g2_ClearBuffer(&u8g2);
+        u8g2_SetDrawColor(&u8g2, 1);
+        u8g2_SetBitmapMode(&u8g2, 1);
+
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_ICON);
+        u8g2_DrawXBM(&u8g2, 10, 12, asset.width, asset.height, asset.bits);
+        send_buffer = true;
+    }
+
+    if (time_changed) {
+        if (!clean_display) {
+            u8g2_SetDrawColor(&u8g2, 0);
+            u8g2_DrawBox(&u8g2, 96, 8,
+                u8g2_GetDisplayWidth(&u8g2) - 96,
+                u8g2_GetDisplayHeight(&u8g2) - 8);
+            u8g2_SetDrawColor(&u8g2, 1);
+        }
+        display_draw_counter_time(elements->time_seconds,
+            elements->time_milliseconds,
+            elements->fraction_digits);
+        send_buffer = true;
+    }
+
+    if (send_buffer) {
+        if (clean_display) {
+            u8g2_SendBuffer(&u8g2);
+        } else {
+            u8g2_UpdateDisplayArea(&u8g2, 12, 1, 20, 7);
+        }
+    }
 }
 
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list)

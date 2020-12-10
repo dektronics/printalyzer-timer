@@ -1,7 +1,11 @@
 #include "state_controller.h"
 
+#include <FreeRTOS.h>
+#include <cmsis_os.h>
+#include <task.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <math.h>
 #include <esp_log.h>
 
@@ -9,6 +13,7 @@
 #include "display.h"
 #include "exposure_state.h"
 #include "main_menu.h"
+#include "buzzer.h"
 
 static const char *TAG = "state_controller";
 
@@ -42,6 +47,8 @@ static state_identifier_t state_add_adjustment();
 static state_identifier_t state_menu();
 
 static void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure);
+static void convert_exposure_to_display_timer(display_exposure_timer_t *elements, const exposure_state_t *exposure);
+static void update_display_timer(display_exposure_timer_t *elements, uint32_t exposure_ms);
 
 void state_controller_init()
 {
@@ -105,7 +112,6 @@ state_identifier_t state_home(state_home_data_t *state_data)
     display_main_elements_t main_elements;
     convert_exposure_to_display(&main_elements, &exposure_state);
     display_draw_main_elements(&main_elements);
-    //TODO track current display contents to prevent needless redraw
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
@@ -122,7 +128,9 @@ state_identifier_t state_home(state_home_data_t *state_data)
                 next_state = STATE_HOME_CHANGE_TIME_INCREMENT;
             }
         } else {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+                next_state = STATE_TIMER;
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 exposure_adj_increase(&exposure_state);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 exposure_adj_decrease(&exposure_state);
@@ -170,8 +178,108 @@ state_identifier_t state_home_change_time_increment()
 
 state_identifier_t state_timer()
 {
-    //TODO
-    return STATE_HOME;
+    //TODO Change design to use complex timer arrangement for more consistent behavior
+    //TODO Add code to toggle the relays on and off
+    state_identifier_t next_state = STATE_HOME;
+
+    TickType_t exposure_start_ticks;
+    TickType_t exposure_elapsed_ticks;
+    uint32_t exposure_time_start_ms;
+    uint32_t exposure_time_ms;
+    display_exposure_timer_t elements;
+    display_exposure_timer_t prev_elements;
+    TickType_t buzz_start_ticks;
+    TickType_t buzz_stop_ticks;
+
+    buzzer_volume_t current_volume = buzzer_get_volume();
+    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+
+    exposure_time_start_ms = (uint32_t)(exposure_state.adjusted_time * 1000.0f);
+    exposure_time_ms = exposure_time_start_ms;
+    convert_exposure_to_display_timer(&elements, &exposure_state);
+    display_draw_exposure_timer(&elements, 0);
+
+    ESP_LOGI(TAG, "Starting exposure timer at %ldms", exposure_time_ms);
+    exposure_start_ticks = xTaskGetTickCount();
+    exposure_elapsed_ticks = 0;
+
+    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
+    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+
+    if ((exposure_time_ms % 1000) == 0) {
+        buzzer_start();
+        buzz_stop_ticks = pdMS_TO_TICKS(40);
+        buzz_start_ticks = pdMS_TO_TICKS(1000);
+    } else {
+        buzz_stop_ticks = 0;
+        buzz_start_ticks = pdMS_TO_TICKS(exposure_time_ms % 1000);
+    }
+
+    do {
+        memcpy(&prev_elements, &elements, sizeof(display_exposure_timer_t));
+        exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
+        if ((exposure_elapsed_ticks * portTICK_PERIOD_MS) > exposure_time_start_ms) {
+            exposure_time_ms = 0;
+        } else {
+            exposure_time_ms = exposure_time_start_ms - (exposure_elapsed_ticks * portTICK_PERIOD_MS);
+        }
+
+        if (buzz_start_ticks > 0 && exposure_elapsed_ticks >= buzz_start_ticks) {
+            buzzer_start();
+            buzz_stop_ticks = buzz_start_ticks + 40;
+            buzz_start_ticks += pdMS_TO_TICKS(1000);
+        }
+        else if (buzz_stop_ticks > 0 && exposure_elapsed_ticks >= buzz_stop_ticks) {
+            buzzer_stop();
+            buzz_stop_ticks = 0;
+        }
+
+        update_display_timer(&elements, exposure_time_ms);
+        display_draw_exposure_timer(&elements, &prev_elements);
+
+        // Handle the next keypad event
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, 5) == HAL_OK) {
+            if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                ESP_LOGI(TAG, "Canceling exposure timer at %ldms", exposure_time_ms);
+                next_state = STATE_HOME;
+                break;
+            }
+        }
+    } while (exposure_time_ms <= exposure_time_start_ms && exposure_time_ms > 0);
+
+    // Make sure we wait out the last tick
+    exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
+    if (buzz_stop_ticks > exposure_elapsed_ticks) {
+        osDelay(buzz_stop_ticks - exposure_elapsed_ticks);
+    }
+    buzzer_stop();
+
+    ESP_LOGI(TAG, "Exposure timer complete");
+
+    osDelay(pdMS_TO_TICKS(200));
+
+    buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_stop();
+
+    buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_stop();
+
+    buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_stop();
+
+    osDelay(pdMS_TO_TICKS(500));
+
+    buzzer_set_volume(current_volume);
+    buzzer_set_frequency(current_frequency);
+
+    return next_state;
 }
 
 state_identifier_t state_focus()
@@ -259,4 +367,24 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
     } else {
         elements->fraction_digits = 0;
     }
+}
+
+void convert_exposure_to_display_timer(display_exposure_timer_t *elements, const exposure_state_t *exposure)
+{
+    update_display_timer(elements, (uint32_t)(exposure->adjusted_time * 1000.0f));
+
+    if (exposure->adjusted_time < 10) {
+        elements->fraction_digits = 2;
+
+    } else if (exposure->adjusted_time < 100) {
+        elements->fraction_digits = 1;
+    } else {
+        elements->fraction_digits = 0;
+    }
+}
+
+void update_display_timer(display_exposure_timer_t *elements, uint32_t exposure_ms)
+{
+    elements->time_seconds = exposure_ms / 1000;
+    elements->time_milliseconds = exposure_ms % 1000;
 }
