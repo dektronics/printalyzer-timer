@@ -89,15 +89,17 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
     }
 
     // Set default integration time and gain
-    ret = tcs3472_set_time(hi2c, _gain);
+    _gain = TCS3472_AGAIN_1X;
+    ret = tcs3472_set_gain(hi2c, _gain);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+    _integration = TCS3472_ATIME_2_4MS;
+    ret = tcs3472_set_time(hi2c, _integration);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    ret = tcs3472_set_gain(hi2c, _integration);
-    if (ret != HAL_OK) {
-        return ret;
-    }
 
     // Power off the sensor
     ret = tcs3472_disable(hi2c);

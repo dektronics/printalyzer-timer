@@ -7,16 +7,24 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <esp_log.h>
+
 #include "display.h"
 #include "keypad.h"
 #include "led.h"
 #include "buzzer.h"
 #include "relay.h"
+#include "tcs3472.h"
+
+extern I2C_HandleTypeDef hi2c2;
 
 static menu_result_t diagnostics_keypad();
 static menu_result_t diagnostics_led();
 static menu_result_t diagnostics_buzzer();
 static menu_result_t diagnostics_relay();
+static menu_result_t diagnostics_meter_probe();
+
+static const char *TAG = "menu_diagnostics";
 
 menu_result_t menu_diagnostics()
 {
@@ -41,7 +49,7 @@ menu_result_t menu_diagnostics()
         } else if (option == 4) {
             menu_result = diagnostics_relay();
         } else if (option == 5) {
-            //menu_result = diagnostics_meter_probe();
+            menu_result = diagnostics_meter_probe();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -407,6 +415,193 @@ menu_result_t diagnostics_relay()
 
     relay_enlarger_enable(current_enlarger);
     relay_safelight_enable(current_safelight);
+
+    return MENU_OK;
+}
+
+menu_result_t diagnostics_meter_probe()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    char buf[512];
+    bool sensor_initialized = false;
+    bool sensor_error = false;
+    tcs3472_channel_data_t channel_data;
+
+    memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
+
+    for (;;) {
+        if (!sensor_initialized) {
+            ret = tcs3472_init(&hi2c2);
+            if (ret == HAL_OK) {
+                sensor_error = false;
+            } else {
+                ESP_LOGE(TAG, "Error initializing TCS3472: %d", ret);
+                sensor_error = true;
+            }
+
+            if (!sensor_error) {
+                ret = tcs3472_enable(&hi2c2);
+                if (ret != HAL_OK) {
+                    ESP_LOGE(TAG, "Error enabling TCS3472: %d", ret);
+                    sensor_error = true;
+                }
+            }
+            sensor_initialized = true;
+        }
+
+        if (sensor_initialized && !sensor_error) {
+            memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
+            ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
+            if (ret != HAL_OK) {
+                ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+                sensor_error = true;
+            }
+        }
+
+        if (sensor_initialized && !sensor_error) {
+            uint16_t color_temp = tcs3472_calculate_color_temp(&channel_data);
+
+            // Note: Current tests show this "lux" value may be 20% less than
+            // measurements from the reference meter.
+            // Need to refine this measurement with further testing and calculations.
+            float lux = tcs3472_calculate_lux(&channel_data);
+
+            sprintf(buf,
+                    "TCS3472 (%s, %s)\n"
+                    "Clear: %d\n"
+                    "R/G/B: %d / %d / %d\n"
+                    "Temp: %dK\n"
+                    "Lux: %.04f",
+                    tcs3472_gain_str(channel_data.gain), tcs3472_atime_str(channel_data.integration),
+                    channel_data.clear, channel_data.red, channel_data.green, channel_data.blue,
+                    color_temp, lux);
+        } else {
+            sprintf(buf, "\n\n**** Sensor Unavailable ****");
+        }
+        display_static_list("Meter Probe Test", buf);
+
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+                if (sensor_initialized && sensor_error) {
+                    sensor_initialized = false;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+                if (sensor_initialized && !sensor_error) {
+                    tcs3472_again_t again;
+
+                    switch (channel_data.gain) {
+                    case TCS3472_AGAIN_1X:
+                        again = TCS3472_AGAIN_4X;
+                        break;
+                    case TCS3472_AGAIN_4X:
+                        again = TCS3472_AGAIN_16X;
+                        break;
+                    case TCS3472_AGAIN_16X:
+                        again = TCS3472_AGAIN_60X;
+                        break;
+                    case TCS3472_AGAIN_60X:
+                    default:
+                        again = channel_data.gain;
+                        break;
+                    }
+
+                    if (again != channel_data.gain) {
+                        tcs3472_set_gain(&hi2c2, again);
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+                if (sensor_initialized && !sensor_error) {
+                    tcs3472_again_t again;
+
+                    switch (channel_data.gain) {
+                        break;
+                    case TCS3472_AGAIN_60X:
+                        again = TCS3472_AGAIN_16X;
+                        break;
+                    case TCS3472_AGAIN_16X:
+                        again = TCS3472_AGAIN_4X;
+                        break;
+                    case TCS3472_AGAIN_4X:
+                        again = TCS3472_AGAIN_1X;
+                        break;
+                    case TCS3472_AGAIN_1X:
+                    default:
+                        again = channel_data.gain;
+                        break;
+                    }
+
+                    if (again != channel_data.gain) {
+                        tcs3472_set_gain(&hi2c2, again);
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+                if (sensor_initialized && !sensor_error) {
+                    tcs3472_atime_t atime;
+
+                    switch (channel_data.integration) {
+                    case TCS3472_ATIME_2_4MS:
+                        atime = TCS3472_ATIME_24MS;
+                        break;
+                    case TCS3472_ATIME_24MS:
+                        atime = TCS3472_ATIME_50MS;
+                        break;
+                    case TCS3472_ATIME_50MS:
+                        atime = TCS3472_ATIME_101MS;
+                        break;
+                    case TCS3472_ATIME_101MS:
+                        atime = TCS3472_ATIME_154MS;
+                        break;
+                    case TCS3472_ATIME_154MS:
+                        atime = TCS3472_ATIME_614MS;
+                        break;
+                    case TCS3472_ATIME_614MS:
+                    default:
+                        atime = channel_data.integration;
+                        break;
+                    }
+
+                    if (atime != channel_data.integration) {
+                        tcs3472_set_time(&hi2c2, atime);
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+                if (sensor_initialized && !sensor_error) {
+                    tcs3472_atime_t atime;
+
+                    switch (channel_data.integration) {
+                    case TCS3472_ATIME_614MS:
+                        atime = TCS3472_ATIME_154MS;
+                        break;
+                    case TCS3472_ATIME_154MS:
+                        atime = TCS3472_ATIME_101MS;
+                        break;
+                    case TCS3472_ATIME_101MS:
+                        atime = TCS3472_ATIME_50MS;
+                        break;
+                    case TCS3472_ATIME_50MS:
+                        atime = TCS3472_ATIME_24MS;
+                        break;
+                    case TCS3472_ATIME_24MS:
+                        atime = TCS3472_ATIME_2_4MS;
+                        break;
+                    case TCS3472_ATIME_2_4MS:
+                    default:
+                        atime = channel_data.integration;
+                        break;
+                    }
+
+                    if (atime != channel_data.integration) {
+                        tcs3472_set_time(&hi2c2, atime);
+                    }
+                }
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            }
+        }
+    }
+
+    tcs3472_disable(&hi2c2);
 
     return MENU_OK;
 }
