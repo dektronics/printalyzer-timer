@@ -14,6 +14,9 @@ typedef struct __relay_handle_t {
 HAL_StatusTypeDef relay_init(const relay_handle_t *handle);
 
 void relay_enlarger_enable(bool enabled);
+bool relay_enlarger_is_enabled();
+
 void relay_safelight_enable(bool enabled);
+bool relay_safelight_is_enabled();
 
 #endif /* RELAY_H */

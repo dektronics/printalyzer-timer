@@ -48,4 +48,8 @@ void display_draw_logo();
 void display_draw_main_elements(const display_main_elements_t *elements);
 void display_draw_stop_increment(uint8_t increment_den);
 
+uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list);
+void display_static_list(const char *title, const char *list);
+uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);
+
 #endif /* DISPLAY_H */

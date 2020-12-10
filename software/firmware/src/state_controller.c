@@ -8,6 +8,7 @@
 #include "keypad.h"
 #include "display.h"
 #include "exposure_state.h"
+#include "main_menu.h"
 
 static const char *TAG = "state_controller";
 
@@ -129,6 +130,8 @@ state_identifier_t state_home(state_home_data_t *state_data)
                 exposure_contrast_increase(&exposure_state);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 exposure_contrast_decrease(&exposure_state);
+            } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
+                next_state = STATE_MENU;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 exposure_state_defaults(&exposure_state);
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
@@ -191,7 +194,7 @@ state_identifier_t state_add_adjustment()
 
 state_identifier_t state_menu()
 {
-    //TODO
+    main_menu_start();
     return STATE_HOME;
 }
 

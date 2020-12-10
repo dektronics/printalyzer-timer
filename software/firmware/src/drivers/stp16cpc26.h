@@ -16,6 +16,6 @@ typedef struct __stp16cpc26_handle_t {
 } stp16cpc26_handle_t;
 
 HAL_StatusTypeDef stp16cpc26_set_leds(stp16cpc26_handle_t *handle, uint16_t setting);
-HAL_StatusTypeDef stp16cpc26_set_brightness(stp16cpc26_handle_t *handle, uint8_t brightness);
+HAL_StatusTypeDef stp16cpc26_set_brightness(stp16cpc26_handle_t *handle, uint16_t duty_cycle);
 
 #endif /* STP16CPC26_H */

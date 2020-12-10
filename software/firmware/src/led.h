@@ -30,7 +30,13 @@ typedef enum {
 
 HAL_StatusTypeDef led_init(const stp16cpc26_handle_t *handle);
 
-HAL_StatusTypeDef led_set_enabled(led_t led);
+HAL_StatusTypeDef led_set_state(uint16_t state);
+uint16_t led_get_state();
+
+HAL_StatusTypeDef led_set_on(led_t led);
+HAL_StatusTypeDef led_set_off(led_t led);
+
 HAL_StatusTypeDef led_set_brightness(uint8_t brightness);
+uint8_t led_get_brightness();
 
 #endif /* LEDS_H */

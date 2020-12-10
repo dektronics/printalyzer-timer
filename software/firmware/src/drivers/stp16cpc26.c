@@ -19,15 +19,24 @@ HAL_StatusTypeDef stp16cpc26_set_leds(stp16cpc26_handle_t *handle, uint16_t sett
     return ret;
 }
 
-HAL_StatusTypeDef stp16cpc26_set_brightness(stp16cpc26_handle_t *handle, uint8_t brightness)
+HAL_StatusTypeDef stp16cpc26_set_brightness(stp16cpc26_handle_t *handle, uint16_t duty_cycle)
 {
     HAL_StatusTypeDef ret;
 
-    //TODO Add code to deal with state, and actually adjust brightness
-    if (brightness > 0) {
-        ret = HAL_TIM_PWM_Start(handle->oe_tim, handle->oe_tim_channel);
+    if (duty_cycle < UINT16_MAX) {
+        __HAL_TIM_SET_COMPARE(handle->oe_tim, handle->oe_tim_channel, duty_cycle);
+
+        if (handle->oe_tim->Instance->CR1 & TIM_CR1_CEN) {
+            ret = HAL_OK;
+        } else {
+            ret = HAL_TIM_PWM_Start(handle->oe_tim, handle->oe_tim_channel);
+        }
     } else {
-        ret = HAL_TIM_PWM_Stop(handle->oe_tim, handle->oe_tim_channel);
+        if (handle->oe_tim->Instance->CR1 & TIM_CR1_CEN) {
+            ret = HAL_TIM_PWM_Stop(handle->oe_tim, handle->oe_tim_channel);
+        } else {
+            ret = HAL_OK;
+        }
     }
 
     return ret;

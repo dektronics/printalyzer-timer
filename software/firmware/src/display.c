@@ -5,6 +5,9 @@
 #include "u8g2_stm32_hal.h"
 #include "u8g2.h"
 #include "display_assets.h"
+#include "keypad.h"
+
+#define MENU_TIMEOUT_MS 30000
 
 static const char *TAG = "display";
 
@@ -21,6 +24,7 @@ typedef enum {
 static u8g2_t u8g2;
 static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
+static bool menu_event_timeout = false;
 
 static void display_set_freq(uint8_t value);
 static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
@@ -30,6 +34,7 @@ static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_contrast_grade(display_grade_t grade);
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
+static void display_prepare_menu_font();
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
 {
@@ -626,4 +631,103 @@ void display_draw_stop_increment(uint8_t increment_den)
     u8g2_DrawUTF8(&u8g2, x + 56, y + 46, "Stop");
 
     u8g2_SendBuffer(&u8g2);
+}
+
+uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list)
+{
+    display_prepare_menu_font();
+    keypad_clear_events();
+    uint8_t option = u8g2_UserInterfaceSelectionList(&u8g2, title, start_pos, list);
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
+void display_static_list(const char *title, const char *list)
+{
+    // Based off u8g2_UserInterfaceSelectionList() with changes to use
+    // full frame buffer mode and to remove actual menu functionality.
+
+    display_prepare_menu_font();
+    display_clear();
+
+    u8sl_t u8sl;
+    u8g2_uint_t yy;
+
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
+
+    uint8_t title_lines = u8x8_GetStringLineCnt(title);
+    uint8_t display_lines;
+
+    if (title_lines > 0) {
+        display_lines = (u8g2_GetDisplayHeight(&u8g2) - 3) / line_height;
+        u8sl.visible = display_lines;
+        u8sl.visible -= title_lines;
+    }
+    else {
+        display_lines = u8g2_GetDisplayHeight(&u8g2) / line_height;
+        u8sl.visible = display_lines;
+    }
+
+    u8sl.total = u8x8_GetStringLineCnt(list);
+    u8sl.first_pos = 0;
+    u8sl.current_pos = -1;
+
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    yy = u8g2_GetAscent(&u8g2);
+    if (title_lines > 0) {
+        yy += u8g2_DrawUTF8Lines(&u8g2, 0, yy, u8g2_GetDisplayWidth(&u8g2), line_height, title);
+        u8g2_DrawHLine(&u8g2, 0, yy - line_height - u8g2_GetDescent(&u8g2) + 1, u8g2_GetDisplayWidth(&u8g2));
+        yy += 3;
+    }
+    u8g2_DrawSelectionList(&u8g2, &u8sl, yy, list);
+
+    u8g2_SendBuffer(&u8g2);
+}
+
+uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons)
+{
+    display_prepare_menu_font();
+    keypad_clear_events();
+    uint8_t option = u8g2_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons);
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
+uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
+{
+    // This function should override a u8g2 framework function with the
+    // same name, due to its declaration with the "weak" pragma.
+    menu_event_timeout = false;
+    keypad_event_t event;
+    HAL_StatusTypeDef ret = keypad_wait_for_event(&event, MENU_TIMEOUT_MS);
+    if (ret == HAL_OK) {
+        if (event.pressed) {
+            switch (event.key) {
+            case KEYPAD_DEC_CONTRAST:
+                return U8X8_MSG_GPIO_MENU_PREV;
+            case KEYPAD_INC_CONTRAST:
+                return U8X8_MSG_GPIO_MENU_NEXT;
+            case KEYPAD_INC_EXPOSURE:
+                return U8X8_MSG_GPIO_MENU_UP;
+            case KEYPAD_DEC_EXPOSURE:
+                return U8X8_MSG_GPIO_MENU_DOWN;
+            case KEYPAD_MENU:
+                return U8X8_MSG_GPIO_MENU_SELECT;
+            case KEYPAD_CANCEL:
+                return U8X8_MSG_GPIO_MENU_HOME;
+            default:
+                break;
+            }
+        }
+    } else if (ret == HAL_TIMEOUT) {
+        menu_event_timeout = true;
+        return U8X8_MSG_GPIO_MENU_HOME;
+    }
+    return 0;
+}
+
+void display_prepare_menu_font()
+{
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetDrawColor(&u8g2, 1);
 }

@@ -31,8 +31,26 @@ void relay_enlarger_enable(bool enabled)
         enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
+bool relay_enlarger_is_enabled()
+{
+    if (relay_handle.enlarger_gpio_port->ODR & relay_handle.enlarger_gpio_pin) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void relay_safelight_enable(bool enabled)
 {
     HAL_GPIO_WritePin(relay_handle.safelight_gpio_port, relay_handle.safelight_gpio_pin,
         enabled ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+bool relay_safelight_is_enabled()
+{
+    if (relay_handle.safelight_gpio_port->ODR & relay_handle.safelight_gpio_pin) {
+        return true;
+    } else {
+        return false;
+    }
 }

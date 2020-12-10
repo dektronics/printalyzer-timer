@@ -13,6 +13,11 @@ typedef enum {
 HAL_StatusTypeDef buzzer_init(const pam8904e_handle_t *handle);
 
 void buzzer_set_volume(buzzer_volume_t volume);
+buzzer_volume_t buzzer_get_volume();
+
+void buzzer_set_frequency(pam8904e_freq_t freq);
+pam8904e_freq_t buzzer_get_frequency();
+
 void buzzer_start();
 void buzzer_stop();
 
