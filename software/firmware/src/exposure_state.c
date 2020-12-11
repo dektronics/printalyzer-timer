@@ -132,6 +132,31 @@ uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state)
     }
 }
 
+float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
+    int patch_min, unsigned int patches_covered)
+{
+    if (!state) { return NAN; }
+
+    if (patches_covered == 0) {
+        float base_exposure = exposure_get_test_strip_time_complete(state, patch_min);
+        return base_exposure;
+    } else {
+        float prev_exposure = exposure_get_test_strip_time_complete(state, patch_min + (patches_covered - 1));
+        float curr_exposure = exposure_get_test_strip_time_complete(state, patch_min + patches_covered);
+        return curr_exposure - prev_exposure;
+    }
+}
+
+float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch)
+{
+    if (!state) { return NAN; }
+
+    int patch_adjustment = state->adjustment_increment * patch;
+    float patch_stops = patch_adjustment / 12.0f;
+    float patch_time = state->adjusted_time * powf(2.0f, patch_stops);
+    return patch_time;
+}
+
 void exposure_recalculate(exposure_state_t *state)
 {
     float stops = state->adjustment_value / 12.0f;

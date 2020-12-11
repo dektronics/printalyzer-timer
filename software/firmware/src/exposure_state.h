@@ -51,4 +51,8 @@ void exposure_adj_increment_increase(exposure_state_t *state);
 void exposure_adj_increment_decrease(exposure_state_t *state);
 uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state);
 
+float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
+    int patch_min, unsigned int patches_covered);
+float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
+
 #endif /* EXPOSURE_STATE_H */

@@ -11,7 +11,8 @@ typedef struct {
 
 typedef enum {
     ASSET_PRINTALYZER,
-    ASSET_TIMER_ICON
+    ASSET_TIMER_ICON_48,
+    ASSET_TIMER_ICON_24
 } asset_name_t;
 
 uint8_t display_asset_get(asset_info_t *asset_info, asset_name_t asset_name);

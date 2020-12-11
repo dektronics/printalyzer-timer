@@ -37,6 +37,7 @@ static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_contrast_grade(display_grade_t grade);
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
+static void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements);
 static void display_prepare_menu_font();
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
@@ -564,6 +565,78 @@ void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t 
     }
 }
 
+void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements)
+{
+    uint16_t seconds = time_elements->time_seconds;
+    uint16_t milliseconds = time_elements->time_milliseconds;
+    uint8_t fraction_digits = time_elements->fraction_digits;
+
+    if (milliseconds >= 1000) {
+        seconds += milliseconds / 1000;
+        milliseconds = milliseconds % 1000;
+    }
+
+    if (fraction_digits > 2) {
+        fraction_digits = 2;
+    }
+
+    u8g2_uint_t x = x2 - 14;
+    u8g2_uint_t y = y1;
+
+    if (fraction_digits == 0) {
+        // Time format: SSS
+        if (seconds > 999) {
+            seconds = 999;
+        }
+
+        display_draw_tdigit(x, y, seconds % 10);
+        x -= 17;
+
+        if (seconds >= 10) {
+            display_draw_tdigit(x, y, seconds % 100 / 10);
+            x -= 17;
+        }
+
+        if (seconds >= 100) {
+            display_draw_tdigit(x, y, (seconds % 1000) / 100);
+        }
+    } else if (fraction_digits == 1) {
+        // Time format: SS.m
+        if (seconds > 99) {
+            seconds = 99;
+        }
+
+        display_draw_tdigit(x, y, (milliseconds % 1000) / 100);
+        x -= 6;
+
+        u8g2_DrawBox(&u8g2, x, y + 22, 3, 3);
+        x -= 17;
+
+        display_draw_tdigit(x, y, seconds % 10);
+        x -= 17;
+
+        if (seconds >= 10) {
+            display_draw_tdigit(x, y, seconds % 100 / 10);
+        }
+    } else if (fraction_digits == 2) {
+        // Time format: S.mm
+        if (seconds > 9) {
+            seconds = 9;
+        }
+
+        display_draw_tdigit(x, y, milliseconds % 100 / 10);
+        x -= 17;
+
+        display_draw_tdigit(x, y, (milliseconds % 1000) / 100);
+        x -= 6;
+
+        u8g2_DrawBox(&u8g2, x, y + 22, 3, 3);
+        x -= 17;
+
+        display_draw_tdigit(x, y, seconds % 10);
+    }
+}
+
 void display_draw_main_elements(const display_main_elements_t *elements)
 {
     u8g2_SetDrawColor(&u8g2, 0);
@@ -655,7 +728,7 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
         u8g2_SetBitmapMode(&u8g2, 1);
 
         asset_info_t asset;
-        display_asset_get(&asset, ASSET_TIMER_ICON);
+        display_asset_get(&asset, ASSET_TIMER_ICON_48);
         u8g2_DrawXBM(&u8g2, 10, 12, asset.width, asset.height, asset.bits);
         send_buffer = true;
     }
@@ -681,6 +754,113 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
             u8g2_UpdateDisplayArea(&u8g2, 12, 1, 20, 7);
         }
     }
+}
+
+void display_draw_test_strip_elements(const display_test_strip_elements_t *elements)
+{
+    // This is being designed around a 7-patch test strip.
+    // It may make sense to also support a 5-patch mode, or
+    // uneven combinations for other cases.
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    // Draw test strip grid
+    u8g2_DrawFrame(&u8g2, 0, 11, 156, 53);
+    u8g2_DrawFrame(&u8g2, 1, 12, 154, 51);
+    u8g2_uint_t x = 22;
+    u8g2_uint_t y = 13;
+    for (int i = 0; i < 6; i++) {
+        u8g2_DrawLine(&u8g2, x + 0, y, x + 0, y + 48);
+        u8g2_DrawLine(&u8g2, x + 1, y, x + 1, y + 48);
+        x += 22;
+    }
+
+    // Draw each test strip patch
+    x = 2;
+    y = 13;
+    for (int i = 0; i < 7; i++) {
+        if (elements->strip_patches & (1 << (6 - i))) {
+            u8g2_DrawBox(&u8g2, x + 1, y + 1, 18, 47);
+            u8g2_SetDrawColor(&u8g2, 0);
+        }
+
+        switch (i) {
+        case 0:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-3");
+            break;
+        case 1:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-2");
+            break;
+        case 2:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-1");
+            break;
+        case 3:
+            u8g2_DrawStr(&u8g2, x + 7, y + 29, "0");
+            break;
+        case 4:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+1");
+            break;
+        case 5:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+2");
+            break;
+        case 6:
+            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+3");
+            break;
+        default:
+            break;
+        }
+
+        u8g2_SetDrawColor(&u8g2, 1);
+        x += 22;
+    }
+
+    // Draw title text
+    x = 166;
+    y = 11 + u8g2_GetAscent(&u8g2);;
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
+    if (elements->title1) {
+        u8g2_DrawUTF8Line(&u8g2, x, y, u8g2_GetDisplayWidth(&u8g2) - x, elements->title1, 0, 0);
+        y += line_height + 1;
+    }
+    if (elements->title2) {
+        u8g2_DrawUTF8Line(&u8g2, x, y, u8g2_GetDisplayWidth(&u8g2) - x, elements->title2, 0, 0);
+    }
+
+    // Draw timer icon
+    x = 165;
+    y = 35;
+    asset_info_t asset;
+    display_asset_get(&asset, ASSET_TIMER_ICON_24);
+    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+
+    // Draw timer
+    x = 251;
+    y = 34;
+    display_draw_counter_time_small(x, y, &(elements->time_elements));
+
+    u8g2_SendBuffer(&u8g2);
+}
+
+void display_draw_test_strip_timer(const display_exposure_timer_t *elements)
+{
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, 192, 8,
+        u8g2_GetDisplayWidth(&u8g2) - 192,
+        u8g2_GetDisplayHeight(&u8g2) - 8);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    u8g2_uint_t x = 251;
+    u8g2_uint_t y = 34;
+    display_draw_counter_time_small(x, y, elements);
+
+    u8g2_UpdateDisplayArea(&u8g2, 24, 4, 8, 4);
 }
 
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list)
