@@ -21,6 +21,7 @@
 
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
 
 /******************************************************************************/
@@ -143,6 +144,21 @@ void EXTI2_IRQHandler(void)
 void EXTI9_5_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_5);
+}
+
+/**
+ * @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
+ */
+void TIM1_UP_TIM10_IRQHandler(void)
+{
+    /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
+
+    /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
+    HAL_TIM_IRQHandler(&htim1);
+    HAL_TIM_IRQHandler(&htim10);
+    /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
+
+    /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
 }
 
 /**

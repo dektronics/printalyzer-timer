@@ -18,6 +18,7 @@ SPI_HandleTypeDef hspi2;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim9;
+TIM_HandleTypeDef htim10;
 
 void system_clock_config(void);
 static void usart1_uart_init(void);
@@ -27,6 +28,7 @@ static void spi_init(void);
 static void tim1_init(void);
 static void tim3_init(void);
 static void tim9_init(void);
+static void tim10_init(void);
 
 void Error_Handler(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -344,7 +346,7 @@ void tim9_init(void)
     }
 
     sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 32768;
+    sConfigOC.Pulse = 32767;
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
@@ -353,6 +355,23 @@ void tim9_init(void)
     }
 
     HAL_TIM_MspPostInit(&htim9);
+}
+
+void tim10_init(void)
+{
+    /*
+     * TIM10 is used to generate an interrupt for orchestrating the
+     * countdown timer.
+     */
+    htim10.Instance = TIM10;
+    htim10.Init.Prescaler = 95;
+    htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim10.Init.Period = 9999;
+    htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    if (HAL_TIM_Base_Init(&htim10) != HAL_OK) {
+        Error_Handler();
+    }
 }
 
 int main(void)
@@ -374,6 +393,7 @@ int main(void)
     tim1_init();
     tim3_init();
     tim9_init();
+    tim10_init();
 
     /* Initialize the FATFS support code */
     fatfs_init();
@@ -403,6 +423,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM11) {
         HAL_IncTick();
+    } else if (htim->Instance == TIM10) {
+        main_task_notify_countdown_timer();
     }
 }
 

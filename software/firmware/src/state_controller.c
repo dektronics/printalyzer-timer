@@ -15,6 +15,7 @@
 #include "main_menu.h"
 #include "buzzer.h"
 #include "led.h"
+#include "exposure_timer.h"
 
 static const char *TAG = "state_controller";
 
@@ -44,13 +45,15 @@ static state_identifier_t state_home_change_time_increment();
 static state_identifier_t state_timer();
 static state_identifier_t state_focus();
 static state_identifier_t state_test_strip();
-static bool state_test_strip_countdown(uint32_t time_ms);
+static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
 static state_identifier_t state_add_adjustment();
 static state_identifier_t state_menu();
 
 static void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure);
 static void convert_exposure_to_display_timer(display_exposure_timer_t *elements, uint32_t exposure_ms);
 static void update_display_timer(display_exposure_timer_t *elements, uint32_t exposure_ms);
+static uint32_t round_to_10ms(uint32_t n);
+static uint32_t rounded_exposure_time_ms(float seconds);
 
 void state_controller_init()
 {
@@ -132,6 +135,8 @@ state_identifier_t state_home(state_home_data_t *state_data)
         } else {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
                 next_state = STATE_TIMER;
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                next_state = STATE_FOCUS;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 exposure_adj_increase(&exposure_state);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
@@ -180,115 +185,79 @@ state_identifier_t state_home_change_time_increment()
     return next_state;
 }
 
+static bool state_timer_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data)
+{
+    display_exposure_timer_t *elements = user_data;
+    display_exposure_timer_t prev_elements;
+
+    memcpy(&prev_elements, elements, sizeof(display_exposure_timer_t));
+
+    update_display_timer(elements, time_ms);
+    display_draw_exposure_timer(elements, &prev_elements);
+
+    // Handle the next keypad event without blocking
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
+        if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            ESP_LOGI(TAG, "Canceling exposure timer at %ldms", time_ms);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 state_identifier_t state_timer()
 {
-    //TODO Change design to use complex timer arrangement for more consistent behavior
-    //TODO Add code to toggle the relays on and off
     state_identifier_t next_state = STATE_HOME;
 
-    TickType_t exposure_start_ticks;
-    TickType_t exposure_elapsed_ticks;
-    uint32_t exposure_time_start_ms;
-    uint32_t exposure_time_ms;
+    uint32_t exposure_time_ms = rounded_exposure_time_ms(exposure_state.adjusted_time);
+
     display_exposure_timer_t elements;
-    display_exposure_timer_t prev_elements;
-    TickType_t buzz_start_ticks;
-    TickType_t buzz_stop_ticks;
-
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
-
-    exposure_time_start_ms = (uint32_t)(exposure_state.adjusted_time * 1000.0f);
-    exposure_time_ms = exposure_time_start_ms;
     convert_exposure_to_display_timer(&elements, exposure_time_ms);
+
+    exposure_timer_config_t timer_config = {
+        .exposure_time = exposure_time_ms,
+        .relay_on_delay = 50,  /* TBD pending testing/profiling */
+        .relay_off_delay = 100, /* TBD pending testing/profiling */
+        .end_tone = EXPOSURE_TIMER_END_TONE_REGULAR,
+        .callback_rate = EXPOSURE_TIMER_RATE_1_SEC,
+        .timer_callback = state_timer_exposure_callback,
+        .user_data = &elements
+    };
+
+    if (elements.fraction_digits == 0) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
+    } else if (elements.fraction_digits == 1) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_100_MS;
+    } else if (elements.fraction_digits == 2) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_10_MS;
+    }
+
+    exposure_timer_set_config(&timer_config);
+
+    ESP_LOGI(TAG, "Starting exposure timer for %ldms", exposure_time_ms);
+
     display_draw_exposure_timer(&elements, 0);
 
-    ESP_LOGI(TAG, "Starting exposure timer at %ldms", exposure_time_ms);
-    exposure_start_ticks = xTaskGetTickCount();
-    exposure_elapsed_ticks = 0;
+    //TODO turn off the safelight relay (if not in blackout)
 
-    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
-    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
-
-    if ((exposure_time_ms % 1000) == 0) {
-        buzzer_start();
-        buzz_stop_ticks = pdMS_TO_TICKS(40);
-        buzz_start_ticks = pdMS_TO_TICKS(1000);
-    } else {
-        buzz_stop_ticks = 0;
-        buzz_start_ticks = pdMS_TO_TICKS(exposure_time_ms % 1000);
+    HAL_StatusTypeDef ret = exposure_timer_run();
+    if (ret == HAL_TIMEOUT) {
+        ESP_LOGE(TAG, "Exposure timer canceled");
+    } else if (ret != HAL_OK) {
+        ESP_LOGE(TAG, "Exposure timer error");
     }
-
-    do {
-        memcpy(&prev_elements, &elements, sizeof(display_exposure_timer_t));
-        exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
-        if ((exposure_elapsed_ticks * portTICK_PERIOD_MS) > exposure_time_start_ms) {
-            exposure_time_ms = 0;
-        } else {
-            exposure_time_ms = exposure_time_start_ms - (exposure_elapsed_ticks * portTICK_PERIOD_MS);
-        }
-
-        if (buzz_start_ticks > 0 && exposure_elapsed_ticks >= buzz_start_ticks) {
-            buzzer_start();
-            buzz_stop_ticks = buzz_start_ticks + 40;
-            buzz_start_ticks += pdMS_TO_TICKS(1000);
-        }
-        else if (buzz_stop_ticks > 0 && exposure_elapsed_ticks >= buzz_stop_ticks) {
-            buzzer_stop();
-            buzz_stop_ticks = 0;
-        }
-
-        update_display_timer(&elements, exposure_time_ms);
-        display_draw_exposure_timer(&elements, &prev_elements);
-
-        // Handle the next keypad event
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, 5) == HAL_OK) {
-            if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                ESP_LOGI(TAG, "Canceling exposure timer at %ldms", exposure_time_ms);
-                next_state = STATE_HOME;
-                break;
-            }
-        }
-    } while (exposure_time_ms <= exposure_time_start_ms && exposure_time_ms > 0);
-
-    // Make sure we wait out the last tick
-    exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
-    if (buzz_stop_ticks > exposure_elapsed_ticks) {
-        osDelay(buzz_stop_ticks - exposure_elapsed_ticks);
-    }
-    buzzer_stop();
 
     ESP_LOGI(TAG, "Exposure timer complete");
 
-    osDelay(pdMS_TO_TICKS(200));
-
-    buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_stop();
-
-    buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_stop();
-
-    buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_stop();
-
-    osDelay(pdMS_TO_TICKS(500));
-
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
+    //TODO turn on the safelight relay (if not in blackout)
 
     return next_state;
 }
 
 state_identifier_t state_focus()
 {
-    //TODO
     return STATE_HOME;
 }
 
@@ -302,9 +271,7 @@ state_identifier_t state_test_strip()
 
     //FIXME Current design of this code is purely for UI testing
 
-    display_test_strip_elements_t elements;
-    memset(&elements, 0, sizeof(display_test_strip_elements_t));
-
+    display_test_strip_elements_t elements = {0};
     elements.title1 = "Test Strip";
     elements.time_elements.time_seconds = 25;
     elements.time_elements.time_milliseconds = 1;
@@ -331,9 +298,13 @@ state_identifier_t state_test_strip()
         break;
     }
 
+    //TODO turn off the safelight relay (if not in blackout)
+
     unsigned int patches_covered = 0;
     do {
         float patch_time = exposure_get_test_strip_time_incremental(&exposure_state, -3, patches_covered);
+        uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
+
         if (patches_covered == 0) {
             elements.strip_patches = 0;
         } else if (patches_covered == 1) {
@@ -354,34 +325,16 @@ state_identifier_t state_test_strip()
             elements.strip_patches = 0;
         }
 
-        convert_exposure_to_display_timer(&(elements.time_elements), (uint32_t)(patch_time * 1000.0f));
+        convert_exposure_to_display_timer(&(elements.time_elements), patch_time_ms);
 
         display_draw_test_strip_elements(&elements);
 
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                if (state_test_strip_countdown((uint32_t)(patch_time * 1000.0f))) {
+                if (state_test_strip_countdown(patch_time_ms, patches_covered == 6)) {
                     if (patches_covered < 7) {
                         patches_covered++;
-                        osDelay(pdMS_TO_TICKS(100));
-
-                        buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
-                        buzzer_start();
-                        osDelay(pdMS_TO_TICKS(50));
-                        buzzer_stop();
-
-                        buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-                        buzzer_start();
-                        osDelay(pdMS_TO_TICKS(50));
-                        buzzer_stop();
-
-                        buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
-                        buzzer_start();
-                        osDelay(pdMS_TO_TICKS(50));
-                        buzzer_stop();
-
-                        osDelay(pdMS_TO_TICKS(100));
                     }
                 } else {
                     next_state = STATE_HOME;
@@ -393,27 +346,11 @@ state_identifier_t state_test_strip()
     } while (next_state == STATE_TEST_STRIP && patches_covered < 7);
 
     if (next_state == STATE_TEST_STRIP && patches_covered == 7) {
-        osDelay(pdMS_TO_TICKS(200));
-
-        buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-
-        buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-
-        buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-
         osDelay(pdMS_TO_TICKS(500));
-
         next_state = STATE_HOME;
     }
+
+    //TODO turn on the safelight relay (if not in blackout)
 
     led_set_off(LED_IND_TEST_STRIP);
     buzzer_set_volume(current_volume);
@@ -422,78 +359,62 @@ state_identifier_t state_test_strip()
     return STATE_HOME;
 }
 
-bool state_test_strip_countdown(uint32_t time_ms)
+static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data)
 {
-    bool result = true;
-    TickType_t exposure_start_ticks;
-    TickType_t exposure_elapsed_ticks;
-    uint32_t exposure_time_start_ms;
-    uint32_t exposure_time_ms;
-    display_exposure_timer_t elements;
-    TickType_t buzz_start_ticks;
-    TickType_t buzz_stop_ticks;
+    display_exposure_timer_t *elements = user_data;
 
-    exposure_time_start_ms = time_ms;
-    exposure_time_ms = exposure_time_start_ms;
-    convert_exposure_to_display_timer(&elements, exposure_time_ms);
+    update_display_timer(elements, time_ms);
+    display_draw_test_strip_timer(elements);
+
+    // Handle the next keypad event without blocking
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
+        if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            ESP_LOGI(TAG, "Canceling test strip timer at %ldms", time_ms);
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
+{
+    display_exposure_timer_t elements;
+    convert_exposure_to_display_timer(&elements, patch_time_ms);
+
+    exposure_timer_config_t timer_config = {
+        .exposure_time = patch_time_ms,
+        .relay_on_delay = 50,  /* TBD pending testing/profiling */
+        .relay_off_delay = 100, /* TBD pending testing/profiling */
+        .end_tone = last_patch ? EXPOSURE_TIMER_END_TONE_REGULAR : EXPOSURE_TIMER_END_TONE_SHORT,
+        .callback_rate = EXPOSURE_TIMER_RATE_1_SEC,
+        .timer_callback = state_test_strip_exposure_callback,
+        .user_data = &elements
+    };
+
+    if (elements.fraction_digits == 0) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
+    } else if (elements.fraction_digits == 1) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_100_MS;
+    } else if (elements.fraction_digits == 2) {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_10_MS;
+    }
+
+    exposure_timer_set_config(&timer_config);
+
     display_draw_test_strip_timer(&elements);
 
-    ESP_LOGI(TAG, "Starting test strip timer at %ldms", exposure_time_ms);
-    exposure_start_ticks = xTaskGetTickCount();
-    exposure_elapsed_ticks = 0;
-
-    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
-    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
-
-    if ((exposure_time_ms % 1000) == 0) {
-        buzzer_start();
-        buzz_stop_ticks = pdMS_TO_TICKS(40);
-        buzz_start_ticks = pdMS_TO_TICKS(1000);
-    } else {
-        buzz_stop_ticks = 0;
-        buzz_start_ticks = pdMS_TO_TICKS(exposure_time_ms % 1000);
+    HAL_StatusTypeDef ret = exposure_timer_run();
+    if (ret == HAL_TIMEOUT) {
+        ESP_LOGE(TAG, "Exposure timer canceled");
+    } else if (ret != HAL_OK) {
+        ESP_LOGE(TAG, "Exposure timer error");
     }
 
-    do {
-        exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
-        if ((exposure_elapsed_ticks * portTICK_PERIOD_MS) > exposure_time_start_ms) {
-            exposure_time_ms = 0;
-        } else {
-            exposure_time_ms = exposure_time_start_ms - (exposure_elapsed_ticks * portTICK_PERIOD_MS);
-        }
+    ESP_LOGI(TAG, "Exposure timer complete");
 
-        if (buzz_start_ticks > 0 && exposure_elapsed_ticks >= buzz_start_ticks) {
-            buzzer_start();
-            buzz_stop_ticks = buzz_start_ticks + 40;
-            buzz_start_ticks += pdMS_TO_TICKS(1000);
-        }
-        else if (buzz_stop_ticks > 0 && exposure_elapsed_ticks >= buzz_stop_ticks) {
-            buzzer_stop();
-            buzz_stop_ticks = 0;
-        }
-
-        update_display_timer(&elements, exposure_time_ms);
-        display_draw_test_strip_timer(&elements);
-
-        // Handle the next keypad event
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, 5) == HAL_OK) {
-            if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                ESP_LOGI(TAG, "Canceling test strip timer at %ldms", exposure_time_ms);
-                result = false;
-                break;
-            }
-        }
-    } while (exposure_time_ms <= exposure_time_start_ms && exposure_time_ms > 0);
-
-    // Make sure we wait out the last tick
-    exposure_elapsed_ticks = xTaskGetTickCount() - exposure_start_ticks;
-    if (buzz_stop_ticks > exposure_elapsed_ticks) {
-        osDelay(buzz_stop_ticks - exposure_elapsed_ticks);
-    }
-    buzzer_stop();
-
-    return result;
+    return ret == HAL_OK;
 }
 
 state_identifier_t state_add_adjustment()
@@ -559,7 +480,7 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
     float fractional;
     fractional = modff(exposure->adjusted_time, &seconds);
     elements->time_seconds = seconds;
-    elements->time_milliseconds = fractional * 1000.0f;
+    elements->time_milliseconds = round_to_10ms(roundf(fractional * 1000.0f));
 
     if (exposure->adjusted_time < 10) {
         elements->fraction_digits = 2;
@@ -588,5 +509,22 @@ void convert_exposure_to_display_timer(display_exposure_timer_t *elements, uint3
 void update_display_timer(display_exposure_timer_t *elements, uint32_t exposure_ms)
 {
     elements->time_seconds = exposure_ms / 1000;
-    elements->time_milliseconds = exposure_ms % 1000;
+    elements->time_milliseconds = round_to_10ms(exposure_ms % 1000);
+}
+
+uint32_t round_to_10ms(uint32_t n)
+{
+    uint32_t a = (n / 10) * 10;
+    uint32_t b = a + 10;
+    return (n - a > b - n) ? b : a;
+}
+
+uint32_t rounded_exposure_time_ms(float seconds)
+{
+    uint32_t milliseconds = (uint32_t)(roundf(seconds * 1000.0f));
+    if (milliseconds > 1000000) {
+        milliseconds = 1000000;
+    }
+    milliseconds = round_to_10ms(milliseconds);
+    return milliseconds;
 }

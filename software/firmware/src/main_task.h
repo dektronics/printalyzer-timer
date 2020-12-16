@@ -9,5 +9,6 @@
 void main_task_init(void);
 
 void main_task_notify_gpio_int(uint16_t gpio_pin);
+void main_task_notify_countdown_timer();
 
 #endif /* MAIN_TASK_H */

@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <esp_log.h>
+#include <exposure_timer.h>
 
 #include "usb_host.h"
 #include "display.h"
@@ -33,6 +34,7 @@ extern SPI_HandleTypeDef hspi2;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
+extern TIM_HandleTypeDef htim10;
 
 static void main_task_start(void *argument);
 static void gpio_queue_task(void *argument);
@@ -107,6 +109,11 @@ void main_task_relay_init()
     relay_init(&relay_handle);
 }
 
+void main_task_exposure_timer_init()
+{
+    exposure_timer_init(&htim10);
+}
+
 void main_task_start(void *argument)
 {
     UNUSED(argument);
@@ -160,6 +167,9 @@ void main_task_start(void *argument)
 
     /* Relay driver */
     main_task_relay_init();
+
+    /* Countdown timer init */
+    main_task_exposure_timer_init();
 
     /* GPIO queue task */
     gpio_event_queue = xQueueCreate(10, sizeof(uint16_t));
@@ -231,4 +241,9 @@ void gpio_queue_task(void *argument)
 void main_task_notify_gpio_int(uint16_t gpio_pin)
 {
     xQueueSendFromISR(gpio_event_queue, &gpio_pin, NULL);
+}
+
+void main_task_notify_countdown_timer()
+{
+    exposure_timer_notify();
 }
