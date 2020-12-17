@@ -18,10 +18,9 @@
 #include "relay.h"
 #include "exposure_timer.h"
 #include "util.h"
+#include "settings.h"
 
 static const char *TAG = "state_controller";
-
-#define MAX_FOCUS_TIME pdMS_TO_TICKS(300000)
 
 typedef enum {
     STATE_HOME,
@@ -92,7 +91,8 @@ void state_controller_loop()
             break;
         }
 
-        if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - focus_start_ticks) >= MAX_FOCUS_TIME) {
+        TickType_t max_focus_ticks = pdMS_TO_TICKS(settings_get_enlarger_focus_timeout());
+        if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - focus_start_ticks) >= max_focus_ticks) {
             ESP_LOGI(TAG, "Focus mode disabled due to timeout");
             relay_enlarger_enable(false);
             focus_start_ticks = 0;

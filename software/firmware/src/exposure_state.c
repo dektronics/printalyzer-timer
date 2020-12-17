@@ -2,16 +2,18 @@
 
 #include <math.h>
 
+#include "settings.h"
+
 static void exposure_recalculate(exposure_state_t *state);
 
 void exposure_state_defaults(exposure_state_t *state)
 {
     if (!state) { return; }
-    state->contrast_grade = CONTRAST_GRADE_2;
-    state->base_time = 15.0f;
+    state->contrast_grade = settings_get_default_contrast_grade();
+    state->base_time = settings_get_default_exposure_time() / 1000.0f;
     state->adjusted_time = state->base_time;
     state->adjustment_value = 0;
-    state->adjustment_increment = EXPOSURE_ADJ_QUARTER;
+    state->adjustment_increment = settings_get_default_step_size();
 }
 
 void exposure_adj_increase(exposure_state_t *state)

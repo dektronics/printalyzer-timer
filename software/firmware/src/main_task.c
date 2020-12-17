@@ -20,6 +20,7 @@
 #include "relay.h"
 #include "board_config.h"
 #include "state_controller.h"
+#include "settings.h"
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
@@ -70,6 +71,7 @@ void main_task_display_init()
         .dc_gpio_pin = DISP_DC_Pin
     };
     display_init(&display_handle);
+    display_set_brightness(settings_get_display_brightness());
 }
 
 void main_task_led_init()
@@ -83,6 +85,8 @@ void main_task_led_init()
     };
 
     led_init(&led_handle);
+    led_set_state(LED_ILLUM_ALL);
+    led_set_brightness(settings_get_led_brightness());
 }
 
 void main_task_buzzer_init()
@@ -151,10 +155,8 @@ void main_task_start(void *argument)
     main_task_display_init();
     display_draw_logo();
 
+    /* Initialize the LED driver */
     main_task_led_init();
-
-    led_set_state(LED_ILLUM_ALL);
-    led_set_brightness(127);
 
     /* Rotary encoder */
     HAL_TIM_Encoder_Start_IT(&htim1, TIM_CHANNEL_ALL);
@@ -184,7 +186,8 @@ void main_task_start(void *argument)
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
     /* Startup beep */
-    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
+    buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
+    buzzer_set_volume(settings_get_buzzer_volume());
     buzzer_start();
     osDelay(100);
     buzzer_stop();

@@ -9,6 +9,7 @@
 #include "exposure_timer.h"
 #include "buzzer.h"
 #include "relay.h"
+#include "settings.h"
 
 static const char *TAG = "exposure_timer";
 
@@ -68,7 +69,7 @@ HAL_StatusTypeDef exposure_timer_run()
 
     buzzer_volume_t current_volume = buzzer_get_volume();
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
-    buzzer_set_volume(BUZZER_VOLUME_MEDIUM);
+    buzzer_set_volume(settings_get_buzzer_volume());
     buzzer_set_frequency(PAM8904E_FREQ_500HZ);
 
     ESP_LOGI(TAG, "Starting exposure timer");

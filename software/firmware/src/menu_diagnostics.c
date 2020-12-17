@@ -15,6 +15,7 @@
 #include "buzzer.h"
 #include "relay.h"
 #include "tcs3472.h"
+#include "settings.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
@@ -280,11 +281,14 @@ menu_result_t diagnostics_buzzer()
 
     char buf[256];
 
-    pam8904e_freq_t freq = current_frequency;
+    pam8904e_freq_t freq = PAM8904E_FREQ_DEFAULT;
     bool freq_changed = false;
-    buzzer_volume_t volume = current_volume;
+    buzzer_volume_t volume = settings_get_buzzer_volume();
     bool volume_changed = false;
     uint32_t duration = 200;
+
+    buzzer_set_frequency(freq);
+    buzzer_set_volume(volume);
 
     sprintf(buf, "\n");
     display_static_list("Buzzer Test", buf);
