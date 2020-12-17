@@ -15,16 +15,18 @@
 #include "main_menu.h"
 #include "buzzer.h"
 #include "led.h"
+#include "relay.h"
 #include "exposure_timer.h"
 #include "util.h"
 
 static const char *TAG = "state_controller";
 
+#define MAX_FOCUS_TIME pdMS_TO_TICKS(300000)
+
 typedef enum {
     STATE_HOME,
     STATE_HOME_CHANGE_TIME_INCREMENT,
     STATE_TIMER,
-    STATE_FOCUS,
     STATE_TEST_STRIP,
     STATE_ADD_ADJUSTMENT,
     STATE_MENU
@@ -34,17 +36,19 @@ typedef struct {
     bool change_inc_pending;
     bool change_inc_swallow_release_up;
     bool change_inc_swallow_release_down;
+    bool display_dirty;
 } state_home_data_t;
 
 /* State data used by the home screen and related screens */
 exposure_state_t exposure_state;
+
+static TickType_t focus_start_ticks;
 
 void state_home_init(state_home_data_t *state_data);
 static state_identifier_t state_home(state_home_data_t *state_data);
 
 static state_identifier_t state_home_change_time_increment();
 static state_identifier_t state_timer();
-static state_identifier_t state_focus();
 static state_identifier_t state_test_strip();
 static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
 static state_identifier_t state_add_adjustment();
@@ -53,6 +57,7 @@ static state_identifier_t state_menu();
 void state_controller_init()
 {
     exposure_state_defaults(&exposure_state);
+    focus_start_ticks = 0;
 }
 
 void state_controller_loop()
@@ -74,9 +79,6 @@ void state_controller_loop()
         case STATE_TIMER:
             next_state = state_timer();
             break;
-        case STATE_FOCUS:
-            next_state = state_focus();
-            break;
         case STATE_TEST_STRIP:
             next_state = state_test_strip();
             break;
@@ -88,6 +90,12 @@ void state_controller_loop()
             break;
         default:
             break;
+        }
+
+        if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - focus_start_ticks) >= MAX_FOCUS_TIME) {
+            ESP_LOGI(TAG, "Focus mode disabled due to timeout");
+            relay_enlarger_enable(false);
+            focus_start_ticks = 0;
         }
 
         if (next_state != current_state) {
@@ -102,20 +110,24 @@ void state_home_init(state_home_data_t *state_data)
     state_data->change_inc_pending = false;
     state_data->change_inc_swallow_release_up = false;
     state_data->change_inc_swallow_release_down = false;
+    state_data->display_dirty = true;
 }
 
 state_identifier_t state_home(state_home_data_t *state_data)
 {
     state_identifier_t next_state = STATE_HOME;
 
-    // Draw current exposure state
-    display_main_elements_t main_elements;
-    convert_exposure_to_display(&main_elements, &exposure_state);
-    display_draw_main_elements(&main_elements);
+    if (state_data->display_dirty) {
+        // Draw current exposure state
+        display_main_elements_t main_elements;
+        convert_exposure_to_display(&main_elements, &exposure_state);
+        display_draw_main_elements(&main_elements);
+        state_data->display_dirty = false;
+    }
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+    if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
         if (state_data->change_inc_pending) {
             if (keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
                 state_data->change_inc_swallow_release_up = false;
@@ -131,27 +143,59 @@ state_identifier_t state_home(state_home_data_t *state_data)
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
                 next_state = STATE_TIMER;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                next_state = STATE_FOCUS;
+                if (!relay_enlarger_is_enabled()) {
+                    ESP_LOGI(TAG, "Focus mode enabled");
+                    relay_enlarger_enable(true);
+                    focus_start_ticks = xTaskGetTickCount();
+                } else {
+                    ESP_LOGI(TAG, "Focus mode disabled");
+                    relay_enlarger_enable(false);
+                    focus_start_ticks = 0;
+                }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 exposure_adj_increase(&exposure_state);
+                state_data->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 exposure_adj_decrease(&exposure_state);
+                state_data->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 exposure_contrast_increase(&exposure_state);
+                state_data->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 exposure_contrast_decrease(&exposure_state);
+                state_data->display_dirty = true;
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
                 next_state = STATE_TEST_STRIP;
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
                 next_state = STATE_MENU;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 exposure_state_defaults(&exposure_state);
+                state_data->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
                 state_data->change_inc_pending = true;
                 state_data->change_inc_swallow_release_up = true;
                 state_data->change_inc_swallow_release_down = true;
             }
         }
+
+        // Key events should reset the focus timeout
+        if (relay_enlarger_is_enabled()) {
+            focus_start_ticks = xTaskGetTickCount();
+        }
+    }
+
+    if (next_state != STATE_HOME
+        && next_state != STATE_HOME_CHANGE_TIME_INCREMENT
+        && next_state != STATE_ADD_ADJUSTMENT) {
+        if (relay_enlarger_is_enabled()) {
+            ESP_LOGI(TAG, "Focus mode disabled due to state change");
+            relay_enlarger_enable(false);
+            focus_start_ticks = 0;
+        }
+    }
+
+    if (next_state != STATE_HOME) {
+        state_data->display_dirty = true;
     }
 
     return next_state;
@@ -167,13 +211,18 @@ state_identifier_t state_home_change_time_increment()
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+    if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
             exposure_adj_increment_increase(&exposure_state);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
             exposure_adj_increment_decrease(&exposure_state);
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
             next_state = STATE_HOME;
+        }
+
+        // Key events should reset the focus timeout
+        if (relay_enlarger_is_enabled()) {
+            focus_start_ticks = xTaskGetTickCount();
         }
     }
 
@@ -251,11 +300,6 @@ state_identifier_t state_timer()
     return next_state;
 }
 
-state_identifier_t state_focus()
-{
-    return STATE_HOME;
-}
-
 state_identifier_t state_test_strip()
 {
     state_identifier_t next_state = STATE_TEST_STRIP;
@@ -263,8 +307,6 @@ state_identifier_t state_test_strip()
     buzzer_volume_t current_volume = buzzer_get_volume();
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
     led_set_on(LED_IND_TEST_STRIP);
-
-    //FIXME Current design of this code is purely for UI testing
 
     display_test_strip_elements_t elements = {0};
     elements.title1 = "Test Strip";
