@@ -227,7 +227,8 @@ menu_result_t menu_settings_default_exposure()
     }
 
     if (accepted) {
-        //TODO change setting
+        settings_set_default_exposure_time(time_setting);
+        settings_set_default_contrast_grade(grade_setting);
     }
 
     return menu_result;
@@ -300,7 +301,7 @@ menu_result_t menu_settings_default_step_size()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     if (menu_result == MENU_OK) {
-        //TODO save new setting
+        settings_set_default_step_size(setting);
     }
 
     return menu_result;
@@ -354,7 +355,8 @@ menu_result_t menu_settings_test_strip_mode()
     }
 
     if (accepted) {
-        //TODO change setting
+        settings_set_teststrip_mode(mode_setting);
+        settings_set_teststrip_patches(patch_setting);
     }
 
     return menu_result;
@@ -404,7 +406,7 @@ menu_result_t menu_settings_safelight_mode()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     if (menu_result == MENU_OK) {
-        //TODO save new setting
+        settings_set_safelight_mode(setting);
     }
 
     return menu_result;
@@ -463,7 +465,7 @@ menu_result_t menu_settings_enlarger_auto_shutoff()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     if (menu_result == MENU_OK) {
-        //TODO save new setting
+        settings_set_enlarger_focus_timeout(setting);
     }
 
     return menu_result;
@@ -523,11 +525,12 @@ menu_result_t menu_settings_display_brightness()
     }
 
     if (accepted) {
-        //TODO change setting
-    } else {
-        display_set_brightness(settings_get_display_brightness());
-        led_set_brightness(settings_get_led_brightness());
+        settings_set_display_brightness(display_setting);
+        settings_set_led_brightness(led_setting);
     }
+
+    display_set_brightness(settings_get_display_brightness());
+    led_set_brightness(settings_get_led_brightness());
 
     return menu_result;
 }
@@ -585,7 +588,8 @@ menu_result_t menu_settings_buzzer_volume()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     if (menu_result == MENU_OK) {
-        //TODO save new setting
+        settings_set_buzzer_volume(setting);
+
         buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
         buzzer_set_volume(setting);
         buzzer_start();
