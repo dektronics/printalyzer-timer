@@ -35,6 +35,7 @@ typedef struct {
     bool change_inc_pending;
     bool change_inc_swallow_release_up;
     bool change_inc_swallow_release_down;
+    int cancel_repeat;
     bool display_dirty;
 } state_home_data_t;
 
@@ -110,6 +111,7 @@ void state_home_init(state_home_data_t *state_data)
     state_data->change_inc_pending = false;
     state_data->change_inc_swallow_release_up = false;
     state_data->change_inc_swallow_release_down = false;
+    state_data->cancel_repeat = 0;
     state_data->display_dirty = true;
 }
 
@@ -168,9 +170,16 @@ state_identifier_t state_home(state_home_data_t *state_data)
                 next_state = STATE_TEST_STRIP;
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
                 next_state = STATE_MENU;
-            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                exposure_state_defaults(&exposure_state);
-                state_data->display_dirty = true;
+            } else if (keypad_event.key == KEYPAD_CANCEL) {
+                if (keypad_event.pressed || keypad_event.repeated) {
+                    state_data->cancel_repeat++;
+                } else {
+                    if (state_data->cancel_repeat > 2) {
+                        exposure_state_defaults(&exposure_state);
+                        state_data->display_dirty = true;
+                    }
+                    state_data->cancel_repeat = 0;
+                }
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
                 state_data->change_inc_pending = true;
                 state_data->change_inc_swallow_release_up = true;
