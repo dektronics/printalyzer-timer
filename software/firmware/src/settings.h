@@ -11,7 +11,7 @@
 
 typedef enum {
     SAFELIGHT_MODE_OFF = 0, /* Safelight is always off */
-    SAFELIGHT_MODE_ON,      /* Safelight is off when the enlarger is off */
+    SAFELIGHT_MODE_ON,      /* Safelight is off when the enlarger is on */
     SAFELIGHT_MODE_AUTO     /* Safelight is off during metering and printing */
 } safelight_mode_t;
 

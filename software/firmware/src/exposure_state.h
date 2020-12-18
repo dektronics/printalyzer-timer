@@ -55,4 +55,6 @@ float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
     int patch_min, unsigned int patches_covered);
 float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
 
+const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade);
+
 #endif /* EXPOSURE_STATE_H */

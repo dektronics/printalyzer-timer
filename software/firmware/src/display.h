@@ -46,6 +46,8 @@ typedef struct {
     display_exposure_timer_t time_elements;
 } display_test_strip_elements_t;
 
+typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
+
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle);
 
 void display_clear();
@@ -73,5 +75,10 @@ void display_draw_test_strip_timer(const display_exposure_timer_t *elements);
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list);
 void display_static_list(const char *title, const char *list);
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);
+uint8_t display_input_value(const char *title, const char *prefix, uint8_t *value,
+        uint8_t low, uint8_t high, uint8_t digits, const char *postfix);
+uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *value,
+        uint8_t low, uint8_t high, uint8_t digits, const char *postfix,
+        display_input_value_callback_t callback, void *user_data);
 
 #endif /* DISPLAY_H */

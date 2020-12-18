@@ -11,6 +11,7 @@
 #include "keypad.h"
 #include "led.h"
 
+#include "menu_settings.h"
 #include "menu_diagnostics.h"
 
 static const char *TAG = "main_menu";
@@ -27,12 +28,15 @@ menu_result_t main_menu_start()
     do {
         option = display_selection_list(
                 "Main Menu", option,
+                "Settings\n"
                 "Diagnostics\n"
                 "About");
 
         if (option == 1) {
-            menu_result = menu_diagnostics();
+            menu_result = menu_settings();
         } else if (option == 2) {
+            menu_result = menu_diagnostics();
+        } else if (option == 3) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;

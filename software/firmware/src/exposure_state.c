@@ -164,3 +164,35 @@ void exposure_recalculate(exposure_state_t *state)
     float stops = state->adjustment_value / 12.0f;
     state->adjusted_time = state->base_time * powf(2.0f, stops);
 }
+
+const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade)
+{
+    switch (contrast_grade) {
+    case CONTRAST_GRADE_00:
+        return "00";
+    case CONTRAST_GRADE_0:
+        return "0";
+    case CONTRAST_GRADE_0_HALF:
+        return "1/2";
+    case CONTRAST_GRADE_1:
+        return "1";
+    case CONTRAST_GRADE_1_HALF:
+        return "1-1/2";
+    case CONTRAST_GRADE_2:
+        return "2";
+    case CONTRAST_GRADE_2_HALF:
+        return "2-1/2";
+    case CONTRAST_GRADE_3:
+        return "3";
+    case CONTRAST_GRADE_3_HALF:
+        return "3-1/2";
+    case CONTRAST_GRADE_4:
+        return "4";
+    case CONTRAST_GRADE_4_HALF:
+        return "4-1/2";
+    case CONTRAST_GRADE_5:
+        return "5";
+    default:
+        return "";
+    }
+}
