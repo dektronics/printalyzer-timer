@@ -361,17 +361,27 @@ state_identifier_t state_test_strip()
         break;
     }
 
+    teststrip_mode_t teststrip_mode = settings_get_teststrip_mode();
+
     //TODO turn off the safelight relay (if not in blackout)
 
     unsigned int patches_covered = 0;
     do {
-        float patch_time = exposure_get_test_strip_time_incremental(&exposure_state, exposure_patch_min, patches_covered);
-        uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
+        float patch_time;
+        if (teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+            patch_time = exposure_get_test_strip_time_complete(&exposure_state, exposure_patch_min + patches_covered);
 
-        elements.covered_patches = 0;
-        for (int i = 0; i < patches_covered; i++) {
-            elements.covered_patches |= (1 << (exposure_patch_count - i - 1));
+            elements.covered_patches = 0xFF;
+            elements.covered_patches ^= (1 << (exposure_patch_count - patches_covered - 1));
+        } else {
+            patch_time = exposure_get_test_strip_time_incremental(&exposure_state, exposure_patch_min, patches_covered);
+
+            elements.covered_patches = 0;
+            for (int i = 0; i < patches_covered; i++) {
+                elements.covered_patches |= (1 << (exposure_patch_count - i - 1));
+            }
         }
+        uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
 
         convert_exposure_to_display_timer(&(elements.time_elements), patch_time_ms);
 
