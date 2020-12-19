@@ -5,14 +5,18 @@
 #include <usbh_msc.h>
 #include <usbh_hid.h>
 
+#include <ff.h>
+
 #include <esp_log.h>
 
 #include "keypad.h"
+#include "fatfs.h"
 
-static const char *TAG = "main_task";
+static const char *TAG = "usb_host";
 
 USBH_HandleTypeDef hUsbHostFS;
 usb_app_state_t app_state = APPLICATION_IDLE;
+bool usb_msc_mounted = false;
 
 static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id);
 static void usb_msc_active();
@@ -152,10 +156,39 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 
 void usb_msc_active()
 {
-    //TODO Mount the mass storage device
+    ESP_LOGD(TAG, "usb_msc_active");
+
+    if (fatfs_mount() != HAL_OK) {
+        return;
+    }
+    usb_msc_mounted = true;
+
+    FRESULT res;
+
+    char str[12];
+    res = f_getlabel("0:", str, 0);
+    if (res == FR_OK) {
+        ESP_LOGI(TAG, "Drive label: \"%s\"", str);
+    }
+
+    FATFS *fs;
+    DWORD free_clusters, free_sectors, total_sectors;
+    res = f_getfree("0:", &free_clusters, &fs);
+    if (res == FR_OK) {
+        total_sectors = (fs->n_fatent - 2) * fs->csize;
+        free_sectors = free_clusters * fs->csize;
+        ESP_LOGI(TAG, "Drive has %ld KB total space, %ld KB available", total_sectors / 2, free_sectors / 2);
+    }
 }
 
 void usb_msc_disconnect()
 {
-    //TODO Cleanup from mass storage device disconnect
+    ESP_LOGD(TAG, "usb_msc_disconnect");
+    fatfs_unmount();
+    usb_msc_mounted = false;
+}
+
+bool usb_msc_is_mounted()
+{
+    return usb_msc_mounted;
 }
