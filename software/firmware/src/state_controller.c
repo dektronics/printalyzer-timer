@@ -317,6 +317,9 @@ state_identifier_t state_test_strip()
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
     led_set_on(LED_IND_TEST_STRIP);
 
+    int exposure_patch_min;
+    unsigned int exposure_patch_count;
+
     display_test_strip_elements_t elements = {0};
     elements.title1 = "Test Strip";
     elements.time_elements.time_seconds = 25;
@@ -344,31 +347,30 @@ state_identifier_t state_test_strip()
         break;
     }
 
+    switch (settings_get_teststrip_patches()) {
+    case TESTSTRIP_PATCHES_5:
+        exposure_patch_min = -2;
+        exposure_patch_count = 5;
+        elements.patches = DISPLAY_PATCHES_5;
+        break;
+    case TESTSTRIP_PATCHES_7:
+    default:
+        exposure_patch_min = -3;
+        exposure_patch_count = 7;
+        elements.patches = DISPLAY_PATCHES_7;
+        break;
+    }
+
     //TODO turn off the safelight relay (if not in blackout)
 
     unsigned int patches_covered = 0;
     do {
-        float patch_time = exposure_get_test_strip_time_incremental(&exposure_state, -3, patches_covered);
+        float patch_time = exposure_get_test_strip_time_incremental(&exposure_state, exposure_patch_min, patches_covered);
         uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
 
-        if (patches_covered == 0) {
-            elements.strip_patches = 0;
-        } else if (patches_covered == 1) {
-            elements.strip_patches = 0x40;
-        } else if (patches_covered == 2) {
-            elements.strip_patches = 0x60;
-        } else if (patches_covered == 3) {
-            elements.strip_patches = 0x70;
-        } else if (patches_covered == 4) {
-            elements.strip_patches = 0x78;
-        } else if (patches_covered == 5) {
-            elements.strip_patches = 0x7C;
-        } else if (patches_covered == 6) {
-            elements.strip_patches = 0x7E;
-        } else if (patches_covered == 7) {
-            elements.strip_patches = 0x7F;
-        } else {
-            elements.strip_patches = 0;
+        elements.covered_patches = 0;
+        for (int i = 0; i < patches_covered; i++) {
+            elements.covered_patches |= (1 << (exposure_patch_count - i - 1));
         }
 
         convert_exposure_to_display_timer(&(elements.time_elements), patch_time_ms);
@@ -378,8 +380,8 @@ state_identifier_t state_test_strip()
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                if (state_test_strip_countdown(patch_time_ms, patches_covered == 6)) {
-                    if (patches_covered < 7) {
+                if (state_test_strip_countdown(patch_time_ms, patches_covered == (exposure_patch_count - 1))) {
+                    if (patches_covered < exposure_patch_count) {
                         patches_covered++;
                     }
                 } else {
@@ -389,9 +391,9 @@ state_identifier_t state_test_strip()
                 next_state = STATE_HOME;
             }
         }
-    } while (next_state == STATE_TEST_STRIP && patches_covered < 7);
+    } while (next_state == STATE_TEST_STRIP && patches_covered < exposure_patch_count);
 
-    if (next_state == STATE_TEST_STRIP && patches_covered == 7) {
+    if (next_state == STATE_TEST_STRIP && patches_covered == exposure_patch_count) {
         osDelay(pdMS_TO_TICKS(500));
         next_state = STATE_HOME;
     }

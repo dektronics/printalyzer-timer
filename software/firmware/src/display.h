@@ -21,6 +21,11 @@ typedef enum {
     DISPLAY_GRADE_NONE
 } display_grade_t;
 
+typedef enum {
+    DISPLAY_PATCHES_5,
+    DISPLAY_PATCHES_7
+} display_patches_t;
+
 #define DISPLAY_TONE_UNDER 0x10000
 #define DISPLAY_TONE_OVER  0x00001
 #define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
@@ -40,7 +45,8 @@ typedef struct {
 } display_exposure_timer_t;
 
 typedef struct {
-    uint8_t strip_patches;
+    display_patches_t patches;
+    uint8_t covered_patches;
     const char *title1;
     const char *title2;
     display_exposure_timer_t time_elements;

@@ -772,53 +772,97 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
     u8g2_SetFontPosBaseline(&u8g2);
 
     // Draw test strip grid
-    u8g2_DrawFrame(&u8g2, 0, 11, 156, 53);
-    u8g2_DrawFrame(&u8g2, 1, 12, 154, 51);
-    u8g2_uint_t x = 22;
+    u8g2_uint_t x;
     u8g2_uint_t y = 13;
-    for (int i = 0; i < 6; i++) {
-        u8g2_DrawLine(&u8g2, x + 0, y, x + 0, y + 48);
-        u8g2_DrawLine(&u8g2, x + 1, y, x + 1, y + 48);
-        x += 22;
+    if (elements->patches == DISPLAY_PATCHES_5) {
+        x = 30;
+        u8g2_DrawFrame(&u8g2, 0, 11, 152, 53);
+        u8g2_DrawFrame(&u8g2, 1, 12, 150, 51);
+        for (int i = 0; i < 4; i++) {
+            u8g2_DrawLine(&u8g2, x + 0, y, x + 0, y + 48);
+            u8g2_DrawLine(&u8g2, x + 1, y, x + 1, y + 48);
+            x += 30;
+        }
+    } else {
+        x = 22;
+        u8g2_DrawFrame(&u8g2, 0, 11, 156, 53);
+        u8g2_DrawFrame(&u8g2, 1, 12, 154, 51);
+        for (int i = 0; i < 6; i++) {
+            u8g2_DrawLine(&u8g2, x + 0, y, x + 0, y + 48);
+            u8g2_DrawLine(&u8g2, x + 1, y, x + 1, y + 48);
+            x += 22;
+        }
     }
 
     // Draw each test strip patch
     x = 2;
     y = 13;
-    for (int i = 0; i < 7; i++) {
-        if (elements->strip_patches & (1 << (6 - i))) {
-            u8g2_DrawBox(&u8g2, x + 1, y + 1, 18, 47);
-            u8g2_SetDrawColor(&u8g2, 0);
-        }
+    if (elements->patches == DISPLAY_PATCHES_5) {
+        for (int i = 0; i < 5; i++) {
+            if (elements->covered_patches & (1 << (4 - i))) {
+                u8g2_DrawBox(&u8g2, x + 1, y + 1, 26, 47);
+                u8g2_SetDrawColor(&u8g2, 0);
+            }
 
-        switch (i) {
-        case 0:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-3");
-            break;
-        case 1:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-2");
-            break;
-        case 2:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "-1");
-            break;
-        case 3:
-            u8g2_DrawStr(&u8g2, x + 7, y + 29, "0");
-            break;
-        case 4:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+1");
-            break;
-        case 5:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+2");
-            break;
-        case 6:
-            u8g2_DrawStr(&u8g2, x + 1, y + 29, "+3");
-            break;
-        default:
-            break;
-        }
+            switch (i) {
+            case 0:
+                u8g2_DrawStr(&u8g2, x + 5, y + 29, "-2");
+                break;
+            case 1:
+                u8g2_DrawStr(&u8g2, x + 5, y + 29, "-1");
+                break;
+            case 2:
+                u8g2_DrawStr(&u8g2, x + 11, y + 29, "0");
+                break;
+            case 3:
+                u8g2_DrawStr(&u8g2, x + 5, y + 29, "+1");
+                break;
+            case 4:
+                u8g2_DrawStr(&u8g2, x + 5, y + 29, "+2");
+                break;
+            default:
+                break;
+            }
 
-        u8g2_SetDrawColor(&u8g2, 1);
-        x += 22;
+            u8g2_SetDrawColor(&u8g2, 1);
+            x += 30;
+        }
+    } else {
+        for (int i = 0; i < 7; i++) {
+            if (elements->covered_patches & (1 << (6 - i))) {
+                u8g2_DrawBox(&u8g2, x + 1, y + 1, 18, 47);
+                u8g2_SetDrawColor(&u8g2, 0);
+            }
+
+            switch (i) {
+            case 0:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "-3");
+                break;
+            case 1:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "-2");
+                break;
+            case 2:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "-1");
+                break;
+            case 3:
+                u8g2_DrawStr(&u8g2, x + 7, y + 29, "0");
+                break;
+            case 4:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "+1");
+                break;
+            case 5:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "+2");
+                break;
+            case 6:
+                u8g2_DrawStr(&u8g2, x + 1, y + 29, "+3");
+                break;
+            default:
+                break;
+            }
+
+            u8g2_SetDrawColor(&u8g2, 1);
+            x += 22;
+        }
     }
 
     // Draw title text
