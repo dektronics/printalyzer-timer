@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include "buzzer.h"
 #include "exposure_state.h"
+#include "enlarger_profile.h"
 
 typedef enum {
     SAFELIGHT_MODE_OFF = 0, /* Safelight is always off */
@@ -102,5 +103,12 @@ void settings_set_teststrip_mode(teststrip_mode_t mode);
 teststrip_patches_t settings_get_teststrip_patches();
 
 void settings_set_teststrip_patches(teststrip_patches_t patches);
+
+/**
+ * Default enlarger profile for exposure timing.
+ * This is a set of hard-coded values, until profile configuration
+ * capabilities are added.
+ */
+const enlarger_profile_t *settings_get_default_enlarger_profile();
 
 #endif /* SETTINGS_H */

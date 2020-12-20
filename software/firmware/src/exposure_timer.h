@@ -4,6 +4,8 @@
 #include <stm32f4xx_hal.h>
 #include <stdbool.h>
 
+#include "enlarger_profile.h"
+
 typedef enum {
     EXPOSURE_TIMER_END_TONE_NONE = 0,
     EXPOSURE_TIMER_END_TONE_SHORT,
@@ -36,6 +38,9 @@ typedef struct {
     /* Time delay between turning the relay off and the end of the timer period */
     uint16_t relay_off_delay;
 
+    /* Time delay between the end of the timer period and the completion of the timer process */
+    uint16_t exposure_end_delay;
+
     /* Tone sequence to play at the end of the exposure sequence */
     exposure_timer_end_tone_t end_tone;
 
@@ -51,6 +56,17 @@ typedef struct {
 
 void exposure_timer_init(TIM_HandleTypeDef *htim);
 
+/**
+ * Set the time and delay fields in the timer configuration using
+ * an enlarger profile.
+ */
+void exposure_timer_set_config_time(exposure_timer_config_t *config,
+    uint32_t exposure_time, const enlarger_profile_t *profile);
+
+/**
+ * Set the provided configuration as the active configuration for
+ * the exposure timer.
+ */
 void exposure_timer_set_config(const exposure_timer_config_t *config);
 
 /**

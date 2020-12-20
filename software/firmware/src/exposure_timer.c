@@ -10,6 +10,7 @@
 #include "buzzer.h"
 #include "relay.h"
 #include "settings.h"
+#include "util.h"
 
 static const char *TAG = "exposure_timer";
 
@@ -31,6 +32,44 @@ void exposure_timer_init(TIM_HandleTypeDef *htim)
     timer_htim = htim;
     memset(&timer_config, 0, sizeof(exposure_timer_config_t));
     timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
+}
+
+void exposure_timer_set_config_time(exposure_timer_config_t *config,
+    uint32_t exposure_time, const enlarger_profile_t *profile)
+{
+    if (!config) {
+        return;
+    }
+    if (!profile || !enlarger_profile_is_valid(profile)) {
+        ESP_LOGI(TAG, "Setting defaults based on missing or invalid enlarger profile");
+        config->exposure_time = exposure_time;
+        config->relay_on_delay = 0;
+        config->relay_off_delay = 0;
+        return;
+    }
+
+    // Log a warning if the exposure is too short.
+    // Not yet sure what should be done in this case, but any user alerts
+    // should probably happen before we even get to this code.
+    uint32_t min_exposure_time = enlarger_profile_min_exposure(profile);
+    ESP_LOGD(TAG, "Minimum allowable exposure time: %ldms", min_exposure_time);
+    if (exposure_time < round_to_10(min_exposure_time)) {
+        ESP_LOGE(TAG, "Cannot accurately time short exposure: %ldms < %ldms",
+            exposure_time, min_exposure_time);
+    }
+
+    // Assign the time fields based on the enlarger profile
+    config->exposure_time = exposure_time;
+    config->relay_on_delay = round_to_10(profile->turn_on_delay + (profile->rise_time - profile->rise_time_equiv));
+    config->relay_off_delay = round_to_10(profile->turn_off_delay + profile->fall_time_equiv);
+    config->exposure_end_delay = round_to_10(profile->fall_time - profile->fall_time_equiv);
+
+    // Log all the relevant time properties
+    ESP_LOGD(TAG, "Set for desired time of %ldms", exposure_time);
+    ESP_LOGD(TAG, "Actual exposure time: %ldms", config->relay_on_delay + config->exposure_time);
+    ESP_LOGD(TAG, "On delay: %dms", config->relay_on_delay);
+    ESP_LOGD(TAG, "Off delay: %dms", config->relay_off_delay);
+    ESP_LOGD(TAG, "End delay: %dms", config->exposure_end_delay);
 }
 
 void exposure_timer_set_config(const exposure_timer_config_t *config)
@@ -91,7 +130,12 @@ HAL_StatusTypeDef exposure_timer_run()
             }
         }
 
-        if (state == EXPOSURE_TIMER_STATE_DONE) {
+        if (state == EXPOSURE_TIMER_STATE_START) {
+            ESP_LOGI(TAG, "Exposure timer started");
+        } else if (state == EXPOSURE_TIMER_STATE_END) {
+            ESP_LOGI(TAG, "Exposure timer ended");
+        } else if (state == EXPOSURE_TIMER_STATE_DONE) {
+            ESP_LOGI(TAG, "Exposure timer process complete");
             break;
         }
     }
@@ -249,7 +293,8 @@ void exposure_timer_notify()
 
     if (timer_state == EXPOSURE_TIMER_STATE_START) {
         timer_state = EXPOSURE_TIMER_STATE_TICK;
-    } else if (timer_state == EXPOSURE_TIMER_STATE_END && buzz_stop == 0) {
+    } else if (timer_state == EXPOSURE_TIMER_STATE_END && buzz_stop == 0
+        && time_elapsed > timer_config.relay_on_delay + timer_config.exposure_time + timer_config.exposure_end_delay) {
         timer_state = EXPOSURE_TIMER_STATE_DONE;
     }
 }

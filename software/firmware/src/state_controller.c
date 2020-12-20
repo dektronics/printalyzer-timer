@@ -17,6 +17,7 @@
 #include "led.h"
 #include "relay.h"
 #include "exposure_timer.h"
+#include "enlarger_profile.h"
 #include "util.h"
 #include "settings.h"
 
@@ -269,15 +270,10 @@ state_identifier_t state_timer()
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, exposure_time_ms);
 
-    exposure_timer_config_t timer_config = {
-        .exposure_time = exposure_time_ms,
-        .relay_on_delay = 50,  /* TBD pending testing/profiling */
-        .relay_off_delay = 100, /* TBD pending testing/profiling */
-        .end_tone = EXPOSURE_TIMER_END_TONE_REGULAR,
-        .callback_rate = EXPOSURE_TIMER_RATE_1_SEC,
-        .timer_callback = state_timer_exposure_callback,
-        .user_data = &elements
-    };
+    exposure_timer_config_t timer_config = {0};
+    timer_config.end_tone = EXPOSURE_TIMER_END_TONE_REGULAR;
+    timer_config.timer_callback = state_timer_exposure_callback;
+    timer_config.user_data = &elements;
 
     if (elements.fraction_digits == 0) {
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
@@ -285,7 +281,12 @@ state_identifier_t state_timer()
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_100_MS;
     } else if (elements.fraction_digits == 2) {
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_10_MS;
+    } else {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
+
+    const enlarger_profile_t *enlarger_profile = settings_get_default_enlarger_profile();
+    exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_profile);
 
     exposure_timer_set_config(&timer_config);
 
@@ -441,15 +442,10 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, patch_time_ms);
 
-    exposure_timer_config_t timer_config = {
-        .exposure_time = patch_time_ms,
-        .relay_on_delay = 50,  /* TBD pending testing/profiling */
-        .relay_off_delay = 100, /* TBD pending testing/profiling */
-        .end_tone = last_patch ? EXPOSURE_TIMER_END_TONE_REGULAR : EXPOSURE_TIMER_END_TONE_SHORT,
-        .callback_rate = EXPOSURE_TIMER_RATE_1_SEC,
-        .timer_callback = state_test_strip_exposure_callback,
-        .user_data = &elements
-    };
+    exposure_timer_config_t timer_config = {0};
+    timer_config.end_tone = last_patch ? EXPOSURE_TIMER_END_TONE_REGULAR : EXPOSURE_TIMER_END_TONE_SHORT;
+    timer_config.timer_callback = state_test_strip_exposure_callback;
+    timer_config.user_data = &elements;
 
     if (elements.fraction_digits == 0) {
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
@@ -457,7 +453,12 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_100_MS;
     } else if (elements.fraction_digits == 2) {
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_10_MS;
+    } else {
+        timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
+
+    const enlarger_profile_t *enlarger_profile = settings_get_default_enlarger_profile();
+    exposure_timer_set_config_time(&timer_config, patch_time_ms, enlarger_profile);
 
     exposure_timer_set_config(&timer_config);
 

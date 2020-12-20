@@ -31,6 +31,29 @@ static buzzer_volume_t setting_buzzer_volume = DEFAULT_BUZZER_VOLUME;
 static teststrip_mode_t setting_teststrip_mode = DEFAULT_TESTSTRIP_MODE;
 static teststrip_patches_t setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES;
 
+#if 0
+/* Profile for bench test lamp. */
+static enlarger_profile_t settings_default_enlarger_profile = {
+    .turn_on_delay = 60,
+    .rise_time = 300,
+    .rise_time_equiv = 180,
+    .turn_off_delay = 10,
+    .fall_time = 500,
+    .fall_time_equiv = 50
+};
+#endif
+#if 1
+/* Profile for darkroom enlarger. */
+static enlarger_profile_t settings_default_enlarger_profile = {
+    .turn_on_delay = 124,
+    .rise_time = 546,
+    .rise_time_equiv = 361,
+    .turn_off_delay = 31,
+    .fall_time = 316,
+    .fall_time_equiv = 57
+};
+#endif
+
 uint32_t settings_get_default_exposure_time()
 {
     return setting_default_exposure_time;
@@ -158,4 +181,9 @@ void settings_set_teststrip_patches(teststrip_patches_t patches)
         && patches >= TESTSTRIP_PATCHES_7 && patches <= TESTSTRIP_PATCHES_5) {
         setting_teststrip_patches = patches;
     }
+}
+
+const enlarger_profile_t *settings_get_default_enlarger_profile()
+{
+    return &settings_default_enlarger_profile;
 }
