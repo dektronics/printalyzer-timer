@@ -430,6 +430,7 @@ menu_result_t diagnostics_meter_probe()
     bool sensor_initialized = false;
     bool sensor_error = false;
     tcs3472_channel_data_t channel_data;
+    bool enlarger_enabled = relay_enlarger_is_enabled();
 
     memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
 
@@ -489,6 +490,14 @@ menu_result_t diagnostics_meter_probe()
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
                 if (sensor_initialized && sensor_error) {
                     sensor_initialized = false;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                if (!relay_enlarger_is_enabled()) {
+                    ESP_LOGI(TAG, "Meter probe focus mode enabled");
+                    relay_enlarger_enable(true);
+                } else {
+                    ESP_LOGI(TAG, "Meter probe focus mode disabled");
+                    relay_enlarger_enable(false);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (sensor_initialized && !sensor_error) {
@@ -606,6 +615,7 @@ menu_result_t diagnostics_meter_probe()
     }
 
     tcs3472_disable(&hi2c2);
+    relay_enlarger_enable(enlarger_enabled);
 
     return MENU_OK;
 }
