@@ -236,6 +236,12 @@ const char* tcs3472_atime_str(tcs3472_atime_t atime)
     switch (atime) {
     case TCS3472_ATIME_2_4MS:
         return "2.4ms";
+    case TCS3472_ATIME_4_8MS:
+        return "4.8ms";
+    case TCS3472_ATIME_7_2MS:
+        return "7.2ms";
+    case TCS3472_ATIME_9_6MS:
+        return "9.6ms";
     case TCS3472_ATIME_24MS:
         return "24ms";
     case TCS3472_ATIME_50MS:
@@ -249,6 +255,11 @@ const char* tcs3472_atime_str(tcs3472_atime_t atime)
     default:
         return "?";
     }
+}
+
+uint16_t tcs3472_atime_max_count(tcs3472_atime_t atime)
+{
+    return (256 - (uint16_t)atime) * 1024;
 }
 
 const char* tcs3472_gain_str(tcs3472_again_t gain)

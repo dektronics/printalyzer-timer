@@ -554,6 +554,9 @@ menu_result_t diagnostics_meter_probe()
 
                     switch (channel_data.integration) {
                     case TCS3472_ATIME_2_4MS:
+                        atime = TCS3472_ATIME_4_8MS;
+                        break;
+                    case TCS3472_ATIME_4_8MS:
                         atime = TCS3472_ATIME_24MS;
                         break;
                     case TCS3472_ATIME_24MS:
@@ -596,6 +599,9 @@ menu_result_t diagnostics_meter_probe()
                         atime = TCS3472_ATIME_24MS;
                         break;
                     case TCS3472_ATIME_24MS:
+                        atime = TCS3472_ATIME_4_8MS;
+                        break;
+                    case TCS3472_ATIME_4_8MS:
                         atime = TCS3472_ATIME_2_4MS;
                         break;
                     case TCS3472_ATIME_2_4MS:
