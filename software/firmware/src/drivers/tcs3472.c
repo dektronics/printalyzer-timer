@@ -205,6 +205,27 @@ HAL_StatusTypeDef tcs3472_get_status_valid(I2C_HandleTypeDef *hi2c, bool *valid)
     return ret;
 }
 
+HAL_StatusTypeDef tcs3472_get_clear_channel_data(I2C_HandleTypeDef *hi2c, uint16_t *ch_data)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data[2];
+
+    if (!ch_data) {
+        return HAL_ERROR;
+    }
+
+    ret = HAL_I2C_Mem_Read(hi2c, TCS3472_ADDRESS,
+        TCS3472_CMD | TCS3472_CDATAL, I2C_MEMADD_SIZE_8BIT,
+        data, sizeof(data), HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    *ch_data = data[0] | data[1] << 8;
+
+    return HAL_OK;
+}
+
 HAL_StatusTypeDef tcs3472_get_full_channel_data(I2C_HandleTypeDef *hi2c, tcs3472_channel_data_t *ch_data)
 {
     HAL_StatusTypeDef ret;

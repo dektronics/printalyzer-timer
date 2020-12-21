@@ -53,6 +53,7 @@ HAL_StatusTypeDef tcs3472_set_gain(I2C_HandleTypeDef *hi2c, tcs3472_again_t gain
 HAL_StatusTypeDef tcs3472_get_gain(I2C_HandleTypeDef *hi2c, tcs3472_again_t *gain);
 
 HAL_StatusTypeDef tcs3472_get_status_valid(I2C_HandleTypeDef *hi2c, bool *valid);
+HAL_StatusTypeDef tcs3472_get_clear_channel_data(I2C_HandleTypeDef *hi2c, uint16_t *ch_data);
 HAL_StatusTypeDef tcs3472_get_full_channel_data(I2C_HandleTypeDef *hi2c, tcs3472_channel_data_t *ch_data);
 
 const char* tcs3472_atime_str(tcs3472_atime_t atime);
