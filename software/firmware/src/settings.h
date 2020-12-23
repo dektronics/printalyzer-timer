@@ -5,6 +5,7 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <stm32f4xx_hal.h>
 #include <stdint.h>
 #include "buzzer.h"
 #include "exposure_state.h"
@@ -25,6 +26,20 @@ typedef enum {
     TESTSTRIP_PATCHES_7 = 0,
     TESTSTRIP_PATCHES_5
 } teststrip_patches_t;
+
+/**
+ * Initialize the settings store and load any persisted values.
+ *
+ * @param Pointer to a handle for the I2C peripheral used by the EEPROM
+ */
+HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c);
+
+/**
+ * Clear the settings store to factory blank
+ *
+ * @param Pointer to a handle for the I2C peripheral used by the EEPROM
+ */
+HAL_StatusTypeDef settings_clear(I2C_HandleTypeDef *hi2c);
 
 /**
  * Default exposure time displayed at startup and reset

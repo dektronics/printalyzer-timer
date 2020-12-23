@@ -167,6 +167,8 @@ state_identifier_t state_home(state_home_data_t *state_data)
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 exposure_contrast_decrease(&exposure_state);
                 state_data->display_dirty = true;
+            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT && !keypad_event.pressed) {
+                next_state = STATE_ADD_ADJUSTMENT;
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
                 next_state = STATE_TEST_STRIP;
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
@@ -479,6 +481,7 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
 state_identifier_t state_add_adjustment()
 {
     //TODO
+
     return STATE_HOME;
 }
 

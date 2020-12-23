@@ -151,6 +151,9 @@ void main_task_start(void *argument)
         ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
     }
 
+    /* Initialize the system settings */
+    settings_init(&hi2c1);
+
     /* Initialize the display */
     main_task_display_init();
     display_draw_logo();
