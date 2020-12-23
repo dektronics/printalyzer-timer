@@ -294,7 +294,7 @@ void exposure_timer_notify()
     if (timer_state == EXPOSURE_TIMER_STATE_START) {
         timer_state = EXPOSURE_TIMER_STATE_TICK;
     } else if (timer_state == EXPOSURE_TIMER_STATE_END && buzz_stop == 0
-        && time_elapsed > timer_config.relay_on_delay + timer_config.exposure_time + timer_config.exposure_end_delay) {
+        && (time_elapsed > timer_config.relay_on_delay + timer_config.exposure_time + timer_config.exposure_end_delay || cancel_flag)) {
         timer_state = EXPOSURE_TIMER_STATE_DONE;
     }
 }
