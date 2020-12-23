@@ -16,6 +16,7 @@
 #include "relay.h"
 #include "tcs3472.h"
 #include "enlarger_profile.h"
+#include "illum_controller.h"
 
 #define REFERENCE_READING_ITERATIONS 100
 #define PROFILE_ITERATIONS 5
@@ -59,7 +60,7 @@ menu_result_t menu_enlarger_calibration()
 {
     menu_result_t menu_result = MENU_OK;
 
-    //TODO Add safelight control
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
 
     uint8_t option = display_message(
             "Enlarger Calibration",
@@ -75,6 +76,8 @@ menu_result_t menu_enlarger_calibration()
     } else if (option == UINT8_MAX) {
         menu_result = MENU_TIMEOUT;
     }
+
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return menu_result;
 }
@@ -122,6 +125,7 @@ void enlarger_calibration_start()
     if (!calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats)) {
         ESP_LOGW(TAG, "Reference stats are not usable for calibration");
         tcs3472_disable(&hi2c2);
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
         do {
             uint8_t option = display_message(
@@ -158,6 +162,8 @@ void enlarger_calibration_start()
         if (!calibration_build_profile(&profile_inc[i], &enlarger_on_stats, &enlarger_off_stats)) {
             ESP_LOGE(TAG, "Could not build profile");
             tcs3472_disable(&hi2c2);
+            illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
             if (relay_enlarger_is_enabled()) {
                 relay_enlarger_enable(false);
             }
@@ -194,6 +200,7 @@ void enlarger_calibration_start()
     profile.fall_time_equiv = roundf((float)profile_sum.fall_time_equiv / PROFILE_ITERATIONS);
 
     tcs3472_disable(&hi2c2);
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     ESP_LOGI(TAG, "Relay on delay: %ldms", profile.turn_on_delay);
     ESP_LOGI(TAG, "Rise time: %ldms (full_equiv=%ldms)", profile.rise_time, profile.rise_time_equiv);

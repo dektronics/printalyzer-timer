@@ -11,6 +11,7 @@
 #include "led.h"
 #include "settings.h"
 #include "exposure_state.h"
+#include "illum_controller.h"
 
 static menu_result_t menu_settings_default_exposure();
 static menu_result_t menu_settings_default_step_size();
@@ -407,6 +408,7 @@ menu_result_t menu_settings_safelight_mode()
 
     if (menu_result == MENU_OK) {
         settings_set_safelight_mode(setting);
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     }
 
     return menu_result;

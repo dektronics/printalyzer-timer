@@ -18,10 +18,13 @@
 #include "relay.h"
 #include "exposure_timer.h"
 #include "enlarger_profile.h"
+#include "illum_controller.h"
 #include "util.h"
 #include "settings.h"
 
 static const char *TAG = "state_controller";
+
+#define SAFELIGHT_OFF_DELAY pdMS_TO_TICKS(500)
 
 typedef enum {
     STATE_HOME,
@@ -97,6 +100,7 @@ void state_controller_loop()
         if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - focus_start_ticks) >= max_focus_ticks) {
             ESP_LOGI(TAG, "Focus mode disabled due to timeout");
             relay_enlarger_enable(false);
+            illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             focus_start_ticks = 0;
         }
 
@@ -148,11 +152,13 @@ state_identifier_t state_home(state_home_data_t *state_data)
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
                     ESP_LOGI(TAG, "Focus mode enabled");
+                    illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                     relay_enlarger_enable(true);
                     focus_start_ticks = xTaskGetTickCount();
                 } else {
                     ESP_LOGI(TAG, "Focus mode disabled");
                     relay_enlarger_enable(false);
+                    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                     focus_start_ticks = 0;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
@@ -202,6 +208,7 @@ state_identifier_t state_home(state_home_data_t *state_data)
         if (relay_enlarger_is_enabled()) {
             ESP_LOGI(TAG, "Focus mode disabled due to state change");
             relay_enlarger_enable(false);
+            illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             focus_start_ticks = 0;
         }
     }
@@ -296,7 +303,8 @@ state_identifier_t state_timer()
 
     display_draw_exposure_timer(&elements, 0);
 
-    //TODO turn off the safelight relay (if not in blackout)
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+    osDelay(SAFELIGHT_OFF_DELAY);
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
@@ -307,7 +315,7 @@ state_identifier_t state_timer()
 
     ESP_LOGI(TAG, "Exposure timer complete");
 
-    //TODO turn on the safelight relay (if not in blackout)
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return next_state;
 }
@@ -366,8 +374,6 @@ state_identifier_t state_test_strip()
 
     teststrip_mode_t teststrip_mode = settings_get_teststrip_mode();
 
-    //TODO turn off the safelight relay (if not in blackout)
-
     unsigned int patches_covered = 0;
     do {
         float patch_time;
@@ -393,6 +399,12 @@ state_identifier_t state_test_strip()
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+
+                if (patches_covered == 0) {
+                    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+                    osDelay(SAFELIGHT_OFF_DELAY);
+                }
+
                 if (state_test_strip_countdown(patch_time_ms, patches_covered == (exposure_patch_count - 1))) {
                     if (patches_covered < exposure_patch_count) {
                         patches_covered++;
@@ -411,7 +423,7 @@ state_identifier_t state_test_strip()
         next_state = STATE_HOME;
     }
 
-    //TODO turn on the safelight relay (if not in blackout)
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     led_set_off(LED_IND_TEST_STRIP);
     buzzer_set_volume(current_volume);

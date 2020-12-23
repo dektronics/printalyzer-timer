@@ -20,6 +20,7 @@
 #include "relay.h"
 #include "board_config.h"
 #include "state_controller.h"
+#include "illum_controller.h"
 #include "settings.h"
 
 osThreadId_t main_task_handle;
@@ -187,6 +188,9 @@ void main_task_start(void *argument)
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+    /* Set the startup safelight state */
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     /* Startup beep */
     buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
