@@ -39,7 +39,10 @@ typedef struct {
     uint16_t keypad_state;
 } keypad_event_t;
 
+typedef void (*keypad_blackout_callback_t)(bool enabled, void *user_data);
+
 HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c);
+void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data);
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);
 HAL_StatusTypeDef keypad_clear_events();

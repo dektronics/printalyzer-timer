@@ -73,6 +73,12 @@ void main_task_display_init()
     };
     display_init(&display_handle);
     display_set_brightness(settings_get_display_brightness());
+
+    if (illum_controller_is_blackout()) {
+        display_enable(false);
+    } else {
+        display_enable(true);
+    }
 }
 
 void main_task_led_init()
@@ -87,7 +93,11 @@ void main_task_led_init()
 
     led_init(&led_handle);
     led_set_state(LED_ILLUM_ALL);
-    led_set_brightness(settings_get_led_brightness());
+    if (illum_controller_is_blackout()) {
+        led_set_brightness(0);
+    } else {
+        led_set_brightness(settings_get_led_brightness());
+    }
 }
 
 void main_task_buzzer_init()
@@ -155,6 +165,9 @@ void main_task_start(void *argument)
     /* Initialize the system settings */
     settings_init(&hi2c1);
 
+    /* Initialize the illumination controller */
+    illum_controller_init();
+
     /* Initialize the display */
     main_task_display_init();
     display_draw_logo();
@@ -167,6 +180,7 @@ void main_task_start(void *argument)
 
     /* Keypad controller */
     keypad_init(&hi2c1);
+    keypad_set_blackout_callback(illum_controller_keypad_blackout_callback, NULL);
 
     /* Piezo buzzer */
     main_task_buzzer_init();

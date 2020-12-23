@@ -47,13 +47,19 @@ static QueueHandle_t keypad_raw_event_queue = NULL;
 static QueueHandle_t keypad_event_queue = NULL;
 
 /* Currently known state of all keypad buttons */
-static uint16_t button_state;
+static uint16_t button_state = 0;
 
 /* Timer for button repeat events */
 static TimerHandle_t button_repeat_timer;
 
 /* Whether timer is in initial delay or repeating event mode */
 static UBaseType_t button_repeat_timer_reload;
+
+/* Callback to be notified of changes to the blackout switch state */
+static keypad_blackout_callback_t blackout_callback = NULL;
+
+/* User data for the blackout callback */
+static void *blackout_callback_user_data = NULL;
 
 /* Flag to prevent duplicate initialization */
 static bool keypad_initialized = false;
@@ -153,6 +159,12 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     ESP_LOGI(TAG, "Keypad controller initialized");
 
     return HAL_OK;
+}
+
+void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data)
+{
+    blackout_callback = callback;
+    blackout_callback_user_data = user_data;
 }
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
@@ -276,9 +288,19 @@ HAL_StatusTypeDef keypad_int_event_handler()
 
 void keypad_task(void *argument)
 {
+    bool blackout_state = false;
     keypad_raw_event_t raw_event;
     for (;;) {
         if(xQueueReceive(keypad_raw_event_queue, &raw_event, portMAX_DELAY)) {
+            if (raw_event.keycode == KEYPAD_BLACKOUT) {
+                if (blackout_state != raw_event.pressed) {
+                    if (blackout_callback) {
+                        blackout_callback(raw_event.pressed, blackout_callback_user_data);
+                    }
+                    blackout_state = raw_event.pressed;
+                }
+            }
+
             if (!raw_event.repeated) {
                 keypad_handle_key_event(raw_event.keycode, raw_event.pressed, raw_event.ticks);
             } else {

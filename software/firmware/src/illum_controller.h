@@ -20,8 +20,12 @@ typedef enum {
     ILLUM_SAFELIGHT_MEASUREMENT,
 } illum_safelight_t;
 
+void illum_controller_init();
+
 void illum_controller_safelight_state(illum_safelight_t mode);
 
-void illum_controller_blackout_state(bool enabled);
+bool illum_controller_is_blackout();
+
+void illum_controller_keypad_blackout_callback(bool enabled, void *user_data);
 
 #endif /* ILLUM_CONTROLLER_H */
