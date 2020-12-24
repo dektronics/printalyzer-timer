@@ -979,7 +979,8 @@ void display_static_list(const char *title, const char *list)
     xSemaphoreTake(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
-    display_clear();
+
+    u8g2_ClearBuffer(&u8g2);
 
     u8sl_t u8sl;
     u8g2_uint_t yy;
