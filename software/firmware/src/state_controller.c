@@ -147,7 +147,8 @@ state_identifier_t state_home(state_home_data_t *state_data)
                 next_state = STATE_HOME_CHANGE_TIME_INCREMENT;
             }
         } else {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
+                || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
                 next_state = STATE_TIMER;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
@@ -398,7 +399,8 @@ state_identifier_t state_test_strip()
 
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
+                || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
 
                 if (patches_covered == 0) {
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
