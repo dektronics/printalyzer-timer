@@ -29,6 +29,8 @@ static const char *TAG = "state_controller";
 typedef enum {
     STATE_HOME,
     STATE_HOME_CHANGE_TIME_INCREMENT,
+    STATE_HOME_ADJUST_FINE,
+    STATE_HOME_ADJUST_ABSOLUTE,
     STATE_TIMER,
     STATE_TEST_STRIP,
     STATE_ADD_ADJUSTMENT,
@@ -39,6 +41,7 @@ typedef struct {
     bool change_inc_pending;
     bool change_inc_swallow_release_up;
     bool change_inc_swallow_release_down;
+    int encoder_repeat;
     int cancel_repeat;
     bool display_dirty;
 } state_home_data_t;
@@ -52,6 +55,8 @@ void state_home_init(state_home_data_t *state_data);
 static state_identifier_t state_home(state_home_data_t *state_data);
 
 static state_identifier_t state_home_change_time_increment();
+static state_identifier_t state_home_adjust_fine(bool state_changed);
+static state_identifier_t state_home_adjust_absolute(bool state_changed);
 static state_identifier_t state_timer();
 static state_identifier_t state_test_strip();
 static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
@@ -67,6 +72,7 @@ void state_controller_init()
 void state_controller_loop()
 {
     // State data initialization
+    bool state_changed = true;
     state_home_data_t home_data;
     state_home_init(&home_data);
 
@@ -79,6 +85,12 @@ void state_controller_loop()
             break;
         case STATE_HOME_CHANGE_TIME_INCREMENT:
             next_state = state_home_change_time_increment();
+            break;
+        case STATE_HOME_ADJUST_FINE:
+            next_state = state_home_adjust_fine(state_changed);
+            break;
+        case STATE_HOME_ADJUST_ABSOLUTE:
+            next_state = state_home_adjust_absolute(state_changed);
             break;
         case STATE_TIMER:
             next_state = state_timer();
@@ -106,7 +118,10 @@ void state_controller_loop()
 
         if (next_state != current_state) {
             ESP_LOGI(TAG, "State transition: %d -> %d", current_state, next_state);
+            state_changed = true;
             current_state = next_state;
+        } else {
+            state_changed = false;
         }
     }
 }
@@ -116,6 +131,7 @@ void state_home_init(state_home_data_t *state_data)
     state_data->change_inc_pending = false;
     state_data->change_inc_swallow_release_up = false;
     state_data->change_inc_swallow_release_down = false;
+    state_data->encoder_repeat = 0;
     state_data->cancel_repeat = 0;
     state_data->display_dirty = true;
 }
@@ -178,6 +194,18 @@ state_identifier_t state_home(state_home_data_t *state_data)
                 next_state = STATE_ADD_ADJUSTMENT;
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
                 next_state = STATE_TEST_STRIP;
+            } else if (keypad_event.key == KEYPAD_ENCODER) {
+                if (keypad_event.pressed || keypad_event.repeated) {
+                    state_data->encoder_repeat++;
+                } else {
+                    if (state_data->encoder_repeat > 2) {
+                        next_state = STATE_HOME_ADJUST_ABSOLUTE;
+                    } else {
+                        next_state = STATE_HOME_ADJUST_FINE;
+                    }
+                    state_data->encoder_repeat = 0;
+                    state_data->display_dirty = true;
+                }
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
                 next_state = STATE_MENU;
             } else if (keypad_event.key == KEYPAD_CANCEL) {
@@ -236,6 +264,127 @@ state_identifier_t state_home_change_time_increment()
             exposure_adj_increment_increase(&exposure_state);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
             exposure_adj_increment_decrease(&exposure_state);
+        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            next_state = STATE_HOME;
+        }
+
+        // Key events should reset the focus timeout
+        if (relay_enlarger_is_enabled()) {
+            focus_start_ticks = xTaskGetTickCount();
+        }
+    }
+
+    return next_state;
+}
+
+state_identifier_t state_home_adjust_fine(bool state_changed)
+{
+    static int working_value = 0;
+    static int min_value = 0;
+    static int max_value = 0;
+
+    state_identifier_t next_state = STATE_HOME_ADJUST_FINE;
+
+    if (state_changed) {
+        working_value = exposure_state.adjustment_value;
+        min_value = exposure_adj_min(&exposure_state);
+        max_value = exposure_adj_max(&exposure_state);
+    }
+
+    display_draw_exposure_adj(working_value);
+
+    // Handle the next keypad event
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
+        if (keypad_event.key == KEYPAD_ENCODER_CW) {
+            if (working_value <= max_value) {
+                working_value++;
+            }
+        } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
+            if (working_value >= min_value) {
+                working_value--;
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
+            exposure_adj_set(&exposure_state, working_value);
+            next_state = STATE_HOME;
+        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            next_state = STATE_HOME;
+        }
+
+        // Key events should reset the focus timeout
+        if (relay_enlarger_is_enabled()) {
+            focus_start_ticks = xTaskGetTickCount();
+        }
+    }
+
+    return next_state;
+}
+
+state_identifier_t state_home_adjust_absolute(bool state_changed)
+{
+    static uint32_t working_value = 0;
+
+    state_identifier_t next_state = STATE_HOME_ADJUST_ABSOLUTE;
+
+    if (state_changed) {
+        working_value = rounded_exposure_time_ms(exposure_state.adjusted_time);
+    }
+
+    display_exposure_timer_t elements;
+    convert_exposure_to_display_timer(&elements, working_value);
+
+    display_draw_timer_adj(&elements);
+
+    // Handle the next keypad event
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
+        if (keypad_event.key == KEYPAD_ENCODER_CW) {
+            if (working_value < 10000) {
+                working_value += 10;
+                if (working_value > 10000) { working_value = 10000; }
+            } else if (working_value < 100000) {
+                working_value += 100;
+                if (working_value > 100000) { working_value = 100000; }
+            } else if (working_value < 999000) {
+                working_value += 1000;
+                if (working_value > 999000) { working_value = 999000; }
+            }
+        } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
+            if (working_value <= 10000) {
+                working_value -= 10;
+                if (working_value < 10 || working_value > 1000000) { working_value = 10; }
+            } else if (working_value <= 100000) {
+                working_value -= 100;
+                if (working_value < 10000) { working_value = 10000; }
+            } else if (working_value <= 999000) {
+                working_value -= 1000;
+                if (working_value < 100000) { working_value = 100000; }
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+            if (working_value < 10000) {
+                working_value += 100;
+                if (working_value > 10000) { working_value = 10000; }
+            } else if (working_value < 100000) {
+                working_value += 1000;
+                if (working_value > 100000) { working_value = 100000; }
+            } else if (working_value < 999000) {
+                working_value += 10000;
+                if (working_value > 999000) { working_value = 999000; }
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+            if (working_value <= 10000) {
+                working_value -= 100;
+                if (working_value < 10 || working_value > 1000000) { working_value = 10; }
+            } else if (working_value <= 100000) {
+                working_value -= 1000;
+                if (working_value < 10000) { working_value = 10000; }
+            } else if (working_value <= 999000) {
+                working_value -= 10000;
+                if (working_value < 100000) { working_value = 100000; }
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
+            exposure_set_base_time(&exposure_state, working_value / 1000.0f);
+            next_state = STATE_HOME;
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
             next_state = STATE_HOME;
         }

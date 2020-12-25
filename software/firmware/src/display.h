@@ -68,6 +68,8 @@ void display_draw_logo();
 
 void display_draw_main_elements(const display_main_elements_t *elements);
 void display_draw_stop_increment(uint8_t increment_den);
+void display_draw_exposure_adj(int value);
+void display_draw_timer_adj(const display_exposure_timer_t *elements);
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);
 void display_draw_test_strip_elements(const display_test_strip_elements_t *elements);
 

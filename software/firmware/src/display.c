@@ -2,6 +2,7 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
+#include <stdlib.h>
 #include <esp_log.h>
 
 #include "u8g2_stm32_hal.h"
@@ -740,6 +741,81 @@ void display_draw_stop_increment(uint8_t increment_den)
     u8g2_DrawUTF8(&u8g2, x + 56, y + 46, "Stop");
 
     u8g2_SendBuffer(&u8g2);
+
+    xSemaphoreGive(display_mutex);
+}
+
+void display_draw_exposure_adj(int value)
+{
+    xSemaphoreTake(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    asset_info_t asset;
+    display_asset_get(&asset, ASSET_EXPOSURE_ADJ_ICON_48);
+    u8g2_DrawXBM(&u8g2, 10, 12, asset.width, asset.height, asset.bits);
+
+    u8g2_uint_t x = 217;
+    u8g2_uint_t y = 8;
+    int disp_val = abs(value);
+
+    display_draw_digit(x, y, disp_val % 10);
+    x -= 36;
+
+    if (disp_val >= 10) {
+        display_draw_digit(x, y, disp_val % 100 / 10);
+        x -= 36;
+    }
+
+    if (disp_val >= 100) {
+        display_draw_digit(x, y, (disp_val % 1000) / 100);
+        x -= 36;
+    }
+
+    if (value != 0) {
+        u8g2_DrawLine(&u8g2, x + 4, y + 26, x + 24, y + 26);
+        u8g2_DrawLine(&u8g2, x + 3, y + 27, x + 25, y + 27);
+        u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 26, y + 28);
+        u8g2_DrawLine(&u8g2, x + 3, y + 29, x + 25, y + 29);
+        u8g2_DrawLine(&u8g2, x + 4, y + 30, x + 24, y + 30);
+    }
+
+    if (value > 0) {
+        u8g2_DrawLine(&u8g2, x + 12, y + 18, x + 12, y + 38);
+        u8g2_DrawLine(&u8g2, x + 13, y + 17, x + 13, y + 39);
+        u8g2_DrawLine(&u8g2, x + 14, y + 16, x + 14, y + 40);
+        u8g2_DrawLine(&u8g2, x + 15, y + 17, x + 15, y + 39);
+        u8g2_DrawLine(&u8g2, x + 16, y + 18, x + 16, y + 38);
+    }
+
+    u8g2_SendBuffer(&u8g2);
+
+    xSemaphoreGive(display_mutex);
+}
+
+void display_draw_timer_adj(const display_exposure_timer_t *elements)
+{
+    xSemaphoreTake(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    asset_info_t asset;
+    display_asset_get(&asset, ASSET_TIMER_ADJ_ICON_48);
+    u8g2_DrawXBM(&u8g2, 10, 12, asset.width, asset.height, asset.bits);
+
+    display_draw_counter_time(elements->time_seconds,
+        elements->time_milliseconds,
+        elements->fraction_digits);
+
+    u8g2_SendBuffer(&u8g2);
+
+    //TODO
 
     xSemaphoreGive(display_mutex);
 }

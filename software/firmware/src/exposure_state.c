@@ -16,6 +16,21 @@ void exposure_state_defaults(exposure_state_t *state)
     state->adjustment_increment = settings_get_default_step_size();
 }
 
+void exposure_set_base_time(exposure_state_t *state, float value)
+{
+    if (!state) { return; }
+
+    if (value < 0.01f) {
+        value = 0.01f;
+    } else if (value > 999.0f) {
+        value = 999.0f;
+    }
+
+    state->base_time = value;
+    state->adjustment_value = 0;
+    exposure_recalculate(state);
+}
+
 void exposure_adj_increase(exposure_state_t *state)
 {
     if (!state) { return; }
@@ -42,6 +57,47 @@ void exposure_adj_decrease(exposure_state_t *state)
 
     state->adjustment_value -= state->adjustment_increment;
     exposure_recalculate(state);
+}
+
+void exposure_adj_set(exposure_state_t *state, int value)
+{
+    if (!state) { return; }
+
+    /* Clamp adjustment at +/- 12 stops */
+    if (value < -144 || value > 144) { return; }
+
+    state->adjustment_value = value;
+    exposure_recalculate(state);
+}
+
+int exposure_adj_min(exposure_state_t *state)
+{
+    // Adjustment to current base time that gets close to 0.01 seconds
+
+    if (!state || state->base_time <= 0) { return 0; }
+
+    float min_stops = logf(0.01f / state->base_time) / logf(2.0f);
+    int min_adj = ceilf(min_stops * 12.0f);
+    if (min_adj < -144) {
+        min_adj = -144;
+    }
+
+    return min_adj;
+}
+
+int exposure_adj_max(exposure_state_t *state)
+{
+    // Adjustment to current base time that gets close to 999 seconds
+
+    if (!state || state->base_time <= 0) { return 0; }
+
+    float max_stops = logf(999.0f / state->base_time) / logf(2.0f);
+    int max_adj = floorf(max_stops * 12.0f);
+    if (max_adj > 144) {
+        max_adj = 144;
+    }
+
+    return max_adj;
 }
 
 void exposure_contrast_increase(exposure_state_t *state)

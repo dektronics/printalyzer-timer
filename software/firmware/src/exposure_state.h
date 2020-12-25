@@ -41,8 +41,13 @@ typedef struct __exposure_state_t {
 
 void exposure_state_defaults(exposure_state_t *state);
 
+void exposure_set_base_time(exposure_state_t *state, float value);
+
 void exposure_adj_increase(exposure_state_t *state);
 void exposure_adj_decrease(exposure_state_t *state);
+void exposure_adj_set(exposure_state_t *state, int value);
+int exposure_adj_min(exposure_state_t *state);
+int exposure_adj_max(exposure_state_t *state);
 
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
