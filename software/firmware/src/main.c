@@ -438,7 +438,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
     static volatile uint32_t enc_last_tick = 0;
     static volatile uint32_t enc_last_dir = UINT32_MAX;
 
-    if (htim->Instance == TIM1 && HAL_NVIC_GetActive(TIM1_CC_IRQn)) {
+    if (htim->Instance == TIM1 && HAL_NVIC_GetActive(TIM1_CC_IRQn)
+    && !HAL_NVIC_GetActive(TIM1_TRG_COM_TIM11_IRQn)) {
         uint32_t enc_tick = HAL_GetTick();
         uint32_t enc_dir = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim1);
         if (enc_tick - enc_last_tick < 100 && enc_last_dir == enc_dir) {
