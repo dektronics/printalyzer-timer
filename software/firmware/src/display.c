@@ -2,6 +2,7 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
+#include <cmsis_os.h>
 #include <stdlib.h>
 #include <esp_log.h>
 
@@ -28,7 +29,12 @@ typedef enum {
 } display_seg_t;
 
 static u8g2_t u8g2;
-static SemaphoreHandle_t display_mutex = NULL;
+
+static osMutexId_t display_mutex;
+static const osMutexAttr_t display_mutex_attributes = {
+  .name = "display_mutex"
+};
+
 static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
 static bool menu_event_timeout = false;
@@ -57,7 +63,7 @@ HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
     // Slightly increase the display refresh frequency
     display_set_freq(0xC1);
 
-    display_mutex = xSemaphoreCreateMutex();
+    display_mutex = osMutexNew(&display_mutex_attributes);
     if (!display_mutex) {
         ESP_LOGE(TAG, "xSemaphoreCreateMutex error");
     }
@@ -76,30 +82,30 @@ void display_set_freq(uint8_t value)
 
 void display_clear()
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_ClearBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_enable(bool enabled)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetPowerSave(&u8g2, enabled ? 0 : 1);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_set_contrast(uint8_t value)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetContrast(&u8g2, value);
     display_contrast = value;
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 uint8_t display_get_contrast()
@@ -111,7 +117,7 @@ void display_set_brightness(uint8_t value)
 {
     uint8_t arg = value & 0x0F;
 
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8x8_t *u8x8 = &(u8g2.u8x8);
     u8x8_cad_StartTransfer(u8x8);
@@ -121,7 +127,7 @@ void display_set_brightness(uint8_t value)
 
     display_brightness = arg;
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 uint8_t display_get_brightness()
@@ -131,7 +137,7 @@ uint8_t display_get_brightness()
 
 void display_draw_test_pattern(bool mode)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
@@ -149,12 +155,12 @@ void display_draw_test_pattern(bool mode)
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_logo()
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetBitmapMode(&u8g2, 1);
@@ -163,7 +169,7 @@ void display_draw_logo()
     u8g2_DrawXBM(&u8g2, 0, 0, asset.width, asset.height, asset.bits);
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 /**
@@ -671,7 +677,7 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
 
 void display_draw_main_elements(const display_main_elements_t *elements)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
@@ -686,12 +692,12 @@ void display_draw_main_elements(const display_main_elements_t *elements)
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_stop_increment(uint8_t increment_den)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
@@ -742,12 +748,12 @@ void display_draw_stop_increment(uint8_t increment_den)
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_exposure_adj(int value)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
@@ -793,12 +799,12 @@ void display_draw_exposure_adj(int value)
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_timer_adj(const display_exposure_timer_t *elements)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
@@ -817,7 +823,7 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements)
 
     //TODO
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements)
@@ -836,7 +842,7 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
         }
     }
 
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     if (clean_display) {
         u8g2_SetDrawColor(&u8g2, 0);
@@ -872,7 +878,7 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
         }
     }
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_test_strip_elements(const display_test_strip_elements_t *elements)
@@ -881,7 +887,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
     // It may make sense to also support a 5-patch mode, or
     // uneven combinations for other cases.
 
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
@@ -1012,12 +1018,12 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_test_strip_timer(const display_exposure_timer_t *elements)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_DrawBox(&u8g2, 192, 8,
@@ -1031,18 +1037,18 @@ void display_draw_test_strip_timer(const display_exposure_timer_t *elements)
 
     u8g2_UpdateDisplayArea(&u8g2, 24, 4, 8, 4);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
     uint8_t option = u8g2_UserInterfaceSelectionList(&u8g2, title, start_pos, list);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 
     return menu_event_timeout ? UINT8_MAX : option;
 }
@@ -1052,7 +1058,7 @@ void display_static_list(const char *title, const char *list)
     // Based off u8g2_UserInterfaceSelectionList() with changes to use
     // full frame buffer mode and to remove actual menu functionality.
 
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
 
@@ -1092,18 +1098,18 @@ void display_static_list(const char *title, const char *list)
 
     u8g2_SendBuffer(&u8g2);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 }
 
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
     uint8_t option = u8g2_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 
     return menu_event_timeout ? UINT8_MAX : option;
 }
@@ -1111,13 +1117,13 @@ uint8_t display_message(const char *title1, const char *title2, const char *titl
 uint8_t display_input_value(const char *title, const char *prefix, uint8_t *value,
         uint8_t low, uint8_t high, uint8_t digits, const char *postfix)
 {
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
     uint8_t option = u8g2_UserInterfaceInputValue(&u8g2, title, prefix, value, low, high, digits, postfix);
 
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
 
     return menu_event_timeout ? UINT8_MAX : option;
 }
@@ -1129,7 +1135,7 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
     // Based off u8g2_UserInterfaceInputValue() with changes to
     // involve a callback on value change.
 
-    xSemaphoreTake(display_mutex, portMAX_DELAY);
+    osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
@@ -1202,7 +1208,7 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
             event = u8x8_GetMenuEvent(u8g2_GetU8x8(&u8g2));
             if (event == U8X8_MSG_GPIO_MENU_SELECT) {
                 *value = local_value;
-                xSemaphoreGive(display_mutex);
+                osMutexRelease(display_mutex);
                 return 1;
             }
             else if (event == U8X8_MSG_GPIO_MENU_HOME) {
@@ -1234,7 +1240,7 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
     }
 
     /* never reached */
-    xSemaphoreGive(display_mutex);
+    osMutexRelease(display_mutex);
     //return r;
 }
 
@@ -1246,13 +1252,13 @@ uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
 
     // If we were called via a function that is holding the display mutex,
     // then release that mutex while blocked on the keypad queue.
-    BaseType_t mutex_released = xSemaphoreGive(display_mutex);
+    osStatus_t mutex_released = osMutexRelease(display_mutex);
 
     keypad_event_t event;
     HAL_StatusTypeDef ret = keypad_wait_for_event(&event, MENU_TIMEOUT_MS);
 
-    if (mutex_released == pdTRUE) {
-        xSemaphoreTake(display_mutex, portMAX_DELAY);
+    if (mutex_released == osOK) {
+        osMutexAcquire(display_mutex, portMAX_DELAY);
     }
 
     if (ret == HAL_OK) {

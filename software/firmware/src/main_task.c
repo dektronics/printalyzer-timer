@@ -25,7 +25,11 @@
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
-static xQueueHandle gpio_event_queue = NULL;
+
+static osMessageQueueId_t gpio_event_queue = NULL;
+static const osMessageQueueAttr_t gpio_event_queue_attributes = {
+  .name = "gpio_event_queue"
+};
 
 /* Peripheral handles initialized before this task is started */
 extern UART_HandleTypeDef huart1;
@@ -192,7 +196,7 @@ void main_task_start(void *argument)
     main_task_exposure_timer_init();
 
     /* GPIO queue task */
-    gpio_event_queue = xQueueCreate(10, sizeof(uint16_t));
+    gpio_event_queue = osMessageQueueNew(16, sizeof(uint16_t), &gpio_event_queue_attributes);
     gpio_queue_task_handle = osThreadNew(gpio_queue_task, NULL, &gpio_queue_task_attributes);
 
     /* Enable interrupts */
@@ -228,7 +232,7 @@ void gpio_queue_task(void *argument)
 {
     uint16_t gpio_pin;
     for (;;) {
-        if(xQueueReceive(gpio_event_queue, &gpio_pin, portMAX_DELAY)) {
+        if(osMessageQueueGet(gpio_event_queue, &gpio_pin, NULL, portMAX_DELAY) == osOK) {
             if (gpio_pin == USB_VBUS_OC_Pin) {
                 /* USB VBUS OverCurrent */
                 ESP_LOGD(TAG, "USB VBUS OverCurrent interrupt");
@@ -264,7 +268,7 @@ void gpio_queue_task(void *argument)
 
 void main_task_notify_gpio_int(uint16_t gpio_pin)
 {
-    xQueueSendFromISR(gpio_event_queue, &gpio_pin, NULL);
+    osMessageQueuePut(gpio_event_queue, &gpio_pin, 0, 0);
 }
 
 void main_task_notify_countdown_timer()

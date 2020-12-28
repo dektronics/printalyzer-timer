@@ -41,10 +41,16 @@ const osThreadAttr_t keypad_task_attributes = {
 };
 
 /* Queue for raw keypad events, which come from the controller or timers */
-static QueueHandle_t keypad_raw_event_queue = NULL;
+static osMessageQueueId_t keypad_raw_event_queue = NULL;
+static const osMessageQueueAttr_t keypad_raw_event_queue_attributes = {
+  .name = "keypad_raw_event_queue"
+};
 
 /* Queue for emitted keypad events, which are handled by the application */
-static QueueHandle_t keypad_event_queue = NULL;
+static osMessageQueueId_t keypad_event_queue = NULL;
+static const osMessageQueueAttr_t keypad_event_queue_attributes = {
+  .name = "keypad_event_queue"
+};
 
 /* Currently known state of all keypad buttons */
 static uint16_t button_state = 0;
@@ -88,12 +94,12 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     keypad_i2c = hi2c;
 
     // Create the queues for key events
-    keypad_raw_event_queue = xQueueCreate(20, sizeof(keypad_raw_event_t));
+    keypad_raw_event_queue = osMessageQueueNew(20, sizeof(keypad_raw_event_t), &keypad_raw_event_queue_attributes);
     if (!keypad_raw_event_queue) {
         return HAL_ERROR;
     }
 
-    keypad_event_queue = xQueueCreate(20, sizeof(keypad_event_t));
+    keypad_event_queue = osMessageQueueNew(20, sizeof(keypad_event_t), &keypad_event_queue_attributes);
     if (!keypad_event_queue) {
         return HAL_ERROR;
     }
@@ -173,13 +179,13 @@ HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
         return HAL_ERROR;
     }
 
-    xQueueSend(keypad_event_queue, event, 0);
+    osMessageQueuePut(keypad_event_queue, event, 0, 0);
     return HAL_OK;
 }
 
 HAL_StatusTypeDef keypad_clear_events()
 {
-    xQueueReset(keypad_event_queue);
+    osMessageQueueReset(keypad_event_queue);
     return HAL_OK;
 }
 
@@ -187,15 +193,16 @@ HAL_StatusTypeDef keypad_flush_events()
 {
     keypad_event_t event;
     bzero(&event, sizeof(keypad_event_t));
-    xQueueReset(keypad_event_queue);
-    xQueueSend(keypad_event_queue, &event, 0);
+    osMessageQueueReset(keypad_event_queue);
+    osMessageQueuePut(keypad_event_queue, &event, 0, 0);
     return HAL_OK;
 }
 
 HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait)
 {
     TickType_t ticks = msecs_to_wait < 0 ? portMAX_DELAY : (msecs_to_wait / portTICK_RATE_MS);
-    if (!xQueueReceive(keypad_event_queue, event, ticks)) {
+
+    if (osMessageQueueGet(keypad_event_queue, event, NULL, ticks) != osOK) {
         if (msecs_to_wait > 0) {
             return HAL_TIMEOUT;
         } else {
@@ -261,7 +268,8 @@ HAL_StatusTypeDef keypad_int_event_handler()
                 .ticks = ticks,
                 .repeated = false
             };
-            xQueueSend(keypad_raw_event_queue, &raw_event, 0);
+            osMessageQueuePut(keypad_raw_event_queue, &raw_event, 0, 0);
+
         } while (!key_error && !cb_error);
 
         if (key_error) {
@@ -291,7 +299,7 @@ void keypad_task(void *argument)
     bool blackout_state = false;
     keypad_raw_event_t raw_event;
     for (;;) {
-        if(xQueueReceive(keypad_raw_event_queue, &raw_event, portMAX_DELAY)) {
+        if(osMessageQueueGet(keypad_raw_event_queue, &raw_event, NULL, portMAX_DELAY) == osOK) {
             if (raw_event.keycode == KEYPAD_BLACKOUT) {
                 if (blackout_state != raw_event.pressed) {
                     if (blackout_callback) {
@@ -361,7 +369,7 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
     };
     ESP_LOGI(TAG, "Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
 
-    xQueueSend(keypad_event_queue, &keypad_event, 0);
+    osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }
 
 void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
@@ -392,7 +400,7 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
     };
     ESP_LOGI(TAG, "Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
 
-    xQueueSend(keypad_event_queue, &keypad_event, 0);
+    osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }
 
 void keypad_button_repeat_timer_callback(TimerHandle_t xTimer)
@@ -406,7 +414,7 @@ void keypad_button_repeat_timer_callback(TimerHandle_t xTimer)
         .ticks = ticks,
         .repeated = true
     };
-    xQueueSend(keypad_raw_event_queue, &raw_event, 0);
+    osMessageQueuePut(keypad_raw_event_queue, &raw_event, 0, 0);
 }
 
 bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key)
