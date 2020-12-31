@@ -462,7 +462,7 @@ void Error_Handler(void)
     }
 }
 
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
  * @brief  Reports the name of the source file and the source line number
  *         where the assert_param error has occurred.
@@ -472,6 +472,6 @@ void Error_Handler(void)
  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    printf("Assert failed: file %s on line %d\r\n", file, line);
+    printf("Assert failed: file %s on line %ld\r\n", file, line);
 }
 #endif /* USE_FULL_ASSERT */
