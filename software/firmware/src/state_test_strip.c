@@ -17,119 +17,156 @@
 
 static const char *TAG = "state_test_strip";
 
-extern exposure_state_t exposure_state;
-
-state_identifier_t state_test_strip()
-{
-    state_identifier_t next_state = STATE_TEST_STRIP;
-
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
-    led_set_on(LED_IND_TEST_STRIP);
-
+typedef struct {
+    state_t base;
+    buzzer_volume_t current_volume;
+    pam8904e_freq_t current_frequency;
+    teststrip_patches_t teststrip_patches;
+    teststrip_mode_t teststrip_mode;
     int exposure_patch_min;
     unsigned int exposure_patch_count;
+    unsigned int patches_covered;
+    display_test_strip_elements_t elements;
+} state_test_strip_t;
 
-    display_test_strip_elements_t elements = {0};
-    elements.title1 = "Test Strip";
-    elements.time_elements.time_seconds = 25;
-    elements.time_elements.time_milliseconds = 1;
-    elements.time_elements.fraction_digits = 1;
+static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
 
-    switch (exposure_state.adjustment_increment) {
+static void state_test_strip_entry(state_t *state_base, state_controller_t *controller);
+static void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller);
+static bool state_test_strip_process(state_t *state_base, state_controller_t *controller);
+static void state_test_strip_exit(state_t *state_base, state_controller_t *controller);
+static state_test_strip_t state_test_strip_data = {
+    .base = {
+        .state_entry = state_test_strip_entry,
+        .state_process = state_test_strip_process,
+        .state_exit = state_test_strip_exit
+    }
+};
+
+state_t *state_test_strip()
+{
+    return (state_t *)&state_test_strip_data;
+}
+
+void state_test_strip_entry(state_t *state_base, state_controller_t *controller)
+{
+    state_test_strip_t *state = (state_test_strip_t *)state_base;
+
+    state->current_volume = buzzer_get_volume();
+    state->current_frequency = buzzer_get_frequency();
+    state->teststrip_patches = settings_get_teststrip_patches();
+    state->teststrip_mode = settings_get_teststrip_mode();
+    state->exposure_patch_min = 0;
+    state->exposure_patch_count = 0;
+    state->patches_covered = 0;
+    memset(&state->elements, 0, sizeof(display_test_strip_elements_t));
+
+    led_set_on(LED_IND_TEST_STRIP);
+
+    state_test_strip_prepare_elements(state, controller);
+}
+
+void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller)
+{
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    state->elements.title1 = "Test Strip";
+    state->elements.time_elements.time_seconds = 25;
+    state->elements.time_elements.time_milliseconds = 1;
+    state->elements.time_elements.fraction_digits = 1;
+
+    switch (exposure_state->adjustment_increment) {
     case EXPOSURE_ADJ_TWELFTH:
-        elements.title2 = "1/24 Stop";
+        state->elements.title2 = "1/12 Stop";
         break;
     case EXPOSURE_ADJ_SIXTH:
-        elements.title2 = "1/6 Stop";
+        state->elements.title2 = "1/6 Stop";
         break;
     case EXPOSURE_ADJ_QUARTER:
-        elements.title2 = "1/4 Stop";
+        state->elements.title2 = "1/4 Stop";
         break;
     case EXPOSURE_ADJ_THIRD:
-        elements.title2 = "1/3 Stop";
+        state->elements.title2 = "1/3 Stop";
         break;
     case EXPOSURE_ADJ_HALF:
-        elements.title2 = "1/2 Stop";
+        state->elements.title2 = "1/2 Stop";
         break;
     case EXPOSURE_ADJ_WHOLE:
-        elements.title2 = "1 Stop";
+        state->elements.title2 = "1 Stop";
         break;
     }
 
-    switch (settings_get_teststrip_patches()) {
+    switch (state->teststrip_patches) {
     case TESTSTRIP_PATCHES_5:
-        exposure_patch_min = -2;
-        exposure_patch_count = 5;
-        elements.patches = DISPLAY_PATCHES_5;
+        state->exposure_patch_min = -2;
+        state->exposure_patch_count = 5;
+        state->elements.patches = DISPLAY_PATCHES_5;
         break;
     case TESTSTRIP_PATCHES_7:
     default:
-        exposure_patch_min = -3;
-        exposure_patch_count = 7;
-        elements.patches = DISPLAY_PATCHES_7;
+        state->exposure_patch_min = -3;
+        state->exposure_patch_count = 7;
+        state->elements.patches = DISPLAY_PATCHES_7;
         break;
     }
+}
 
-    teststrip_mode_t teststrip_mode = settings_get_teststrip_mode();
+bool state_test_strip_process(state_t *state_base, state_controller_t *controller)
+{
+    state_test_strip_t *state = (state_test_strip_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    unsigned int patches_covered = 0;
-    do {
-        float patch_time;
-        if (teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
-            patch_time = exposure_get_test_strip_time_complete(&exposure_state, exposure_patch_min + patches_covered);
+    bool canceled = false;
+    float patch_time;
+    if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+        patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + state->patches_covered);
 
-            elements.covered_patches = 0xFF;
-            elements.covered_patches ^= (1 << (exposure_patch_count - patches_covered - 1));
-        } else {
-            patch_time = exposure_get_test_strip_time_incremental(&exposure_state, exposure_patch_min, patches_covered);
+        state->elements.covered_patches = 0xFF;
+        state->elements.covered_patches ^= (1 << (state->exposure_patch_count - state->patches_covered - 1));
+    } else {
+        patch_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min, state->patches_covered);
 
-            elements.covered_patches = 0;
-            for (int i = 0; i < patches_covered; i++) {
-                elements.covered_patches |= (1 << (exposure_patch_count - i - 1));
-            }
+        state->elements.covered_patches = 0;
+        for (int i = 0; i < state->patches_covered; i++) {
+            state->elements.covered_patches |= (1 << (state->exposure_patch_count - i - 1));
         }
-        uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
+    }
+    uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
 
-        convert_exposure_to_display_timer(&(elements.time_elements), patch_time_ms);
+    convert_exposure_to_display_timer(&(state->elements.time_elements), patch_time_ms);
 
-        display_draw_test_strip_elements(&elements);
+    display_draw_test_strip_elements(&state->elements);
 
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
-                || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
+            || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
 
-                if (patches_covered == 0) {
-                    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-                    osDelay(SAFELIGHT_OFF_DELAY);
-                }
-
-                if (state_test_strip_countdown(patch_time_ms, patches_covered == (exposure_patch_count - 1))) {
-                    if (patches_covered < exposure_patch_count) {
-                        patches_covered++;
-                    }
-                } else {
-                    next_state = STATE_HOME;
-                }
-            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                next_state = STATE_HOME;
+            if (state->patches_covered == 0) {
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+                osDelay(SAFELIGHT_OFF_DELAY);
             }
-        }
-    } while (next_state == STATE_TEST_STRIP && patches_covered < exposure_patch_count);
 
-    if (next_state == STATE_TEST_STRIP && patches_covered == exposure_patch_count) {
-        osDelay(pdMS_TO_TICKS(500));
-        next_state = STATE_HOME;
+            if (state_test_strip_countdown(patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
+                if (state->patches_covered < state->exposure_patch_count) {
+                    state->patches_covered++;
+                }
+            } else {
+                state_controller_set_next_state(controller, STATE_HOME);
+                canceled = true;
+            }
+        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            state_controller_set_next_state(controller, STATE_HOME);
+            canceled = true;
+        }
     }
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    if (!canceled && state->patches_covered >= state->exposure_patch_count) {
+        osDelay(pdMS_TO_TICKS(500));
+        state_controller_set_next_state(controller, STATE_HOME);
+    }
 
-    led_set_off(LED_IND_TEST_STRIP);
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
-
-    return STATE_HOME;
+    return true;
 }
 
 static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data)
@@ -188,4 +225,15 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
     ESP_LOGI(TAG, "Exposure timer complete");
 
     return ret == HAL_OK;
+}
+
+void state_test_strip_exit(state_t *state_base, state_controller_t *controller)
+{
+    state_test_strip_t *state = (state_test_strip_t *)state_base;
+
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    led_set_off(LED_IND_TEST_STRIP);
+
+    buzzer_set_volume(state->current_volume);
+    buzzer_set_frequency(state->current_frequency);
 }

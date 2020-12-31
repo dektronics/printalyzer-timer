@@ -16,7 +16,15 @@
 
 static const char *TAG = "state_timer";
 
-extern exposure_state_t exposure_state;
+static bool state_timer_process(state_t *state_base, state_controller_t *controller);
+static state_t state_timer_data = {
+    .state_process = state_timer_process
+};
+
+state_t *state_timer()
+{
+    return (state_t *)&state_timer_data;
+}
 
 static bool state_timer_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data)
 {
@@ -40,11 +48,10 @@ static bool state_timer_exposure_callback(exposure_timer_state_t state, uint32_t
     return true;
 }
 
-state_identifier_t state_timer()
+bool state_timer_process(state_t *state_base, state_controller_t *controller)
 {
-    state_identifier_t next_state = STATE_HOME;
-
-    uint32_t exposure_time_ms = rounded_exposure_time_ms(exposure_state.adjusted_time);
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    uint32_t exposure_time_ms = rounded_exposure_time_ms(exposure_state->adjusted_time);
 
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, exposure_time_ms);
@@ -87,5 +94,6 @@ state_identifier_t state_timer()
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-    return next_state;
+    state_controller_set_next_state(controller, STATE_HOME);
+    return true;
 }
