@@ -5,10 +5,13 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <FreeRTOS.h>
 #include <stdint.h>
 
 #include "display.h"
 #include "exposure_state.h"
+
+#define SAFELIGHT_OFF_DELAY pdMS_TO_TICKS(500)
 
 /**
  * Convert the current exposure state into display elements.
