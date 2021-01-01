@@ -47,4 +47,41 @@ uint32_t round_to_10(uint32_t n);
  */
 uint32_t rounded_exposure_time_ms(float seconds);
 
+/**
+ * Pad the provided string out to the specified length.
+ *
+ * If the string is longer than the specified length, then it will not be
+ * modified and its existing length will be returned.
+ *
+ * @param str    The string to pad
+ * @param c      The character to pad the string with
+ * @param length The length to pad the string out to
+ * @return Length of the string after padding, excluding the
+ *         terminating null byte.
+ */
+size_t pad_str_to_length(char *str, char c, size_t length);
+
+/**
+ * Break a fraction into sign, whole, numerator, and denominator
+ * portions and append it to the provided string.
+ *
+ * @param str The string to append onto
+ * @param numerator The fraction numerator, which can be larger than the denominator
+ * @param denominator The fraction denominator
+ * @return Number of characters appended to the string
+ */
+size_t append_signed_fraction(char *str, int8_t numerator, uint8_t denominator);
+
+/**
+ * Append an exposure time, in seconds, to the provided string.
+ *
+ * This does all the necessary rounding and formatting so that
+ * the time appears as desired for consistent display.
+ *
+ * @param str The string to append onto
+ * @param time The time, in floating point seconds, to format and append
+ * @return Number of characters appended to the string
+ */
+size_t append_exposure_time(char *str, float time);
+
 #endif /* UTIL_H */

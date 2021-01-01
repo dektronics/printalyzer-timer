@@ -66,7 +66,6 @@ menu_result_t diagnostics_keypad()
     bool keypad_pressed = false;
     keypad_event_t keypad_event;
     memset(&keypad_event, 0, sizeof(keypad_event_t));
-    keypad_wait_for_event(&keypad_event, 0);
 
     for (;;) {
         sprintf(buf,
@@ -136,10 +135,18 @@ menu_result_t diagnostics_led()
     uint8_t led_brightness = current_brightness;
     bool led_brightness_changed = false;
 
-    sprintf(buf, "\n");
-    display_static_list("LED Test", buf);
-
     for (;;) {
+        sprintf(buf,
+            "Illumination = %s\n"
+            "  Indicators = %s\n"
+            "       Index = %2d \n"
+            "  Brightness = %3d",
+            (illum_on ? "on " : "off"),
+            (ind_on ? "on " : "off"),
+            led_index,
+            led_brightness);
+        display_static_list("LED Test", buf);
+
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
@@ -255,17 +262,6 @@ menu_result_t diagnostics_led()
                 led_set_brightness(led_brightness);
                 led_brightness_changed = false;
             }
-
-            sprintf(buf,
-                "Illumination = %s\n"
-                "  Indicators = %s\n"
-                "       Index = %2d \n"
-                "  Brightness = %3d",
-                (illum_on ? "on " : "off"),
-                (ind_on ? "on " : "off"),
-                led_index,
-                led_brightness);
-            display_static_list("LED Test", buf);
         }
     }
 
@@ -290,10 +286,37 @@ menu_result_t diagnostics_buzzer()
     buzzer_set_frequency(freq);
     buzzer_set_volume(volume);
 
-    sprintf(buf, "\n");
-    display_static_list("Buzzer Test", buf);
-
     for (;;) {
+        uint32_t freq_num;
+        switch (freq) {
+        case PAM8904E_FREQ_DEFAULT:
+            freq_num = 1465;
+            break;
+        case PAM8904E_FREQ_500HZ:
+            freq_num = 500;
+            break;
+        case PAM8904E_FREQ_1000HZ:
+            freq_num = 1000;
+            break;
+        case PAM8904E_FREQ_1500HZ:
+            freq_num = 1500;
+            break;
+        case PAM8904E_FREQ_2000HZ:
+            freq_num = 2000;
+            break;
+        default:
+            freq_num = 0;
+        }
+
+        sprintf(buf,
+            "Frequency = %ldHz\n"
+            "Duration = %ldms\n"
+            "Volume = %d",
+            freq_num,
+            duration,
+            volume);
+        display_static_list("Buzzer Test", buf);
+
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
@@ -340,36 +363,6 @@ menu_result_t diagnostics_buzzer()
                 buzzer_set_volume(volume);
                 volume_changed = false;
             }
-
-            uint32_t freq_num;
-            switch (freq) {
-            case PAM8904E_FREQ_DEFAULT:
-                freq_num = 1465;
-                break;
-            case PAM8904E_FREQ_500HZ:
-                freq_num = 500;
-                break;
-            case PAM8904E_FREQ_1000HZ:
-                freq_num = 1000;
-                break;
-            case PAM8904E_FREQ_1500HZ:
-                freq_num = 1500;
-                break;
-            case PAM8904E_FREQ_2000HZ:
-                freq_num = 2000;
-                break;
-            default:
-                freq_num = 0;
-            }
-
-            sprintf(buf,
-                "Frequency = %ldHz\n"
-                "Duration = %ldms\n"
-                "Volume = %d",
-                freq_num,
-                duration,
-                volume);
-            display_static_list("Buzzer Test", buf);
         }
     }
 
@@ -390,10 +383,15 @@ menu_result_t diagnostics_relay()
     bool relay_enlg = false;
     bool relay_sflt = false;
 
-    sprintf(buf, "\n");
-    display_static_list("Relay Test", buf);
-
     for (;;) {
+        sprintf(buf,
+            "\n"
+            "Enlarger  [%s]\n"
+            "Safelight [%s]",
+            relay_enlg ? "**" : "  ",
+            relay_sflt ? "**" : "  ");
+        display_static_list("Relay Test", buf);
+
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
@@ -406,14 +404,6 @@ menu_result_t diagnostics_relay()
 
             relay_enlarger_enable(relay_enlg);
             relay_safelight_enable(relay_sflt);
-
-            sprintf(buf,
-                "\n"
-                "Enlarger  [%s]\n"
-                "Safelight [%s]",
-                relay_enlg ? "**" : "  ",
-                relay_sflt ? "**" : "  ");
-            display_static_list("Relay Test", buf);
         }
     }
 

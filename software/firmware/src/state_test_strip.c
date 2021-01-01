@@ -31,7 +31,7 @@ typedef struct {
 
 static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
 
-static void state_test_strip_entry(state_t *state_base, state_controller_t *controller);
+static void state_test_strip_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
 static void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller);
 static bool state_test_strip_process(state_t *state_base, state_controller_t *controller);
 static void state_test_strip_exit(state_t *state_base, state_controller_t *controller);
@@ -48,7 +48,7 @@ state_t *state_test_strip()
     return (state_t *)&state_test_strip_data;
 }
 
-void state_test_strip_entry(state_t *state_base, state_controller_t *controller)
+void state_test_strip_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
 
@@ -152,18 +152,18 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
                     state->patches_covered++;
                 }
             } else {
-                state_controller_set_next_state(controller, STATE_HOME);
+                state_controller_set_next_state(controller, STATE_HOME, 0);
                 canceled = true;
             }
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
             canceled = true;
         }
     }
 
     if (!canceled && state->patches_covered >= state->exposure_patch_count) {
         osDelay(pdMS_TO_TICKS(500));
-        state_controller_set_next_state(controller, STATE_HOME);
+        state_controller_set_next_state(controller, STATE_HOME, 0);
     }
 
     return true;

@@ -94,6 +94,6 @@ bool state_timer_process(state_t *state_base, state_controller_t *controller)
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-    state_controller_set_next_state(controller, STATE_HOME);
+    state_controller_set_next_state(controller, STATE_HOME, 0);
     return true;
 }

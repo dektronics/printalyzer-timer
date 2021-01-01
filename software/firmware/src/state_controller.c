@@ -24,23 +24,21 @@
 #include "state_home.h"
 #include "state_timer.h"
 #include "state_test_strip.h"
+#include "state_adjustment.h"
 
 static const char *TAG = "state_controller";
 
 struct __state_controller_t {
     state_identifier_t current_state;
+    uint32_t current_state_param;
     state_identifier_t next_state;
+    uint32_t next_state_param;
     exposure_state_t exposure_state;
     TickType_t focus_start_ticks;
 };
 
 static state_controller_t state_controller = {0};
 static state_t *state_map[STATE_MAX] = {0};
-
-static bool state_add_adjustment_process(state_t *state_base, state_controller_t *controller);
-static state_t state_add_adjustment_data = {
-    .state_process = state_add_adjustment_process
-};
 
 static bool state_menu_process(state_t *state_base, state_controller_t *controller);
 static state_t state_menu_data = {
@@ -50,7 +48,9 @@ static state_t state_menu_data = {
 void state_controller_init()
 {
     state_controller.current_state = STATE_MAX;
+    state_controller.current_state_param = 0;
     state_controller.next_state = STATE_HOME;
+    state_controller.next_state_param = 0;
     exposure_state_defaults(&(state_controller.exposure_state));
     state_controller.focus_start_ticks = 0;
 
@@ -60,7 +60,8 @@ void state_controller_init()
     state_map[STATE_HOME_ADJUST_ABSOLUTE] = state_home_adjust_absolute();
     state_map[STATE_TIMER] = state_timer();
     state_map[STATE_TEST_STRIP] = state_test_strip();
-    state_map[STATE_ADD_ADJUSTMENT] = &state_add_adjustment_data;
+    state_map[STATE_EDIT_ADJUSTMENT] = state_edit_adjustment();
+    state_map[STATE_LIST_ADJUSTMENTS] = state_list_adjustments();
     state_map[STATE_MENU] = &state_menu_data;
 }
 
@@ -69,10 +70,14 @@ void state_controller_loop()
     state_t *state = NULL;
     for (;;) {
         // Check if we need to do a state transition
-        if (state_controller.next_state != state_controller.current_state) {
+        if (state_controller.next_state != state_controller.current_state
+            || state_controller.next_state_param != state_controller.current_state_param) {
             // Transition to the new state
-            ESP_LOGI(TAG, "State transition: %d -> %d", state_controller.current_state, state_controller.next_state);
+            ESP_LOGI(TAG, "State transition: %d[%ld] -> %d[%ld]",
+                state_controller.current_state, state_controller.current_state_param,
+                state_controller.next_state, state_controller.next_state_param);
             state_controller.current_state = state_controller.next_state;
+            state_controller.current_state_param = state_controller.next_state_param;
 
             if (state_controller.current_state < STATE_MAX && state_map[state_controller.current_state]) {
                 state = state_map[state_controller.current_state];
@@ -82,7 +87,7 @@ void state_controller_loop()
 
             // Call the state entry function
             if (state && state->state_entry) {
-                state->state_entry(state, &state_controller);
+                state->state_entry(state, &state_controller, state_controller.current_state_param);
             }
         }
 
@@ -108,7 +113,8 @@ void state_controller_loop()
         }
 
         // Check if we will do a state transition on the next loop
-        if (state_controller.next_state != state_controller.current_state) {
+        if (state_controller.next_state != state_controller.current_state
+            || state_controller.next_state_param != state_controller.current_state_param) {
             if (state && state->state_exit) {
                 state->state_exit(state, &state_controller);
             }
@@ -116,10 +122,11 @@ void state_controller_loop()
     }
 }
 
-void state_controller_set_next_state(state_controller_t *controller, state_identifier_t next_state)
+void state_controller_set_next_state(state_controller_t *controller, state_identifier_t next_state, uint32_t param)
 {
     if (!controller) { return; }
     controller->next_state = next_state;
+    controller->next_state_param = param;
 }
 
 state_identifier_t state_controller_get_next_state(state_controller_t *controller)
@@ -146,13 +153,6 @@ void state_controller_stop_focus_timeout(state_controller_t *controller)
     controller->focus_start_ticks = 0;
 }
 
-bool state_add_adjustment_process(state_t *state_base, state_controller_t *controller)
-{
-    //TODO This is just a placeholder until the feature is implemented
-    state_controller_set_next_state(controller, STATE_HOME);
-    return true;
-}
-
 bool state_menu_process(state_t *state_base, state_controller_t *controller)
 {
     // Because of how u8g2 menu functions are designed, it is simply easier
@@ -160,6 +160,6 @@ bool state_menu_process(state_t *state_base, state_controller_t *controller)
     // As such, the menu system is simply hooked in this way and doesn't
     // really participate in the main state machine.
     main_menu_start();
-    state_controller_set_next_state(controller, STATE_HOME);
+    state_controller_set_next_state(controller, STATE_HOME, 0);
     return true;
 }

@@ -1,11 +1,16 @@
 #include "util.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure)
 {
     //TODO Fix this once the exposure state contains tone graph data
     elements->tone_graph = 0;
+
+    elements->burn_dodge_count = exposure->burn_dodge_count;
 
     switch (exposure->contrast_grade) {
     case CONTRAST_GRADE_00:
@@ -100,4 +105,71 @@ uint32_t rounded_exposure_time_ms(float seconds)
     }
     milliseconds = round_to_10(milliseconds);
     return milliseconds;
+}
+
+size_t pad_str_to_length(char *str, char c, size_t length)
+{
+    if (!str) {
+        return 0;
+    }
+
+    size_t i = strlen(str);
+    if (i >= length) {
+        return i;
+    }
+
+    while (i <= length) {
+        str[i++] = c;
+    }
+    str[i] = '\0';
+
+    return i - 1;
+}
+
+size_t append_signed_fraction(char *str, int8_t numerator, uint8_t denominator)
+{
+    size_t count = 0;
+    bool num_positive = numerator >= 0;
+    char val_sign = num_positive ? '+' : '-';
+    uint8_t val_num = abs(numerator);
+    uint8_t val_whole = val_num / denominator;
+    val_num -= val_whole * denominator;
+
+    if (!str) {
+        return count;
+    }
+
+    if (val_whole != 0 || (val_whole == 0 && val_num == 0)) {
+        if (val_num > 0) {
+            // Whole with fraction
+            count = sprintf(str, "%c%d-%d/%d",
+                val_sign, val_whole, val_num, denominator);
+        } else {
+            // Whole without fraction
+            count = sprintf(str, "%c%d",
+                val_sign, val_whole);
+        }
+    } else {
+        // Just the fraction
+        count = sprintf(str, "%c%d/%d",
+            val_sign, val_num, denominator);
+    }
+    return count;
+}
+
+size_t append_exposure_time(char *str, float time)
+{
+    size_t count = 0;
+    uint32_t exposure_ms = rounded_exposure_time_ms(time);
+    uint16_t display_seconds = exposure_ms / 1000;
+    uint16_t display_milliseconds = round_to_10(exposure_ms % 1000);
+
+    if (exposure_ms < 10000) {
+        count = sprintf(str, "%01d.%02ds", display_seconds, display_milliseconds / 10);
+    } else if (exposure_ms < 100000) {
+        count = sprintf(str, "%d.%01ds", display_seconds, display_milliseconds / 100);
+    } else {
+        count = sprintf(str, "%ds", display_seconds);
+    }
+    return count;
 }

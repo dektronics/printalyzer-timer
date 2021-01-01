@@ -6,6 +6,14 @@
 #include "u8g2_stm32_hal.h"
 
 typedef enum {
+    DISPLAY_MENU_ACCEPT_MENU = 0x01,
+    DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT = 0x02,
+    DISPLAY_MENU_ACCEPT_TEST_STRIP = 0x04,
+    DISPLAY_MENU_ACCEPT_ENCODER = 0x08,
+    DISPLAY_MENU_TIMEOUT_DISABLED = 0x10
+} display_menu_params_t;
+
+typedef enum {
     DISPLAY_GRADE_00,
     DISPLAY_GRADE_0,
     DISPLAY_GRADE_0_HALF,
@@ -26,12 +34,14 @@ typedef enum {
     DISPLAY_PATCHES_7
 } display_patches_t;
 
+#define DISPLAY_MENU_ROW_LENGTH 32
 #define DISPLAY_TONE_UNDER 0x10000
 #define DISPLAY_TONE_OVER  0x00001
 #define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
 
 typedef struct {
     uint32_t tone_graph;
+    uint8_t burn_dodge_count;
     display_grade_t contrast_grade;
     uint16_t time_seconds;
     uint16_t time_milliseconds;
@@ -51,6 +61,17 @@ typedef struct {
     const char *title2;
     display_exposure_timer_t time_elements;
 } display_test_strip_elements_t;
+
+typedef struct {
+    const char *adj_title1;
+    const char *adj_title2;
+    const char *base_title1;
+    const char *base_title2;
+    const char *tip_up;
+    const char *tip_down;
+    int16_t adj_num;
+    uint16_t adj_den;
+} display_edit_adjustment_elements_t;
 
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
 
@@ -80,7 +101,27 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
  */
 void display_draw_test_strip_timer(const display_exposure_timer_t *elements);
 
+void display_draw_edit_adjustment_elements(const display_edit_adjustment_elements_t *elements);
+
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list);
+
+/**
+ * Display a list of scrollable and selectable options.
+ * The user can select one of the options.
+ *
+ * @param title The title shown at the top of the list.
+ * @param start_pos The element, which is highlighted first (starts with 1).
+ * @param list List of options, one per line (Lines have to be separated with \n).
+ * @param params Bit field with various parameters for the menu behavior.
+ * @return The lower 8 bits contain 1 to n for the item that has been selected.
+ *         The upper 8 bits contain the keycode of the button that was used to
+ *         accept the item.
+ *         If the the menu timed out, then UINT16_MAX is returned.
+ *         If the user pressed the home/cancel button, then 0 is returned.
+ */
+uint16_t display_selection_list_params(const char *title, uint8_t start_pos, const char *list,
+    display_menu_params_t params);
+
 void display_static_list(const char *title, const char *list);
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);
 uint8_t display_input_value(const char *title, const char *prefix, uint8_t *value,

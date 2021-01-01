@@ -9,14 +9,14 @@
 #include "u8g2_stm32_hal.h"
 #include "u8g2.h"
 #include "display_assets.h"
+#include "display_internal.h"
 #include "keypad.h"
 
 #define MENU_TIMEOUT_MS 30000
 
 static const char *TAG = "display";
 
-/* Library function declarations */
-void u8g2_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s);
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 typedef enum {
     seg_a,
@@ -37,7 +37,6 @@ static const osMutexAttr_t display_mutex_attributes = {
 
 static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
-static bool menu_event_timeout = false;
 
 static void display_set_freq(uint8_t value);
 static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
@@ -45,11 +44,17 @@ static void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t se
 static void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive);
 static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
+static void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den);
+static void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
+static void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
 static void display_draw_tone_graph(uint32_t tone_graph);
+static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_contrast_grade(display_grade_t grade);
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
 static void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements);
 static void display_prepare_menu_font();
+
+static uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
 {
@@ -459,6 +464,59 @@ void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
     }
 }
 
+void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den)
+{
+    uint8_t max_value = MAX(num, den);
+
+    // Draw the numerator
+    display_draw_tdigit_fraction_part(x, y, num);
+
+    // Draw the dividing line
+    display_draw_tdigit_fraction_divider(x, y + 27, max_value);
+
+    // Draw the denominator
+    display_draw_tdigit_fraction_part(x, y + 31, den);
+}
+
+void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value)
+{
+    if (value >= 20) {
+        // NN/DD (1/20 - 1/99)
+        display_draw_tdigit(x + 5, y, value % 100 / 10);
+        display_draw_tdigit(x + 22, y, value % 10);
+    } else if (value >= 10) {
+        // NN/DD (1/10 - 1/19)
+        display_draw_tdigit(x + 0, y, value % 100 / 10);
+        display_draw_tdigit(x + 17, y, value % 10);
+    } else if (value == 0 || value > 1) {
+        // N/D
+        display_draw_tdigit(x + 13, y, value);
+    } else {
+        // N/D (1/1)
+        display_draw_tdigit(x + 7, y, value);
+    }
+}
+
+void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value)
+{
+    if (max_value >= 20) {
+        // N/DD (1/20 - 1/99)
+        u8g2_DrawLine(&u8g2, x + 2,  y + 0, x + 37, y + 0);
+        u8g2_DrawLine(&u8g2, x + 1,  y + 1, x + 38, y + 1);
+        u8g2_DrawLine(&u8g2, x + 2,  y + 2, x + 37, y + 2);
+    } else if (max_value >= 10) {
+        // N/DD (1/10 - 1/19)
+        u8g2_DrawLine(&u8g2, x + 8,  y + 0, x + 32, y + 0);
+        u8g2_DrawLine(&u8g2, x + 7,  y + 1, x + 33, y + 1);
+        u8g2_DrawLine(&u8g2, x + 8,  y + 2, x + 32, y + 2);
+    } else if (max_value == 0 || max_value > 1) {
+        // N/D
+        u8g2_DrawLine(&u8g2, x + 10, y + 0, x + 28, y + 0);
+        u8g2_DrawLine(&u8g2, x + 9,  y + 1, x + 29, y + 1);
+        u8g2_DrawLine(&u8g2, x + 10, y + 2, x + 28, y + 2);
+    }
+}
+
 void display_draw_tone_graph(uint32_t tone_graph)
 {
     /*
@@ -493,10 +551,54 @@ void display_draw_tone_graph(uint32_t tone_graph)
     }
 }
 
+void display_draw_burn_dodge_count(uint8_t count)
+{
+    if (count < 1) { return; }
+
+    u8g2_uint_t x = 0;
+    u8g2_uint_t y = 8;
+
+    asset_info_t asset;
+    switch (count) {
+    case 1:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_1_18);
+        break;
+    case 2:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_2_18);
+        break;
+    case 3:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_3_18);
+        break;
+    case 4:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_4_18);
+        break;
+    case 5:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_5_18);
+        break;
+    case 6:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_6_18);
+        break;
+    case 7:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_7_18);
+        break;
+    case 8:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_8_18);
+        break;
+    case 9:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_9_18);
+        break;
+    default:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_9P_18);
+        break;
+    }
+
+    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+}
+
 void display_draw_contrast_grade(display_grade_t grade)
 {
     bool show_half = false;
-    u8g2_uint_t x = 9;
+    u8g2_uint_t x = 9 + 24;
     u8g2_uint_t y = 8;
 
     switch (grade) {
@@ -706,6 +808,7 @@ void display_draw_main_elements(const display_main_elements_t *elements)
     u8g2_SetBitmapMode(&u8g2, 1);
 
     display_draw_tone_graph(elements->tone_graph);
+    display_draw_burn_dodge_count(elements->burn_dodge_count);
     display_draw_contrast_grade(elements->contrast_grade);
     display_draw_counter_time(elements->time_seconds,
         elements->time_milliseconds,
@@ -735,32 +838,10 @@ void display_draw_stop_increment(uint8_t increment_den)
         increment_den = 99;
     }
 
-    if (increment_den >= 20) {
-        // 1/DD stops (1/20 - 1/99)
-        display_draw_tdigit(x + 7, y, 1);
-        u8g2_DrawLine(&u8g2, x + 2, y + 26, x + 37, y + 26);
-        u8g2_DrawLine(&u8g2, x + 1, y + 27, x + 38, y + 27);
-        u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 37, y + 28);
-        display_draw_tdigit(x + 5, y + 31, increment_den % 100 / 10);
-        display_draw_tdigit(x + 22, y + 31, increment_den % 10);
-    } else if (increment_den >= 10) {
-        // 1/DD stops (1/10 - 1/19)
-        display_draw_tdigit(x + 7, y, 1);
-        u8g2_DrawLine(&u8g2, x + 8, y + 26, x + 32, y + 26);
-        u8g2_DrawLine(&u8g2, x + 7, y + 27, x + 33, y + 27);
-        u8g2_DrawLine(&u8g2, x + 8, y + 28, x + 32, y + 28);
-        display_draw_tdigit(x + 0, y + 31, increment_den % 100 / 10);
-        display_draw_tdigit(x + 17, y + 31, increment_den % 10);
-    } else if (increment_den > 1) {
-        // 1/D stops
-        display_draw_tdigit(x + 7, y, 1);
-        u8g2_DrawLine(&u8g2, x + 10, y + 26, x + 28, y + 26);
-        u8g2_DrawLine(&u8g2, x + 9, y + 27, x + 29, y + 27);
-        u8g2_DrawLine(&u8g2, x + 10, y + 28, x + 28, y + 28);
-        display_draw_tdigit(x + 13, y + 31, increment_den);
-    } else {
-        // 1 stop
+    if (increment_den == 1) {
         display_draw_digit(x, y, 1);
+    } else {
+        display_draw_tdigit_fraction(x, y, 1, increment_den);
     }
 
     u8g2_SetFontDirection(&u8g2, 0);
@@ -997,7 +1078,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
 
     // Draw title text
     x = 166;
-    y = 11 + u8g2_GetAscent(&u8g2);;
+    y = 11 + u8g2_GetAscent(&u8g2);
     u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
     if (elements->title1) {
         u8g2_DrawUTF8Line(&u8g2, x, y, u8g2_GetDisplayWidth(&u8g2) - x, elements->title1, 0, 0);
@@ -1043,6 +1124,107 @@ void display_draw_test_strip_timer(const display_exposure_timer_t *elements)
     osMutexRelease(display_mutex);
 }
 
+void display_draw_edit_adjustment_elements(const display_edit_adjustment_elements_t *elements)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    asset_info_t asset;
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
+    u8g2_uint_t x = 0;
+    u8g2_uint_t y = 11;
+
+    // Draw adjustment icon
+    display_asset_get(&asset, ASSET_ADJUST_ICON_24);
+    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+
+    y += 28;
+
+    // Draw base exposure icon
+    display_asset_get(&asset, ASSET_PHOTO_ICON_24);
+    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+
+    x += 30;
+
+    // Draw adjustment text
+    y = 15 + u8g2_GetAscent(&u8g2);
+    if (elements->adj_title1) {
+        u8g2_DrawUTF8(&u8g2, x, y, elements->adj_title1);
+        y += line_height + 1;
+    }
+    if (elements->adj_title2) {
+        u8g2_DrawUTF8(&u8g2, x, y, elements->adj_title2);
+    }
+
+    // Draw base exposure text
+    y = 15 + 28 + u8g2_GetAscent(&u8g2);
+    if (elements->base_title1) {
+        u8g2_DrawUTF8(&u8g2, x, y, elements->base_title1);
+        y += line_height + 1;
+    }
+    if (elements->base_title2) {
+        u8g2_DrawUTF8(&u8g2, x, y, elements->base_title2);
+    }
+
+    if (elements->tip_up || elements->tip_down) {
+        // Draw the up/down tips
+        x = 170;
+        if (elements->tip_up) {
+            y = 14;
+            display_asset_get(&asset, ASSET_ARROW_UP_18);
+            u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+            u8g2_DrawFrame(&u8g2, x - 3, y - 3, 24, 24);
+            u8g2_DrawUTF8(&u8g2, x + 28, y + 13, elements->tip_up);
+        }
+        if (elements->tip_down) {
+            y = 42;
+            display_asset_get(&asset, ASSET_ARROW_DOWN_18);
+            u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+            u8g2_DrawFrame(&u8g2, x - 3, y - 3, 24, 24);
+            u8g2_DrawUTF8(&u8g2, x + 28, y + 13, elements->tip_down);
+        }
+    } else {
+        // Draw the adjustment value
+        bool num_positive = elements->adj_num >= 0;
+        uint8_t adj_num = abs(elements->adj_num);
+        uint8_t adj_whole = adj_num / elements->adj_den;
+        adj_num -= adj_whole * elements->adj_den;
+
+        x = 217;
+        y = 8;
+
+        // Draw fraction part
+        if (adj_num > 0) {
+            if (adj_whole == 0) {
+                x -= 36;
+            }
+            display_draw_tdigit_fraction(x, y, adj_num, elements->adj_den);
+        }
+        x -= 36;
+
+        // Draw whole number part
+        if (adj_whole != 0 || (adj_whole == 0 && adj_num == 0)) {
+            display_draw_digit(x, y, adj_whole);
+            x -= 36;
+        }
+
+        // Draw +/- sign part
+        display_draw_sign(x, y, num_positive);
+    }
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
@@ -1056,50 +1238,29 @@ uint8_t display_selection_list(const char *title, uint8_t start_pos, const char 
     return menu_event_timeout ? UINT8_MAX : option;
 }
 
+uint16_t display_selection_list_params(const char *title, uint8_t start_pos, const char *list,
+    display_menu_params_t params)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+
+    uint16_t option = display_UserInterfaceSelectionListCB(&u8g2, title, start_pos, list,
+        display_GetMenuEvent, params);
+
+    osMutexRelease(display_mutex);
+
+    return option;
+}
+
 void display_static_list(const char *title, const char *list)
 {
-    // Based off u8g2_UserInterfaceSelectionList() with changes to use
-    // full frame buffer mode and to remove actual menu functionality.
-
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
 
-    u8g2_ClearBuffer(&u8g2);
-
-    u8sl_t u8sl;
-    u8g2_uint_t yy;
-
-    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
-
-    uint8_t title_lines = u8x8_GetStringLineCnt(title);
-    uint8_t display_lines;
-
-    if (title_lines > 0) {
-        display_lines = (u8g2_GetDisplayHeight(&u8g2) - 3) / line_height;
-        u8sl.visible = display_lines;
-        u8sl.visible -= title_lines;
-    }
-    else {
-        display_lines = u8g2_GetDisplayHeight(&u8g2) / line_height;
-        u8sl.visible = display_lines;
-    }
-
-    u8sl.total = u8x8_GetStringLineCnt(list);
-    u8sl.first_pos = 0;
-    u8sl.current_pos = -1;
-
-    u8g2_SetFontPosBaseline(&u8g2);
-
-    yy = u8g2_GetAscent(&u8g2);
-    if (title_lines > 0) {
-        yy += u8g2_DrawUTF8Lines(&u8g2, 0, yy, u8g2_GetDisplayWidth(&u8g2), line_height, title);
-        u8g2_DrawHLine(&u8g2, 0, yy - line_height - u8g2_GetDescent(&u8g2) + 1, u8g2_GetDisplayWidth(&u8g2));
-        yy += 3;
-    }
-    u8g2_DrawSelectionList(&u8g2, &u8sl, yy, list);
-
-    u8g2_SendBuffer(&u8g2);
+    display_UserInterfaceStaticList(&u8g2, title, list);
 
     osMutexRelease(display_mutex);
 }
@@ -1135,116 +1296,18 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
     uint8_t low, uint8_t high, uint8_t digits, const char *postfix,
     display_input_value_callback_t callback, void *user_data)
 {
-    // Based off u8g2_UserInterfaceInputValue() with changes to
-    // invoke a callback on value change.
-
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
 
-    uint8_t line_height;
-    uint8_t height;
-    u8g2_uint_t pixel_height;
-    u8g2_uint_t  y, yy;
-    u8g2_uint_t  pixel_width;
-    u8g2_uint_t  x, xx;
+    uint8_t option = display_UserInterfaceInputValueCB(&u8g2,
+        title, prefix, value, low, high, digits, postfix,
+        callback, user_data);
 
-    uint8_t local_value = *value;
-    //uint8_t r; /* not used ??? */
-    uint8_t event;
-
-    /* only horizontal strings are supported, so force this here */
-    u8g2_SetFontDirection(&u8g2, 0);
-
-    /* force baseline position */
-    u8g2_SetFontPosBaseline(&u8g2);
-
-    /* calculate line height */
-    line_height = u8g2_GetAscent(&u8g2);
-    line_height -= u8g2_GetDescent(&u8g2);
-
-
-    /* calculate overall height of the input value box */
-    height = 1;   /* value input line */
-    height += u8x8_GetStringLineCnt(title);
-
-    /* calculate the height in pixel */
-    pixel_height = height;
-    pixel_height *= line_height;
-
-
-    /* calculate offset from top */
-    y = 0;
-    if (pixel_height < u8g2_GetDisplayHeight(&u8g2)) {
-        y = u8g2_GetDisplayHeight(&u8g2);
-        y -= pixel_height;
-        y /= 2;
-    }
-
-    /* calculate offset from left for the label */
-    x = 0;
-    pixel_width = u8g2_GetUTF8Width(&u8g2, prefix);
-    pixel_width += u8g2_GetUTF8Width(&u8g2, "0") * digits;
-    pixel_width += u8g2_GetUTF8Width(&u8g2, postfix);
-    if (pixel_width < u8g2_GetDisplayWidth(&u8g2)) {
-        x = u8g2_GetDisplayWidth(&u8g2);
-        x -= pixel_width;
-        x /= 2;
-    }
-
-    /* event loop */
-    for(;;) {
-        u8g2_FirstPage(&u8g2);
-        do {
-            /* render */
-            yy = y;
-            yy += u8g2_DrawUTF8Lines(&u8g2, 0, yy, u8g2_GetDisplayWidth(&u8g2), line_height, title);
-            xx = x;
-            xx += u8g2_DrawUTF8(&u8g2, xx, yy, prefix);
-            xx += u8g2_DrawUTF8(&u8g2, xx, yy, u8x8_u8toa(local_value, digits));
-            u8g2_DrawUTF8(&u8g2, xx, yy, postfix);
-        } while(u8g2_NextPage(&u8g2));
-
-        for(;;)
-        {
-            event = u8x8_GetMenuEvent(u8g2_GetU8x8(&u8g2));
-            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
-                *value = local_value;
-                osMutexRelease(display_mutex);
-                return 1;
-            }
-            else if (event == U8X8_MSG_GPIO_MENU_HOME) {
-                return menu_event_timeout ? UINT8_MAX : 0;
-            }
-            else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_UP) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    local_value++;
-                }
-                if (callback) {
-                    callback(local_value, user_data);
-                }
-                break;
-            }
-            else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    local_value--;
-                }
-                if (callback) {
-                    callback(local_value, user_data);
-                }
-                break;
-            }
-        }
-    }
-
-    /* never reached */
     osMutexRelease(display_mutex);
-    //return r;
+
+    return menu_event_timeout ? UINT8_MAX : option;
 }
 
 uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
@@ -1253,12 +1316,28 @@ uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
     // same name, due to its declaration with the "weak" pragma.
     menu_event_timeout = false;
 
+    uint16_t result = display_GetMenuEvent(u8x8, DISPLAY_MENU_ACCEPT_MENU);
+
+    if (result == UINT16_MAX) {
+        menu_event_timeout = true;
+        return U8X8_MSG_GPIO_MENU_HOME;
+    } else {
+        return (uint8_t)(result & 0x00FF);
+    }
+}
+
+uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
+{
+    uint16_t result = 0;
+
     // If we were called via a function that is holding the display mutex,
     // then release that mutex while blocked on the keypad queue.
     osStatus_t mutex_released = osMutexRelease(display_mutex);
 
+    int timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
+
     keypad_event_t event;
-    HAL_StatusTypeDef ret = keypad_wait_for_event(&event, MENU_TIMEOUT_MS);
+    HAL_StatusTypeDef ret = keypad_wait_for_event(&event, timeout);
 
     if (mutex_released == osOK) {
         osMutexAcquire(display_mutex, portMAX_DELAY);
@@ -1266,28 +1345,42 @@ uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
 
     if (ret == HAL_OK) {
         if (event.pressed) {
+            // Button actions that stay within the menu are handled on
+            // the press event
             switch (event.key) {
             case KEYPAD_DEC_CONTRAST:
-                return U8X8_MSG_GPIO_MENU_PREV;
+                result = U8X8_MSG_GPIO_MENU_PREV;
+                break;
             case KEYPAD_INC_CONTRAST:
-                return U8X8_MSG_GPIO_MENU_NEXT;
+                result = U8X8_MSG_GPIO_MENU_NEXT;
+                break;
             case KEYPAD_INC_EXPOSURE:
-                return U8X8_MSG_GPIO_MENU_UP;
+                result = U8X8_MSG_GPIO_MENU_UP;
+                break;
             case KEYPAD_DEC_EXPOSURE:
-                return U8X8_MSG_GPIO_MENU_DOWN;
-            case KEYPAD_MENU:
-                return U8X8_MSG_GPIO_MENU_SELECT;
-            case KEYPAD_CANCEL:
-                return U8X8_MSG_GPIO_MENU_HOME;
+                result = U8X8_MSG_GPIO_MENU_DOWN;
+                break;
             default:
                 break;
             }
+        } else {
+            // Button actions that leave the menu, such as accept and cancel
+            // are handled on the release event. This is to prevent side
+            // effects that can occur from other components receiving
+            // release events for these keys.
+            if (((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && event.key == KEYPAD_MENU)
+                || ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && event.key == KEYPAD_ADD_ADJUSTMENT)
+                || ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && event.key == KEYPAD_TEST_STRIP)
+                || ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && event.key == KEYPAD_ENCODER)) {
+                result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if (event.key == KEYPAD_CANCEL) {
+                result = U8X8_MSG_GPIO_MENU_HOME;
+            }
         }
     } else if (ret == HAL_TIMEOUT) {
-        menu_event_timeout = true;
-        return U8X8_MSG_GPIO_MENU_HOME;
+        result = UINT16_MAX;
     }
-    return 0;
+    return result;
 }
 
 void display_prepare_menu_font()

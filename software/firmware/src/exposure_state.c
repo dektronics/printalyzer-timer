@@ -1,5 +1,6 @@
 #include "exposure_state.h"
 
+#include <string.h>
 #include <math.h>
 
 #include "settings.h"
@@ -14,6 +15,11 @@ void exposure_state_defaults(exposure_state_t *state)
     state->adjusted_time = state->base_time;
     state->adjustment_value = 0;
     state->adjustment_increment = settings_get_default_step_size();
+
+    for (int i = 0; i < EXPOSURE_BURN_DODGE_MAX; i++) {
+        memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
+    }
+    state->burn_dodge_count = 0;
 }
 
 void exposure_set_base_time(exposure_state_t *state, float value)
@@ -188,6 +194,34 @@ uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state)
     default:
         return 0;
     }
+}
+
+void exposure_burn_dodge_delete(exposure_state_t *state, int index)
+{
+    if (!state) { return; }
+
+    if (index < 0 || index >= state->burn_dodge_count) {
+        return;
+    }
+
+    for (int i = index; i < EXPOSURE_BURN_DODGE_MAX; i++) {
+        if (i < state->burn_dodge_count) {
+            memcpy(&state->burn_dodge_entry[i], &state->burn_dodge_entry[i + 1], sizeof(exposure_burn_dodge_t));
+        } else {
+            memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
+        }
+    }
+    state->burn_dodge_count--;
+}
+
+void exposure_burn_dodge_delete_all(exposure_state_t *state)
+{
+    if (!state) { return; }
+
+    for (int i = 0; i < EXPOSURE_BURN_DODGE_MAX; i++) {
+        memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
+    }
+    state->burn_dodge_count = 0;
 }
 
 float exposure_get_test_strip_time_incremental(const exposure_state_t *state,

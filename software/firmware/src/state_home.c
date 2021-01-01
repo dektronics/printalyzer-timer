@@ -20,6 +20,7 @@ typedef struct {
     bool change_inc_swallow_release_up;
     bool change_inc_swallow_release_down;
     int encoder_repeat;
+    int adjustment_repeat;
     int cancel_repeat;
     bool display_dirty;
 } state_home_t;
@@ -42,7 +43,7 @@ typedef struct {
     bool value_accepted;
 } state_home_adjust_absolute_t;
 
-static void state_home_entry(state_t *state_base, state_controller_t *controller);
+static void state_home_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
 static void state_home_exit(state_t *state_base, state_controller_t *controller);
 static state_home_t state_home_data = {
@@ -55,6 +56,7 @@ static state_home_t state_home_data = {
     .change_inc_swallow_release_up = false,
     .change_inc_swallow_release_down = false,
     .encoder_repeat = 0,
+    .adjustment_repeat = 0,
     .cancel_repeat = 0,
     .display_dirty = true
 };
@@ -66,7 +68,7 @@ static state_home_change_time_increment_t state_home_change_time_increment_data 
     }
 };
 
-static void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller);
+static void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
 static bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *controller);
 static void state_home_adjust_fine_exit(state_t *state_base, state_controller_t *controller);
 static state_home_adjust_fine_t state_home_adjust_fine_data = {
@@ -81,7 +83,7 @@ static state_home_adjust_fine_t state_home_adjust_fine_data = {
     .value_accepted = false
 };
 
-static void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller);
+static void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
 static bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t *controller);
 static void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *controller);
 static state_home_adjust_absolute_t state_home_adjust_absolute_data = {
@@ -99,9 +101,16 @@ state_t *state_home()
     return (state_t *)&state_home_data;
 }
 
-void state_home_entry(state_t *state_base, state_controller_t *controller)
+void state_home_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
 {
     state_home_t *state = (state_home_t *)state_base;
+
+    state->change_inc_pending = false;
+    state->change_inc_swallow_release_up = false;
+    state->change_inc_swallow_release_down = false;
+    state->encoder_repeat = 0;
+    state->adjustment_repeat = 0;
+    state->cancel_repeat = 0;
     state->display_dirty = true;
 }
 
@@ -130,12 +139,12 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 
             if (!state->change_inc_swallow_release_up && !state->change_inc_swallow_release_down) {
                 state->change_inc_pending = false;
-                state_controller_set_next_state(controller, STATE_HOME_CHANGE_TIME_INCREMENT);
+                state_controller_set_next_state(controller, STATE_HOME_CHANGE_TIME_INCREMENT, 0);
             }
         } else {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-                state_controller_set_next_state(controller, STATE_TIMER);
+                state_controller_set_next_state(controller, STATE_TIMER, 0);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
                     ESP_LOGI(TAG, "Focus mode enabled");
@@ -160,24 +169,38 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 exposure_contrast_decrease(exposure_state);
                 state->display_dirty = true;
-            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT && !keypad_event.pressed) {
-                state_controller_set_next_state(controller, STATE_ADD_ADJUSTMENT);
+            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
+                if (keypad_event.pressed || keypad_event.repeated) {
+                    state->adjustment_repeat++;
+                } else {
+                    if (state->adjustment_repeat > 2) {
+                        if (exposure_state->burn_dodge_count > 0) {
+                            state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
+                        }
+                    } else {
+                        if (exposure_state->burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
+                            state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, exposure_state->burn_dodge_count);
+                        }
+                    }
+                    state->adjustment_repeat = 0;
+                    state->display_dirty = true;
+                }
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
-                state_controller_set_next_state(controller, STATE_TEST_STRIP);
+                state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
             } else if (keypad_event.key == KEYPAD_ENCODER) {
                 if (keypad_event.pressed || keypad_event.repeated) {
                     state->encoder_repeat++;
                 } else {
                     if (state->encoder_repeat > 2) {
-                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE);
+                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
                     } else {
-                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE);
+                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
                     }
                     state->encoder_repeat = 0;
                     state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
-                state_controller_set_next_state(controller, STATE_MENU);
+                state_controller_set_next_state(controller, STATE_MENU, 0);
             } else if (keypad_event.key == KEYPAD_CANCEL) {
                 if (keypad_event.pressed || keypad_event.repeated) {
                     state->cancel_repeat++;
@@ -207,7 +230,8 @@ void state_home_exit(state_t *state_base, state_controller_t *controller)
     if (next_state != STATE_HOME_CHANGE_TIME_INCREMENT
         && next_state != STATE_HOME_ADJUST_FINE
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
-        && next_state != STATE_ADD_ADJUSTMENT) {
+        && next_state != STATE_EDIT_ADJUSTMENT
+        && next_state != STATE_LIST_ADJUSTMENTS) {
         if (relay_enlarger_is_enabled()) {
             ESP_LOGI(TAG, "Focus mode disabled due to state change");
             relay_enlarger_enable(false);
@@ -238,7 +262,7 @@ bool state_home_change_time_increment_process(state_t *state_base, state_control
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
             exposure_adj_increment_decrease(exposure_state);
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         }
         return true;
     } else {
@@ -251,7 +275,7 @@ state_t *state_home_adjust_fine()
     return (state_t *)&state_home_adjust_fine_data;
 }
 
-void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller)
+void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
 {
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -281,9 +305,9 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
             }
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
             state->value_accepted = true;
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         }
 
         return true;
@@ -307,7 +331,7 @@ state_t *state_home_adjust_absolute()
     return (state_t *)&state_home_adjust_absolute_data;
 }
 
-void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller)
+void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
 {
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -374,9 +398,9 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
             }
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
             state->value_accepted = true;
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            state_controller_set_next_state(controller, STATE_HOME);
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         }
 
         return true;
