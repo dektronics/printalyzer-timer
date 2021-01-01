@@ -43,6 +43,7 @@ static void display_set_freq(uint8_t value);
 static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
 static void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
 static void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
+static void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive);
 static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_contrast_grade(display_grade_t grade);
@@ -355,6 +356,26 @@ void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
         break;
     default:
         break;
+    }
+}
+
+/**
+ * Draw a +/- sign on a 30x56 pixel digit grid
+ */
+void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive)
+{
+    u8g2_DrawLine(&u8g2, x + 4, y + 26, x + 24, y + 26);
+    u8g2_DrawLine(&u8g2, x + 3, y + 27, x + 25, y + 27);
+    u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 26, y + 28);
+    u8g2_DrawLine(&u8g2, x + 3, y + 29, x + 25, y + 29);
+    u8g2_DrawLine(&u8g2, x + 4, y + 30, x + 24, y + 30);
+
+    if (positive) {
+        u8g2_DrawLine(&u8g2, x + 12, y + 18, x + 12, y + 38);
+        u8g2_DrawLine(&u8g2, x + 13, y + 17, x + 13, y + 39);
+        u8g2_DrawLine(&u8g2, x + 14, y + 16, x + 14, y + 40);
+        u8g2_DrawLine(&u8g2, x + 15, y + 17, x + 15, y + 39);
+        u8g2_DrawLine(&u8g2, x + 16, y + 18, x + 16, y + 38);
     }
 }
 
@@ -782,19 +803,7 @@ void display_draw_exposure_adj(int value)
     }
 
     if (value != 0) {
-        u8g2_DrawLine(&u8g2, x + 4, y + 26, x + 24, y + 26);
-        u8g2_DrawLine(&u8g2, x + 3, y + 27, x + 25, y + 27);
-        u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 26, y + 28);
-        u8g2_DrawLine(&u8g2, x + 3, y + 29, x + 25, y + 29);
-        u8g2_DrawLine(&u8g2, x + 4, y + 30, x + 24, y + 30);
-    }
-
-    if (value > 0) {
-        u8g2_DrawLine(&u8g2, x + 12, y + 18, x + 12, y + 38);
-        u8g2_DrawLine(&u8g2, x + 13, y + 17, x + 13, y + 39);
-        u8g2_DrawLine(&u8g2, x + 14, y + 16, x + 14, y + 40);
-        u8g2_DrawLine(&u8g2, x + 15, y + 17, x + 15, y + 39);
-        u8g2_DrawLine(&u8g2, x + 16, y + 18, x + 16, y + 38);
+        display_draw_sign(x, y, value > 0);
     }
 
     u8g2_SendBuffer(&u8g2);
@@ -820,8 +829,6 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements)
         elements->fraction_digits);
 
     u8g2_SendBuffer(&u8g2);
-
-    //TODO
 
     osMutexRelease(display_mutex);
 }
@@ -883,10 +890,6 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
 
 void display_draw_test_strip_elements(const display_test_strip_elements_t *elements)
 {
-    // This is being designed around a 7-patch test strip.
-    // It may make sense to also support a 5-patch mode, or
-    // uneven combinations for other cases.
-
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
@@ -1133,7 +1136,7 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
     display_input_value_callback_t callback, void *user_data)
 {
     // Based off u8g2_UserInterfaceInputValue() with changes to
-    // involve a callback on value change.
+    // invoke a callback on value change.
 
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
