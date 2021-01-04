@@ -29,3 +29,81 @@
  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ******************************************************************************
+
+ Universal 8bit Graphics Library V2
+
+ Path:     firmware/external/u8g2
+ Upstream: https://github.com/olikraus/u8g2
+ License:  Two-clause BSD license, fonts under other licenses
+           (see project for details)
+
+ Library has been modified as necessary for project integration purposes.
+
+******************************************************************************
+
+ Logging library (from ESP-IDF)
+
+ Path:     firmware/external/esp_log
+ Upstream: https://github.com/espressif/esp-idf
+           components/log
+ License:  Apache License 2.0
+
+ This is a logging library from Espressif's ESP-IDF components, modified as
+ necessary for platform porting and project integration purposes.
+
+******************************************************************************
+
+ FreeRTOS (as distributed by STMicroelectronics)
+
+ Path:     firmware/external/freertos
+ Upstream: https://github.com/STMicroelectronics/STM32CubeF4
+           Middlewares/Third_Party/FreeRTOS
+ License:  MIT License
+
+******************************************************************************
+
+ FatFs (as distributed by STMicroelectronics)
+
+ Path:     firmware/external/fatfs
+ Upstream: https://github.com/STMicroelectronics/STM32CubeF4
+           Middlewares/Third_Party/FatFs
+ License:  Three-clause BSD license
+
+******************************************************************************
+
+ STM32 USB Host and Device Libraries
+
+ Path:     firmware/external/usb
+ Upstream: https://github.com/STMicroelectronics/STM32CubeF4
+           Middlewares/ST/STM32_USB_Host_Library
+           Middlewares/ST/STM32_USB_Device_Library
+ License:  ST Ultimate Liberty License (SLA0044)
+
+ Code has been combined into a consistent directory structure and modified
+ as necessary for project integration.
+
+******************************************************************************
+
+ CMSIS
+ 
+ Path:     firmware/external/drivers/cmsis
+ Upstream: https://github.com/STMicroelectronics/STM32CubeF4
+           Drivers/CMSIS
+ License:  Apache License 2.0
+
+ Code has been selected via the CubeMX code generator and reorganized into
+ a consistent directory structure for project integration.
+
+******************************************************************************
+
+ STM32F4 HAL
+
+ Path:     firmware/external/drivers/stm32f4xx
+ Upstream: https://github.com/STMicroelectronics/STM32CubeF4
+           Drivers/STM32F4xx_HAL_Driver
+ License:  Three-clause BSD license
+
+ Code has been selected via the CubeMX code generator and reorganized into
+ a consistent directory structure for project integration.
+
+******************************************************************************
