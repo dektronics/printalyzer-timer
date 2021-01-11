@@ -40,16 +40,21 @@ static uint8_t display_brightness = 0x0F;
 
 static void display_set_freq(uint8_t value);
 static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
+static void display_draw_msegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
 static void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
+static void display_draw_vtsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
 static void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive);
+static void display_draw_mdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
+static void display_draw_vtdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den);
 static void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
 static void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_burn_dodge_count(uint8_t count);
-static void display_draw_contrast_grade(display_grade_t grade);
+static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
+static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
 static void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements);
 static void display_prepare_menu_font();
@@ -239,6 +244,52 @@ void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
 }
 
 /**
+ * Draw a segment of a digit on a 18x37 pixel grid
+ */
+void display_draw_msegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
+{
+    switch(segment) {
+    case seg_a:
+        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 16, y + 0);
+        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 15, y + 1);
+        u8g2_DrawLine(&u8g2, x + 3, y + 2, x + 14, y + 2);
+        break;
+    case seg_b:
+        u8g2_DrawLine(&u8g2, x + 15, y + 3, x + 15, y + 16);
+        u8g2_DrawLine(&u8g2, x + 16, y + 2, x + 16, y + 17);
+        u8g2_DrawLine(&u8g2, x + 17, y + 1, x + 17, y + 16);
+        break;
+    case seg_c:
+        u8g2_DrawLine(&u8g2, x + 15, y + 20, x + 15, y + 33);
+        u8g2_DrawLine(&u8g2, x + 16, y + 19, x + 16, y + 34);
+        u8g2_DrawLine(&u8g2, x + 17, y + 20, x + 17, y + 35);
+        break;
+    case seg_d:
+        u8g2_DrawLine(&u8g2, x + 3, y + 34, x + 14, y + 34);
+        u8g2_DrawLine(&u8g2, x + 2, y + 35, x + 15, y + 35);
+        u8g2_DrawLine(&u8g2, x + 1, y + 36, x + 16, y + 36);
+        break;
+    case seg_e:
+        u8g2_DrawLine(&u8g2, x + 0, y + 20, x + 0, y + 35);
+        u8g2_DrawLine(&u8g2, x + 1, y + 19, x + 1, y + 34);
+        u8g2_DrawLine(&u8g2, x + 2, y + 20, x + 2, y + 33);
+        break;
+    case seg_f:
+        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 16);
+        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 17);
+        u8g2_DrawLine(&u8g2, x + 2, y + 3, x + 2, y + 16);
+        break;
+    case seg_g:
+        u8g2_DrawLine(&u8g2, x + 3, y + 17, x + 14, y + 17);
+        u8g2_DrawLine(&u8g2, x + 2, y + 18, x + 15, y + 18);
+        u8g2_DrawLine(&u8g2, x + 3, y + 19, x + 14, y + 19);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
  * Draw a segment of a digit on a 14x25 pixel grid
  */
 void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
@@ -278,6 +329,46 @@ void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
         u8g2_DrawLine(&u8g2, x + 3, y + 11, x + 10, y + 11);
         u8g2_DrawLine(&u8g2, x + 2, y + 12, x + 11, y + 12);
         u8g2_DrawLine(&u8g2, x + 3, y + 13, x + 10, y + 13);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * Draw a segment of a digit on a 9x17 pixel grid
+ */
+void display_draw_vtsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
+{
+    switch(segment) {
+    case seg_a:
+        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 7, y + 0);
+        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 6, y + 1);
+        break;
+    case seg_b:
+        u8g2_DrawLine(&u8g2, x + 7, y + 2, x + 7, y + 6);
+        u8g2_DrawLine(&u8g2, x + 8, y + 1, x + 8, y + 7);
+        break;
+    case seg_c:
+        u8g2_DrawLine(&u8g2, x + 7, y + 10, x + 7, y + 14);
+        u8g2_DrawLine(&u8g2, x + 8, y + 9, x + 8, y + 15);
+        break;
+    case seg_d:
+        u8g2_DrawLine(&u8g2, x + 2, y + 15, x + 6, y + 15);
+        u8g2_DrawLine(&u8g2, x + 1, y + 16, x + 7, y + 16);
+        break;
+    case seg_e:
+        u8g2_DrawLine(&u8g2, x + 0, y + 9, x + 0, y + 15);
+        u8g2_DrawLine(&u8g2, x + 1, y + 10, x + 1, y + 14);
+        break;
+    case seg_f:
+        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 7);
+        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 6);
+        break;
+    case seg_g:
+        u8g2_DrawLine(&u8g2, x + 2, y + 7, x + 6, y + 7);
+        u8g2_DrawLine(&u8g2, x + 1, y + 8, x + 7, y + 8);
+        u8g2_DrawLine(&u8g2, x + 2, y + 9, x + 6, y + 9);
         break;
     default:
         break;
@@ -385,6 +476,86 @@ void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive)
 }
 
 /**
+ * Draw a 18x37 pixel digit
+ */
+void display_draw_mdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
+{
+    switch(digit) {
+    case 0:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_e);
+        display_draw_msegment(x, y, seg_f);
+        break;
+    case 1:
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        break;
+    case 2:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_e);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 3:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 4:
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_f);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 5:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_f);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 6:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_e);
+        display_draw_msegment(x, y, seg_f);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 7:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        break;
+    case 8:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_e);
+        display_draw_msegment(x, y, seg_f);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    case 9:
+        display_draw_msegment(x, y, seg_a);
+        display_draw_msegment(x, y, seg_b);
+        display_draw_msegment(x, y, seg_c);
+        display_draw_msegment(x, y, seg_d);
+        display_draw_msegment(x, y, seg_f);
+        display_draw_msegment(x, y, seg_g);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
  * Draw a 14x25 pixel digit
  */
 void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
@@ -458,6 +629,86 @@ void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
         display_draw_tsegment(x, y, seg_d);
         display_draw_tsegment(x, y, seg_f);
         display_draw_tsegment(x, y, seg_g);
+        break;
+    default:
+        break;
+    }
+}
+
+/**
+ * Draw a 9x17 pixel digit
+ */
+void display_draw_vtdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
+{
+    switch(digit) {
+    case 0:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_e);
+        display_draw_vtsegment(x, y, seg_f);
+        break;
+    case 1:
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        break;
+    case 2:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_e);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 3:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 4:
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_f);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 5:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_f);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 6:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_e);
+        display_draw_vtsegment(x, y, seg_f);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 7:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        break;
+    case 8:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_e);
+        display_draw_vtsegment(x, y, seg_f);
+        display_draw_vtsegment(x, y, seg_g);
+        break;
+    case 9:
+        display_draw_vtsegment(x, y, seg_a);
+        display_draw_vtsegment(x, y, seg_b);
+        display_draw_vtsegment(x, y, seg_c);
+        display_draw_vtsegment(x, y, seg_d);
+        display_draw_vtsegment(x, y, seg_f);
+        display_draw_vtsegment(x, y, seg_g);
         break;
     default:
         break;
@@ -560,6 +811,8 @@ void display_draw_burn_dodge_count(uint8_t count)
 
     asset_info_t asset;
     switch (count) {
+    case 0:
+        break;
     case 1:
         display_asset_get(&asset, ASSET_ADJUST_COUNT_1_18);
         break;
@@ -595,11 +848,9 @@ void display_draw_burn_dodge_count(uint8_t count)
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
 }
 
-void display_draw_contrast_grade(display_grade_t grade)
+void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade)
 {
     bool show_half = false;
-    u8g2_uint_t x = 9 + 24;
-    u8g2_uint_t y = 8;
 
     switch (grade) {
     case DISPLAY_GRADE_00:
@@ -655,6 +906,67 @@ void display_draw_contrast_grade(display_grade_t grade)
         u8g2_DrawLine(&u8g2, x + 45, y + 27, x + 65, y + 27);
         u8g2_DrawLine(&u8g2, x + 46, y + 28, x + 64, y + 28);
         display_draw_tdigit(x + 49, y + 31, 2);
+    }
+}
+
+void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade)
+{
+    bool show_half = false;
+
+    switch (grade) {
+    case DISPLAY_GRADE_00:
+        display_draw_mdigit(x, y, 0);
+        display_draw_mdigit(x + 22, y, 0);
+        break;
+    case DISPLAY_GRADE_0:
+        display_draw_mdigit(x, y, 0);
+        break;
+    case DISPLAY_GRADE_0_HALF:
+        x -= 21;
+        show_half = true;
+        break;
+    case DISPLAY_GRADE_1:
+        display_draw_mdigit(x, y, 1);
+        break;
+    case DISPLAY_GRADE_1_HALF:
+        display_draw_mdigit(x, y, 1);
+        show_half = true;
+        break;
+    case DISPLAY_GRADE_2:
+        display_draw_mdigit(x, y, 2);
+        break;
+    case DISPLAY_GRADE_2_HALF:
+        display_draw_mdigit(x, y, 2);
+        show_half = true;
+        break;
+    case DISPLAY_GRADE_3:
+        display_draw_mdigit(x, y, 3);
+        break;
+    case DISPLAY_GRADE_3_HALF:
+        display_draw_mdigit(x, y, 3);
+        show_half = true;
+        break;
+    case DISPLAY_GRADE_4:
+        display_draw_mdigit(x, y, 4);
+        break;
+    case DISPLAY_GRADE_4_HALF:
+        display_draw_mdigit(x, y, 4);
+        show_half = true;
+        break;
+    case DISPLAY_GRADE_5:
+        display_draw_mdigit(x, y, 5);
+        break;
+    case DISPLAY_GRADE_NONE:
+    default:
+        return;
+    }
+
+    if (show_half) {
+        display_draw_vtdigit(x + 22, y - 1, 1);
+        u8g2_DrawLine(&u8g2, x + 24, y + 16, x + 34, y + 16);
+        u8g2_DrawLine(&u8g2, x + 23, y + 17, x + 35, y + 17);
+        u8g2_DrawLine(&u8g2, x + 24, y + 18, x + 34, y + 18);
+        display_draw_vtdigit(x + 25, y + 20, 2);
     }
 }
 
@@ -809,7 +1121,7 @@ void display_draw_main_elements(const display_main_elements_t *elements)
 
     display_draw_tone_graph(elements->tone_graph);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
-    display_draw_contrast_grade(elements->contrast_grade);
+    display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
     display_draw_counter_time(elements->time_seconds,
         elements->time_milliseconds,
         elements->fraction_digits);
@@ -965,6 +1277,104 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
             u8g2_UpdateDisplayArea(&u8g2, 12, 1, 20, 7);
         }
     }
+
+    osMutexRelease(display_mutex);
+}
+
+void display_draw_adjustment_exposure_elements(const display_adjustment_exposure_elements_t *elements)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    // Draw adjustment title text
+    if (elements->title) {
+        u8g2_DrawUTF8(&u8g2,
+            0, 11 + u8g2_GetAscent(&u8g2),
+            elements->title);
+    }
+
+    // Draw adjustment index icon
+    asset_info_t asset = {0};
+    switch (elements->burn_dodge_index) {
+    case 0:
+        break;
+    case 1:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_1_32);
+        break;
+    case 2:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_2_32);
+        break;
+    case 3:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_3_32);
+        break;
+    case 4:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_4_32);
+        break;
+    case 5:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_5_32);
+        break;
+    case 6:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_6_32);
+        break;
+    case 7:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_7_32);
+        break;
+    case 8:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_8_32);
+        break;
+    case 9:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_9_32);
+        break;
+    default:
+        display_asset_get(&asset, ASSET_ADJUST_COUNT_9P_32);
+        break;
+    }
+    if (asset.bits) {
+        u8g2_DrawXBM(&u8g2, 0, 28, asset.width, asset.height, asset.bits);
+    }
+
+    if (elements->contrast_grade < DISPLAY_GRADE_MAX) {
+        // Draw contrast grade
+        display_draw_contrast_grade_medium(50, 26, elements->contrast_grade);
+    } else {
+        // Draw timer clock icon
+        display_asset_get(&asset, ASSET_TIMER_ICON_32);
+        u8g2_DrawXBM(&u8g2, 56, 28, asset.width, asset.height, asset.bits);
+    }
+
+    // Draw exposure time
+    display_draw_counter_time(elements->time_elements.time_seconds,
+        elements->time_elements.time_milliseconds,
+        elements->time_elements.fraction_digits);
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+
+void display_draw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, 96, 8,
+        u8g2_GetDisplayWidth(&u8g2) - 96,
+        u8g2_GetDisplayHeight(&u8g2) - 8);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    display_draw_counter_time(time_elements->time_seconds,
+        time_elements->time_milliseconds,
+        time_elements->fraction_digits);
+
+    u8g2_UpdateDisplayArea(&u8g2, 12, 1, 20, 7);
 
     osMutexRelease(display_mutex);
 }

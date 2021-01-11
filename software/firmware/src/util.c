@@ -12,47 +12,7 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
 
     elements->burn_dodge_count = exposure->burn_dodge_count;
 
-    switch (exposure->contrast_grade) {
-    case CONTRAST_GRADE_00:
-        elements->contrast_grade = DISPLAY_GRADE_00;
-        break;
-    case CONTRAST_GRADE_0:
-        elements->contrast_grade = DISPLAY_GRADE_0;
-        break;
-    case CONTRAST_GRADE_0_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_0_HALF;
-        break;
-    case CONTRAST_GRADE_1:
-        elements->contrast_grade = DISPLAY_GRADE_1;
-        break;
-    case CONTRAST_GRADE_1_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_1_HALF;
-        break;
-    case CONTRAST_GRADE_2:
-        elements->contrast_grade = DISPLAY_GRADE_2;
-        break;
-    case CONTRAST_GRADE_2_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_2_HALF;
-        break;
-    case CONTRAST_GRADE_3:
-        elements->contrast_grade = DISPLAY_GRADE_3;
-        break;
-    case CONTRAST_GRADE_3_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_3_HALF;
-        break;
-    case CONTRAST_GRADE_4:
-        elements->contrast_grade = DISPLAY_GRADE_4;
-        break;
-    case CONTRAST_GRADE_4_HALF:
-        elements->contrast_grade = DISPLAY_GRADE_4_HALF;
-        break;
-    case CONTRAST_GRADE_5:
-        elements->contrast_grade = DISPLAY_GRADE_5;
-        break;
-    default:
-        elements->contrast_grade = DISPLAY_GRADE_NONE;
-        break;
-    }
+    elements->contrast_grade = convert_exposure_to_display_contrast(exposure->contrast_grade);
 
     float seconds;
     float fractional;
@@ -67,6 +27,38 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
         elements->fraction_digits = 1;
     } else {
         elements->fraction_digits = 0;
+    }
+}
+
+display_grade_t convert_exposure_to_display_contrast(exposure_contrast_grade_t contrast_grade)
+{
+    switch (contrast_grade) {
+    case CONTRAST_GRADE_00:
+        return DISPLAY_GRADE_00;
+    case CONTRAST_GRADE_0:
+        return DISPLAY_GRADE_0;
+    case CONTRAST_GRADE_0_HALF:
+        return DISPLAY_GRADE_0_HALF;
+    case CONTRAST_GRADE_1:
+        return DISPLAY_GRADE_1;
+    case CONTRAST_GRADE_1_HALF:
+        return DISPLAY_GRADE_1_HALF;
+    case CONTRAST_GRADE_2:
+        return DISPLAY_GRADE_2;
+    case CONTRAST_GRADE_2_HALF:
+        return DISPLAY_GRADE_2_HALF;
+    case CONTRAST_GRADE_3:
+        return DISPLAY_GRADE_3;
+    case CONTRAST_GRADE_3_HALF:
+        return DISPLAY_GRADE_3_HALF;
+    case CONTRAST_GRADE_4:
+        return DISPLAY_GRADE_4;
+    case CONTRAST_GRADE_4_HALF:
+        return DISPLAY_GRADE_4_HALF;
+    case CONTRAST_GRADE_5:
+        return DISPLAY_GRADE_5;
+    default:
+        return DISPLAY_GRADE_NONE;
     }
 }
 

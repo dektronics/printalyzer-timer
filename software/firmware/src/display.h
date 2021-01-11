@@ -26,7 +26,8 @@ typedef enum {
     DISPLAY_GRADE_4,
     DISPLAY_GRADE_4_HALF,
     DISPLAY_GRADE_5,
-    DISPLAY_GRADE_NONE
+    DISPLAY_GRADE_NONE,
+    DISPLAY_GRADE_MAX
 } display_grade_t;
 
 typedef enum {
@@ -73,6 +74,13 @@ typedef struct {
     uint16_t adj_den;
 } display_edit_adjustment_elements_t;
 
+typedef struct {
+    const char *title;
+    uint8_t burn_dodge_index;
+    display_grade_t contrast_grade;
+    display_exposure_timer_t time_elements;
+} display_adjustment_exposure_elements_t;
+
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle);
@@ -92,6 +100,20 @@ void display_draw_stop_increment(uint8_t increment_den);
 void display_draw_exposure_adj(int value);
 void display_draw_timer_adj(const display_exposure_timer_t *elements);
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);
+
+/**
+ * Draw the complete set of burn/dodge display elements.
+ */
+void display_draw_adjustment_exposure_elements(const display_adjustment_exposure_elements_t *elements);
+
+/**
+ * Redraw the timer component of the burn/dodge display elements.
+ */
+void display_draw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements);
+
+/**
+ * Draw the complete set of test strip display elements.
+ */
 void display_draw_test_strip_elements(const display_test_strip_elements_t *elements);
 
 /**
