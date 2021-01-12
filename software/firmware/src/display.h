@@ -92,6 +92,8 @@ uint8_t display_get_contrast();
 void display_set_brightness(uint8_t value);
 uint8_t display_get_brightness();
 
+void display_save_screenshot();
+
 void display_draw_test_pattern(bool mode);
 void display_draw_logo();
 

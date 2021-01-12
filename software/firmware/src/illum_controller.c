@@ -12,7 +12,6 @@
 
 static const char *TAG = "illum_controller";
 
-//static SemaphoreHandle_t illum_mutex = NULL;
 static osMutexId_t illum_mutex;
 static const osMutexAttr_t illum_mutex_attributes = {
   .name = "illum_mutex",
@@ -21,6 +20,7 @@ static const osMutexAttr_t illum_mutex_attributes = {
 
 static illum_safelight_t illum_safelight = ILLUM_SAFELIGHT_HOME;
 static bool illum_blackout = false;
+static bool illum_screenshot_mode = false;
 
 void illum_controller_init()
 {
@@ -100,28 +100,51 @@ bool illum_controller_is_blackout()
     return result;
 }
 
+void illum_controller_set_screenshot_mode(bool enabled)
+{
+    osMutexAcquire(illum_mutex, portMAX_DELAY);
+    illum_screenshot_mode = enabled;
+    osMutexRelease(illum_mutex);
+}
+
+bool illum_controller_get_screenshot_mode()
+{
+    bool result;
+    osMutexAcquire(illum_mutex, portMAX_DELAY);
+    result = illum_screenshot_mode;
+    osMutexRelease(illum_mutex);
+    return result;
+}
+
 void illum_controller_keypad_blackout_callback(bool enabled, void *user_data)
 {
     ESP_LOGD(TAG, "illum_controller_keypad_blackout_callback: %d", enabled);
 
     osMutexAcquire(illum_mutex, portMAX_DELAY);
 
-    if (illum_blackout != enabled) {
-        ESP_LOGD(TAG, "blackout_state: %d", enabled);
-        illum_blackout = enabled;
-    }
-    illum_controller_safelight_state(illum_safelight);
-
-    if (enabled) {
-        display_enable(false);
+    if (!illum_blackout && illum_screenshot_mode) {
+        if (enabled) {
+            ESP_LOGD(TAG, "Triggering display screenshot");
+            display_save_screenshot();
+        }
     } else {
-        display_enable(true);
-    }
+        if (illum_blackout != enabled) {
+            ESP_LOGD(TAG, "blackout_state: %d", enabled);
+            illum_blackout = enabled;
+        }
+        illum_controller_safelight_state(illum_safelight);
 
-    if (enabled) {
-        led_set_brightness(0);
-    } else {
-        led_set_brightness(settings_get_led_brightness());
+        if (enabled) {
+            display_enable(false);
+        } else {
+            display_enable(true);
+        }
+
+        if (enabled) {
+            led_set_brightness(0);
+        } else {
+            led_set_brightness(settings_get_led_brightness());
+        }
     }
 
     osMutexRelease(illum_mutex);

@@ -3,8 +3,10 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include <cmsis_os.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <esp_log.h>
+#include <ff.h>
 
 #include "u8g2_stm32_hal.h"
 #include "u8g2.h"
@@ -144,6 +146,54 @@ void display_set_brightness(uint8_t value)
 uint8_t display_get_brightness()
 {
     return display_brightness;
+}
+
+static FIL *screenshot_fp = NULL;
+static void display_save_screenshot_callback(const char *s)
+{
+    if (screenshot_fp) {
+        FRESULT res = f_puts(s, screenshot_fp);
+        if (res < 0) {
+            ESP_LOGE(TAG, "Error writing screenshot data to file: %d", res);
+            screenshot_fp = NULL;
+        }
+    }
+}
+
+void display_save_screenshot()
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+    static uint16_t image_index = 1;
+
+    FRESULT res;
+    FIL fp;
+    bool file_open = false;
+    char filename[32];
+
+    do {
+        memset(&fp, 0, sizeof(FIL));
+        sprintf(filename, "img-%04d.xbm", image_index % 10000);
+
+        res = f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
+        if (res != FR_OK) {
+            ESP_LOGE(TAG, "Error opening screenshot file: %d", res);
+            break;
+        }
+        file_open = true;
+
+        screenshot_fp = &fp;
+        u8g2_WriteBufferXBM(&u8g2, display_save_screenshot_callback);
+        screenshot_fp = NULL;
+
+        ESP_LOGD(TAG, "Screenshot written to file: %s", filename);
+        image_index++;
+    } while (0);
+
+    if (file_open) {
+        f_close(&fp);
+    }
+
+    osMutexRelease(display_mutex);
 }
 
 void display_draw_test_pattern(bool mode)

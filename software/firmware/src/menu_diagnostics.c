@@ -16,6 +16,7 @@
 #include "relay.h"
 #include "tcs3472.h"
 #include "settings.h"
+#include "illum_controller.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
@@ -24,6 +25,7 @@ static menu_result_t diagnostics_led();
 static menu_result_t diagnostics_buzzer();
 static menu_result_t diagnostics_relay();
 static menu_result_t diagnostics_meter_probe();
+static menu_result_t diagnostics_screenshot_mode();
 
 static const char *TAG = "menu_diagnostics";
 
@@ -39,7 +41,8 @@ menu_result_t menu_diagnostics()
                 "LED Test\n"
                 "Buzzer Test\n"
                 "Relay Test\n"
-                "Meter Probe Test");
+                "Meter Probe Test\n"
+                "Screenshot Mode");
 
         if (option == 1) {
             menu_result = diagnostics_keypad();
@@ -51,6 +54,8 @@ menu_result_t menu_diagnostics()
             menu_result = diagnostics_relay();
         } else if (option == 5) {
             menu_result = diagnostics_meter_probe();
+        } else if (option == 6) {
+            menu_result = diagnostics_screenshot_mode();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -614,4 +619,38 @@ menu_result_t diagnostics_meter_probe()
     relay_enlarger_enable(enlarger_enabled);
 
     return MENU_OK;
+}
+
+menu_result_t diagnostics_screenshot_mode()
+{
+    menu_result_t menu_result = MENU_OK;
+    char buf[128];
+
+    for (;;) {
+        if (illum_controller_get_screenshot_mode()) {
+            sprintf(buf, "Enabled\nBlackout takes a screenshot\n");
+        } else {
+            sprintf(buf, "Disabled\nBlackout behaves normally\n");
+        }
+
+        uint8_t option = display_message(
+            "Screenshot Mode\n",
+            NULL, buf,
+            " Enable \n Disable ");
+
+        if (option == 1) {
+            illum_controller_set_screenshot_mode(true);
+            break;
+        } else if (option == 2) {
+            illum_controller_set_screenshot_mode(false);
+            break;
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        } else if (option == 0) {
+            break;
+        }
+    }
+
+    return menu_result;
 }
