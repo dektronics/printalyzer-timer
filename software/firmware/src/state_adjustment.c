@@ -22,11 +22,13 @@ typedef struct {
     uint8_t working_index;
     exposure_burn_dodge_t working_value;
     uint8_t stop_inc_den;
+    bool from_list;
     bool value_accepted;
 } state_edit_adjustment_t;
 
 typedef struct {
     state_t base;
+    uint8_t starting_index;
 } state_list_adjustments_t;
 
 static void state_edit_adjustment_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
@@ -68,9 +70,12 @@ void state_edit_adjustment_entry(state_t *state_base, state_controller_t *contro
 
     state->stop_inc_den = exposure_adj_increment_get_denominator(exposure_state);
 
-    if (param < EXPOSURE_BURN_DODGE_MAX) {
-        state->working_index = param;
-        memcpy(&state->working_value, &(exposure_state->burn_dodge_entry[param]), sizeof(exposure_burn_dodge_t));
+    uint32_t param_index = param & 0x7FFFFFFF;
+    bool param_from_list = (param & 0x80000000) != 0;
+
+    if (param_index < EXPOSURE_BURN_DODGE_MAX) {
+        state->working_index = param_index;
+        memcpy(&state->working_value, &(exposure_state->burn_dodge_entry[param_index]), sizeof(exposure_burn_dodge_t));
     } else {
         state->working_index = UINT8_MAX;
         memset(&state->working_value, 0, sizeof(exposure_burn_dodge_t));
@@ -81,6 +86,7 @@ void state_edit_adjustment_entry(state_t *state_base, state_controller_t *contro
         state->working_value.contrast_grade = CONTRAST_GRADE_MAX;
     }
 
+    state->from_list = (prev_state == STATE_LIST_ADJUSTMENTS) || param_from_list;
     state->value_accepted = false;
 }
 
@@ -199,7 +205,11 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
             if (state->working_value.numerator != 0) {
                 state->value_accepted = true;
                 if (state->working_index + 1 < EXPOSURE_BURN_DODGE_MAX) {
-                    state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, state->working_index + 1);
+                    uint32_t param = state->working_index + 1;
+                    if (state->from_list) {
+                        param |= 0x80000000;
+                    }
+                    state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, param);
                 } else {
                     state_controller_set_next_state(controller, STATE_HOME, 0);
                 }
@@ -207,7 +217,11 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_MENU)) {
             if (state->working_value.numerator != 0) {
                 state->value_accepted = true;
-                state_controller_set_next_state(controller, STATE_HOME, 0);
+                if (state->from_list) {
+                    state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, state->working_index);
+                } else {
+                    state_controller_set_next_state(controller, STATE_HOME, 0);
+                }
             }
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
             state->value_accepted = false;
@@ -248,6 +262,7 @@ state_t *state_list_adjustments()
 
 void state_list_adjustments_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
+    state_list_adjustments_t *state = (state_list_adjustments_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
     ESP_LOGI(TAG, "List Exposure Adjustments");
@@ -259,6 +274,7 @@ void state_list_adjustments_entry(state_t *state_base, state_controller_t *contr
             exposure_state->burn_dodge_entry[i].denominator,
             contrast_grade_str(exposure_state->burn_dodge_entry[i].contrast_grade));
     }
+    state->starting_index = param;
 }
 
 int state_list_adjustments_append_entry(char *buf, exposure_burn_dodge_t *entry, int index)
@@ -285,6 +301,7 @@ int state_list_adjustments_append_entry(char *buf, exposure_burn_dodge_t *entry,
 
 bool state_list_adjustments_process(state_t *state_base, state_controller_t *controller)
 {
+    state_list_adjustments_t *state = (state_list_adjustments_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     char buf[512];
     int offset = 0;
@@ -303,7 +320,15 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
         }
     }
 
-    uint16_t result = display_selection_list_params("Burn/Dodge Adjustments", 1, buf,
+    uint8_t starting_pos;
+    if (state->starting_index < exposure_state->burn_dodge_count) {
+        starting_pos = state->starting_index + 1;
+    } else {
+        starting_pos = 1;
+    }
+
+    uint16_t result = display_selection_list_params("Burn/Dodge Adjustments",
+        starting_pos, buf,
         DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
     uint8_t option = (uint8_t)(result & 0x00FF);
     keypad_key_t option_key = (uint8_t)((result & 0xFF00) >> 8);
