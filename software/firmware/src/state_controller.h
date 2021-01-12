@@ -23,9 +23,9 @@ typedef struct __state_controller_t state_controller_t;
 
 typedef struct __state_t state_t;
 
-typedef void (*state_entry_func_t)(state_t *state, state_controller_t *controller, uint32_t param);
+typedef void (*state_entry_func_t)(state_t *state, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 typedef bool (*state_process_func_t)(state_t *state, state_controller_t *controller);
-typedef void (*state_exit_func_t)(state_t *state, state_controller_t *controller);
+typedef void (*state_exit_func_t)(state_t *state, state_controller_t *controller, state_identifier_t next_state);
 
 struct __state_t {
     /**
@@ -52,7 +52,6 @@ void state_controller_init();
 void state_controller_loop();
 
 void state_controller_set_next_state(state_controller_t *controller, state_identifier_t next_state, uint32_t param);
-state_identifier_t state_controller_get_next_state(state_controller_t *controller);
 exposure_state_t *state_controller_get_exposure_state(state_controller_t *controller);
 void state_controller_start_focus_timeout(state_controller_t *controller);
 void state_controller_stop_focus_timeout(state_controller_t *controller);

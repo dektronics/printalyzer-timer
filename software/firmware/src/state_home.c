@@ -43,9 +43,9 @@ typedef struct {
     bool value_accepted;
 } state_home_adjust_absolute_t;
 
-static void state_home_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
-static void state_home_exit(state_t *state_base, state_controller_t *controller);
+static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_t state_home_data = {
     .base = {
         .state_entry = state_home_entry,
@@ -68,9 +68,9 @@ static state_home_change_time_increment_t state_home_change_time_increment_data 
     }
 };
 
-static void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *controller);
-static void state_home_adjust_fine_exit(state_t *state_base, state_controller_t *controller);
+static void state_home_adjust_fine_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_adjust_fine_t state_home_adjust_fine_data = {
     .base = {
         .state_entry = state_home_adjust_fine_entry,
@@ -83,9 +83,9 @@ static state_home_adjust_fine_t state_home_adjust_fine_data = {
     .value_accepted = false
 };
 
-static void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t *controller);
-static void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *controller);
+static void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_adjust_absolute_t state_home_adjust_absolute_data = {
     .base = {
         .state_entry = state_home_adjust_absolute_entry,
@@ -101,7 +101,7 @@ state_t *state_home()
     return (state_t *)&state_home_data;
 }
 
-void state_home_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_t *state = (state_home_t *)state_base;
 
@@ -224,9 +224,8 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     }
 }
 
-void state_home_exit(state_t *state_base, state_controller_t *controller)
+void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
-    state_identifier_t next_state = state_controller_get_next_state(controller);
     if (next_state != STATE_HOME_CHANGE_TIME_INCREMENT
         && next_state != STATE_HOME_ADJUST_FINE
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
@@ -275,7 +274,7 @@ state_t *state_home_adjust_fine()
     return (state_t *)&state_home_adjust_fine_data;
 }
 
-void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -316,7 +315,7 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
     }
 }
 
-void state_home_adjust_fine_exit(state_t *state_base, state_controller_t *controller)
+void state_home_adjust_fine_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -331,7 +330,7 @@ state_t *state_home_adjust_absolute()
     return (state_t *)&state_home_adjust_absolute_data;
 }
 
-void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -409,7 +408,7 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
     }
 }
 
-void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *controller)
+void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);

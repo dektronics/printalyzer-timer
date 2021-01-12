@@ -31,10 +31,10 @@ typedef struct {
 
 static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
 
-static void state_test_strip_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_test_strip_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller);
 static bool state_test_strip_process(state_t *state_base, state_controller_t *controller);
-static void state_test_strip_exit(state_t *state_base, state_controller_t *controller);
+static void state_test_strip_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_test_strip_t state_test_strip_data = {
     .base = {
         .state_entry = state_test_strip_entry,
@@ -48,7 +48,7 @@ state_t *state_test_strip()
     return (state_t *)&state_test_strip_data;
 }
 
-void state_test_strip_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_test_strip_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
 
@@ -227,7 +227,7 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
     return ret == HAL_OK;
 }
 
-void state_test_strip_exit(state_t *state_base, state_controller_t *controller)
+void state_test_strip_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
 

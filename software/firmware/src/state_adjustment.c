@@ -29,9 +29,9 @@ typedef struct {
     state_t base;
 } state_list_adjustments_t;
 
-static void state_edit_adjustment_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_edit_adjustment_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_edit_adjustment_process(state_t *state_base, state_controller_t *controller);
-static void state_edit_adjustment_exit(state_t *state_base, state_controller_t *controller);
+static void state_edit_adjustment_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_edit_adjustment_t state_edit_adjustment_data = {
     .base = {
         .state_entry = state_edit_adjustment_entry,
@@ -40,9 +40,9 @@ static state_edit_adjustment_t state_edit_adjustment_data = {
     }
 };
 
-static void state_list_adjustments_entry(state_t *state_base, state_controller_t *controller, uint32_t param);
+static void state_list_adjustments_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_list_adjustments_process(state_t *state_base, state_controller_t *controller);
-static void state_list_adjustments_exit(state_t *state_base, state_controller_t *controller);
+static void state_list_adjustments_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 
 static int state_list_adjustments_append_entry(char *buf, exposure_burn_dodge_t *entry, int index);
 static bool state_list_adjustments_delete_prompt(exposure_state_t *exposure_state, int index);
@@ -60,7 +60,7 @@ state_t *state_edit_adjustment()
     return (state_t *)&state_edit_adjustment_data;
 }
 
-void state_edit_adjustment_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_edit_adjustment_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_edit_adjustment_t *state = (state_edit_adjustment_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -218,7 +218,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
     return true;
 }
 
-void state_edit_adjustment_exit(state_t *state_base, state_controller_t *controller)
+void state_edit_adjustment_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     state_edit_adjustment_t *state = (state_edit_adjustment_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -246,7 +246,7 @@ state_t *state_list_adjustments()
     return (state_t *)&state_list_adjustments_data;
 }
 
-void state_list_adjustments_entry(state_t *state_base, state_controller_t *controller, uint32_t param)
+void state_list_adjustments_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
@@ -367,7 +367,7 @@ bool state_list_adjustments_delete_prompt(exposure_state_t *exposure_state, int 
     }
 }
 
-void state_list_adjustments_exit(state_t *state_base, state_controller_t *controller)
+void state_list_adjustments_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
 
 }

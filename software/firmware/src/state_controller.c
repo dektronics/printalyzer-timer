@@ -76,6 +76,7 @@ void state_controller_loop()
             ESP_LOGI(TAG, "State transition: %d[%ld] -> %d[%ld]",
                 state_controller.current_state, state_controller.current_state_param,
                 state_controller.next_state, state_controller.next_state_param);
+            state_identifier_t prev_state = state_controller.current_state;
             state_controller.current_state = state_controller.next_state;
             state_controller.current_state_param = state_controller.next_state_param;
 
@@ -87,7 +88,7 @@ void state_controller_loop()
 
             // Call the state entry function
             if (state && state->state_entry) {
-                state->state_entry(state, &state_controller, state_controller.current_state_param);
+                state->state_entry(state, &state_controller, prev_state, state_controller.current_state_param);
             }
         }
 
@@ -116,7 +117,7 @@ void state_controller_loop()
         if (state_controller.next_state != state_controller.current_state
             || state_controller.next_state_param != state_controller.current_state_param) {
             if (state && state->state_exit) {
-                state->state_exit(state, &state_controller);
+                state->state_exit(state, &state_controller, state_controller.next_state);
             }
         }
     }
@@ -127,12 +128,6 @@ void state_controller_set_next_state(state_controller_t *controller, state_ident
     if (!controller) { return; }
     controller->next_state = next_state;
     controller->next_state_param = param;
-}
-
-state_identifier_t state_controller_get_next_state(state_controller_t *controller)
-{
-    if (!controller) { return STATE_MAX; }
-    return controller->next_state;
 }
 
 exposure_state_t *state_controller_get_exposure_state(state_controller_t *controller)
