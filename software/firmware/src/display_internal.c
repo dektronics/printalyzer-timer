@@ -111,16 +111,15 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
 
     /* event loop */
     for(;;) {
-        u8g2_FirstPage(u8g2);
-        do {
-            /* render */
-            yy = y;
-            yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
-            xx = x;
-            xx += u8g2_DrawUTF8(u8g2, xx, yy, prefix);
-            xx += u8g2_DrawUTF8(u8g2, xx, yy, u8x8_u8toa(local_value, digits));
-            u8g2_DrawUTF8(u8g2, xx, yy, postfix);
-        } while(u8g2_NextPage(u8g2));
+        /* render */
+        u8g2_ClearBuffer(u8g2);
+        yy = y;
+        yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
+        xx = x;
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, prefix);
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, u8x8_u8toa(local_value, digits));
+        u8g2_DrawUTF8(u8g2, xx, yy, postfix);
+        u8g2_SendBuffer(u8g2);
 
         for(;;) {
             event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
@@ -196,25 +195,22 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
     if (u8sl.current_pos >= u8sl.total) {
         u8sl.current_pos = u8sl.total - 1;
     }
-    if (u8sl.first_pos+u8sl.visible <= u8sl.current_pos) {
+    if (u8sl.first_pos + u8sl.visible <= u8sl.current_pos) {
         u8sl.first_pos = u8sl.current_pos-u8sl.visible + 1;
     }
 
     u8g2_SetFontPosBaseline(u8g2);
 
     for(;;) {
-        u8g2_FirstPage(u8g2);
-        do {
-            yy = u8g2_GetAscent(u8g2);
-            if (title_lines > 0) {
-                yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
-
-                u8g2_DrawHLine(u8g2, 0, yy-line_height- u8g2_GetDescent(u8g2) + 1, u8g2_GetDisplayWidth(u8g2));
-
-                yy += 3;
-            }
-            u8g2_DrawSelectionList(u8g2, &u8sl, yy, sl);
-        } while (u8g2_NextPage(u8g2));
+        u8g2_ClearBuffer(u8g2);
+        yy = u8g2_GetAscent(u8g2);
+        if (title_lines > 0) {
+            yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
+            u8g2_DrawHLine(u8g2, 0, yy - line_height - u8g2_GetDescent(u8g2) + 1, u8g2_GetDisplayWidth(u8g2));
+            yy += 3;
+        }
+        u8g2_DrawSelectionList(u8g2, &u8sl, yy, sl);
+        u8g2_SendBuffer(u8g2);
 
         for(;;) {
             uint8_t event_action;
