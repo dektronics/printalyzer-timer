@@ -19,8 +19,6 @@
 
 static const char *TAG = "display";
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
 static u8g2_t u8g2;
 
 static osMutexId_t display_mutex;
@@ -32,10 +30,7 @@ static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
 
 static void display_set_freq(uint8_t value);
-static void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive);
-static void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den);
-static void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
-static void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
+
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
@@ -214,79 +209,6 @@ void display_draw_logo()
     u8g2_SendBuffer(&u8g2);
 
     osMutexRelease(display_mutex);
-}
-
-/**
- * Draw a +/- sign on a 30x56 pixel digit grid
- */
-void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive)
-{
-    u8g2_DrawLine(&u8g2, x + 4, y + 26, x + 24, y + 26);
-    u8g2_DrawLine(&u8g2, x + 3, y + 27, x + 25, y + 27);
-    u8g2_DrawLine(&u8g2, x + 2, y + 28, x + 26, y + 28);
-    u8g2_DrawLine(&u8g2, x + 3, y + 29, x + 25, y + 29);
-    u8g2_DrawLine(&u8g2, x + 4, y + 30, x + 24, y + 30);
-
-    if (positive) {
-        u8g2_DrawLine(&u8g2, x + 12, y + 18, x + 12, y + 38);
-        u8g2_DrawLine(&u8g2, x + 13, y + 17, x + 13, y + 39);
-        u8g2_DrawLine(&u8g2, x + 14, y + 16, x + 14, y + 40);
-        u8g2_DrawLine(&u8g2, x + 15, y + 17, x + 15, y + 39);
-        u8g2_DrawLine(&u8g2, x + 16, y + 18, x + 16, y + 38);
-    }
-}
-
-void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den)
-{
-    uint8_t max_value = MAX(num, den);
-
-    // Draw the numerator
-    display_draw_tdigit_fraction_part(x, y, num);
-
-    // Draw the dividing line
-    display_draw_tdigit_fraction_divider(x, y + 27, max_value);
-
-    // Draw the denominator
-    display_draw_tdigit_fraction_part(x, y + 31, den);
-}
-
-void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value)
-{
-    if (value >= 20) {
-        // NN/DD (1/20 - 1/99)
-        display_draw_tdigit(&u8g2, x + 5, y, value % 100 / 10);
-        display_draw_tdigit(&u8g2, x + 22, y, value % 10);
-    } else if (value >= 10) {
-        // NN/DD (1/10 - 1/19)
-        display_draw_tdigit(&u8g2, x + 0, y, value % 100 / 10);
-        display_draw_tdigit(&u8g2, x + 17, y, value % 10);
-    } else if (value == 0 || value > 1) {
-        // N/D
-        display_draw_tdigit(&u8g2, x + 13, y, value);
-    } else {
-        // N/D (1/1)
-        display_draw_tdigit(&u8g2, x + 7, y, value);
-    }
-}
-
-void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value)
-{
-    if (max_value >= 20) {
-        // N/DD (1/20 - 1/99)
-        u8g2_DrawLine(&u8g2, x + 2,  y + 0, x + 37, y + 0);
-        u8g2_DrawLine(&u8g2, x + 1,  y + 1, x + 38, y + 1);
-        u8g2_DrawLine(&u8g2, x + 2,  y + 2, x + 37, y + 2);
-    } else if (max_value >= 10) {
-        // N/DD (1/10 - 1/19)
-        u8g2_DrawLine(&u8g2, x + 8,  y + 0, x + 32, y + 0);
-        u8g2_DrawLine(&u8g2, x + 7,  y + 1, x + 33, y + 1);
-        u8g2_DrawLine(&u8g2, x + 8,  y + 2, x + 32, y + 2);
-    } else if (max_value == 0 || max_value > 1) {
-        // N/D
-        u8g2_DrawLine(&u8g2, x + 10, y + 0, x + 28, y + 0);
-        u8g2_DrawLine(&u8g2, x + 9,  y + 1, x + 29, y + 1);
-        u8g2_DrawLine(&u8g2, x + 10, y + 2, x + 28, y + 2);
-    }
 }
 
 void display_draw_tone_graph(uint32_t tone_graph)
@@ -674,7 +596,7 @@ void display_draw_stop_increment(uint8_t increment_den)
     if (increment_den == 1) {
         display_draw_digit(&u8g2, x, y, 1);
     } else {
-        display_draw_tdigit_fraction(x, y, 1, increment_den);
+        display_draw_tdigit_fraction(&u8g2, x, y, 1, increment_den);
     }
 
     u8g2_SetFontDirection(&u8g2, 0);
@@ -717,7 +639,7 @@ void display_draw_exposure_adj(int value)
     }
 
     if (value != 0) {
-        display_draw_sign(x, y, value > 0);
+        display_draw_digit_sign(&u8g2, x, y, value > 0);
     }
 
     u8g2_SendBuffer(&u8g2);
@@ -1137,7 +1059,7 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
             if (adj_whole == 0) {
                 x -= 36;
             }
-            display_draw_tdigit_fraction(x, y, adj_num, elements->adj_den);
+            display_draw_tdigit_fraction(&u8g2, x, y, adj_num, elements->adj_den);
         }
         x -= 36;
 
@@ -1148,7 +1070,7 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
         }
 
         // Draw +/- sign part
-        display_draw_sign(x, y, num_positive);
+        display_draw_digit_sign(&u8g2, x, y, num_positive);
     }
 
     u8g2_SendBuffer(&u8g2);

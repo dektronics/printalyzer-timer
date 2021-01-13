@@ -3,6 +3,8 @@
 #include "display.h"
 #include "u8g2.h"
 
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
 typedef enum {
     seg_a = 0x01,
     seg_b = 0x02,
@@ -12,6 +14,9 @@ typedef enum {
     seg_f = 0x20,
     seg_g = 0x40
 } display_seg_t;
+
+static void display_draw_tdigit_fraction_part(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
+static void display_draw_tdigit_fraction_divider(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
 
 typedef void (*display_draw_segment_func)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
 
@@ -27,6 +32,23 @@ void display_draw_digit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digi
     display_draw_digit_impl(u8g2, x, y, digit, display_draw_segment);
 }
 
+void display_draw_digit_sign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool positive)
+{
+    u8g2_DrawLine(u8g2, x + 4, y + 26, x + 24, y + 26);
+    u8g2_DrawLine(u8g2, x + 3, y + 27, x + 25, y + 27);
+    u8g2_DrawLine(u8g2, x + 2, y + 28, x + 26, y + 28);
+    u8g2_DrawLine(u8g2, x + 3, y + 29, x + 25, y + 29);
+    u8g2_DrawLine(u8g2, x + 4, y + 30, x + 24, y + 30);
+
+    if (positive) {
+        u8g2_DrawLine(u8g2, x + 12, y + 18, x + 12, y + 38);
+        u8g2_DrawLine(u8g2, x + 13, y + 17, x + 13, y + 39);
+        u8g2_DrawLine(u8g2, x + 14, y + 16, x + 14, y + 40);
+        u8g2_DrawLine(u8g2, x + 15, y + 17, x + 15, y + 39);
+        u8g2_DrawLine(u8g2, x + 16, y + 18, x + 16, y + 38);
+    }
+}
+
 void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
     display_draw_digit_impl(u8g2, x, y, digit, display_draw_msegment);
@@ -35,6 +57,59 @@ void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t dig
 void display_draw_tdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
     display_draw_digit_impl(u8g2, x, y, digit, display_draw_tsegment);
+}
+
+void display_draw_tdigit_fraction(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den)
+{
+    uint8_t max_value = MAX(num, den);
+
+    // Draw the numerator
+    display_draw_tdigit_fraction_part(u8g2, x, y, num);
+
+    // Draw the dividing line
+    display_draw_tdigit_fraction_divider(u8g2, x, y + 27, max_value);
+
+    // Draw the denominator
+    display_draw_tdigit_fraction_part(u8g2, x, y + 31, den);
+}
+
+void display_draw_tdigit_fraction_part(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t value)
+{
+    if (value >= 20) {
+        // NN/DD (1/20 - 1/99)
+        display_draw_tdigit(u8g2, x + 5, y, value % 100 / 10);
+        display_draw_tdigit(u8g2, x + 22, y, value % 10);
+    } else if (value >= 10) {
+        // NN/DD (1/10 - 1/19)
+        display_draw_tdigit(u8g2, x + 0, y, value % 100 / 10);
+        display_draw_tdigit(u8g2, x + 17, y, value % 10);
+    } else if (value == 0 || value > 1) {
+        // N/D
+        display_draw_tdigit(u8g2, x + 13, y, value);
+    } else {
+        // N/D (1/1)
+        display_draw_tdigit(u8g2, x + 7, y, value);
+    }
+}
+
+void display_draw_tdigit_fraction_divider(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value)
+{
+    if (max_value >= 20) {
+        // N/DD (1/20 - 1/99)
+        u8g2_DrawLine(u8g2, x + 2,  y + 0, x + 37, y + 0);
+        u8g2_DrawLine(u8g2, x + 1,  y + 1, x + 38, y + 1);
+        u8g2_DrawLine(u8g2, x + 2,  y + 2, x + 37, y + 2);
+    } else if (max_value >= 10) {
+        // N/DD (1/10 - 1/19)
+        u8g2_DrawLine(u8g2, x + 8,  y + 0, x + 32, y + 0);
+        u8g2_DrawLine(u8g2, x + 7,  y + 1, x + 33, y + 1);
+        u8g2_DrawLine(u8g2, x + 8,  y + 2, x + 32, y + 2);
+    } else if (max_value == 0 || max_value > 1) {
+        // N/D
+        u8g2_DrawLine(u8g2, x + 10, y + 0, x + 28, y + 0);
+        u8g2_DrawLine(u8g2, x + 9,  y + 1, x + 29, y + 1);
+        u8g2_DrawLine(u8g2, x + 10, y + 2, x + 28, y + 2);
+    }
 }
 
 void display_draw_vtdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
