@@ -11,6 +11,7 @@
 #include "u8g2_stm32_hal.h"
 #include "u8g2.h"
 #include "display_assets.h"
+#include "display_segments.h"
 #include "display_internal.h"
 #include "keypad.h"
 
@@ -19,16 +20,6 @@
 static const char *TAG = "display";
 
 #define MAX(a,b) (((a)>(b))?(a):(b))
-
-typedef enum {
-    seg_a,
-    seg_b,
-    seg_c,
-    seg_d,
-    seg_e,
-    seg_f,
-    seg_g
-} display_seg_t;
 
 static u8g2_t u8g2;
 
@@ -41,15 +32,7 @@ static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
 
 static void display_set_freq(uint8_t value);
-static void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
-static void display_draw_msegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
-static void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
-static void display_draw_vtsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment);
-static void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive);
-static void display_draw_mdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
-static void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
-static void display_draw_vtdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 static void display_draw_tdigit_fraction(u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den);
 static void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
 static void display_draw_tdigit_fraction_divider(u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
@@ -234,278 +217,6 @@ void display_draw_logo()
 }
 
 /**
- * Draw a segment of a digit on a 30x56 pixel grid
- */
-void display_draw_segment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
-{
-    switch(segment) {
-    case seg_a:
-        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 28, y + 0);
-        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 27, y + 1);
-        u8g2_DrawLine(&u8g2, x + 3, y + 2, x + 26, y + 2);
-        u8g2_DrawLine(&u8g2, x + 4, y + 3, x + 25, y + 3);
-        u8g2_DrawLine(&u8g2, x + 5, y + 4, x + 24, y + 4);
-        break;
-    case seg_b:
-        u8g2_DrawLine(&u8g2, x + 25, y + 5, x + 25, y + 25);
-        u8g2_DrawLine(&u8g2, x + 26, y + 4, x + 26, y + 26);
-        u8g2_DrawLine(&u8g2, x + 27, y + 3, x + 27, y + 27);
-        u8g2_DrawLine(&u8g2, x + 28, y + 2, x + 28, y + 26);
-        u8g2_DrawLine(&u8g2, x + 29, y + 1, x + 29, y + 25);
-        break;
-    case seg_c:
-        u8g2_DrawLine(&u8g2, x + 25, y + 31, x + 25, y + 50);
-        u8g2_DrawLine(&u8g2, x + 26, y + 30, x + 26, y + 51);
-        u8g2_DrawLine(&u8g2, x + 27, y + 29, x + 27, y + 52);
-        u8g2_DrawLine(&u8g2, x + 28, y + 30, x + 28, y + 53);
-        u8g2_DrawLine(&u8g2, x + 29, y + 31, x + 29, y + 54);
-        break;
-    case seg_d:
-        u8g2_DrawLine(&u8g2, x + 5, y + 51, x + 24, y + 51);
-        u8g2_DrawLine(&u8g2, x + 4, y + 52, x + 25, y + 52);
-        u8g2_DrawLine(&u8g2, x + 3, y + 53, x + 26, y + 53);
-        u8g2_DrawLine(&u8g2, x + 2, y + 54, x + 27, y + 54);
-        u8g2_DrawLine(&u8g2, x + 1, y + 55, x + 28, y + 55);
-        break;
-    case seg_e:
-        u8g2_DrawLine(&u8g2, x + 0, y + 31, x + 0, y + 54);
-        u8g2_DrawLine(&u8g2, x + 1, y + 30, x + 1, y + 53);
-        u8g2_DrawLine(&u8g2, x + 2, y + 29, x + 2, y + 52);
-        u8g2_DrawLine(&u8g2, x + 3, y + 30, x + 3, y + 51);
-        u8g2_DrawLine(&u8g2, x + 4, y + 31, x + 4, y + 50);
-        break;
-    case seg_f:
-        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 25);
-        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 26);
-        u8g2_DrawLine(&u8g2, x + 2, y + 3, x + 2, y + 27);
-        u8g2_DrawLine(&u8g2, x + 3, y + 4, x + 3, y + 26);
-        u8g2_DrawLine(&u8g2, x + 4, y + 5, x + 4, y + 25);
-        break;
-    case seg_g:
-        u8g2_DrawLine(&u8g2, x + 5, y + 26, x + 24, y + 26);
-        u8g2_DrawLine(&u8g2, x + 4, y + 27, x + 25, y + 27);
-        u8g2_DrawLine(&u8g2, x + 3, y + 28, x + 26, y + 28);
-        u8g2_DrawLine(&u8g2, x + 4, y + 29, x + 25, y + 29);
-        u8g2_DrawLine(&u8g2, x + 5, y + 30, x + 24, y + 30);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a segment of a digit on a 18x37 pixel grid
- */
-void display_draw_msegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
-{
-    switch(segment) {
-    case seg_a:
-        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 16, y + 0);
-        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 15, y + 1);
-        u8g2_DrawLine(&u8g2, x + 3, y + 2, x + 14, y + 2);
-        break;
-    case seg_b:
-        u8g2_DrawLine(&u8g2, x + 15, y + 3, x + 15, y + 16);
-        u8g2_DrawLine(&u8g2, x + 16, y + 2, x + 16, y + 17);
-        u8g2_DrawLine(&u8g2, x + 17, y + 1, x + 17, y + 16);
-        break;
-    case seg_c:
-        u8g2_DrawLine(&u8g2, x + 15, y + 20, x + 15, y + 33);
-        u8g2_DrawLine(&u8g2, x + 16, y + 19, x + 16, y + 34);
-        u8g2_DrawLine(&u8g2, x + 17, y + 20, x + 17, y + 35);
-        break;
-    case seg_d:
-        u8g2_DrawLine(&u8g2, x + 3, y + 34, x + 14, y + 34);
-        u8g2_DrawLine(&u8g2, x + 2, y + 35, x + 15, y + 35);
-        u8g2_DrawLine(&u8g2, x + 1, y + 36, x + 16, y + 36);
-        break;
-    case seg_e:
-        u8g2_DrawLine(&u8g2, x + 0, y + 20, x + 0, y + 35);
-        u8g2_DrawLine(&u8g2, x + 1, y + 19, x + 1, y + 34);
-        u8g2_DrawLine(&u8g2, x + 2, y + 20, x + 2, y + 33);
-        break;
-    case seg_f:
-        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 16);
-        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 17);
-        u8g2_DrawLine(&u8g2, x + 2, y + 3, x + 2, y + 16);
-        break;
-    case seg_g:
-        u8g2_DrawLine(&u8g2, x + 3, y + 17, x + 14, y + 17);
-        u8g2_DrawLine(&u8g2, x + 2, y + 18, x + 15, y + 18);
-        u8g2_DrawLine(&u8g2, x + 3, y + 19, x + 14, y + 19);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a segment of a digit on a 14x25 pixel grid
- */
-void display_draw_tsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
-{
-    switch(segment) {
-    case seg_a:
-        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 12, y + 0);
-        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 11, y + 1);
-        u8g2_DrawLine(&u8g2, x + 3, y + 2, x + 10, y + 2);
-        break;
-    case seg_b:
-        u8g2_DrawLine(&u8g2, x + 11, y + 3, x + 11, y + 10);
-        u8g2_DrawLine(&u8g2, x + 12, y + 2, x + 12, y + 11);
-        u8g2_DrawLine(&u8g2, x + 13, y + 1, x + 13, y + 10);
-        break;
-    case seg_c:
-        u8g2_DrawLine(&u8g2, x + 11, y + 14, x + 11, y + 21);
-        u8g2_DrawLine(&u8g2, x + 12, y + 13, x + 12, y + 22);
-        u8g2_DrawLine(&u8g2, x + 13, y + 14, x + 13, y + 23);
-        break;
-    case seg_d:
-        u8g2_DrawLine(&u8g2, x + 3, y + 22, x + 10, y + 22);
-        u8g2_DrawLine(&u8g2, x + 2, y + 23, x + 11, y + 23);
-        u8g2_DrawLine(&u8g2, x + 1, y + 24, x + 12, y + 24);
-        break;
-    case seg_e:
-        u8g2_DrawLine(&u8g2, x + 0, y + 14, x + 0, y + 23);
-        u8g2_DrawLine(&u8g2, x + 1, y + 13, x + 1, y + 22);
-        u8g2_DrawLine(&u8g2, x + 2, y + 14, x + 2, y + 21);
-        break;
-    case seg_f:
-        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 10);
-        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 11);
-        u8g2_DrawLine(&u8g2, x + 2, y + 3, x + 2, y + 10);
-        break;
-    case seg_g:
-        u8g2_DrawLine(&u8g2, x + 3, y + 11, x + 10, y + 11);
-        u8g2_DrawLine(&u8g2, x + 2, y + 12, x + 11, y + 12);
-        u8g2_DrawLine(&u8g2, x + 3, y + 13, x + 10, y + 13);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a segment of a digit on a 9x17 pixel grid
- */
-void display_draw_vtsegment(u8g2_uint_t x, u8g2_uint_t y, display_seg_t segment)
-{
-    switch(segment) {
-    case seg_a:
-        u8g2_DrawLine(&u8g2, x + 1, y + 0, x + 7, y + 0);
-        u8g2_DrawLine(&u8g2, x + 2, y + 1, x + 6, y + 1);
-        break;
-    case seg_b:
-        u8g2_DrawLine(&u8g2, x + 7, y + 2, x + 7, y + 6);
-        u8g2_DrawLine(&u8g2, x + 8, y + 1, x + 8, y + 7);
-        break;
-    case seg_c:
-        u8g2_DrawLine(&u8g2, x + 7, y + 10, x + 7, y + 14);
-        u8g2_DrawLine(&u8g2, x + 8, y + 9, x + 8, y + 15);
-        break;
-    case seg_d:
-        u8g2_DrawLine(&u8g2, x + 2, y + 15, x + 6, y + 15);
-        u8g2_DrawLine(&u8g2, x + 1, y + 16, x + 7, y + 16);
-        break;
-    case seg_e:
-        u8g2_DrawLine(&u8g2, x + 0, y + 9, x + 0, y + 15);
-        u8g2_DrawLine(&u8g2, x + 1, y + 10, x + 1, y + 14);
-        break;
-    case seg_f:
-        u8g2_DrawLine(&u8g2, x + 0, y + 1, x + 0, y + 7);
-        u8g2_DrawLine(&u8g2, x + 1, y + 2, x + 1, y + 6);
-        break;
-    case seg_g:
-        u8g2_DrawLine(&u8g2, x + 2, y + 7, x + 6, y + 7);
-        u8g2_DrawLine(&u8g2, x + 1, y + 8, x + 7, y + 8);
-        u8g2_DrawLine(&u8g2, x + 2, y + 9, x + 6, y + 9);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a 30x56 pixel digit
- */
-void display_draw_digit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
-{
-    switch(digit) {
-    case 0:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_e);
-        display_draw_segment(x, y, seg_f);
-        break;
-    case 1:
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        break;
-    case 2:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_e);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 3:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 4:
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_f);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 5:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_f);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 6:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_e);
-        display_draw_segment(x, y, seg_f);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 7:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        break;
-    case 8:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_e);
-        display_draw_segment(x, y, seg_f);
-        display_draw_segment(x, y, seg_g);
-        break;
-    case 9:
-        display_draw_segment(x, y, seg_a);
-        display_draw_segment(x, y, seg_b);
-        display_draw_segment(x, y, seg_c);
-        display_draw_segment(x, y, seg_d);
-        display_draw_segment(x, y, seg_f);
-        display_draw_segment(x, y, seg_g);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
  * Draw a +/- sign on a 30x56 pixel digit grid
  */
 void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive)
@@ -522,246 +233,6 @@ void display_draw_sign(u8g2_uint_t x, u8g2_uint_t y, bool positive)
         u8g2_DrawLine(&u8g2, x + 14, y + 16, x + 14, y + 40);
         u8g2_DrawLine(&u8g2, x + 15, y + 17, x + 15, y + 39);
         u8g2_DrawLine(&u8g2, x + 16, y + 18, x + 16, y + 38);
-    }
-}
-
-/**
- * Draw a 18x37 pixel digit
- */
-void display_draw_mdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
-{
-    switch(digit) {
-    case 0:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_e);
-        display_draw_msegment(x, y, seg_f);
-        break;
-    case 1:
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        break;
-    case 2:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_e);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 3:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 4:
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_f);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 5:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_f);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 6:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_e);
-        display_draw_msegment(x, y, seg_f);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 7:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        break;
-    case 8:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_e);
-        display_draw_msegment(x, y, seg_f);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    case 9:
-        display_draw_msegment(x, y, seg_a);
-        display_draw_msegment(x, y, seg_b);
-        display_draw_msegment(x, y, seg_c);
-        display_draw_msegment(x, y, seg_d);
-        display_draw_msegment(x, y, seg_f);
-        display_draw_msegment(x, y, seg_g);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a 14x25 pixel digit
- */
-void display_draw_tdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
-{
-    switch(digit) {
-    case 0:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_e);
-        display_draw_tsegment(x, y, seg_f);
-        break;
-    case 1:
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        break;
-    case 2:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_e);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 3:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 4:
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_f);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 5:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_f);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 6:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_e);
-        display_draw_tsegment(x, y, seg_f);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 7:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        break;
-    case 8:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_e);
-        display_draw_tsegment(x, y, seg_f);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    case 9:
-        display_draw_tsegment(x, y, seg_a);
-        display_draw_tsegment(x, y, seg_b);
-        display_draw_tsegment(x, y, seg_c);
-        display_draw_tsegment(x, y, seg_d);
-        display_draw_tsegment(x, y, seg_f);
-        display_draw_tsegment(x, y, seg_g);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Draw a 9x17 pixel digit
- */
-void display_draw_vtdigit(u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
-{
-    switch(digit) {
-    case 0:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_e);
-        display_draw_vtsegment(x, y, seg_f);
-        break;
-    case 1:
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        break;
-    case 2:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_e);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 3:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 4:
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_f);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 5:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_f);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 6:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_e);
-        display_draw_vtsegment(x, y, seg_f);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 7:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        break;
-    case 8:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_e);
-        display_draw_vtsegment(x, y, seg_f);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    case 9:
-        display_draw_vtsegment(x, y, seg_a);
-        display_draw_vtsegment(x, y, seg_b);
-        display_draw_vtsegment(x, y, seg_c);
-        display_draw_vtsegment(x, y, seg_d);
-        display_draw_vtsegment(x, y, seg_f);
-        display_draw_vtsegment(x, y, seg_g);
-        break;
-    default:
-        break;
     }
 }
 
@@ -783,18 +254,18 @@ void display_draw_tdigit_fraction_part(u8g2_uint_t x, u8g2_uint_t y, uint8_t val
 {
     if (value >= 20) {
         // NN/DD (1/20 - 1/99)
-        display_draw_tdigit(x + 5, y, value % 100 / 10);
-        display_draw_tdigit(x + 22, y, value % 10);
+        display_draw_tdigit(&u8g2, x + 5, y, value % 100 / 10);
+        display_draw_tdigit(&u8g2, x + 22, y, value % 10);
     } else if (value >= 10) {
         // NN/DD (1/10 - 1/19)
-        display_draw_tdigit(x + 0, y, value % 100 / 10);
-        display_draw_tdigit(x + 17, y, value % 10);
+        display_draw_tdigit(&u8g2, x + 0, y, value % 100 / 10);
+        display_draw_tdigit(&u8g2, x + 17, y, value % 10);
     } else if (value == 0 || value > 1) {
         // N/D
-        display_draw_tdigit(x + 13, y, value);
+        display_draw_tdigit(&u8g2, x + 13, y, value);
     } else {
         // N/D (1/1)
-        display_draw_tdigit(x + 7, y, value);
+        display_draw_tdigit(&u8g2, x + 7, y, value);
     }
 }
 
@@ -904,46 +375,46 @@ void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t g
 
     switch (grade) {
     case DISPLAY_GRADE_00:
-        display_draw_digit(x, y, 0);
-        display_draw_digit(x + 36, y, 0);
+        display_draw_digit(&u8g2, x, y, 0);
+        display_draw_digit(&u8g2, x + 36, y, 0);
         break;
     case DISPLAY_GRADE_0:
-        display_draw_digit(x, y, 0);
+        display_draw_digit(&u8g2, x, y, 0);
         break;
     case DISPLAY_GRADE_0_HALF:
         x -= 40;
         show_half = true;
         break;
     case DISPLAY_GRADE_1:
-        display_draw_digit(x, y, 1);
+        display_draw_digit(&u8g2, x, y, 1);
         break;
     case DISPLAY_GRADE_1_HALF:
-        display_draw_digit(x, y, 1);
+        display_draw_digit(&u8g2, x, y, 1);
         show_half = true;
         break;
     case DISPLAY_GRADE_2:
-        display_draw_digit(x, y, 2);
+        display_draw_digit(&u8g2, x, y, 2);
         break;
     case DISPLAY_GRADE_2_HALF:
-        display_draw_digit(x, y, 2);
+        display_draw_digit(&u8g2, x, y, 2);
         show_half = true;
         break;
     case DISPLAY_GRADE_3:
-        display_draw_digit(x, y, 3);
+        display_draw_digit(&u8g2, x, y, 3);
         break;
     case DISPLAY_GRADE_3_HALF:
-        display_draw_digit(x, y, 3);
+        display_draw_digit(&u8g2, x, y, 3);
         show_half = true;
         break;
     case DISPLAY_GRADE_4:
-        display_draw_digit(x, y, 4);
+        display_draw_digit(&u8g2, x, y, 4);
         break;
     case DISPLAY_GRADE_4_HALF:
-        display_draw_digit(x, y, 4);
+        display_draw_digit(&u8g2, x, y, 4);
         show_half = true;
         break;
     case DISPLAY_GRADE_5:
-        display_draw_digit(x, y, 5);
+        display_draw_digit(&u8g2, x, y, 5);
         break;
     case DISPLAY_GRADE_NONE:
     default:
@@ -951,11 +422,11 @@ void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t g
     }
 
     if (show_half) {
-        display_draw_tdigit(x + 43, y, 1);
+        display_draw_tdigit(&u8g2, x + 43, y, 1);
         u8g2_DrawLine(&u8g2, x + 46, y + 26, x + 64, y + 26);
         u8g2_DrawLine(&u8g2, x + 45, y + 27, x + 65, y + 27);
         u8g2_DrawLine(&u8g2, x + 46, y + 28, x + 64, y + 28);
-        display_draw_tdigit(x + 49, y + 31, 2);
+        display_draw_tdigit(&u8g2, x + 49, y + 31, 2);
     }
 }
 
@@ -965,46 +436,46 @@ void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_gr
 
     switch (grade) {
     case DISPLAY_GRADE_00:
-        display_draw_mdigit(x, y, 0);
-        display_draw_mdigit(x + 22, y, 0);
+        display_draw_mdigit(&u8g2, x, y, 0);
+        display_draw_mdigit(&u8g2, x + 22, y, 0);
         break;
     case DISPLAY_GRADE_0:
-        display_draw_mdigit(x, y, 0);
+        display_draw_mdigit(&u8g2, x, y, 0);
         break;
     case DISPLAY_GRADE_0_HALF:
         x -= 21;
         show_half = true;
         break;
     case DISPLAY_GRADE_1:
-        display_draw_mdigit(x, y, 1);
+        display_draw_mdigit(&u8g2, x, y, 1);
         break;
     case DISPLAY_GRADE_1_HALF:
-        display_draw_mdigit(x, y, 1);
+        display_draw_mdigit(&u8g2, x, y, 1);
         show_half = true;
         break;
     case DISPLAY_GRADE_2:
-        display_draw_mdigit(x, y, 2);
+        display_draw_mdigit(&u8g2, x, y, 2);
         break;
     case DISPLAY_GRADE_2_HALF:
-        display_draw_mdigit(x, y, 2);
+        display_draw_mdigit(&u8g2, x, y, 2);
         show_half = true;
         break;
     case DISPLAY_GRADE_3:
-        display_draw_mdigit(x, y, 3);
+        display_draw_mdigit(&u8g2, x, y, 3);
         break;
     case DISPLAY_GRADE_3_HALF:
-        display_draw_mdigit(x, y, 3);
+        display_draw_mdigit(&u8g2, x, y, 3);
         show_half = true;
         break;
     case DISPLAY_GRADE_4:
-        display_draw_mdigit(x, y, 4);
+        display_draw_mdigit(&u8g2, x, y, 4);
         break;
     case DISPLAY_GRADE_4_HALF:
-        display_draw_mdigit(x, y, 4);
+        display_draw_mdigit(&u8g2, x, y, 4);
         show_half = true;
         break;
     case DISPLAY_GRADE_5:
-        display_draw_mdigit(x, y, 5);
+        display_draw_mdigit(&u8g2, x, y, 5);
         break;
     case DISPLAY_GRADE_NONE:
     default:
@@ -1012,11 +483,11 @@ void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_gr
     }
 
     if (show_half) {
-        display_draw_vtdigit(x + 22, y - 1, 1);
+        display_draw_vtdigit(&u8g2, x + 22, y - 1, 1);
         u8g2_DrawLine(&u8g2, x + 24, y + 16, x + 34, y + 16);
         u8g2_DrawLine(&u8g2, x + 23, y + 17, x + 35, y + 17);
         u8g2_DrawLine(&u8g2, x + 24, y + 18, x + 34, y + 18);
-        display_draw_vtdigit(x + 25, y + 20, 2);
+        display_draw_vtdigit(&u8g2, x + 25, y + 20, 2);
     }
 }
 
@@ -1040,16 +511,16 @@ void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t 
             seconds = 999;
         }
 
-        display_draw_digit(x, y, seconds % 10);
+        display_draw_digit(&u8g2, x, y, seconds % 10);
         x -= 36;
 
         if (seconds >= 10) {
-            display_draw_digit(x, y, seconds % 100 / 10);
+            display_draw_digit(&u8g2, x, y, seconds % 100 / 10);
             x -= 36;
         }
 
         if (seconds >= 100) {
-            display_draw_digit(x, y, (seconds % 1000) / 100);
+            display_draw_digit(&u8g2, x, y, (seconds % 1000) / 100);
         }
     } else if (fraction_digits == 1) {
         // Time format: SS.m
@@ -1057,17 +528,17 @@ void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t 
             seconds = 99;
         }
 
-        display_draw_digit(x, y, (milliseconds % 1000) / 100);
+        display_draw_digit(&u8g2, x, y, (milliseconds % 1000) / 100);
         x -= 12;
 
         u8g2_DrawBox(&u8g2, x, y + 50, 6, 6);
         x -= 36;
 
-        display_draw_digit(x, y, seconds % 10);
+        display_draw_digit(&u8g2, x, y, seconds % 10);
         x -= 36;
 
         if (seconds >= 10) {
-            display_draw_digit(x, y, seconds % 100 / 10);
+            display_draw_digit(&u8g2, x, y, seconds % 100 / 10);
         }
     } else if (fraction_digits == 2) {
         // Time format: S.mm
@@ -1075,16 +546,16 @@ void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t 
             seconds = 9;
         }
 
-        display_draw_digit(x, y, milliseconds % 100 / 10);
+        display_draw_digit(&u8g2, x, y, milliseconds % 100 / 10);
         x -= 36;
 
-        display_draw_digit(x, y, (milliseconds % 1000) / 100);
+        display_draw_digit(&u8g2, x, y, (milliseconds % 1000) / 100);
         x -= 12;
 
         u8g2_DrawBox(&u8g2, x, y + 50, 6, 6);
         x -= 36;
 
-        display_draw_digit(x, y, seconds % 10);
+        display_draw_digit(&u8g2, x, y, seconds % 10);
     }
 }
 
@@ -1112,16 +583,16 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
             seconds = 999;
         }
 
-        display_draw_tdigit(x, y, seconds % 10);
+        display_draw_tdigit(&u8g2, x, y, seconds % 10);
         x -= 17;
 
         if (seconds >= 10) {
-            display_draw_tdigit(x, y, seconds % 100 / 10);
+            display_draw_tdigit(&u8g2, x, y, seconds % 100 / 10);
             x -= 17;
         }
 
         if (seconds >= 100) {
-            display_draw_tdigit(x, y, (seconds % 1000) / 100);
+            display_draw_tdigit(&u8g2, x, y, (seconds % 1000) / 100);
         }
     } else if (fraction_digits == 1) {
         // Time format: SS.m
@@ -1129,17 +600,17 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
             seconds = 99;
         }
 
-        display_draw_tdigit(x, y, (milliseconds % 1000) / 100);
+        display_draw_tdigit(&u8g2, x, y, (milliseconds % 1000) / 100);
         x -= 6;
 
         u8g2_DrawBox(&u8g2, x, y + 22, 3, 3);
         x -= 17;
 
-        display_draw_tdigit(x, y, seconds % 10);
+        display_draw_tdigit(&u8g2, x, y, seconds % 10);
         x -= 17;
 
         if (seconds >= 10) {
-            display_draw_tdigit(x, y, seconds % 100 / 10);
+            display_draw_tdigit(&u8g2, x, y, seconds % 100 / 10);
         }
     } else if (fraction_digits == 2) {
         // Time format: S.mm
@@ -1147,16 +618,16 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
             seconds = 9;
         }
 
-        display_draw_tdigit(x, y, milliseconds % 100 / 10);
+        display_draw_tdigit(&u8g2, x, y, milliseconds % 100 / 10);
         x -= 17;
 
-        display_draw_tdigit(x, y, (milliseconds % 1000) / 100);
+        display_draw_tdigit(&u8g2, x, y, (milliseconds % 1000) / 100);
         x -= 6;
 
         u8g2_DrawBox(&u8g2, x, y + 22, 3, 3);
         x -= 17;
 
-        display_draw_tdigit(x, y, seconds % 10);
+        display_draw_tdigit(&u8g2, x, y, seconds % 10);
     }
 }
 
@@ -1201,7 +672,7 @@ void display_draw_stop_increment(uint8_t increment_den)
     }
 
     if (increment_den == 1) {
-        display_draw_digit(x, y, 1);
+        display_draw_digit(&u8g2, x, y, 1);
     } else {
         display_draw_tdigit_fraction(x, y, 1, increment_den);
     }
@@ -1232,16 +703,16 @@ void display_draw_exposure_adj(int value)
     u8g2_uint_t y = 8;
     int disp_val = abs(value);
 
-    display_draw_digit(x, y, disp_val % 10);
+    display_draw_digit(&u8g2, x, y, disp_val % 10);
     x -= 36;
 
     if (disp_val >= 10) {
-        display_draw_digit(x, y, disp_val % 100 / 10);
+        display_draw_digit(&u8g2, x, y, disp_val % 100 / 10);
         x -= 36;
     }
 
     if (disp_val >= 100) {
-        display_draw_digit(x, y, (disp_val % 1000) / 100);
+        display_draw_digit(&u8g2, x, y, (disp_val % 1000) / 100);
         x -= 36;
     }
 
@@ -1672,7 +1143,7 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
 
         // Draw whole number part
         if (adj_whole != 0 || (adj_whole == 0 && adj_num == 0)) {
-            display_draw_digit(x, y, adj_whole);
+            display_draw_digit(&u8g2, x, y, adj_whole);
             x -= 36;
         }
 
