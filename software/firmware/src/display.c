@@ -1145,6 +1145,20 @@ uint8_t display_input_value(const char *title, const char *prefix, uint8_t *valu
     return menu_event_timeout ? UINT8_MAX : option;
 }
 
+uint8_t display_input_value_u16(const char *title, const char *prefix, uint16_t *value,
+        uint16_t low, uint16_t high, uint8_t digits, const char *postfix)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+    uint8_t option = display_UserInterfaceInputValueU16(&u8g2, title, prefix, value, low, high, digits, postfix);
+
+    osMutexRelease(display_mutex);
+
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
 uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *value,
     uint8_t low, uint8_t high, uint8_t digits, const char *postfix,
     display_input_value_callback_t callback, void *user_data)
@@ -1161,6 +1175,186 @@ uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *v
     osMutexRelease(display_mutex);
 
     return menu_event_timeout ? UINT8_MAX : option;
+}
+
+static const char* const INPUT_CHARS[] = {
+    "ABCDEFGHIJKLM0123456789-=",
+    "NOPQRSTUVWXYZ!@#$%^&*()_+",
+    "abcdefghijklm[]{}\\|;:'\",.",
+    "nopqrstuvwxyz/<>?`~\xFA\xFB\xFC \xFD\xFE"
+};
+
+static void display_draw_input_char(u8g2_uint_t x, u8g2_uint_t y, uint16_t ch, uint8_t char_width, u8g2_uint_t line_height)
+{
+    if (ch == ' ') {
+        u8g2_DrawLine(&u8g2, x, y - 1, (x + char_width) - 1, y - 1);
+        u8g2_DrawLine(&u8g2, x, y - 2, x, y - 4);
+        u8g2_DrawLine(&u8g2, (x + char_width) - 1, y - 2, (x + char_width) - 1, y - 4);
+    } else if (ch == 0xFD) {
+        u8g2_DrawLine(&u8g2, x + 1, y - 5, (x + char_width) - 1, y - 5);
+        u8g2_DrawLine(&u8g2, x + 1, y - 4, (x + char_width) - 1, y - 4);
+        u8g2_DrawPixel(&u8g2, x + 2, y - 6);
+        u8g2_DrawPixel(&u8g2, x + 3, y - 6);
+        u8g2_DrawPixel(&u8g2, x + 3, y - 7);
+        u8g2_DrawPixel(&u8g2, x + 2, y - 3);
+        u8g2_DrawPixel(&u8g2, x + 3, y - 3);
+        u8g2_DrawPixel(&u8g2, x + 3, y - 2);
+    } else if (ch == 0xFE) {
+        u8g2_DrawLine(&u8g2, x + 1, y - 1, x + 1, y - 4);
+        u8g2_DrawBox(&u8g2, x + 3, y - 4, 4, 4);
+        u8g2_DrawBox(&u8g2, x + 4, y - 6, 2, 2);
+        u8g2_DrawPixel(&u8g2, x + 5, y - 7);
+        u8g2_DrawPixel(&u8g2, x + 7, y - 4);
+        u8g2_DrawPixel(&u8g2, x + 7, y - 3);
+    } else if (ch >= 0xFA) {
+        u8g2_DrawGlyph(&u8g2, x, y, ' ');
+    } else {
+        u8g2_DrawGlyph(&u8g2, x, y, ch);
+    }
+}
+
+static void display_draw_input_grid(u8g2_uint_t y, char selected)
+{
+    uint8_t char_width = u8g2_GetMaxCharWidth(&u8g2);
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
+
+    uint16_t ch;
+    for (uint8_t row = 0; row < 4; row++) {
+        u8g2_uint_t x = 3;
+        for (uint8_t i = 0; i < 25; i++) {
+            ch = INPUT_CHARS[row][i];
+            if (ch == '\0') { break; }
+
+            if (ch == selected) {
+                u8g2_SetDrawColor(&u8g2, 1);
+                u8g2_DrawBox(&u8g2, x - 1, y - line_height, char_width + 2, line_height + 1);
+                u8g2_SetDrawColor(&u8g2, 0);
+                display_draw_input_char(x, y, ch, char_width, line_height);
+                u8g2_SetDrawColor(&u8g2, 1);
+            } else {
+                u8g2_SetDrawColor(&u8g2, 0);
+                u8g2_DrawBox(&u8g2, x - 1, y - line_height, char_width + 2, line_height + 1);
+                u8g2_SetDrawColor(&u8g2, 1);
+                display_draw_input_char(x, y, ch, char_width, line_height);
+            }
+
+            x += char_width + 2;
+        }
+        y += line_height + 1;
+    }
+}
+
+uint8_t display_input_text(const char *title, char *text, size_t text_len)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_prepare_menu_font();
+    u8g2_ClearBuffer(&u8g2);
+
+    char str[31];
+    uint8_t event;
+    u8g2_uint_t yy;
+    u8g2_uint_t grid_y;
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
+    uint8_t char_width = u8g2_GetMaxCharWidth(&u8g2);
+
+    bzero(str, sizeof(str));
+
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    yy = u8g2_GetAscent(&u8g2);
+    yy += u8g2_DrawUTF8Lines(&u8g2, 0, yy, u8g2_GetDisplayWidth(&u8g2), line_height, title);
+    u8g2_DrawHLine(&u8g2, 0, yy - line_height - u8g2_GetDescent(&u8g2) + 1, u8g2_GetDisplayWidth(&u8g2));
+    yy += 3;
+
+    grid_y = u8g2_GetDisplayHeight(&u8g2) - (line_height + 1) * 3 - 1;
+
+    u8g2_DrawGlyph(&u8g2, 0, yy, ']');
+
+    uint8_t cursor = 0;
+    uint8_t row = 0;
+    uint8_t col = 0;
+    bool accepted = false;
+
+    if (text && strlen(text) > 0) {
+        strncpy(str, text, sizeof(str));
+        cursor = strlen(str);
+    }
+
+    for(;;) {
+        char ch = INPUT_CHARS[row][col];
+
+        uint8_t cursor_x = (cursor + 1) * char_width;
+
+        u8g2_SetDrawColor(&u8g2, 0);
+        u8g2_DrawBox(&u8g2, char_width, yy - line_height, u8g2_GetDisplayWidth(&u8g2) - char_width, line_height);
+
+        u8g2_SetDrawColor(&u8g2, 1);
+        u8g2_DrawUTF8(&u8g2, char_width, yy, str);
+        u8g2_DrawLine(&u8g2, cursor_x, yy - 1, (cursor_x + char_width) - 1, yy - 1);
+        u8g2_DrawLine(&u8g2, cursor_x, yy - 2, (cursor_x + char_width) - 1, yy - 2);
+
+        display_draw_input_grid(grid_y, ch);
+        u8g2_SendBuffer(&u8g2);
+
+        event = u8x8_GetMenuEvent(u8g2_GetU8x8(&u8g2));
+
+        if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+            if (ch == 0xFD) {
+                if (cursor > 0) {
+                    cursor--;
+                    str[cursor] = '\0';
+                }
+            } else if (ch == 0xFE) {
+                accepted = true;
+                break;
+            } else if (cursor < sizeof(str) - 1) {
+                str[cursor++] = ch;
+            }
+        }
+        else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+            break;
+        }
+        else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+            col = (col >= 24) ? 0 : col + 1;
+            if (row == 3 && col >= 19 && col < 22) {
+                col = 22;
+            }
+        }
+        else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+            col = (col == 0) ? 24 : col - 1;
+            if (row == 3 && col >= 19 && col < 22) {
+                col = 18;
+            }
+        }
+        else if (event == U8X8_MSG_GPIO_MENU_DOWN) {
+            row = (row >= 3) ? 0 : row + 1;
+            if (row == 3 && col >= 19 && col < 22) {
+                row = 0;
+            }
+        }
+        else if (event == U8X8_MSG_GPIO_MENU_UP) {
+            row = (row == 0) ? 3 : row - 1;
+            if (row == 3 && col >= 19 && col < 22) {
+                row = 2;
+            }
+        }
+    }
+
+    uint8_t result;
+
+    if (accepted) {
+        result = strlen(str);
+        if (text && result > 0) {
+            strncpy(text, str, text_len);
+        }
+    } else {
+        result = 0;
+    }
+
+    osMutexRelease(display_mutex);
+
+    return result;
 }
 
 uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)

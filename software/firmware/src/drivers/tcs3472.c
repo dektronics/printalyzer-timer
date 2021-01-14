@@ -53,8 +53,8 @@ static const uint8_t TCS3472_ADDRESS = 0x29 << 1; // Use 8-bit address
 #define TCS3472_CT_COEF   (3810)
 #define TCS3472_CT_OFFSET (1391)
 
-static tcs3472_again_t _gain = TCS3472_AGAIN_1X;
-static tcs3472_atime_t _integration = TCS3472_ATIME_2_4MS;
+static tcs3472_again_t tcs3472_gain = TCS3472_AGAIN_1X;
+static tcs3472_atime_t tcs3472_integration = TCS3472_ATIME_2_4MS;
 
 HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
 {
@@ -89,13 +89,13 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
     }
 
     // Set default integration time and gain
-    _gain = TCS3472_AGAIN_1X;
-    ret = tcs3472_set_gain(hi2c, _gain);
+    tcs3472_gain = TCS3472_AGAIN_1X;
+    ret = tcs3472_set_gain(hi2c, tcs3472_gain);
     if (ret != HAL_OK) {
         return ret;
     }
-    _integration = TCS3472_ATIME_2_4MS;
-    ret = tcs3472_set_time(hi2c, _integration);
+    tcs3472_integration = TCS3472_ATIME_2_4MS;
+    ret = tcs3472_set_time(hi2c, tcs3472_integration);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -130,7 +130,7 @@ HAL_StatusTypeDef tcs3472_set_time(I2C_HandleTypeDef *hi2c, tcs3472_atime_t atim
     HAL_StatusTypeDef ret = i2c_write_register(hi2c, TCS3472_ADDRESS,
         TCS3472_CMD | TCS3472_ATIME, (uint8_t)atime);
     if (ret == HAL_OK) {
-        _integration = atime;
+        tcs3472_integration = atime;
     }
     return ret;
 }
@@ -162,7 +162,7 @@ HAL_StatusTypeDef tcs3472_set_gain(I2C_HandleTypeDef *hi2c, tcs3472_again_t gain
     HAL_StatusTypeDef ret = i2c_write_register(hi2c, TCS3472_ADDRESS,
         TCS3472_CMD | TCS3472_CONTROL, ((uint8_t)gain) & 0x03);
     if (ret == HAL_OK) {
-        _gain = gain;
+        tcs3472_gain = gain;
     }
     return ret;
 }
@@ -246,8 +246,8 @@ HAL_StatusTypeDef tcs3472_get_full_channel_data(I2C_HandleTypeDef *hi2c, tcs3472
     ch_data->red = data[2] | data[3] << 8;
     ch_data->green = data[4] | data[5] << 8;
     ch_data->blue = data[6] | data[7] << 8;
-    ch_data->integration = _integration;
-    ch_data->gain = _gain;
+    ch_data->integration = tcs3472_integration;
+    ch_data->gain = tcs3472_gain;
 
     return HAL_OK;
 }

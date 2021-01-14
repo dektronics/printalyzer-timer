@@ -12,6 +12,9 @@
 #include "exposure_state.h"
 #include "enlarger_profile.h"
 
+#define MAX_ENLARGER_PROFILES 16
+#define MAX_PAPER_PROFILES 16
+
 typedef enum {
     SAFELIGHT_MODE_OFF = 0, /* Safelight is always off */
     SAFELIGHT_MODE_ON,      /* Safelight is off when the enlarger is on */
@@ -154,8 +157,9 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index);
  *
  * @param profile Pointer to the profile struct to save data from
  * @param index An index value from 0 to 15
+ * @return True if the profile was successfully saved
  */
-void settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index);
+bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index);
 
 /**
  * Clear any enlarger profile saved at the specified index

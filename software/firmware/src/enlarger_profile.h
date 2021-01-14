@@ -46,6 +46,10 @@ typedef struct {
      */
     uint32_t fall_time_equiv;
 
+    /*
+     * Color temperature (K) of the enlarger lamp.
+     */
+    uint32_t color_temperature;
 } enlarger_profile_t;
 
 /**

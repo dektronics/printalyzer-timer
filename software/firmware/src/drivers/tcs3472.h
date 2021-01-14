@@ -61,7 +61,18 @@ uint16_t tcs3472_atime_max_count(tcs3472_atime_t atime);
 
 const char* tcs3472_gain_str(tcs3472_again_t gain);
 
+/**
+ * Calculate the color temperature from a full channel reading.
+ *
+ * If the channel data is valid, but has reached analog or digital
+ * saturation, then the color temperature will be returned as zero.
+ *
+ * @param ch_data Full channel data
+ * @return Color temperature, or 0 if color temperature could not
+ *         be calculated.
+ */
 uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data);
+
 float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data);
 
 #endif /* TCS3472_H */

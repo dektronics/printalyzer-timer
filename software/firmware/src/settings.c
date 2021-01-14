@@ -507,11 +507,12 @@ void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uin
     profile->turn_off_delay = copy_to_u32(data + ENLARGER_PROFILE_TURN_OFF_DELAY);
     profile->fall_time = copy_to_u32(data + ENLARGER_PROFILE_FALL_TIME);
     profile->fall_time_equiv = copy_to_u32(data + ENLARGER_PROFILE_FALL_TIME_EQUIV);
+    profile->color_temperature = copy_to_u32(data + ENLARGER_PROFILE_COLOR_TEMP);
 }
 
-void settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index)
+bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index)
 {
-    if (!profile || index >= 16) { return; }
+    if (!profile || index >= 16) { return false; }
 
     ESP_LOGI(TAG, "Save enlarger profile: %d", index);
 
@@ -520,9 +521,10 @@ void settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t in
 
     settings_enlarger_profile_populate_page(profile, data);
 
-    m24m01_write_page(eeprom_i2c,
+    HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c,
         PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+    return (ret == HAL_OK);
 }
 
 void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data)
@@ -537,6 +539,7 @@ void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, 
     copy_from_u32(data + ENLARGER_PROFILE_TURN_OFF_DELAY,  profile->turn_off_delay);
     copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME,       profile->fall_time);
     copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME_EQUIV, profile->fall_time_equiv);
+    copy_from_u32(data + ENLARGER_PROFILE_COLOR_TEMP, profile->color_temperature);
 }
 
 void settings_clear_enlarger_profile(uint8_t index)

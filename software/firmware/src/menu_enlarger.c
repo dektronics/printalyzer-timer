@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <math.h>
 
@@ -15,12 +16,19 @@
 #include "keypad.h"
 #include "relay.h"
 #include "tcs3472.h"
+#include "settings.h"
 #include "enlarger_profile.h"
 #include "illum_controller.h"
+#include "util.h"
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 #define REFERENCE_READING_ITERATIONS 100
 #define PROFILE_ITERATIONS 5
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)
+
+#define MENU_SAVE 3
+#define MENU_DELETE 4
 
 static const char *TAG = "menu_enlarger";
 
@@ -47,18 +55,352 @@ typedef struct {
     float stddev;
 } reading_stats_t;
 
-static void enlarger_calibration_start();
+static menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t index);
+static void menu_enlarger_delete_profile(uint8_t index, size_t profile_count);
+static bool menu_enlarger_profile_delete_prompt(const enlarger_profile_t *profile, uint8_t index);
+
+static menu_result_t menu_enlarger_calibration(enlarger_profile_t *result_profile);
+static menu_result_t enlarger_calibration_start(enlarger_profile_t *result_profile);
 static bool calibration_initialize_sensor();
-static bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off);
+static bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_color);
 static bool calibration_validate_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off);
 static bool calibration_build_profile(enlarger_profile_t *profile, const reading_stats_t *stats_on, const reading_stats_t *stats_off);
 
 static void calculate_reading_stats(reading_stats_t *stats, uint16_t *readings, size_t len);
 static bool delay_with_cancel(uint32_t time_ms);
 
-menu_result_t menu_enlarger_calibration()
+menu_result_t menu_enlarger_profiles()
 {
     menu_result_t menu_result = MENU_OK;
+
+    enlarger_profile_t *profile_list;
+    profile_list = malloc(sizeof(enlarger_profile_t) * MAX_ENLARGER_PROFILES);
+    if (!profile_list) {
+        ESP_LOGE(TAG, "Unable to allocate memory for profile list");
+        return MENU_OK;
+    }
+
+    //TODO If profile count is 0, jump straight to add profile flow
+
+    char buf[640];
+    size_t offset;
+    bool reload_profiles = true;
+    uint8_t profile_default_index = 0;
+    size_t profile_count = 0;
+    uint8_t option = 1;
+    do {
+        offset = 0;
+        if (reload_profiles) {
+            profile_default_index = settings_get_default_enlarger_profile_index();
+            for (size_t i = 0; i < MAX_ENLARGER_PROFILES; i++) {
+                if (!settings_get_enlarger_profile(&profile_list[i], i)) {
+                    break;
+                } else {
+                    profile_count = i + 1;
+                }
+            }
+            ESP_LOGI(TAG, "Loaded %d profiles, default is %d", profile_count, profile_default_index);
+            reload_profiles = false;
+        }
+
+        for (size_t i = 0; i < profile_count; i++) {
+            if (profile_list[i].name && strlen(profile_list[i].name) > 0) {
+                sprintf(buf + offset, "%c%02d%c %s",
+                    (i == profile_default_index) ? '<' : '[',
+                    i + 1,
+                    (i == profile_default_index) ? '>' : ']',
+                    profile_list[i].name);
+            } else {
+                sprintf(buf + offset, "%c%02d%c Enlarger profile %d",
+                    (i == profile_default_index) ? '<' : '[',
+                    i + 1,
+                    (i == profile_default_index) ? '>' : ']',
+                    i + 1);
+            }
+            offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
+            if (i < profile_count) {
+                buf[offset++] = '\n';
+                buf[offset] = '\0';
+            }
+        }
+        if (profile_count < MAX_ENLARGER_PROFILES) {
+            sprintf(buf + offset, "*** Add New Profile ***");
+        }
+
+        uint16_t result = display_selection_list_params("Enlarger Profiles", option, buf,
+            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
+        option = (uint8_t)(result & 0x00FF);
+        keypad_key_t option_key = (uint8_t)((result & 0xFF00) >> 8);
+
+        if (option == 0) {
+            menu_result = MENU_CANCEL;
+            break;
+        } else if (option - 1 == profile_count) {
+            enlarger_profile_t profile;
+            memset(&profile, 0, sizeof(enlarger_profile_t));
+            ESP_LOGI(TAG, "Add new profile at index: %d", profile_count);
+            if (menu_enlarger_calibration(&profile) == MENU_OK
+                && enlarger_profile_is_valid(&profile)) {
+                if (settings_set_enlarger_profile(&profile, profile_count)) {
+                    ESP_LOGI(TAG, "New profile added at index: %d", profile_count);
+                    memcpy(&profile_list[profile_count], &profile, sizeof(enlarger_profile_t));
+                    profile_count++;
+                }
+            }
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        } else {
+            if (option_key == KEYPAD_MENU) {
+                enlarger_profile_t working_profile;
+                memcpy(&working_profile, &profile_list[option - 1], sizeof(enlarger_profile_t));
+                menu_result = menu_enlarger_profile_edit(&working_profile, option - 1);
+                if (menu_result == MENU_SAVE) {
+                    menu_result = MENU_OK;
+                    if (settings_set_enlarger_profile(&working_profile, option - 1)) {
+                        ESP_LOGI(TAG, "Profile saved at index: %d", option - 1);
+                        memcpy(&profile_list[option - 1], &working_profile, sizeof(enlarger_profile_t));
+                    }
+                } else if (menu_result == MENU_DELETE) {
+                    menu_result = MENU_OK;
+                    menu_enlarger_delete_profile(option - 1, profile_count);
+                    reload_profiles = true;
+                }
+            } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
+                ESP_LOGI(TAG, "Set default profile at index: %d", option - 1);
+                settings_set_default_enlarger_profile_index(option - 1);
+                profile_default_index = option - 1;
+            }
+        }
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    free(profile_list);
+
+    return menu_result;
+}
+
+void menu_enlarger_delete_profile(uint8_t index, size_t profile_count)
+{
+    for (size_t i = 0; i < MAX_ENLARGER_PROFILES; i++) {
+        if (i < profile_count - 1) {
+            enlarger_profile_t profile;
+            if (!settings_get_enlarger_profile(&profile, i + 1)) {
+                return;
+            }
+            if (!settings_set_enlarger_profile(&profile, i)) {
+                return;
+            }
+        } else {
+            settings_clear_enlarger_profile(i);
+            break;
+        }
+    }
+
+    uint8_t default_profile_index = settings_get_default_enlarger_profile_index();
+    if (default_profile_index == index) {
+        settings_set_default_enlarger_profile_index(0);
+    } else if (default_profile_index > index) {
+        settings_set_default_enlarger_profile_index(default_profile_index - 1);
+    }
+}
+
+menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t index)
+{
+    char buf_title[32];
+    char buf[512];
+    menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
+
+    sprintf(buf_title, "Enlarger Profile %d", index + 1);
+
+    do {
+        size_t offset = 0;
+
+        size_t name_len = MIN(strlen(profile->name), 25);
+
+        strcpy(buf, "Name ");
+        offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (name_len + 2));
+        buf[offset++] = '[';
+        strncpy(buf + offset, profile->name, name_len + 1);
+        offset += name_len;
+        buf[offset++] = ']';
+        buf[offset++] = '\n';
+        buf[offset] = '\0';
+
+        sprintf(buf + offset,
+            "Turn on delay          [%5lums]\n"
+            "Rise time              [%5lums]\n"
+            "Rise time equivalent   [%5lums]\n"
+            "Turn off delay         [%5lums]\n"
+            "Fall time              [%5lums]\n"
+            "Fall time equivalent   [%5lums]\n"
+            "Color temperature      [ %5luK]\n"
+            "*** Run Calibration ***\n"
+            "*** Save Changes ***\n"
+            "*** Delete Profile ***",
+            profile->turn_on_delay,
+            profile->rise_time,
+            profile->rise_time_equiv,
+            profile->turn_off_delay,
+            profile->fall_time,
+            profile->fall_time_equiv,
+            profile->color_temperature);
+
+        option = display_selection_list(buf_title, option, buf);
+
+        if (option == 1) {
+            display_input_text("Enlarger Name", profile->name, 32);
+        } else if (option == 2) {
+            uint16_t value_sel = profile->turn_on_delay;
+            if (display_input_value_u16(
+                "-- Turn On Delay --\n"
+                "Time period from when the\n"
+                "enlarger is activated until its\n"
+                "light level starts to rise.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->turn_on_delay = value_sel;
+            }
+        } else if (option == 3) {
+            uint16_t value_sel = profile->rise_time;
+            if (display_input_value_u16(
+                "-- Rise Time --\n"
+                "Time period from when the\n"
+                "enlarger light level starts to\n"
+                "rise until it peaks.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->rise_time = value_sel;
+            }
+        } else if (option == 4) {
+            uint16_t value_sel = profile->rise_time_equiv;
+            if (display_input_value_u16(
+                "-- Rise Time Equivalent --\n"
+                "Time period at peak output\n"
+                "for an exposure equivalent to\n"
+                "the rise time period.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->rise_time_equiv = value_sel;
+            }
+        } else if (option == 5) {
+            uint16_t value_sel = profile->turn_off_delay;
+            if (display_input_value_u16(
+                "-- Turn Off Delay --\n"
+                "Time period from when the\n"
+                "enlarger is deactivated until\n"
+                "its light level starts to fall.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->turn_off_delay = value_sel;
+            }
+        } else if (option == 6) {
+            uint16_t value_sel = profile->fall_time;
+            if (display_input_value_u16(
+                "-- Fall Time --\n"
+                "Time period from when the\n"
+                "enlarger light level starts to\n"
+                "fall until it is completely off.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->fall_time = value_sel;
+            }
+        } else if (option == 7) {
+            uint16_t value_sel = profile->fall_time_equiv;
+            if (display_input_value_u16(
+                "-- Fall Time Equivalent --\n"
+                "Time period at peak output\n"
+                "for an exposure equivalent to\n"
+                "the fall time period.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->fall_time_equiv = value_sel;
+            }
+        } else if (option == 8) {
+            uint16_t value_sel = profile->color_temperature;
+            if (display_input_value_u16(
+                "-- Color Temperature --\n"
+                "The unfiltered color temperature\n"
+                "of the enlarger lamp.\n",
+                "", &value_sel, 0, UINT16_MAX, 5, " K") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->color_temperature = value_sel;
+            }
+        } else if (option == 9) {
+            ESP_LOGD(TAG, "Run calibration from profile editor");
+            uint8_t sub_option = display_message(
+                "Run Calibration?\n",
+                NULL,
+                "This will replace all the\n"
+                "profile values with results from\n"
+                "the calibration process.",
+                " Start \n Cancel ");
+
+            if (sub_option == 1) {
+                if (menu_enlarger_calibration(profile) == MENU_TIMEOUT) {
+                    menu_result = MENU_TIMEOUT;
+                    break;
+                }
+            } else if (sub_option == 2) {
+                // Cancel selected
+                continue;
+            } else if (sub_option == UINT8_MAX) {
+                // Return assuming timeout
+                menu_result = MENU_TIMEOUT;
+                break;
+            } else {
+                // Return assuming no timeout
+                continue;
+            }
+        } else if (option == 10) {
+            ESP_LOGD(TAG, "Save changes from profile editor");
+            menu_result = MENU_SAVE;
+            break;
+        } else if (option == 11) {
+            ESP_LOGD(TAG, "Delete profile from profile editor");
+            if (menu_enlarger_profile_delete_prompt(profile, index)) {
+                menu_result = MENU_DELETE;
+                break;
+            }
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+bool menu_enlarger_profile_delete_prompt(const enlarger_profile_t *profile, uint8_t index)
+{
+    char buf_title[32];
+    char buf[256];
+
+    sprintf(buf_title, "Delete Profile %d?", index + 1);
+
+    if (profile->name && strlen(profile->name) > 0) {
+        sprintf(buf, "\n%s\n", profile->name);
+    } else {
+        sprintf(buf, "\n\n\n");
+    }
+
+    uint8_t option = display_message(buf_title, NULL, buf, " Yes \n No ");
+    if (option == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+menu_result_t menu_enlarger_calibration(enlarger_profile_t *result_profile)
+{
+    menu_result_t menu_result = MENU_CANCEL;
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
 
@@ -71,7 +413,7 @@ menu_result_t menu_enlarger_calibration()
             " Start ");
 
     if (option == 1) {
-        enlarger_calibration_start();
+        menu_result = enlarger_calibration_start(result_profile);
         relay_enlarger_enable(false);
     } else if (option == UINT8_MAX) {
         menu_result = MENU_TIMEOUT;
@@ -82,7 +424,7 @@ menu_result_t menu_enlarger_calibration()
     return menu_result;
 }
 
-void enlarger_calibration_start()
+menu_result_t enlarger_calibration_start(enlarger_profile_t *result_profile)
 {
     ESP_LOGI(TAG, "Starting enlarger calibration process");
 
@@ -94,7 +436,7 @@ void enlarger_calibration_start()
 
     if (!calibration_initialize_sensor()) {
         ESP_LOGE(TAG, "Could not initialize sensor");
-        return;
+        return MENU_CANCEL;
     }
 
     osDelay(pdMS_TO_TICKS(1000));
@@ -103,13 +445,14 @@ void enlarger_calibration_start()
 
     reading_stats_t enlarger_on_stats;
     reading_stats_t enlarger_off_stats;
-    if (!calibration_collect_reference_stats(&enlarger_on_stats, &enlarger_off_stats)) {
+    reading_stats_t enlarger_color_stats;
+    if (!calibration_collect_reference_stats(&enlarger_on_stats, &enlarger_off_stats, &enlarger_color_stats)) {
         ESP_LOGE(TAG, "Could not collect reference stats");
         tcs3472_disable(&hi2c2);
         if (relay_enlarger_is_enabled()) {
             relay_enlarger_enable(false);
         }
-        return;
+        return MENU_CANCEL;
     }
 
     // Log statistics used for reference points
@@ -121,6 +464,10 @@ void enlarger_calibration_start()
     ESP_LOGI(TAG, "Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_off_stats.mean, enlarger_off_stats.min, enlarger_off_stats.max,
         enlarger_off_stats.stddev);
+    ESP_LOGI(TAG, "Enlarger color temperature");
+    ESP_LOGI(TAG, "Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
+        enlarger_color_stats.mean, enlarger_color_stats.min, enlarger_color_stats.max,
+        enlarger_color_stats.stddev);
 
     if (!calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats)) {
         ESP_LOGW(TAG, "Reference stats are not usable for calibration");
@@ -138,12 +485,12 @@ void enlarger_calibration_start()
                 " OK ");
             if (option == 1) { break; }
         } while (1);
-        return;
+        return MENU_CANCEL;
     }
 
     if (!delay_with_cancel(1000)) {
         tcs3472_disable(&hi2c2);
-        return;
+        return MENU_CANCEL;
     }
 
     // Do the profiling process
@@ -169,6 +516,8 @@ void enlarger_calibration_start()
             }
 
             do {
+                //TODO differentiate between "cancel" and "error"
+                //TODO enumerate errors for better messages
                 uint8_t option = display_message(
                     "Profiling Failed",
                     NULL,
@@ -179,7 +528,7 @@ void enlarger_calibration_start()
                     " OK ");
                 if (option == 1) { break; }
             } while (1);
-            return;
+            return MENU_CANCEL;
         }
 
         profile_sum.turn_on_delay += profile_inc[i].turn_on_delay;
@@ -198,6 +547,7 @@ void enlarger_calibration_start()
     profile.turn_off_delay = roundf((float)profile_sum.turn_off_delay / PROFILE_ITERATIONS);
     profile.fall_time = roundf((float)profile_sum.fall_time / PROFILE_ITERATIONS);
     profile.fall_time_equiv = roundf((float)profile_sum.fall_time_equiv / PROFILE_ITERATIONS);
+    profile.color_temperature = roundf(enlarger_color_stats.mean);
 
     tcs3472_disable(&hi2c2);
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
@@ -206,12 +556,13 @@ void enlarger_calibration_start()
     ESP_LOGI(TAG, "Rise time: %ldms (full_equiv=%ldms)", profile.rise_time, profile.rise_time_equiv);
     ESP_LOGI(TAG, "Relay off delay: %ldms", profile.turn_off_delay);
     ESP_LOGI(TAG, "Fall time: %ldms (full_equiv=%ldms)", profile.fall_time, profile.fall_time_equiv);
+    ESP_LOGI(TAG, "Color temperature: %ldK", profile.color_temperature);
 
     char buf[256];
     sprintf(buf, "\n"
-        "Relay on: %ldms\n"
+        "Enlarger on: %ldms\n"
         "Rise time: %ldms (%ldms)\n"
-        "Relay off: %ldms\n"
+        "Enlarger off: %ldms\n"
         "Fall time: %ldms (%ldms)",
         profile.turn_on_delay,
         profile.rise_time, profile.rise_time_equiv,
@@ -226,6 +577,18 @@ void enlarger_calibration_start()
             break;
         }
     } while (1);
+
+    if (result_profile) {
+        result_profile->turn_on_delay = profile.turn_on_delay;
+        result_profile->rise_time = profile.rise_time;
+        result_profile->rise_time_equiv = profile.rise_time_equiv;
+        result_profile->turn_off_delay = profile.turn_off_delay;
+        result_profile->fall_time = profile.fall_time;
+        result_profile->fall_time_equiv = profile.fall_time_equiv;
+        result_profile->color_temperature = profile.color_temperature;
+    }
+
+    return MENU_OK;
 }
 
 bool calibration_initialize_sensor()
@@ -244,8 +607,6 @@ bool calibration_initialize_sensor()
             ESP_LOGE(TAG, "Error enabling TCS3472: %d", ret);
             break;
         }
-
-        //TODO Implement auto-ranging on gain/time
 
         ret = tcs3472_set_gain(&hi2c2, TCS3472_AGAIN_60X);
         if (ret != HAL_OK) {
@@ -278,10 +639,11 @@ bool calibration_initialize_sensor()
     return true;
 }
 
-bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off)
+bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_color)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint16_t readings[REFERENCE_READING_ITERATIONS];
+    uint16_t color_readings[REFERENCE_READING_ITERATIONS];
 
     if (!stats_on || !stats_off) { return false; }
 
@@ -293,15 +655,50 @@ bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stat
         return false;
     }
 
-    ESP_LOGI(TAG, "Collecting data with enlarger on");
-    for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
-        uint16_t channel_data;
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
+    ESP_LOGI(TAG, "Finding appropriate gain setting");
+    bool gain_selected = false;
+    for (tcs3472_again_t gain = TCS3472_AGAIN_60X; gain >= TCS3472_AGAIN_1X; --gain) {
+        tcs3472_channel_data_t channel_data;
+
+        ret = tcs3472_set_gain(&hi2c2, gain);
+        if (ret != HAL_OK) {
+            ESP_LOGE(TAG, "Error setting TCS3472 gain: %d", ret);
+            return false;
+        }
+
+        osDelay(pdMS_TO_TICKS(20));
+
+        ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
             ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
             return false;
         }
-        readings[i] = channel_data;
+
+        if (channel_data.clear == 0) {
+            ESP_LOGW(TAG, "No reading on clear channel");
+            return false;
+        }
+        if (tcs3472_calculate_color_temp(&channel_data) > 0) {
+            ESP_LOGI(TAG, "Selected gain: %s", tcs3472_gain_str(gain));
+            gain_selected = true;
+            break;
+        }
+    }
+    if (!gain_selected) {
+        ESP_LOGW(TAG, "Could not find a gain setting with a valid unsaturated reading");
+        return false;
+    }
+
+    ESP_LOGI(TAG, "Collecting data with enlarger on");
+    for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
+        tcs3472_channel_data_t channel_data;
+        ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
+        if (ret != HAL_OK) {
+            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            return false;
+        }
+        readings[i] = channel_data.clear;
+        color_readings[i] = tcs3472_calculate_color_temp(&channel_data);
         osDelay(pdMS_TO_TICKS(5));
     }
 
@@ -309,6 +706,9 @@ bool calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stat
 
     ESP_LOGI(TAG, "Computing baseline enlarger reading statistics");
     calculate_reading_stats(stats_on, readings, REFERENCE_READING_ITERATIONS);
+    if (stats_color) {
+        calculate_reading_stats(stats_color, color_readings, REFERENCE_READING_ITERATIONS);
+    }
 
     ESP_LOGI(TAG, "Waiting for light to stabilize");
     if (!delay_with_cancel(2000)) {
