@@ -1,5 +1,7 @@
 #include "enlarger_profile.h"
 
+#include <string.h>
+
 bool enlarger_profile_is_valid(const enlarger_profile_t *profile)
 {
     if (!profile) { return false; }
@@ -25,6 +27,14 @@ bool enlarger_profile_is_valid(const enlarger_profile_t *profile)
     }
 
     return true;
+}
+
+void enlarger_profile_set_defaults(enlarger_profile_t *profile)
+{
+    memset(profile, 0, sizeof(enlarger_profile_t));
+    strcpy(profile->name, "Default");
+    profile->turn_on_delay = 40;
+    profile->turn_off_delay = 10;
 }
 
 uint32_t enlarger_profile_min_exposure(const enlarger_profile_t *profile)

@@ -23,9 +23,9 @@ static state_t state_timer_data = {
     .state_process = state_timer_process
 };
 
-static bool state_timer_main_exposure(exposure_state_t *exposure_state);
+static bool state_timer_main_exposure(exposure_state_t *exposure_state, enlarger_profile_t *enlarger_profile);
 static bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data);
-static bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, int burn_dodge_index);
+static bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, enlarger_profile_t *enlarger_profile, int burn_dodge_index);
 static bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data);
 
 state_t *state_timer()
@@ -36,10 +36,11 @@ state_t *state_timer()
 bool state_timer_process(state_t *state_base, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    enlarger_profile_t *enlarger_profile = state_controller_get_enlarger_profile(controller);
 
-    if (state_timer_main_exposure(exposure_state)) {
+    if (state_timer_main_exposure(exposure_state, enlarger_profile)) {
         for (int i = 0; i < exposure_state->burn_dodge_count; i++) {
-            if (!state_timer_burn_dodge_exposure(exposure_state, i)) {
+            if (!state_timer_burn_dodge_exposure(exposure_state, enlarger_profile, i)) {
                 break;
             }
         }
@@ -49,7 +50,7 @@ bool state_timer_process(state_t *state_base, state_controller_t *controller)
     return true;
 }
 
-bool state_timer_main_exposure(exposure_state_t *exposure_state)
+bool state_timer_main_exposure(exposure_state_t *exposure_state, enlarger_profile_t *enlarger_profile)
 {
     bool result;
 
@@ -86,7 +87,6 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state)
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    const enlarger_profile_t *enlarger_profile = settings_get_default_enlarger_profile();
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_profile);
 
     exposure_timer_set_config(&timer_config);
@@ -137,7 +137,7 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
     return true;
 }
 
-bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, int burn_dodge_index)
+bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, enlarger_profile_t *enlarger_profile, int burn_dodge_index)
 {
     bool result;
     exposure_burn_dodge_t *entry = &(exposure_state->burn_dodge_entry[burn_dodge_index]);
@@ -217,7 +217,6 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, int burn_
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    const enlarger_profile_t *enlarger_profile = settings_get_default_enlarger_profile();
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_profile);
 
     exposure_timer_set_config(&timer_config);

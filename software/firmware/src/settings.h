@@ -7,6 +7,7 @@
 
 #include <stm32f4xx_hal.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "buzzer.h"
 #include "exposure_state.h"
 #include "enlarger_profile.h"
@@ -120,10 +121,47 @@ teststrip_patches_t settings_get_teststrip_patches();
 void settings_set_teststrip_patches(teststrip_patches_t patches);
 
 /**
- * Default enlarger profile for exposure timing.
- * This is a set of hard-coded values, until profile configuration
- * capabilities are added.
+ * Index of the default enlarger profile.
+ *
+ * @return An index value from 0 to 15
  */
-const enlarger_profile_t *settings_get_default_enlarger_profile();
+uint8_t settings_get_default_enlarger_profile_index();
+
+void settings_set_default_enlarger_profile_index(uint8_t index);
+
+/**
+ * Index of the default paper profile.
+ *
+ * @return An index value from 0 to 15
+ */
+uint8_t settings_get_default_paper_profile_index();
+
+void settings_set_default_paper_profile_index(uint8_t index);
+
+/**
+ * Get the enlarger profile saved at the specified index
+ *
+ * @param profile Pointer to the profile struct to load data into
+ * @param index An index value from 0 to 15
+ *
+ * @return True if the profile was successfully loaded, false if no valid
+ *         profile was found at the specified index.
+ */
+bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index);
+
+/**
+ * Save an enlarger profile at the specified index
+ *
+ * @param profile Pointer to the profile struct to save data from
+ * @param index An index value from 0 to 15
+ */
+void settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index);
+
+/**
+ * Clear any enlarger profile saved at the specified index
+ *
+ * @param index An index value from 0 to 15
+ */
+void settings_clear_enlarger_profile(uint8_t index);
 
 #endif /* SETTINGS_H */

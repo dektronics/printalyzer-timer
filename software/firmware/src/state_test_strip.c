@@ -29,7 +29,7 @@ typedef struct {
     display_test_strip_elements_t elements;
 } state_test_strip_t;
 
-static bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch);
+static bool state_test_strip_countdown(enlarger_profile_t *enlarger_profile, uint32_t patch_time_ms, bool last_patch);
 
 static void state_test_strip_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller);
@@ -115,6 +115,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    enlarger_profile_t *enlarger_profile = state_controller_get_enlarger_profile(controller);
 
     bool canceled = false;
     float patch_time;
@@ -147,7 +148,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
                 osDelay(SAFELIGHT_OFF_DELAY);
             }
 
-            if (state_test_strip_countdown(patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
+            if (state_test_strip_countdown(enlarger_profile, patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
                 if (state->patches_covered < state->exposure_patch_count) {
                     state->patches_covered++;
                 }
@@ -188,7 +189,7 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     return true;
 }
 
-bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
+bool state_test_strip_countdown(enlarger_profile_t *enlarger_profile, uint32_t patch_time_ms, bool last_patch)
 {
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, patch_time_ms);
@@ -208,7 +209,6 @@ bool state_test_strip_countdown(uint32_t patch_time_ms, bool last_patch)
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    const enlarger_profile_t *enlarger_profile = settings_get_default_enlarger_profile();
     exposure_timer_set_config_time(&timer_config, patch_time_ms, enlarger_profile);
 
     exposure_timer_set_config(&timer_config);

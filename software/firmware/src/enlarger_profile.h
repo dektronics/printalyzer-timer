@@ -6,6 +6,11 @@
 
 typedef struct {
     /*
+     * Name of the enlarger profile, to be displayed in settings.
+     */
+    char name[32];
+
+    /*
      * Time period (ms) from when the enlarger relay is activated until
      * its light level starts to rise.
      */
@@ -48,6 +53,11 @@ typedef struct {
  * the various values.
  */
 bool enlarger_profile_is_valid(const enlarger_profile_t *profile);
+
+/**
+ * Clear out the provided profile and set sensible default values.
+ */
+void enlarger_profile_set_defaults(enlarger_profile_t *profile);
 
 /**
  * Get the minimum supported exposure for the profile.
