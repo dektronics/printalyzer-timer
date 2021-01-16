@@ -56,11 +56,7 @@ void state_controller_init()
     exposure_state_defaults(&(state_controller.exposure_state));
     state_controller.focus_start_ticks = 0;
 
-    uint8_t profile_index = settings_get_default_enlarger_profile_index();
-    bool result = settings_get_enlarger_profile(&state_controller.enlarger_profile, profile_index);
-    if (!result || !enlarger_profile_is_valid(&state_controller.enlarger_profile)) {
-        enlarger_profile_set_defaults(&state_controller.enlarger_profile);
-    }
+    state_controller_reload_enlarger_profile(&state_controller);
 
     state_map[STATE_HOME] = state_home();
     state_map[STATE_HOME_CHANGE_TIME_INCREMENT] = state_home_change_time_increment();
@@ -144,10 +140,20 @@ exposure_state_t *state_controller_get_exposure_state(state_controller_t *contro
     return &(controller->exposure_state);
 }
 
-enlarger_profile_t *state_controller_get_enlarger_profile(state_controller_t *controller)
+const enlarger_profile_t *state_controller_get_enlarger_profile(state_controller_t *controller)
 {
     if (!controller) { return NULL; }
     return &(controller->enlarger_profile);
+}
+
+void state_controller_reload_enlarger_profile(state_controller_t *controller)
+{
+    if (!controller) { return; }
+    uint8_t profile_index = settings_get_default_enlarger_profile_index();
+    bool result = settings_get_enlarger_profile(&controller->enlarger_profile, profile_index);
+    if (!result || !enlarger_profile_is_valid(&controller->enlarger_profile)) {
+        enlarger_profile_set_defaults(&controller->enlarger_profile);
+    }
 }
 
 void state_controller_start_focus_timeout(state_controller_t *controller)
@@ -168,7 +174,7 @@ bool state_menu_process(state_t *state_base, state_controller_t *controller)
     // to just implement the menu system as a tree of simple function calls.
     // As such, the menu system is simply hooked in this way and doesn't
     // really participate in the main state machine.
-    main_menu_start();
+    main_menu_start(controller);
     state_controller_set_next_state(controller, STATE_HOME, 0);
     return true;
 }

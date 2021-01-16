@@ -19,7 +19,7 @@ static const char *TAG = "main_menu";
 
 static menu_result_t menu_about();
 
-menu_result_t main_menu_start()
+menu_result_t main_menu_start(state_controller_t *controller)
 {
     ESP_LOGI(TAG, "Main menu");
 
@@ -37,7 +37,7 @@ menu_result_t main_menu_start()
         if (option == 1) {
             menu_result = menu_settings();
         } else if (option == 2) {
-            menu_result = menu_enlarger_profiles();
+            menu_result = menu_enlarger_profiles(controller);
         } else if (option == 3) {
             menu_result = menu_diagnostics();
         } else if (option == 4) {
