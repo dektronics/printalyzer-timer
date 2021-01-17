@@ -7,6 +7,15 @@
 
 static const char *TAG = "tcs3472";
 
+/*
+ * Formulas related to lux and color temperature calculations are from
+ * AMS datasheet DN40.
+ *
+ * The following Adafruit sample code was used as a starting point
+ * for writing these functions:
+ * https://github.com/adafruit/Adafruit_TCS34725
+ */
+
 /* I2C device address */
 static const uint8_t TCS3472_ADDRESS = 0x29 << 1; // Use 8-bit address
 
@@ -45,13 +54,13 @@ static const uint8_t TCS3472_ADDRESS = 0x29 << 1; // Use 8-bit address
 #define TCS3472_ENABLE_PON         0x01 // Power ON
 
 /* Coefficients for Lux and CT equations */
-#define TCS3472_GA        (1.0F)
-#define TCS3472_DF        (310)
-#define TCS3472_R_COEF    (0.136F)
-#define TCS3472_G_COEF    (1.000F)
-#define TCS3472_B_COEF    (-0.444F)
-#define TCS3472_CT_COEF   (3810)
-#define TCS3472_CT_OFFSET (1391)
+#define TCS3472_GA        (1.0F)        /* Glass attenuation */
+#define TCS3472_DF        (310)         /* Device factor */
+#define TCS3472_R_COEF    (0.136F)      /* Red channel coefficient */
+#define TCS3472_G_COEF    (1.000F)      /* Green channel coefficient */
+#define TCS3472_B_COEF    (-0.444F)     /* Blue channel coefficient */
+#define TCS3472_CT_COEF   (3810)        /* Color temperature coefficient */
+#define TCS3472_CT_OFFSET (1391)        /* Color temperature offset */
 
 static tcs3472_again_t tcs3472_gain = TCS3472_AGAIN_1X;
 static tcs3472_atime_t tcs3472_integration = TCS3472_ATIME_2_4MS;
@@ -82,13 +91,13 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
 
     ESP_LOGI(TAG, "Status: %02X", data);
 
-    // Power on the sensor
+    /* Power on the sensor */
     ret = tcs3472_enable(hi2c);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    // Set default integration time and gain
+    /* Set default integration time and gain */
     tcs3472_gain = TCS3472_AGAIN_1X;
     ret = tcs3472_set_gain(hi2c, tcs3472_gain);
     if (ret != HAL_OK) {
@@ -101,7 +110,7 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
     }
 
 
-    // Power off the sensor
+    /* Power off the sensor */
     ret = tcs3472_disable(hi2c);
     if (ret != HAL_OK) {
         return ret;
@@ -278,6 +287,11 @@ const char* tcs3472_atime_str(tcs3472_atime_t atime)
     }
 }
 
+float tcs3472_atime_ms(tcs3472_atime_t atime)
+{
+    return 2.4 * (256 - atime);
+}
+
 uint16_t tcs3472_atime_max_count(tcs3472_atime_t atime)
 {
     return (256 - (uint16_t)atime) * 1024;
@@ -299,22 +313,32 @@ const char* tcs3472_gain_str(tcs3472_again_t gain)
     }
 }
 
-uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
+uint8_t tcs3472_gain_value(tcs3472_again_t gain)
 {
-    // Calculate color temperature using the algorithm from DN40
-    // Based on Adafruit sample code:
-    // https://github.com/adafruit/Adafruit_TCS34725
+    switch (gain) {
+    case TCS3472_AGAIN_1X:
+        return 1;
+    case TCS3472_AGAIN_4X:
+        return 4;
+    case TCS3472_AGAIN_16X:
+        return 16;
+    case TCS3472_AGAIN_60X:
+        return 60;
+    default:
+        return 0;
+    }
+}
 
-    uint16_t r2, b2; /* RGB values minus IR component */
-    uint16_t sat;    /* Digital saturation level */
-    uint16_t ir;     /* Inferred IR content */
+bool tcs3472_is_sensor_saturated(const tcs3472_channel_data_t *ch_data)
+{
+    uint16_t sat; /* Digital saturation level */
 
     if (!ch_data) {
-        return HAL_ERROR;
+        return false;
     }
 
     if (ch_data->clear == 0) {
-        return 0;
+        return false;
     }
 
     /* Analog/Digital saturation:
@@ -361,14 +385,49 @@ uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
 
     /* Check for saturation and mark the sample as invalid if true */
     if (ch_data->clear >= sat) {
+        return true;
+    }
+
+    return false;
+}
+
+static uint16_t tcs3472_calculate_residual_ir_value(const tcs3472_channel_data_t *ch_data)
+{
+    /*
+     * AMS RGB sensors have no IR channel, so the IR content must be
+     * calculated indirectly.
+     * IR = (R + G + B - C)/2
+     */
+    return (ch_data->red + ch_data->green + ch_data->blue > ch_data->clear)
+        ? (ch_data->red + ch_data->green + ch_data->blue - ch_data->clear) / 2 : 0;
+}
+
+uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
+{
+    uint16_t r2, b2; /* RGB values minus IR component */
+    uint16_t ir;     /* Inferred IR content */
+
+    if (!ch_data) {
         return 0;
     }
 
-    /* AMS RGB sensors have no IR channel, so the IR content must be */
-    /* calculated indirectly. */
-    ir = (ch_data->red + ch_data->green + ch_data->blue > ch_data->clear) ? (ch_data->red + ch_data->green + ch_data->blue - ch_data->clear) / 2 : 0;
+    /* Check for lack of data */
+    if (ch_data->clear == 0) {
+        return 0;
+    }
 
-    /* Remove the IR component from the raw RGB values */
+    /* Check for sensor saturation */
+    if (tcs3472_is_sensor_saturated(ch_data)) {
+        return 0;
+    }
+
+    /* Calculate the residual IR component */
+    ir = tcs3472_calculate_residual_ir_value(ch_data);
+
+    /*
+     * Remove the IR component from the raw R+G values.
+     * R’ = R - IR, G’ = G - IR
+     */
     r2 = ch_data->red - ir;
     b2 = ch_data->blue - ir;
 
@@ -376,11 +435,11 @@ uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
         return 0;
     }
 
-    /* A simple method of measuring color temp is to use the ratio of blue */
-    /* to red light, taking IR cancellation into account. */
-    uint16_t cct = (TCS3472_CT_COEF * (uint32_t)b2) / /** Color temp coefficient. */
-        (uint32_t)r2 +
-        TCS3472_CT_OFFSET; /** Color temp offset. */
+    /*
+     * A simple method of measuring color temp is to use the ratio of blue
+     * to red light, taking IR cancellation into account.
+     */
+    uint16_t cct = (TCS3472_CT_COEF * (uint32_t)b2) / (uint32_t)r2 + TCS3472_CT_OFFSET;
 
     return cct;
 }
@@ -388,7 +447,6 @@ uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
 float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data)
 {
     uint16_t r2, g2, b2; /* RGB values minus IR component */
-    uint16_t sat;        /* Digital saturation level */
     uint16_t ir;         /* Inferred IR content */
     uint16_t again_x;
     float atime_ms;
@@ -396,65 +454,41 @@ float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data)
     float lux;
 
     if (!ch_data) {
-        return HAL_ERROR;
-    }
-
-    // Saturation handling copied from above function
-    if ((256 - ch_data->integration) > 63) {
-        /* Track digital saturation */
-        sat = 65535;
-    } else {
-        /* Track analog saturation */
-        sat = 1024 * (256 - ch_data->integration);
-    }
-
-    if ((256 - ch_data->integration) <= 63) {
-        /* Adjust sat to 75% to avoid analog saturation if atime < 153.6ms */
-        sat -= sat / 4;
-    }
-
-    /* Check for saturation and mark the sample as invalid if true */
-    if (ch_data->clear >= sat) {
         return 0;
     }
 
-    /* AMS RGB sensors have no IR channel, so the IR content must be */
-    /* calculated indirectly. */
-    // IR = (R + G + B – C)/2
-    ir = (ch_data->red + ch_data->green + ch_data->blue > ch_data->clear) ? (ch_data->red + ch_data->green + ch_data->blue - ch_data->clear) / 2 : 0;
+    /* Check for sensor saturation */
+    if (tcs3472_is_sensor_saturated(ch_data)) {
+        return 0;
+    }
 
-    /* Remove the IR component from the raw RGB values */
-    // R’ = R – IR, G’ = G – IR, B’ = B – IR
+    /* Calculate the residual IR component */
+    ir = tcs3472_calculate_residual_ir_value(ch_data);
+
+    /*
+     * Remove the IR component from the raw RGB values.
+     * R’ = R - IR, G’ = G - IR, B’ = B - IR
+     */
     r2 = ch_data->red - ir;
     g2 = ch_data->green - ir;
     b2 = ch_data->blue - ir;
 
     /* Find the numeric gain value */
-    switch (ch_data->gain) {
-    case TCS3472_AGAIN_1X:
-        again_x = 1;
-        break;
-    case TCS3472_AGAIN_4X:
-        again_x = 4;
-        break;
-    case TCS3472_AGAIN_16X:
-        again_x = 16;
-        break;
-    case TCS3472_AGAIN_60X:
-        again_x = 60;
-        break;
-    default:
+    again_x = tcs3472_gain_value(ch_data->gain);
+    if (again_x == 0) {
         return 0;
     }
 
     /* Find the numeric integration time value */
-    atime_ms = 2.4 * (256 - ch_data->integration);
+    atime_ms = tcs3472_atime_ms(ch_data->integration);
 
-    // CPL = (AGAINx * ATIME_ms) / (GA * DF)
+    /* CPL = (AGAINx * ATIME_ms) / (GA * DF) */
     cpl = (again_x * atime_ms) / (TCS3472_GA * TCS3472_DF);
 
-    // G” = R_Coef * R’ + G_Coef * G’ + B_Coef * B’
-    // Lux = G” / CPL
+    /*
+     * G” = R_Coef * R’ + G_Coef * G’ + B_Coef * B’
+     * Lux = G” / CPL
+     */
     lux = ((TCS3472_R_COEF * r2) + (TCS3472_G_COEF * g2) + (TCS3472_B_COEF * b2)) / cpl;
 
     return lux;

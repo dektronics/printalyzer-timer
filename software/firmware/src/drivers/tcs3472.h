@@ -28,8 +28,8 @@ typedef enum {
 } tcs3472_wtime_t;
 
 typedef enum {
-    TCS3472_AGAIN_1X = 0,
-    TCS3472_AGAIN_4X = 1,
+    TCS3472_AGAIN_1X  = 0,
+    TCS3472_AGAIN_4X  = 1,
     TCS3472_AGAIN_16X = 2,
     TCS3472_AGAIN_60X = 3
 } tcs3472_again_t;
@@ -57,9 +57,22 @@ HAL_StatusTypeDef tcs3472_get_clear_channel_data(I2C_HandleTypeDef *hi2c, uint16
 HAL_StatusTypeDef tcs3472_get_full_channel_data(I2C_HandleTypeDef *hi2c, tcs3472_channel_data_t *ch_data);
 
 const char* tcs3472_atime_str(tcs3472_atime_t atime);
+float tcs3472_atime_ms(tcs3472_atime_t atime);
 uint16_t tcs3472_atime_max_count(tcs3472_atime_t atime);
 
 const char* tcs3472_gain_str(tcs3472_again_t gain);
+uint8_t tcs3472_gain_value(tcs3472_again_t gain);
+
+/**
+ * Check whether the sensor data shows analog or digital saturation.
+ *
+ * When the sensor is in saturation, calculations based on that
+ * data cannot be made reliably.
+ *
+ * @param ch_data Full channel data
+ * @return True if saturated, false otherwise.
+ */
+bool tcs3472_is_sensor_saturated(const tcs3472_channel_data_t *ch_data);
 
 /**
  * Calculate the color temperature from a full channel reading.
@@ -73,6 +86,15 @@ const char* tcs3472_gain_str(tcs3472_again_t gain);
  */
 uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data);
 
+/**
+ * Calculate the lux value from a full channel reading.
+ *
+ * If the channel data is valid, but has reached analog or digital
+ * saturation, then the lux value will be returned as zero.
+ *
+ * @param ch_data Full channel data
+ * @return Lux value, or 0 if the value could not be calculated
+ */
 float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data);
 
 #endif /* TCS3472_H */
