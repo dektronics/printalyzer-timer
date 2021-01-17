@@ -824,12 +824,12 @@ calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
-    if ((stats_on->min - stats_off->max) < 50) {
+    if ((stats_on->min - stats_off->max) < 10) {
         ESP_LOGW(TAG, "Insufficient separation between on and off ranges");
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
-    if ((stats_on->mean - stats_off->mean) < 200) {
+    if ((stats_on->mean - stats_off->mean) < 20) {
         ESP_LOGW(TAG, "Insufficient separation between on and off mean values");
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
