@@ -1252,7 +1252,6 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
     u8g2_ClearBuffer(&u8g2);
 
     char str[31];
-    uint8_t event;
     u8g2_uint_t yy;
     u8g2_uint_t grid_y;
     u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
@@ -1297,9 +1296,12 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
         display_draw_input_grid(grid_y, ch);
         u8g2_SendBuffer(&u8g2);
 
-        event = u8x8_GetMenuEvent(u8g2_GetU8x8(&u8g2));
+        uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2),
+            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT | DISPLAY_MENU_INPUT_ASCII);
+        uint8_t event_action = (uint8_t)(event_result & 0x00FF);
+        uint8_t event_keycode = (uint8_t)((event_result & 0xFF00) >> 8);
 
-        if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+        if (event_action == U8X8_MSG_GPIO_MENU_SELECT && event_keycode == KEYPAD_ADD_ADJUSTMENT) {
             if (ch == 0xFD) {
                 if (cursor > 0) {
                     cursor--;
@@ -1312,28 +1314,44 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
                 str[cursor++] = ch;
             }
         }
-        else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+        else if (event_action == U8X8_MSG_GPIO_MENU_SELECT && event_keycode == KEYPAD_MENU) {
+            accepted = true;
             break;
         }
-        else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+        else if (event_action == U8X8_MSG_GPIO_MENU_INPUT_ASCII) {
+            if (event_keycode >= 32 && event_keycode < 127) {
+                if (cursor < sizeof(str) - 1) {
+                    str[cursor++] = (char)event_keycode;
+                }
+            } else if (event_keycode == '\b') {
+                if (cursor > 0) {
+                    cursor--;
+                    str[cursor] = '\0';
+                }
+            }
+        }
+        else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
+            break;
+        }
+        else if (event_action == U8X8_MSG_GPIO_MENU_NEXT) {
             col = (col >= 24) ? 0 : col + 1;
             if (row == 3 && col >= 19 && col < 22) {
                 col = 22;
             }
         }
-        else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+        else if (event_action == U8X8_MSG_GPIO_MENU_PREV) {
             col = (col == 0) ? 24 : col - 1;
             if (row == 3 && col >= 19 && col < 22) {
                 col = 18;
             }
         }
-        else if (event == U8X8_MSG_GPIO_MENU_DOWN) {
+        else if (event_action == U8X8_MSG_GPIO_MENU_DOWN) {
             row = (row >= 3) ? 0 : row + 1;
             if (row == 3 && col >= 19 && col < 22) {
                 row = 0;
             }
         }
-        else if (event == U8X8_MSG_GPIO_MENU_UP) {
+        else if (event_action == U8X8_MSG_GPIO_MENU_UP) {
             row = (row == 0) ? 3 : row - 1;
             if (row == 3 && col >= 19 && col < 22) {
                 row = 2;
@@ -1394,7 +1412,13 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
         if (event.pressed) {
             // Button actions that stay within the menu are handled on
             // the press event
-            switch (event.key) {
+            keypad_key_t keypad_key;
+            if (event.key == KEYPAD_USB_KEYBOARD) {
+                keypad_key = keypad_usb_get_keypad_equivalent(&event);
+            } else {
+                keypad_key = event.key;
+            }
+            switch (keypad_key) {
             case KEYPAD_DEC_CONTRAST:
                 result = U8X8_MSG_GPIO_MENU_PREV;
                 break;
@@ -1422,6 +1446,34 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
                 result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
             } else if (event.key == KEYPAD_CANCEL) {
                 result = U8X8_MSG_GPIO_MENU_HOME;
+            }
+        }
+
+        // Some USB keys have mappings that don't make sense in the context
+        // of the above logic, or that can't easily be done generically.
+        if (result == 0 && event.key == KEYPAD_USB_KEYBOARD) {
+            uint8_t keycode = keypad_usb_get_keycode(&event);
+            char keychar = keypad_usb_get_ascii(&event);
+
+            if ((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && keychar == '\n') {
+                result = ((uint16_t)KEYPAD_MENU << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && keychar == '+') {
+                result = ((uint16_t)KEYPAD_ADD_ADJUSTMENT << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && keychar == '*') {
+                result = ((uint16_t)KEYPAD_TEST_STRIP << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && keychar == '\t') {
+                result = ((uint16_t)KEYPAD_ENCODER << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if (keycode == 0x29 /* KEY_ESCAPE */) {
+                result = U8X8_MSG_GPIO_MENU_HOME;
+            } else if ((params & DISPLAY_MENU_INPUT_ASCII) != 0) {
+                if ((keychar >= 32 && keychar < 127) || keychar == '\n' || keychar == '\t') {
+                    // Handle normally printable characters that are correctly mapped
+                    result = ((uint16_t)keychar << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                } else if (keycode == 0x2A /* KEY_BACKSPACE */ || keycode == 0xBB /* KEY_KEYPAD_BACKSPACE */) {
+                    result = ((uint16_t)'\b' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                } else if (keycode == 0x4C /* KEY_DELETE */) {
+                    result = ((uint16_t)'\x7F' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                }
             }
         }
     } else if (ret == HAL_TIMEOUT) {

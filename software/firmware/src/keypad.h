@@ -29,7 +29,8 @@ typedef enum {
     KEYPAD_FOOTSWITCH = 99,
     KEYPAD_METER_PROBE = 100,
     KEYPAD_ENCODER_CCW = 200,
-    KEYPAD_ENCODER_CW = 201
+    KEYPAD_ENCODER_CW = 201,
+    KEYPAD_USB_KEYBOARD = 254
 } keypad_key_t;
 
 typedef struct {
@@ -52,6 +53,9 @@ HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait
 bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key);
 bool keypad_is_key_released_or_repeated(const keypad_event_t *event, keypad_key_t key);
 bool keypad_is_key_combo_pressed(const keypad_event_t *event, keypad_key_t key1, keypad_key_t key2);
+char keypad_usb_get_ascii(const keypad_event_t *event);
+uint8_t keypad_usb_get_keycode(const keypad_event_t *event);
+keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event);
 
 HAL_StatusTypeDef keypad_int_event_handler();
 

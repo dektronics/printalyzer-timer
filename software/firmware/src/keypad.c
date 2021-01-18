@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <usbh_hid_keybd.h>
+
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <esp_log.h>
 
@@ -451,6 +453,59 @@ bool keypad_is_key_combo_pressed(const keypad_event_t *event, keypad_key_t key1,
     } else {
         return false;
     }
+}
+
+char keypad_usb_get_ascii(const keypad_event_t *event)
+{
+    if (!event || event->key != KEYPAD_USB_KEYBOARD) { return '\0'; }
+    return (char)(event->keypad_state & 0x00FF);
+}
+
+uint8_t keypad_usb_get_keycode(const keypad_event_t *event)
+{
+    if (!event || event->key != KEYPAD_USB_KEYBOARD) { return 0; }
+    return (uint8_t)((event->keypad_state & 0xFF00) >> 8);
+}
+
+keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event)
+{
+    if (!event || event->key != KEYPAD_USB_KEYBOARD) { return 0; }
+    uint8_t keycode = (uint8_t)((event->keypad_state & 0xFF00) >> 8);
+    keypad_key_t keypad_key = 0;
+
+    switch (keycode) {
+    case KEY_UPARROW:
+    case KEY_KEYPAD_8_UP_ARROW:
+        keypad_key = KEYPAD_INC_EXPOSURE;
+        break;
+    case KEY_DOWNARROW:
+    case KEY_KEYPAD_2_DOWN_ARROW:
+        keypad_key = KEYPAD_DEC_EXPOSURE;
+        break;
+    case KEY_LEFTARROW:
+    case KEY_KEYPAD_4_LEFT_ARROW:
+        keypad_key = KEYPAD_DEC_CONTRAST;
+        break;
+    case KEY_RIGHTARROW:
+    case KEY_KEYPAD_6_RIGHT_ARROW:
+        keypad_key = KEYPAD_INC_CONTRAST;
+        break;
+    case KEY_A:
+    case KEY_EQUAL_PLUS:
+    case KEY_KEYPAD_PLUS:
+        keypad_key = KEYPAD_ADD_ADJUSTMENT;
+        break;
+    case KEY_F1:
+        keypad_key = KEYPAD_MENU;
+        break;
+    case KEY_ESCAPE:
+        keypad_key = KEYPAD_CANCEL;
+        break;
+    default:
+        break;
+    }
+
+    return keypad_key;
 }
 
 uint8_t keypad_keycode_to_index(keypad_key_t keycode)

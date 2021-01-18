@@ -103,6 +103,9 @@ menu_result_t diagnostics_keypad()
         if (keypad_event.key == KEYPAD_CANCEL && keypad_event.repeated) {
             keypad_pressed = true;
             break;
+        } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+            && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
+            break;
         }
 
         keypad_event.key = 0;
@@ -200,6 +203,9 @@ menu_result_t diagnostics_led()
                     led_brightness_changed = true;
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
                 break;
             }
 
@@ -359,6 +365,9 @@ menu_result_t diagnostics_buzzer()
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
+                break;
             }
 
             if (freq_changed) {
@@ -405,6 +414,9 @@ menu_result_t diagnostics_relay()
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 relay_sflt = !relay_sflt;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
                 break;
             }
 
@@ -619,6 +631,9 @@ menu_result_t diagnostics_meter_probe()
             } else if ((keypad_event.key == KEYPAD_MENU || keypad_event.key == KEYPAD_METER_PROBE) && !keypad_event.pressed) {
                 freeze_data = !freeze_data;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
                 break;
             }
         }

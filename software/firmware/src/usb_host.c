@@ -14,9 +14,16 @@
 
 static const char *TAG = "usb_host";
 
+#define REPORT_KEY_NUM_LOCK 0x01
+#define REPORT_KEY_CAPS_LOCK 0x02
+#define REPORT_KEY_SCROLL_LOCK 0x04
+
 USBH_HandleTypeDef hUsbHostFS;
-usb_app_state_t app_state = APPLICATION_IDLE;
-bool usb_msc_mounted = false;
+static usb_app_state_t app_state = APPLICATION_IDLE;
+static bool usb_msc_mounted = false;
+static uint8_t usb_hid_keyboard_report_state = 0x00;
+static HID_KEYBD_Info_TypeDef usb_hid_keyboard_last_event = {0};
+static uint32_t usb_hid_keyboard_last_event_time = 0;
 
 static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id);
 static void usb_msc_active();
@@ -69,6 +76,10 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
         app_state = APPLICATION_READY;
         if (active_class == USB_MSC_CLASS) {
             usb_msc_active();
+        } else if (active_class == USB_HID_CLASS && USBH_HID_GetDeviceType(phost) == HID_KEYBOARD) {
+            usb_hid_keyboard_report_state = 0x00;
+            memset(&usb_hid_keyboard_last_event, 0, sizeof(HID_KEYBD_Info_TypeDef));
+            usb_hid_keyboard_last_event_time = 0;
         }
         break;
     case HOST_USER_CLASS_SELECTED:
@@ -96,60 +107,80 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
     if(USBH_HID_GetDeviceType(phost) == HID_KEYBOARD) {
         uint8_t key;
         HID_KEYBD_Info_TypeDef *keyboard_info;
-        keyboard_info = USBH_HID_GetKeybdInfo(phost);
-        key = USBH_HID_GetASCIICode(keyboard_info);
-        ESP_LOGD(TAG, "Keyboard: key='%c', code=0x%02X", key, keyboard_info->keys[0]);
+        uint8_t report_state = usb_hid_keyboard_report_state;
+        uint32_t event_time = HAL_GetTick();
 
-        keypad_event_t keypad_event = {
-            .key = 0,
-            .pressed = true
-        };
-        switch (keyboard_info->keys[0]) {
-        case KEY_UPARROW:
-            keypad_event.key = KEYPAD_INC_EXPOSURE;
+        keyboard_info = USBH_HID_GetKeybdInfo(phost);
+
+        /*
+         * Sometimes we seem to receive the same event twice, in very quick
+         * succession. This mostly happens with the CapsLock/NumLock keys
+         * during the first press after startup, and it messes up our
+         * handling of those keys. For now, the easy fix is to simply
+         * detect and ignore such events.
+         */
+        if (memcmp(keyboard_info, &usb_hid_keyboard_last_event, sizeof(HID_KEYBD_Info_TypeDef)) == 0
+            && (event_time - usb_hid_keyboard_last_event_time) < 20) {
+            return;
+        } else {
+            memcpy(&usb_hid_keyboard_last_event, keyboard_info, sizeof(HID_KEYBD_Info_TypeDef));
+            usb_hid_keyboard_last_event_time = event_time;
+        }
+
+        key = USBH_HID_GetASCIICode(keyboard_info);
+
+        if (key >= 32 && key <= 126) {
+            ESP_LOGD(TAG, "Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, keyboard_info->keys[0], keyboard_info->keys[1], keyboard_info->keys[2],
+                keyboard_info->keys[3], keyboard_info->keys[4], keyboard_info->keys[5]);
+        } else {
+            ESP_LOGD(TAG, "Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, keyboard_info->keys[0], keyboard_info->keys[1], keyboard_info->keys[2],
+                keyboard_info->keys[3], keyboard_info->keys[4], keyboard_info->keys[5]);
+        }
+
+        if (keyboard_info->keys[0] == KEY_KEYPAD_NUM_LOCK_AND_CLEAR) {
+            report_state ^= REPORT_KEY_NUM_LOCK;
+        } else if (keyboard_info->keys[0] == KEY_CAPS_LOCK) {
+            report_state ^= REPORT_KEY_CAPS_LOCK;
+        } else if (keyboard_info->keys[0] == KEY_SCROLL_LOCK) {
+            report_state ^= REPORT_KEY_SCROLL_LOCK;
+        }
+
+        if (report_state != usb_hid_keyboard_report_state) {
+            USBH_StatusTypeDef res = USBH_BUSY;
+            do {
+                res = USBH_HID_SetReport(phost,
+                    0x02 /*reportType*/,
+                    0x00 /*reportId*/,
+                    &report_state, 1);
+            } while(res == USBH_BUSY);
+
+            if (res == USBH_OK) {
+                usb_hid_keyboard_report_state = report_state;
+            }
+        } else {
+            /*
+             * Toggle the state of the shift keys based on the state
+             * of CapsLock so the correct character is generated.
+             */
+            if ((report_state & REPORT_KEY_CAPS_LOCK) != 0
+                && ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z'))) {
+                if ((keyboard_info->lshift == 1U) || (keyboard_info->rshift)) {
+                    keyboard_info->lshift = 0;
+                } else {
+                    keyboard_info->lshift = 1;
+                }
+                keyboard_info->rshift = 0;
+                key = USBH_HID_GetASCIICode(keyboard_info);
+            }
+
+            keypad_event_t keypad_event = {
+                .key = KEYPAD_USB_KEYBOARD,
+                .pressed = true,
+                .keypad_state = ((uint16_t)keyboard_info->keys[0] << 8) | key
+            };
             keypad_inject_event(&keypad_event);
-            break;
-        case KEY_DOWNARROW:
-            keypad_event.key = KEYPAD_DEC_EXPOSURE;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_LEFTARROW:
-            keypad_event.key = KEYPAD_DEC_CONTRAST;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_RIGHTARROW:
-            keypad_event.key = KEYPAD_INC_CONTRAST;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_SPACEBAR:
-            keypad_event.key = KEYPAD_FOCUS;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_ENTER:
-            keypad_event.key = KEYPAD_START;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_A:
-        case KEY_EQUAL_PLUS:
-        case KEY_KEYPAD_PLUS:
-            keypad_event.key = KEYPAD_ADD_ADJUSTMENT;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_T:
-        case KEY_8_ASTERISK:
-            keypad_event.key = KEYPAD_TEST_STRIP;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_F1:
-            keypad_event.key = KEYPAD_MENU;
-            keypad_inject_event(&keypad_event);
-            break;
-        case KEY_ESCAPE:
-            keypad_event.key = KEYPAD_CANCEL;
-            keypad_inject_event(&keypad_event);
-            break;
-        default:
-            break;
         }
     }
 }

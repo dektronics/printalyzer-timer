@@ -9,6 +9,12 @@
 extern bool menu_event_timeout;
 
 /*
+ * Custom menu result codes in the value range of 0..63,
+ * as the built-in ones are offset by 64.
+ */
+#define U8X8_MSG_GPIO_MENU_INPUT_ASCII 1
+
+/*
  * These functions are derived from various u8g2 library functions,
  * with changes made to better suit our integration needs.
  * They retain some of the naming conventions to more clearly
