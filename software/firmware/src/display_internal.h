@@ -28,6 +28,9 @@ void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
 
+uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix);
+
 uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const char *prefix, uint8_t *value,
     uint8_t low, uint8_t high, uint8_t digits, const char *postfix,
     display_input_value_callback_t callback, void *user_data);

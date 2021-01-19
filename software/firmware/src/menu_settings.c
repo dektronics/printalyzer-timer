@@ -4,6 +4,7 @@
 #include <cmsis_os.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include <esp_log.h>
 
@@ -20,6 +21,7 @@ static menu_result_t menu_settings_safelight_mode();
 static menu_result_t menu_settings_enlarger_auto_shutoff();
 static menu_result_t menu_settings_display_brightness();
 static menu_result_t menu_settings_buzzer_volume();
+static menu_result_t menu_settings_sensor_adjustment();
 
 menu_result_t menu_settings()
 {
@@ -35,7 +37,8 @@ menu_result_t menu_settings()
             "Safelight Mode\n"
             "Enlarger Auto-Shutoff\n"
             "Display Brightness\n"
-            "Buzzer Volume");
+            "Buzzer Volume\n"
+            "Sensor Adjustment");
 
         if (option == 1) {
             menu_result = menu_settings_default_exposure();
@@ -51,6 +54,8 @@ menu_result_t menu_settings()
             menu_result = menu_settings_display_brightness();
         } else if (option == 7) {
             menu_result = menu_settings_buzzer_volume();
+        } else if (option == 8) {
+            menu_result = menu_settings_sensor_adjustment();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -598,6 +603,34 @@ menu_result_t menu_settings_buzzer_volume()
         osDelay(100);
         buzzer_stop();
         buzzer_set_volume(BUZZER_VOLUME_OFF);
+    }
+
+    return menu_result;
+}
+
+menu_result_t menu_settings_sensor_adjustment()
+{
+    menu_result_t menu_result = MENU_OK;
+
+    /*
+     * In future versions of the meter probe, calibration constants may
+     * be stored on the probe itself. However, the initial meter probe
+     * does not have any memory. Therefore, this will be configured in
+     * device settings. Hopefully the same values should work across all
+     * similar meter probes, but this is being made adjustable just
+     * in case.
+     */
+
+    uint16_t value_sel = lroundf(settings_get_tcs3472_ga_factor() * 100);
+    if (display_input_value_f16(
+        "-- TCS3472 GA Factor --\n"
+        "Ratio between a calibrated lux\n"
+        "reading and an uncalibrated\n"
+        "reading from the meter probe.\n",
+        "", &value_sel, 0, 999, 1, 2, "") == UINT8_MAX) {
+        menu_result = MENU_TIMEOUT;
+    } else {
+        settings_set_tcs3472_ga_factor((float)value_sel / 100.0F);
     }
 
     return menu_result;

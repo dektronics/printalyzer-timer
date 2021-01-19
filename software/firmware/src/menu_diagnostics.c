@@ -438,8 +438,11 @@ menu_result_t diagnostics_meter_probe()
     bool sensor_initialized = false;
     bool sensor_error = false;
     bool freeze_data = false;
+    bool use_calibration = true;
     tcs3472_channel_data_t channel_data;
     bool enlarger_enabled = relay_enlarger_is_enabled();
+
+    float ga_factor = settings_get_tcs3472_ga_factor();
 
     memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
 
@@ -475,21 +478,22 @@ menu_result_t diagnostics_meter_probe()
         if (sensor_initialized && !sensor_error) {
             uint16_t color_temp = tcs3472_calculate_color_temp(&channel_data);
 
-            float lux = tcs3472_calculate_lux(&channel_data);
+            float lux = tcs3472_calculate_lux(&channel_data, use_calibration ? ga_factor : 0);
 
             uint16_t ir = (channel_data.red + channel_data.green + channel_data.blue > channel_data.clear)
                 ? (channel_data.red + channel_data.green + channel_data.blue - channel_data.clear) / 2 : 0;
             uint16_t ir_pct = roundf(((float)ir / channel_data.clear) * 100.0F);
 
             sprintf(buf,
-                    "TCS3472 (%s, %s)\n"
-                    "Clear: %d\n"
-                    "R/G/B: %d / %d / %d\n"
-                    "Temp: %dK\n"
-                    "Lux: %04f / IR: %d%%",
-                    tcs3472_gain_str(channel_data.gain), tcs3472_atime_str(channel_data.integration),
-                    channel_data.clear, channel_data.red, channel_data.green, channel_data.blue,
-                    color_temp, lux, ir_pct);
+                "TCS3472 (%s, %s, GA=%.02f)\n"
+                "Clear: %d\n"
+                "R/G/B: %d / %d / %d\n"
+                "Temp: %dK\n"
+                "Lux: %04f / IR: %d%%",
+                tcs3472_gain_str(channel_data.gain), tcs3472_atime_str(channel_data.integration),
+                (use_calibration ? ga_factor : 1.0F),
+                channel_data.clear, channel_data.red, channel_data.green, channel_data.blue,
+                color_temp, lux, ir_pct);
         } else {
             sprintf(buf, "\n\n**** Sensor Unavailable ****");
         }
@@ -628,6 +632,8 @@ menu_result_t diagnostics_meter_probe()
                         tcs3472_set_time(&hi2c2, atime);
                     }
                 }
+            } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
+                use_calibration = !use_calibration;
             } else if ((keypad_event.key == KEYPAD_MENU || keypad_event.key == KEYPAD_METER_PROBE) && !keypad_event.pressed) {
                 freeze_data = !freeze_data;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {

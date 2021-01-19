@@ -142,6 +142,13 @@ uint8_t settings_get_default_paper_profile_index();
 void settings_set_default_paper_profile_index(uint8_t index);
 
 /**
+ * TCS3472 sensor's glass attenuation factor.
+ */
+float settings_get_tcs3472_ga_factor();
+
+void settings_set_tcs3472_ga_factor(float value);
+
+/**
  * Get the enlarger profile saved at the specified index
  *
  * @param profile Pointer to the profile struct to load data into

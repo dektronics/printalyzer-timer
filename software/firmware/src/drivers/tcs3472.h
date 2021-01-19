@@ -93,8 +93,10 @@ uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data);
  * saturation, then the lux value will be returned as zero.
  *
  * @param ch_data Full channel data
+ * @param ga_factor Glass attenuation factor. Will use the default of 1.0
+ *        if this value is zero or invalid.
  * @return Lux value, or 0 if the value could not be calculated
  */
-float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data);
+float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data, float ga_factor);
 
 #endif /* TCS3472_H */

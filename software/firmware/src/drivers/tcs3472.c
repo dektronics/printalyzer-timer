@@ -2,7 +2,9 @@
 
 #include "stm32f4xx_hal.h"
 
-#include "esp_log.h"
+#include <math.h>
+#include <esp_log.h>
+
 #include "i2c_util.h"
 
 static const char *TAG = "tcs3472";
@@ -444,7 +446,7 @@ uint16_t tcs3472_calculate_color_temp(const tcs3472_channel_data_t *ch_data)
     return cct;
 }
 
-float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data)
+float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data, float ga_factor)
 {
     uint16_t r2, g2, b2; /* RGB values minus IR component */
     uint16_t ir;         /* Inferred IR content */
@@ -455,6 +457,11 @@ float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data)
 
     if (!ch_data) {
         return 0;
+    }
+
+    /* Set the default GA if the parameter is missing or invalid. */
+    if (!isnormal(ga_factor) || ga_factor <= 0.0F) {
+        ga_factor = TCS3472_GA;
     }
 
     /* Check for sensor saturation */
@@ -483,7 +490,7 @@ float tcs3472_calculate_lux(const tcs3472_channel_data_t *ch_data)
     atime_ms = tcs3472_atime_ms(ch_data->integration);
 
     /* CPL = (AGAINx * ATIME_ms) / (GA * DF) */
-    cpl = (again_x * atime_ms) / (TCS3472_GA * TCS3472_DF);
+    cpl = (again_x * atime_ms) / (ga_factor * TCS3472_DF);
 
     /*
      * G” = R_Coef * R’ + G_Coef * G’ + B_Coef * B’

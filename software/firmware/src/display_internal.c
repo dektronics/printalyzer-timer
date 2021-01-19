@@ -63,6 +63,19 @@ static const char *display_u16toa(uint16_t v, uint8_t d)
     return buf;
 }
 
+static uint8_t uint_pow(uint8_t base, uint8_t exp)
+{
+    uint8_t result = 1;
+
+    if (exp > 0) {
+        for(uint8_t i = 0; i < exp; i++) {
+            result *= base;
+        }
+    }
+
+    return result;
+}
+
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, uint8_t digits, const char *postfix)
 {
@@ -172,6 +185,148 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
                 if (local_value <= low) {
                     local_value = high;
                 } else {
+                    if (local_value < low + 10) {
+                        local_value = low;
+                    } else {
+                        local_value -= 10;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    /* never reached */
+    //return r;
+}
+
+static const char *display_f16toa(uint16_t val, uint8_t wdigits, uint8_t fdigits)
+{
+    static char buf[7];
+
+    uint8_t fpow = uint_pow(10, fdigits);
+    uint16_t wval = val / fpow;
+    uint16_t fval = val % fpow;
+
+    sprintf(buf, "%*d.%0*d", wdigits, wval, fdigits, fval);
+    return buf;
+}
+
+uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix)
+{
+    // Based off u8g2_UserInterfaceInputValue() with changes to
+    // support 16-bit numbers displayed in a fixed point format
+
+    uint8_t line_height;
+    uint8_t height;
+    u8g2_uint_t pixel_height;
+    u8g2_uint_t y, yy;
+    u8g2_uint_t pixel_width;
+    u8g2_uint_t x, xx;
+
+    if (wdigits + fdigits > 5) {
+        return 0;
+    }
+
+    uint16_t local_value = *value;
+    //uint8_t r; /* not used ??? */
+    uint8_t event;
+
+    /* only horizontal strings are supported, so force this here */
+    u8g2_SetFontDirection(u8g2, 0);
+
+    /* force baseline position */
+    u8g2_SetFontPosBaseline(u8g2);
+
+    /* calculate line height */
+    line_height = u8g2_GetAscent(u8g2);
+    line_height -= u8g2_GetDescent(u8g2);
+
+
+    /* calculate overall height of the input value box */
+    height = 1;   /* value input line */
+    height += u8x8_GetStringLineCnt(title);
+
+    /* calculate the height in pixel */
+    pixel_height = height;
+    pixel_height *= line_height;
+
+
+    /* calculate offset from top */
+    y = 0;
+    if (pixel_height < u8g2_GetDisplayHeight(u8g2)) {
+        y = u8g2_GetDisplayHeight(u8g2);
+        y -= pixel_height;
+        y /= 2;
+    }
+
+    /* calculate offset from left for the label */
+    x = 0;
+    pixel_width = u8g2_GetUTF8Width(u8g2, prefix);
+    pixel_width += u8g2_GetUTF8Width(u8g2, "0") * (wdigits + fdigits + 1);
+    pixel_width += u8g2_GetUTF8Width(u8g2, postfix);
+    if (pixel_width < u8g2_GetDisplayWidth(u8g2)) {
+        x = u8g2_GetDisplayWidth(u8g2);
+        x -= pixel_width;
+        x /= 2;
+    }
+
+    /* event loop */
+    for(;;) {
+        /* render */
+        u8g2_ClearBuffer(u8g2);
+        yy = y;
+        yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
+        xx = x;
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, prefix);
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, display_f16toa(local_value, wdigits, fdigits));
+        u8g2_DrawUTF8(u8g2, xx, yy, postfix);
+        u8g2_SendBuffer(u8g2);
+
+        for(;;) {
+            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+                *value = local_value;
+                return 1;
+            }
+            else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+                return 0;
+            }
+            else if (event == U8X8_MSG_GPIO_MENU_UP) {
+                if (local_value >= high) {
+                    local_value = low;
+                } else {
+                    local_value++;
+                }
+                break;
+            }
+            else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+                if (local_value >= high) {
+                    local_value = low;
+                } else {
+                    //FIXME increment by whole number
+                    if (local_value > high - 10) {
+                        local_value = high;
+                    } else {
+                        local_value += 10;
+                    }
+                }
+                break;
+            }
+            else if (event == U8X8_MSG_GPIO_MENU_DOWN) {
+                if (local_value <= low) {
+                    local_value = high;
+                } else {
+                    local_value--;
+                }
+                break;
+            }
+            else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+                if (local_value <= low) {
+                    local_value = high;
+                } else {
+                    //FIXME increment by whole number
                     if (local_value < low + 10) {
                         local_value = low;
                     } else {

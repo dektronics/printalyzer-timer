@@ -1,6 +1,7 @@
 #include "settings.h"
 
 #include <string.h>
+#include <math.h>
 #include <esp_log.h>
 
 #include "buzzer.h"
@@ -21,6 +22,7 @@ static const char *TAG = "settings";
 #define DEFAULT_TESTSTRIP_PATCHES       TESTSTRIP_PATCHES_7
 #define DEFAULT_ENLARGER_PROFILE        0
 #define DEFAULT_PAPER_PROFILE           0
+#define DEFAULT_TCS3472_GA_FACTOR       1.20F
 
 #define LATEST_ENLARGER_PROFILE_VERSION 1
 #define LATEST_PAPER_PROFILE_VERSION    1
@@ -41,6 +43,7 @@ static teststrip_mode_t setting_teststrip_mode = DEFAULT_TESTSTRIP_MODE;
 static teststrip_patches_t setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES;
 static uint8_t setting_enlarger_profile = DEFAULT_ENLARGER_PROFILE;
 static uint8_t setting_paper_profile = DEFAULT_PAPER_PROFILE;
+static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 
 #define PAGE_BASE                        0x00000
 #define BASE_MAGIC                       0 /* "PRINTALYZER\0" */
@@ -59,6 +62,8 @@ static uint8_t setting_paper_profile = DEFAULT_PAPER_PROFILE;
 #define CONFIG_TESTSTRIP_PATCHES         40
 #define CONFIG_ENLARGER_PROFILE          44
 #define CONFIG_PAPER_PROFILE             48
+#define CONFIG_TCS3472_GA_FACTOR         52
+
 /**
  * Each enlarger profile is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
@@ -99,8 +104,11 @@ void settings_init_parse_config_page(const uint8_t *data);
 static void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uint8_t *data);
 static void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data);
 static bool write_u32(uint32_t address, uint32_t val);
+static bool write_f32(uint32_t address, float val);
 static void copy_from_u32(uint8_t *buf, uint32_t val);
 static uint32_t copy_to_u32(const uint8_t *buf);
+static void copy_from_f32(uint8_t *buf, float val);
+static float copy_to_f32(const uint8_t *buf);
 
 HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
 {
@@ -166,12 +174,16 @@ HAL_StatusTypeDef settings_init_default_config()
     copy_from_u32(data + CONFIG_BUZZER_VOLUME,          DEFAULT_BUZZER_VOLUME);
     copy_from_u32(data + CONFIG_TESTSTRIP_MODE,         DEFAULT_TESTSTRIP_MODE);
     copy_from_u32(data + CONFIG_TESTSTRIP_PATCHES,      DEFAULT_TESTSTRIP_PATCHES);
+    copy_from_u32(data + CONFIG_ENLARGER_PROFILE,       DEFAULT_ENLARGER_PROFILE);
+    copy_from_u32(data + CONFIG_PAPER_PROFILE,          DEFAULT_PAPER_PROFILE);
+    copy_from_f32(data + CONFIG_TCS3472_GA_FACTOR,      DEFAULT_TCS3472_GA_FACTOR);
     return m24m01_write_page(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
 }
 
 void settings_init_parse_config_page(const uint8_t *data)
 {
     uint32_t val;
+    float fval;
     val = copy_to_u32(data + CONFIG_EXPOSURE_TIME);
     if (val > 1000 && val <= 999000) {
         setting_default_exposure_time = val;
@@ -254,6 +266,11 @@ void settings_init_parse_config_page(const uint8_t *data)
         setting_paper_profile = val;
     } else {
         setting_paper_profile = DEFAULT_PAPER_PROFILE;
+    }
+
+    fval = copy_to_f32(data + CONFIG_TCS3472_GA_FACTOR);
+    if (isnormal(fval) && fval > 0) {
+        setting_tcs3472_ga_factor = fval;
     }
 }
 
@@ -459,6 +476,20 @@ void settings_set_default_paper_profile_index(uint8_t index)
     }
 }
 
+float settings_get_tcs3472_ga_factor()
+{
+    return setting_tcs3472_ga_factor;
+}
+
+void settings_set_tcs3472_ga_factor(float value)
+{
+    if (isnormal(value) && value > 0) {
+        if (write_f32(PAGE_CONFIG + CONFIG_TCS3472_GA_FACTOR, value)) {
+            setting_tcs3472_ga_factor = value;
+        }
+    }
+}
+
 bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
 {
     if (!profile || index >= 16) { return false; }
@@ -563,6 +594,13 @@ bool write_u32(uint32_t address, uint32_t val)
     return m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
 }
 
+bool write_f32(uint32_t address, float val)
+{
+    uint8_t data[4];
+    copy_from_f32(data, val);
+    return m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+}
+
 void copy_from_u32(uint8_t *buf, uint32_t val)
 {
     buf[0] = (val >> 24) & 0xFF;
@@ -577,4 +615,19 @@ uint32_t copy_to_u32(const uint8_t *buf)
         | (uint32_t)buf[1] << 16
         | (uint32_t)buf[2] << 8
         | (uint32_t)buf[3];
+}
+
+void copy_from_f32(uint8_t *buf, float val)
+{
+    uint32_t int_val;
+    memcpy(&int_val, &val, sizeof(float));
+    copy_from_u32(buf, int_val);
+}
+
+float copy_to_f32(const uint8_t *buf)
+{
+    float val;
+    uint32_t int_val = copy_to_u32(buf);
+    memcpy(&val, &int_val, sizeof(float));
+    return val;
 }
