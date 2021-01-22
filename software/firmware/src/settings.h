@@ -11,6 +11,7 @@
 #include "buzzer.h"
 #include "exposure_state.h"
 #include "enlarger_profile.h"
+#include "paper_profile.h"
 
 #define MAX_ENLARGER_PROFILES 16
 #define MAX_PAPER_PROFILES 16
@@ -174,5 +175,32 @@ bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t in
  * @param index An index value from 0 to 15
  */
 void settings_clear_enlarger_profile(uint8_t index);
+
+/**
+ * Get the paper profile saved at the specified index
+ *
+ * @param profile Pointer to the profile struct to load data into
+ * @param index An index value from 0 to 15
+ *
+ * @return True if the profile was successfully loaded, false if no valid
+ *         profile was found at the specified index.
+ */
+bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index);
+
+/**
+ * Save a paper profile at the specified index
+ *
+ * @param profile Pointer to the profile struct to save data from
+ * @param index An index value from 0 to 15
+ * @return True if the profile was successfully saved
+ */
+bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index);
+
+/**
+ * Clear any paper profile saved at the specified index
+ *
+ * @param index An index value from 0 to 15
+ */
+void settings_clear_paper_profile(uint8_t index);
 
 #endif /* SETTINGS_H */

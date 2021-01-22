@@ -88,6 +88,29 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
  * profile entries.
  */
 #define PAGE_PAPER_PROFILE_BASE          0x02000
+#define PAPER_PROFILE_VERSION            0
+#define PAPER_PROFILE_NAME               4  /* char[32] */
+#define PAPER_PROFILE_GRADE00_HT         36
+#define PAPER_PROFILE_GRADE00_HM         40
+#define PAPER_PROFILE_GRADE00_HS         44
+#define PAPER_PROFILE_GRADE0_HT          48
+#define PAPER_PROFILE_GRADE0_HM          52
+#define PAPER_PROFILE_GRADE0_HS          56
+#define PAPER_PROFILE_GRADE1_HT          60
+#define PAPER_PROFILE_GRADE1_HM          64
+#define PAPER_PROFILE_GRADE1_HS          68
+#define PAPER_PROFILE_GRADE2_HT          72
+#define PAPER_PROFILE_GRADE2_HM          76
+#define PAPER_PROFILE_GRADE2_HS          80
+#define PAPER_PROFILE_GRADE3_HT          84
+#define PAPER_PROFILE_GRADE3_HM          88
+#define PAPER_PROFILE_GRADE3_HS          92
+#define PAPER_PROFILE_GRADE4_HT          96
+#define PAPER_PROFILE_GRADE4_HM          100
+#define PAPER_PROFILE_GRADE4_HS          104
+#define PAPER_PROFILE_GRADE5_HT          108
+#define PAPER_PROFILE_GRADE5_HM          112
+#define PAPER_PROFILE_GRADE5_HS          116
 
 /**
  * Size of a memory page.
@@ -103,6 +126,8 @@ HAL_StatusTypeDef settings_init_default_config();
 void settings_init_parse_config_page(const uint8_t *data);
 static void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uint8_t *data);
 static void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data);
+static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data);
+static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
 static bool write_u32(uint32_t address, uint32_t val);
 static bool write_f32(uint32_t address, float val);
 static void copy_from_u32(uint8_t *buf, uint32_t val);
@@ -512,7 +537,7 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
             ret = HAL_ERROR;
             break;
         }
-        if (profile_version == 0 || profile_version > LATEST_CONFIG_VERSION) {
+        if (profile_version == 0 || profile_version > LATEST_ENLARGER_PROFILE_VERSION) {
             ESP_LOGW(TAG, "Invalid profile version %ld", profile_version);
             ret = HAL_ERROR;
             break;
@@ -570,7 +595,7 @@ void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, 
     copy_from_u32(data + ENLARGER_PROFILE_TURN_OFF_DELAY,  profile->turn_off_delay);
     copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME,       profile->fall_time);
     copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME_EQUIV, profile->fall_time_equiv);
-    copy_from_u32(data + ENLARGER_PROFILE_COLOR_TEMP, profile->color_temperature);
+    copy_from_u32(data + ENLARGER_PROFILE_COLOR_TEMP,      profile->color_temperature);
 }
 
 void settings_clear_enlarger_profile(uint8_t index)
@@ -584,6 +609,145 @@ void settings_clear_enlarger_profile(uint8_t index)
 
     m24m01_write_page(eeprom_i2c,
         PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+        data, sizeof(data));
+}
+
+bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
+{
+    if (!profile || index >= 16) { return false; }
+
+    ESP_LOGI(TAG, "Load paper profile: %d", index);
+
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[PAGE_SIZE];
+    memset(data, 0, sizeof(data));
+
+    do {
+        ret = m24m01_read_buffer(eeprom_i2c,
+            PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
+            data, sizeof(data));
+        if (ret != HAL_OK) { break; }
+
+        uint32_t profile_version = copy_to_u32(data + PAPER_PROFILE_VERSION);
+        if (profile_version == UINT32_MAX) {
+            ESP_LOGD(TAG, "Profile index is empty");
+            ret = HAL_ERROR;
+            break;
+        }
+        if (profile_version == 0 || profile_version > LATEST_PAPER_PROFILE_VERSION) {
+            ESP_LOGW(TAG, "Invalid profile version %ld", profile_version);
+            ret = HAL_ERROR;
+            break;
+        }
+
+        settings_paper_profile_parse_page(profile, data);
+        paper_profile_recalculate(profile);
+
+    } while (0);
+
+    return (ret == HAL_OK);
+
+}
+
+static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data)
+{
+    memset(profile, 0, sizeof(paper_profile_t));
+
+    strncpy(profile->name, (const char *)(data + PAPER_PROFILE_NAME), 32);
+    profile->name[31] = '\0';
+
+    profile->grade[CONTRAST_GRADE_00].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HT);
+    profile->grade[CONTRAST_GRADE_00].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HM);
+    profile->grade[CONTRAST_GRADE_00].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HS);
+
+    profile->grade[CONTRAST_GRADE_0].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HT);
+    profile->grade[CONTRAST_GRADE_0].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HM);
+    profile->grade[CONTRAST_GRADE_0].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HS);
+
+    profile->grade[CONTRAST_GRADE_1].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HT);
+    profile->grade[CONTRAST_GRADE_1].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HM);
+    profile->grade[CONTRAST_GRADE_1].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HS);
+
+    profile->grade[CONTRAST_GRADE_2].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HT);
+    profile->grade[CONTRAST_GRADE_2].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HM);
+    profile->grade[CONTRAST_GRADE_2].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HS);
+
+    profile->grade[CONTRAST_GRADE_3].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HT);
+    profile->grade[CONTRAST_GRADE_3].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HM);
+    profile->grade[CONTRAST_GRADE_3].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HS);
+
+    profile->grade[CONTRAST_GRADE_4].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HT);
+    profile->grade[CONTRAST_GRADE_4].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HM);
+    profile->grade[CONTRAST_GRADE_4].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HS);
+
+    profile->grade[CONTRAST_GRADE_5].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HT);
+    profile->grade[CONTRAST_GRADE_5].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HM);
+    profile->grade[CONTRAST_GRADE_5].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HS);
+}
+
+bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
+{
+    if (!profile || index >= 16) { return false; }
+
+    ESP_LOGI(TAG, "Save paper profile: %d", index);
+
+    uint8_t data[PAGE_SIZE];
+    memset(data, 0, sizeof(data));
+
+    settings_paper_profile_populate_page(profile, data);
+
+    HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c,
+        PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
+        data, sizeof(data));
+    return (ret == HAL_OK);
+}
+
+void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data)
+{
+    copy_from_u32(data + PAPER_PROFILE_VERSION, LATEST_PAPER_PROFILE_VERSION);
+
+    strncpy((char *)(data + PAPER_PROFILE_NAME), profile->name, 32);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE00_HT, profile->grade[CONTRAST_GRADE_00].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE00_HM, profile->grade[CONTRAST_GRADE_00].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE00_HS, profile->grade[CONTRAST_GRADE_00].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE0_HT, profile->grade[CONTRAST_GRADE_0].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE0_HM, profile->grade[CONTRAST_GRADE_0].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE0_HS, profile->grade[CONTRAST_GRADE_0].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE1_HT, profile->grade[CONTRAST_GRADE_1].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE1_HM, profile->grade[CONTRAST_GRADE_1].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE1_HS, profile->grade[CONTRAST_GRADE_1].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE2_HT, profile->grade[CONTRAST_GRADE_2].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE2_HM, profile->grade[CONTRAST_GRADE_2].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE2_HS, profile->grade[CONTRAST_GRADE_2].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE3_HT, profile->grade[CONTRAST_GRADE_3].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE3_HM, profile->grade[CONTRAST_GRADE_3].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE3_HS, profile->grade[CONTRAST_GRADE_3].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE4_HT, profile->grade[CONTRAST_GRADE_4].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE4_HM, profile->grade[CONTRAST_GRADE_4].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE4_HS, profile->grade[CONTRAST_GRADE_4].hs_lev100);
+
+    copy_from_u32(data + PAPER_PROFILE_GRADE5_HT, profile->grade[CONTRAST_GRADE_5].ht_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE5_HM, profile->grade[CONTRAST_GRADE_5].hm_lev100);
+    copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
+}
+
+void settings_clear_paper_profile(uint8_t index)
+{
+    if (index >= 16) { return; }
+
+    uint8_t data[PAGE_SIZE];
+    memset(data, 0xFF, sizeof(data));
+
+    ESP_LOGI(TAG, "Clear paper profile: %d", index);
+
+    m24m01_write_page(eeprom_i2c,
+        PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
 }
 
