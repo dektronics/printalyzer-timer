@@ -193,3 +193,39 @@ static void paper_profile_calculate_midpoint_grade_exposure_a(
         memset(mid_grade, 0, sizeof(paper_profile_grade_t));
     }
 }
+
+void paper_profile_set_defaults(paper_profile_t *profile)
+{
+    memset(profile, 0, sizeof(paper_profile_t));
+    strcpy(profile->name, "Default");
+
+    profile->grade[CONTRAST_GRADE_00].ht_lev100 = 14;
+    profile->grade[CONTRAST_GRADE_00].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_00].hs_lev100 = 193;
+
+    profile->grade[CONTRAST_GRADE_0].ht_lev100 = 19;
+    profile->grade[CONTRAST_GRADE_0].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_0].hs_lev100 = 163;
+
+    profile->grade[CONTRAST_GRADE_1].ht_lev100 = 24;
+    profile->grade[CONTRAST_GRADE_1].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_1].hs_lev100 = 156;
+
+    profile->grade[CONTRAST_GRADE_2].ht_lev100 = 27;
+    profile->grade[CONTRAST_GRADE_2].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_2].hs_lev100 = 136;
+
+    profile->grade[CONTRAST_GRADE_3].ht_lev100 = 34;
+    profile->grade[CONTRAST_GRADE_3].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_3].hs_lev100 = 123;
+
+    profile->grade[CONTRAST_GRADE_4].ht_lev100 = 74;
+    profile->grade[CONTRAST_GRADE_4].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_4].hs_lev100 = 139;
+
+    profile->grade[CONTRAST_GRADE_5].ht_lev100 = 95;
+    profile->grade[CONTRAST_GRADE_5].hm_lev100 = 0;
+    profile->grade[CONTRAST_GRADE_5].hs_lev100 = 142;
+
+    paper_profile_recalculate(profile);
+}

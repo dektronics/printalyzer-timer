@@ -110,4 +110,14 @@ bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade);
  */
 void paper_profile_recalculate(paper_profile_t *profile);
 
+/**
+ * Set the paper profile to a series of default values.
+ *
+ * These values should only be used as a fallback when no saved paper
+ * profile is available, but should be avoided for any actual printing
+ * use. They're roughly based on one interpretation of what an
+ * Ilford MGIV RC paper profile should look like.
+ */
+void paper_profile_set_defaults(paper_profile_t *profile);
+
 #endif /* PAPER_PROFILE_H */
