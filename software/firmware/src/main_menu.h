@@ -6,6 +6,8 @@
 typedef enum {
     MENU_OK = 0,
     MENU_CANCEL = 1,
+    MENU_SAVE = 3,
+    MENU_DELETE = 4,
     MENU_TIMEOUT = 99
 } menu_result_t;
 

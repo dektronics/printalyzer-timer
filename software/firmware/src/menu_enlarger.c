@@ -27,9 +27,6 @@
 #define PROFILE_ITERATIONS 5
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)
 
-#define MENU_SAVE 3
-#define MENU_DELETE 4
-
 static const char *TAG = "menu_enlarger";
 
 /*
