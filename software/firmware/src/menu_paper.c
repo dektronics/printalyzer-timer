@@ -28,7 +28,7 @@ menu_result_t menu_paper_profiles()
     menu_result_t menu_result = MENU_OK;
 
     paper_profile_t *profile_list;
-    profile_list = malloc(sizeof(paper_profile_t) * MAX_PAPER_PROFILES);
+    profile_list = pvPortMalloc(sizeof(paper_profile_t) * MAX_PAPER_PROFILES);
     if (!profile_list) {
         ESP_LOGE(TAG, "Unable to allocate memory for profile list");
         return MENU_OK;
@@ -144,7 +144,7 @@ menu_result_t menu_paper_profiles()
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
-    free(profile_list);
+    vPortFree(profile_list);
 
     return menu_result;
 }

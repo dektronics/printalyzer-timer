@@ -84,7 +84,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
     menu_result_t menu_result = MENU_OK;
 
     enlarger_profile_t *profile_list;
-    profile_list = malloc(sizeof(enlarger_profile_t) * MAX_ENLARGER_PROFILES);
+    profile_list = pvPortMalloc(sizeof(enlarger_profile_t) * MAX_ENLARGER_PROFILES);
     if (!profile_list) {
         ESP_LOGE(TAG, "Unable to allocate memory for profile list");
         return MENU_OK;
@@ -201,7 +201,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
-    free(profile_list);
+    vPortFree(profile_list);
 
     // There are many paths in this menu that can change profile settings,
     // so its easiest to just reload the state controller's active profile
