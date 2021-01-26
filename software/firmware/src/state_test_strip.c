@@ -109,6 +109,13 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
         state->elements.patches = DISPLAY_PATCHES_7;
         break;
     }
+
+    if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+        for (int i = 0; i < state->exposure_patch_count; i++) {
+            state->elements.patch_cal_values[i] =
+                exposure_get_test_strip_patch_pev(exposure_state, state->exposure_patch_min + i);
+        }
+    }
 }
 
 bool state_test_strip_process(state_t *state_base, state_controller_t *controller)

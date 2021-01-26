@@ -4,12 +4,16 @@
 #include <cmsis_os.h>
 #include <esp_log.h>
 #include <string.h>
+#include <math.h>
 
 #include "keypad.h"
 #include "display.h"
 #include "exposure_state.h"
 #include "relay.h"
 #include "illum_controller.h"
+#include "meter_probe.h"
+#include "buzzer.h"
+#include "settings.h"
 #include "util.h"
 
 static const char *TAG = "state_home";
@@ -19,6 +23,9 @@ typedef struct {
     bool change_inc_pending;
     bool change_inc_swallow_release_up;
     bool change_inc_swallow_release_down;
+    bool change_mode_pending;
+    bool change_mode_swallow_release_left;
+    bool change_mode_swallow_release_right;
     int encoder_repeat;
     int adjustment_repeat;
     int cancel_repeat;
@@ -28,6 +35,10 @@ typedef struct {
 typedef struct {
     state_t base;
 } state_home_change_time_increment_t;
+
+typedef struct {
+    state_t base;
+} state_home_change_mode_t;
 
 typedef struct {
     state_t base;
@@ -45,6 +56,10 @@ typedef struct {
 
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
+static void state_home_print_reading(state_home_t *state, state_controller_t *controller);
+static void state_home_calibration_reading(state_home_t *state, state_controller_t *controller);
+static void state_home_reading_warning_beep();
+static void state_home_reading_error_beep();
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_t state_home_data = {
     .base = {
@@ -55,6 +70,9 @@ static state_home_t state_home_data = {
     .change_inc_pending = false,
     .change_inc_swallow_release_up = false,
     .change_inc_swallow_release_down = false,
+    .change_mode_pending = false,
+    .change_mode_swallow_release_left = false,
+    .change_mode_swallow_release_right = false,
     .encoder_repeat = 0,
     .adjustment_repeat = 0,
     .cancel_repeat = 0,
@@ -65,6 +83,13 @@ static bool state_home_change_time_increment_process(state_t *state_base, state_
 static state_home_change_time_increment_t state_home_change_time_increment_data = {
     .base = {
         .state_process = state_home_change_time_increment_process
+    }
+};
+
+static bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller);
+static state_home_change_mode_t state_home_change_mode_data = {
+    .base = {
+        .state_process = state_home_change_mode_process
     }
 };
 
@@ -104,14 +129,24 @@ state_t *state_home()
 void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_t *state = (state_home_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
     state->change_inc_pending = false;
     state->change_inc_swallow_release_up = false;
     state->change_inc_swallow_release_down = false;
+    state->change_mode_pending = false;
+    state->change_mode_swallow_release_left = false;
+    state->change_mode_swallow_release_right = false;
     state->encoder_repeat = 0;
     state->adjustment_repeat = 0;
     state->cancel_repeat = 0;
     state->display_dirty = true;
+
+    // Clear any burn/dodge adjustments if in calibration mode
+    if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION
+        && exposure_state->burn_dodge_count > 0) {
+        exposure_burn_dodge_delete_all(exposure_state);
+    }
 }
 
 bool state_home_process(state_t *state_base, state_controller_t *controller)
@@ -141,6 +176,17 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 state->change_inc_pending = false;
                 state_controller_set_next_state(controller, STATE_HOME_CHANGE_TIME_INCREMENT, 0);
             }
+        } else if (state->change_mode_pending) {
+            if (keypad_event.key == KEYPAD_INC_CONTRAST && !keypad_event.pressed) {
+                state->change_mode_swallow_release_right = false;
+            } else if (keypad_event.key == KEYPAD_DEC_CONTRAST && !keypad_event.pressed) {
+                state->change_mode_swallow_release_left = false;
+            }
+
+            if (!state->change_mode_swallow_release_right && !state->change_mode_swallow_release_left) {
+                state->change_mode_pending = false;
+                state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
+            }
         } else {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
@@ -164,12 +210,21 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 exposure_adj_decrease(exposure_state);
                 state->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                exposure_contrast_increase(exposure_state);
+                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                    exposure_contrast_increase(exposure_state);
+                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                    exposure_calibration_pev_increase(exposure_state);
+                }
                 state->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                exposure_contrast_decrease(exposure_state);
+                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                    exposure_contrast_decrease(exposure_state);
+                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                    exposure_calibration_pev_decrease(exposure_state);
+                }
                 state->display_dirty = true;
-            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
+            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT
+                && exposure_state->mode == EXPOSURE_MODE_PRINTING) {
                 if (keypad_event.pressed || keypad_event.repeated) {
                     state->adjustment_repeat++;
                 } else {
@@ -211,10 +266,22 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     }
                     state->cancel_repeat = 0;
                 }
+            } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
+                && relay_enlarger_is_enabled()) {
+                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                    state_home_print_reading(state, controller);
+                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                    state_home_calibration_reading(state, controller);
+                }
+                state->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
                 state->change_inc_pending = true;
                 state->change_inc_swallow_release_up = true;
                 state->change_inc_swallow_release_down = true;
+            } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_CONTRAST, KEYPAD_DEC_CONTRAST)) {
+                state->change_mode_pending = true;
+                state->change_mode_swallow_release_left = true;
+                state->change_mode_swallow_release_right = true;
             }
         }
 
@@ -222,6 +289,101 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     } else {
         return false;
     }
+}
+
+void state_home_print_reading(state_home_t *state, state_controller_t *controller)
+{
+    //TODO Take a meter reading for printing purposes
+}
+
+void state_home_calibration_reading(state_home_t *state, state_controller_t *controller)
+{
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    meter_probe_result_t result = METER_READING_OK;
+    float lux = 0;
+    uint32_t cct = 0;
+
+    display_draw_mode_text("Measuring");
+
+    do {
+        result = meter_probe_initialize();
+        if (result != METER_READING_OK) {
+            break;
+        }
+
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
+
+        osDelay(pdMS_TO_TICKS(750));
+
+        result = meter_probe_measure(&lux, &cct);
+        if (result != METER_READING_OK) {
+            break;
+        }
+    } while (0);
+
+    meter_probe_shutdown();
+
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
+    if (result == METER_READING_OK) {
+        //TODO If CCT is far from the enlarger profile, warn about filters/safelights/etc
+        exposure_add_meter_reading(exposure_state, lux);
+        ESP_LOGI(TAG, "Measured PEV=%lu, CCT=%luK", exposure_state->calibration_pev, cct);
+    } else if (result == METER_READING_LOW) {
+        display_draw_mode_text("Light Low");
+        state_home_reading_warning_beep();
+        osDelay(pdMS_TO_TICKS(2000));
+    } else if (result == METER_READING_HIGH) {
+        display_draw_mode_text("Light High");
+        state_home_reading_warning_beep();
+        osDelay(pdMS_TO_TICKS(2000));
+    } else if (result == METER_READING_TIMEOUT) {
+        display_draw_mode_text("Timeout");
+        state_home_reading_error_beep();
+        osDelay(pdMS_TO_TICKS(2000));
+    } else if (result == METER_READING_FAIL) {
+        display_draw_mode_text("Meter Error");
+        state_home_reading_error_beep();
+        osDelay(pdMS_TO_TICKS(2000));
+    }
+}
+
+void state_home_reading_warning_beep()
+{
+    buzzer_volume_t current_volume = buzzer_get_volume();
+    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+    buzzer_set_volume(settings_get_buzzer_volume());
+
+    buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(50));
+    buzzer_stop();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(50));
+    buzzer_stop();
+
+    buzzer_set_volume(current_volume);
+    buzzer_set_frequency(current_frequency);
+}
+
+void state_home_reading_error_beep()
+{
+    buzzer_volume_t current_volume = buzzer_get_volume();
+    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+    buzzer_set_volume(settings_get_buzzer_volume());
+
+    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_stop();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_start();
+    osDelay(pdMS_TO_TICKS(100));
+    buzzer_stop();
+
+    buzzer_set_volume(current_volume);
+    buzzer_set_frequency(current_frequency);
 }
 
 void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
@@ -267,6 +429,55 @@ bool state_home_change_time_increment_process(state_t *state_base, state_control
     } else {
         return false;
     }
+}
+
+state_t *state_home_change_mode()
+{
+    return (state_t *)&state_home_change_mode_data;
+}
+
+bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller)
+{
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    // Draw the current mode
+    switch (exposure_state->mode) {
+    case EXPOSURE_MODE_PRINTING:
+        display_draw_mode_text("Printing");
+        break;
+    case EXPOSURE_MODE_CALIBRATION:
+        display_draw_mode_text("Calibration");
+        break;
+    default:
+        display_draw_mode_text("Unknown");
+        break;
+    }
+
+    // Handle the next keypad event
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
+        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)
+            || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+            switch (exposure_state->mode) {
+            case EXPOSURE_MODE_PRINTING:
+                exposure_state->mode = EXPOSURE_MODE_CALIBRATION;
+                break;
+            case EXPOSURE_MODE_CALIBRATION:
+                exposure_state->mode = EXPOSURE_MODE_PRINTING;
+                break;
+            default:
+                exposure_state->mode = EXPOSURE_MODE_PRINTING;
+                break;
+            }
+        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+            state_controller_set_next_state(controller, STATE_HOME, 0);
+        }
+        return true;
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
 state_t *state_home_adjust_fine()

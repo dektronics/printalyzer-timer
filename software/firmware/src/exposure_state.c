@@ -5,11 +5,21 @@
 
 #include "settings.h"
 
+/**
+ * Approximate PEV value to use when recommending a base
+ * exposure time in calibration mode. This should help get
+ * a starting point that is close enough for test strips
+ * to easily narrow down the correct values for a paper.
+ */
+#define CALIBRATION_BASE_PEV 30
+
+static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
 
 void exposure_state_defaults(exposure_state_t *state)
 {
     if (!state) { return; }
+    state->mode = EXPOSURE_MODE_PRINTING;
     state->contrast_grade = settings_get_default_contrast_grade();
     state->base_time = settings_get_default_exposure_time() / 1000.0f;
     state->adjusted_time = state->base_time;
@@ -20,6 +30,9 @@ void exposure_state_defaults(exposure_state_t *state)
         memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
     }
     state->burn_dodge_count = 0;
+
+    state->lux_reading = NAN;
+    state->calibration_pev = 0;
 }
 
 void exposure_set_base_time(exposure_state_t *state, float value)
@@ -34,6 +47,43 @@ void exposure_set_base_time(exposure_state_t *state, float value)
 
     state->base_time = value;
     state->adjustment_value = 0;
+    exposure_recalculate(state);
+}
+
+float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)
+{
+    float base_time = 0;
+    if (isnormal(lux) && lux > 0) {
+        base_time = powf(10, pev / 100.0F) / lux;
+    }
+    if (base_time < 0.10F) {
+        base_time = 0;
+    }
+    return base_time;
+}
+
+void exposure_add_meter_reading(exposure_state_t *state, float lux)
+{
+    if (!state) { return; }
+
+    if (state->mode == EXPOSURE_MODE_CALIBRATION) {
+        float updated_base_time = exposure_base_time_for_calibration_pev(lux, CALIBRATION_BASE_PEV);
+        if (isnormal(updated_base_time) && updated_base_time > 0) {
+            state->base_time = updated_base_time;
+        } else {
+            state->base_time = settings_get_default_exposure_time() / 1000.0F;
+        }
+        state->adjustment_value = 0;
+    }
+
+    state->lux_reading = lux;
+    exposure_recalculate(state);
+}
+
+void exposure_clear_meter_readings(exposure_state_t *state)
+{
+    if (!state) { return; }
+    state->lux_reading = NAN;
     exposure_recalculate(state);
 }
 
@@ -112,6 +162,7 @@ void exposure_contrast_increase(exposure_state_t *state)
 
     if (state->contrast_grade < CONTRAST_GRADE_5) {
         state->contrast_grade++;
+        exposure_recalculate(state);
     }
 }
 
@@ -121,6 +172,41 @@ void exposure_contrast_decrease(exposure_state_t *state)
 
     if (state->contrast_grade > CONTRAST_GRADE_00) {
         state->contrast_grade--;
+        exposure_recalculate(state);
+    }
+}
+
+void exposure_calibration_pev_increase(exposure_state_t *state)
+{
+    if (!state) { return; }
+
+    if (state->mode == EXPOSURE_MODE_CALIBRATION
+        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        if (state->calibration_pev < 999) {
+            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_reading, state->calibration_pev + 1);
+            if (isnormal(updated_base_time) && updated_base_time <= 999) {
+                state->base_time = updated_base_time;
+                state->adjustment_value = 0;
+                exposure_recalculate(state);
+            }
+        }
+    }
+}
+
+void exposure_calibration_pev_decrease(exposure_state_t *state)
+{
+    if (!state) { return; }
+
+    if (state->mode == EXPOSURE_MODE_CALIBRATION
+        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        if (state->calibration_pev > 0) {
+            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_reading, state->calibration_pev - 1);
+            if (isnormal(updated_base_time) && updated_base_time > 0) {
+                state->base_time = updated_base_time;
+                state->adjustment_value = 0;
+                exposure_recalculate(state);
+            }
+        }
     }
 }
 
@@ -249,10 +335,35 @@ float exposure_get_test_strip_time_complete(const exposure_state_t *state, int p
     return patch_time;
 }
 
+uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch)
+{
+    if (!state) { return 0; }
+
+    if (state->mode == EXPOSURE_MODE_CALIBRATION
+        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        float patch_time = exposure_get_test_strip_time_complete(state, patch);
+        float calculated_pev = log10f(patch_time * state->lux_reading) * 100.0;
+        return (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
+    } else {
+        return 0;
+    }
+}
+
 void exposure_recalculate(exposure_state_t *state)
 {
     float stops = state->adjustment_value / 12.0f;
     state->adjusted_time = state->base_time * powf(2.0f, stops);
+
+    if (state->mode == EXPOSURE_MODE_PRINTING) {
+        //TODO Update the tone graph
+    } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
+        if (isnormal(state->lux_reading) && state->lux_reading > 0) {
+            float calculated_pev = log10f(state->adjusted_time * state->lux_reading) * 100.0;
+            state->calibration_pev = (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
+        } else {
+            state->calibration_pev = 0;
+        }
+    }
 }
 
 const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade)

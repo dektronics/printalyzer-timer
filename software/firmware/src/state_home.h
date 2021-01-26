@@ -9,6 +9,7 @@
 
 state_t *state_home();
 state_t *state_home_change_time_increment();
+state_t *state_home_change_mode();
 state_t *state_home_adjust_fine();
 state_t *state_home_adjust_absolute();
 

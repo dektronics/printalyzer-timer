@@ -10,6 +10,11 @@
 #define EXPOSURE_BURN_DODGE_MAX 9
 
 typedef enum {
+    EXPOSURE_MODE_PRINTING = 0,
+    EXPOSURE_MODE_CALIBRATION
+} exposure_mode_t;
+
+typedef enum {
     CONTRAST_GRADE_00 = 0,
     CONTRAST_GRADE_0,
     CONTRAST_GRADE_0_HALF,
@@ -41,11 +46,14 @@ typedef struct __exposure_adjustment_t {
 } exposure_burn_dodge_t;
 
 typedef struct __exposure_state_t {
+    exposure_mode_t mode;
     exposure_contrast_grade_t contrast_grade;
     float base_time;
     float adjusted_time;
     int adjustment_value;
     int adjustment_increment;
+    float lux_reading;
+    uint32_t calibration_pev;
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
 } exposure_state_t;
@@ -53,6 +61,9 @@ typedef struct __exposure_state_t {
 void exposure_state_defaults(exposure_state_t *state);
 
 void exposure_set_base_time(exposure_state_t *state, float value);
+
+void exposure_add_meter_reading(exposure_state_t *state, float lux);
+void exposure_clear_meter_readings(exposure_state_t *state);
 
 void exposure_adj_increase(exposure_state_t *state);
 void exposure_adj_decrease(exposure_state_t *state);
@@ -62,6 +73,9 @@ int exposure_adj_max(exposure_state_t *state);
 
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
+
+void exposure_calibration_pev_increase(exposure_state_t *state);
+void exposure_calibration_pev_decrease(exposure_state_t *state);
 
 void exposure_adj_increment_increase(exposure_state_t *state);
 void exposure_adj_increment_decrease(exposure_state_t *state);
@@ -73,6 +87,7 @@ void exposure_burn_dodge_delete_all(exposure_state_t *state);
 float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
     int patch_min, unsigned int patches_covered);
 float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
+uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch);
 
 const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade);
 

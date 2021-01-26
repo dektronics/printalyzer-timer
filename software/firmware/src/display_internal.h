@@ -38,4 +38,6 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
 uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl,
     display_GetMenuEvent_t event_callback, display_menu_params_t params);
 
+const char *display_u16toa(uint16_t v, uint8_t d);
+
 #endif /* DISPLAY_INTERNAL_H */

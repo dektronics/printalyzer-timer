@@ -60,6 +60,7 @@ void state_controller_init()
 
     state_map[STATE_HOME] = state_home();
     state_map[STATE_HOME_CHANGE_TIME_INCREMENT] = state_home_change_time_increment();
+    state_map[STATE_HOME_CHANGE_MODE] = state_home_change_mode();
     state_map[STATE_HOME_ADJUST_FINE] = state_home_adjust_fine();
     state_map[STATE_HOME_ADJUST_ABSOLUTE] = state_home_adjust_absolute();
     state_map[STATE_TIMER] = state_timer();

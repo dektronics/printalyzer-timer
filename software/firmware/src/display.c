@@ -33,6 +33,7 @@ static void display_set_freq(uint8_t value);
 
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_burn_dodge_count(uint8_t count);
+static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
 static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
@@ -289,6 +290,43 @@ void display_draw_burn_dodge_count(uint8_t count)
     }
 
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+}
+
+void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value)
+{
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    y += u8g2_GetAscent(&u8g2);
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) /*+ 1*/;
+    if (title1) {
+        u8g2_DrawUTF8(&u8g2, x, y, title1);
+        y += line_height + 1;
+    }
+    if (title2) {
+        u8g2_DrawUTF8(&u8g2, x, y, title2);
+    }
+
+    y = u8g2_GetDisplayHeight(&u8g2) - 37;
+
+    if (value > 999) {
+        value = 999;
+    }
+
+    if (value >= 100) {
+        display_draw_mdigit(&u8g2, x, y, (value % 1000) / 100);
+    }
+    x += 22;
+
+    if (value >= 10) {
+        display_draw_mdigit(&u8g2, x, y, value % 100 / 10);
+    }
+    x += 22;
+
+    display_draw_mdigit(&u8g2, x, y, value % 10);
 }
 
 void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade)
@@ -564,7 +602,13 @@ void display_draw_main_elements(const display_main_elements_t *elements)
 
     display_draw_tone_graph(elements->tone_graph);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
-    display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+
+    if (elements->cal_title1 || elements->cal_title2 || elements->cal_value > 0) {
+        display_draw_calibration_value(9 + 24, 8, elements->cal_title1, elements->cal_title2, elements->cal_value);
+    } else if (elements->contrast_grade != DISPLAY_GRADE_MAX) {
+        display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+    }
+
     display_draw_counter_time(elements->time_seconds,
         elements->time_milliseconds,
         elements->fraction_digits);
@@ -602,6 +646,28 @@ void display_draw_stop_increment(uint8_t increment_den)
     u8g2_SetFontDirection(&u8g2, 0);
     u8g2_SetFontPosBaseline(&u8g2);
     u8g2_DrawUTF8(&u8g2, x + 56, y + 46, "Stop");
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+
+void display_draw_mode_text(const char *text)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetFont(&u8g2, u8g2_font_logisoso34_tf);
+    u8g2_SetFontMode(&u8g2, 0);
+    u8g2_SetFontDirection(&u8g2, 0);
+    u8g2_SetFontPosBaseline(&u8g2);
+
+    if (text) {
+        u8g2_DrawUTF8Line(&u8g2, 0, 54,
+            u8g2_GetDisplayWidth(&u8g2), text, 0, 0);
+    }
 
     u8g2_SendBuffer(&u8g2);
 
@@ -859,13 +925,20 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
     }
 
     // Draw each test strip patch
-    x = 2;
-    y = 13;
     if (elements->patches == DISPLAY_PATCHES_5) {
+        x = 2;
         for (int i = 0; i < 5; i++) {
+            y = 13;
             if (elements->covered_patches & (1 << (4 - i))) {
                 u8g2_DrawBox(&u8g2, x + 1, y + 1, 26, 47);
                 u8g2_SetDrawColor(&u8g2, 0);
+            }
+
+            if (elements->patch_cal_values[i] > 0) {
+                u8g2_SetFontDirection(&u8g2, 3);
+                u8g2_DrawUTF8(&u8g2, x + 19, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                u8g2_SetFontDirection(&u8g2, 0);
+                y += 19;
             }
 
             switch (i) {
@@ -892,10 +965,19 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
             x += 30;
         }
     } else {
+        x = 2;
         for (int i = 0; i < 7; i++) {
+            y = 13;
             if (elements->covered_patches & (1 << (6 - i))) {
                 u8g2_DrawBox(&u8g2, x + 1, y + 1, 18, 47);
                 u8g2_SetDrawColor(&u8g2, 0);
+            }
+
+            if (elements->patch_cal_values[i] > 0) {
+                u8g2_SetFontDirection(&u8g2, 3);
+                u8g2_DrawUTF8(&u8g2, x + 15, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                u8g2_SetFontDirection(&u8g2, 0);
+                y += 19;
             }
 
             switch (i) {

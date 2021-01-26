@@ -45,6 +45,9 @@ typedef struct {
     uint32_t tone_graph;
     uint8_t burn_dodge_count;
     display_grade_t contrast_grade;
+    char *cal_title1;
+    char *cal_title2;
+    uint16_t cal_value;
     uint16_t time_seconds;
     uint16_t time_milliseconds;
     uint8_t fraction_digits;
@@ -59,6 +62,7 @@ typedef struct {
 typedef struct {
     display_patches_t patches;
     uint8_t covered_patches;
+    uint16_t patch_cal_values[7];
     const char *title1;
     const char *title2;
     display_exposure_timer_t time_elements;
@@ -100,6 +104,7 @@ void display_draw_logo();
 
 void display_draw_main_elements(const display_main_elements_t *elements);
 void display_draw_stop_increment(uint8_t increment_den);
+void display_draw_mode_text(const char *text);
 void display_draw_exposure_adj(int value);
 void display_draw_timer_adj(const display_exposure_timer_t *elements);
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);

@@ -12,7 +12,17 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
 
     elements->burn_dodge_count = exposure->burn_dodge_count;
 
-    elements->contrast_grade = convert_exposure_to_display_contrast(exposure->contrast_grade);
+    if (exposure->mode == EXPOSURE_MODE_PRINTING) {
+        elements->contrast_grade = convert_exposure_to_display_contrast(exposure->contrast_grade);
+        elements->cal_title1 = NULL;
+        elements->cal_title2 = NULL;
+        elements->cal_value = 0;
+    } else if (exposure->mode == EXPOSURE_MODE_CALIBRATION) {
+        elements->contrast_grade = DISPLAY_GRADE_MAX;
+        elements->cal_title1 = "Print";
+        elements->cal_title2 = "Exposure";
+        elements->cal_value = exposure->calibration_pev;
+    }
 
     float seconds;
     float fractional;

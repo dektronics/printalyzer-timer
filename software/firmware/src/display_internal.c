@@ -55,7 +55,7 @@ void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char
 }
 
 /* v = value, d = number of digits */
-static const char *display_u16toa(uint16_t v, uint8_t d)
+const char *display_u16toa(uint16_t v, uint8_t d)
 {
     // Based off u8x8_u16toa with changes to use whitespace padding
     static char buf[6];
