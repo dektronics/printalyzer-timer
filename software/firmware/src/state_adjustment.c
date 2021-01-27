@@ -46,7 +46,7 @@ static void state_list_adjustments_entry(state_t *state_base, state_controller_t
 static bool state_list_adjustments_process(state_t *state_base, state_controller_t *controller);
 static void state_list_adjustments_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 
-static int state_list_adjustments_append_entry(char *buf, exposure_burn_dodge_t *entry, int index);
+static int state_list_adjustments_append_entry(char *buf, const exposure_burn_dodge_t *entry, int index);
 static bool state_list_adjustments_delete_prompt(exposure_state_t *exposure_state, int index);
 
 static state_list_adjustments_t state_list_adjustments_data = {
@@ -73,12 +73,17 @@ void state_edit_adjustment_entry(state_t *state_base, state_controller_t *contro
     uint32_t param_index = param & 0x7FFFFFFF;
     bool param_from_list = (param & 0x80000000) != 0;
 
+    const exposure_burn_dodge_t *state_entry = exposure_burn_dodge_get(exposure_state, param_index);
+    if (state_entry) {
+        memcpy(&state->working_value, state_entry, sizeof(exposure_burn_dodge_t));
+    } else {
+        memset(&state->working_value, 0, sizeof(exposure_burn_dodge_t));
+    }
+
     if (param_index < EXPOSURE_BURN_DODGE_MAX) {
         state->working_index = param_index;
-        memcpy(&state->working_value, &(exposure_state->burn_dodge_entry[param_index]), sizeof(exposure_burn_dodge_t));
     } else {
         state->working_index = UINT8_MAX;
-        memset(&state->working_value, 0, sizeof(exposure_burn_dodge_t));
     }
 
     if (state->working_value.numerator == 0) {
@@ -103,12 +108,12 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         sprintf(buf_adj_title2, "Area %d", state->working_index + 1);
     } else {
         float adj_stops = (float)state->working_value.numerator / (float)state->working_value.denominator;
-        float adj_time = exposure_state->adjusted_time * powf(2.0f, adj_stops);
+        float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
 
         if (state->working_value.numerator > 0) {
             sprintf(buf_adj_title1, "Burn Area %d", state->working_index + 1);
             size_t offset = sprintf(buf_adj_title2, "+");
-            offset += append_exposure_time(buf_adj_title2 + offset, adj_time - exposure_state->adjusted_time);
+            offset += append_exposure_time(buf_adj_title2 + offset, adj_time - exposure_get_exposure_time(exposure_state));
             if (state->working_value.contrast_grade < CONTRAST_GRADE_MAX) {
                 sprintf(buf_adj_title2 + offset, " [%s]", contrast_grade_str(state->working_value.contrast_grade));
             } else {
@@ -117,12 +122,12 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         } else {
             sprintf(buf_adj_title1, "Dodge Area %d", state->working_index + 1);
             size_t offset = sprintf(buf_adj_title2, "-");
-            append_exposure_time(buf_adj_title2 + offset, fabs(exposure_state->adjusted_time - adj_time));
+            append_exposure_time(buf_adj_title2 + offset, fabs(exposure_get_exposure_time(exposure_state) - adj_time));
         }
     }
 
-    size_t offset = append_exposure_time(buf_base_title2, exposure_state->adjusted_time);
-    sprintf(buf_base_title2 + offset, " [%s]", contrast_grade_str(exposure_state->contrast_grade));
+    size_t offset = append_exposure_time(buf_base_title2, exposure_get_exposure_time(exposure_state));
+    sprintf(buf_base_title2 + offset, " [%s]", contrast_grade_str(exposure_get_contrast_grade(exposure_state)));
 
     display_edit_adjustment_elements_t elements = {
         .adj_title1 = buf_adj_title1,
@@ -242,16 +247,8 @@ void state_edit_adjustment_exit(state_t *state_base, state_controller_t *control
             state->working_value.contrast_grade = CONTRAST_GRADE_MAX;
         }
 
-        // Copy the working value to the exposure state
-        memcpy(&(exposure_state->burn_dodge_entry[state->working_index]),
-            &state->working_value, sizeof(exposure_burn_dodge_t));
-
-        // If we're editing the burn/dodge entry just past the end of the
-        // list, then assume we just added our entry and increment the count.
-        if (exposure_state->burn_dodge_count < EXPOSURE_BURN_DODGE_MAX
-            && exposure_state->burn_dodge_count == state->working_index) {
-            exposure_state->burn_dodge_count++;
-        }
+        // Copy the working value to the exposure state.
+        exposure_burn_dodge_set(exposure_state, &state->working_value, state->working_index);
     }
 }
 
@@ -268,16 +265,16 @@ void state_list_adjustments_entry(state_t *state_base, state_controller_t *contr
     ESP_LOGI(TAG, "List Exposure Adjustments");
 
     // Logging printout of adjustment list
-    for (int i = 0; i < exposure_state->burn_dodge_count; i++) {
+    for (int i = 0; i < exposure_burn_dodge_count(exposure_state); i++) {
+        const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, i);
         ESP_LOGI(TAG, "[%d] %d/%d [%s]", i + 1,
-            exposure_state->burn_dodge_entry[i].numerator,
-            exposure_state->burn_dodge_entry[i].denominator,
-            contrast_grade_str(exposure_state->burn_dodge_entry[i].contrast_grade));
+            entry->numerator, entry->denominator,
+            contrast_grade_str(entry->contrast_grade));
     }
     state->starting_index = param;
 }
 
-int state_list_adjustments_append_entry(char *buf, exposure_burn_dodge_t *entry, int index)
+int state_list_adjustments_append_entry(char *buf, const exposure_burn_dodge_t *entry, int index)
 {
     int offset = 0;
     bool num_positive = entry->numerator >= 0;
@@ -305,9 +302,10 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     char buf[512];
     int offset = 0;
+    int count = exposure_burn_dodge_count(exposure_state);
 
-    for (int i = 0; i < exposure_state->burn_dodge_count; i++) {
-        exposure_burn_dodge_t *entry = &(exposure_state->burn_dodge_entry[i]);
+    for (int i = 0; i < count; i++) {
+        const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, i);
 
         state_list_adjustments_append_entry(buf + offset, entry, i);
 
@@ -315,13 +313,13 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
         offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
 
         // Add a line break if this is not the last item
-        if (i < exposure_state->burn_dodge_count - 1) {
+        if (i < count - 1) {
             offset += sprintf(buf + offset, "\n");
         }
     }
 
     uint8_t starting_pos;
-    if (state->starting_index < exposure_state->burn_dodge_count) {
+    if (state->starting_index < exposure_burn_dodge_count(exposure_state)) {
         starting_pos = state->starting_index + 1;
     } else {
         starting_pos = 1;
@@ -339,7 +337,7 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
     } else if (option > 0) {
         if (option_key == KEYPAD_MENU) {
             bool result = state_list_adjustments_delete_prompt(exposure_state, option - 1);
-            if (!result || exposure_state->burn_dodge_count == 0) {
+            if (!result || exposure_burn_dodge_count(exposure_state) == 0) {
                 state_controller_set_next_state(controller, STATE_HOME, 0);
             }
             return result;
@@ -354,7 +352,7 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
 
 bool state_list_adjustments_delete_prompt(exposure_state_t *exposure_state, int index)
 {
-    exposure_burn_dodge_t *entry = &(exposure_state->burn_dodge_entry[index]);
+    const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, index);
     char buf1[64];
     char buf2[64];
 

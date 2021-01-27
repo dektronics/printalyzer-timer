@@ -1,9 +1,16 @@
 #include "exposure_state.h"
 
+#include <FreeRTOS.h>
 #include <string.h>
 #include <math.h>
 
+#include <esp_log.h>
+
 #include "settings.h"
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
+static const char *TAG = "exposure_state";
 
 /**
  * Approximate PEV value to use when recommending a base
@@ -13,8 +20,37 @@
  */
 #define CALIBRATION_BASE_PEV 30
 
+typedef struct __exposure_state_t {
+    exposure_mode_t mode;
+    exposure_contrast_grade_t contrast_grade;
+    float base_time;
+    float adjusted_time;
+    int adjustment_value;
+    int adjustment_increment;
+    float lux_reading;
+    uint32_t calibration_pev;
+    exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
+    int burn_dodge_count;
+} exposure_state_t;
+
 static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
+
+exposure_state_t *exposure_state_create()
+{
+    exposure_state_t *state = pvPortMalloc(sizeof(exposure_state_t));
+    if (!state) {
+        ESP_LOGE(TAG, "Unable to allocate exposure state");
+        return NULL;
+    }
+    exposure_state_defaults(state);
+    return state;
+}
+
+void exposure_state_free(exposure_state_t *state)
+{
+    vPortFree(state);
+}
 
 void exposure_state_defaults(exposure_state_t *state)
 {
@@ -35,6 +71,19 @@ void exposure_state_defaults(exposure_state_t *state)
     state->calibration_pev = 0;
 }
 
+exposure_mode_t exposure_get_mode(const exposure_state_t *state)
+{
+    if (!state) { return EXPOSURE_MODE_PRINTING; }
+    return state->mode;
+}
+
+void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
+{
+    if (!state) { return; }
+    if (mode < EXPOSURE_MODE_PRINTING || mode > EXPOSURE_MODE_CALIBRATION) { return; }
+    state->mode = mode;
+}
+
 void exposure_set_base_time(exposure_state_t *state, float value)
 {
     if (!state) { return; }
@@ -48,6 +97,12 @@ void exposure_set_base_time(exposure_state_t *state, float value)
     state->base_time = value;
     state->adjustment_value = 0;
     exposure_recalculate(state);
+}
+
+float exposure_get_exposure_time(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->adjusted_time;
 }
 
 float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)
@@ -87,6 +142,12 @@ void exposure_clear_meter_readings(exposure_state_t *state)
     exposure_recalculate(state);
 }
 
+uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->calibration_pev;
+}
+
 void exposure_adj_increase(exposure_state_t *state)
 {
     if (!state) { return; }
@@ -113,6 +174,12 @@ void exposure_adj_decrease(exposure_state_t *state)
 
     state->adjustment_value -= state->adjustment_increment;
     exposure_recalculate(state);
+}
+
+int exposure_adj_get(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->adjustment_value;
 }
 
 void exposure_adj_set(exposure_state_t *state, int value)
@@ -154,6 +221,12 @@ int exposure_adj_max(exposure_state_t *state)
     }
 
     return max_adj;
+}
+
+exposure_contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state)
+{
+    if (!state) { return CONTRAST_GRADE_MAX; }
+    return state->contrast_grade;
 }
 
 void exposure_contrast_increase(exposure_state_t *state)
@@ -208,6 +281,12 @@ void exposure_calibration_pev_decrease(exposure_state_t *state)
             }
         }
     }
+}
+
+int exposure_adj_increment_get(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->adjustment_increment;
 }
 
 void exposure_adj_increment_increase(exposure_state_t *state)
@@ -279,6 +358,37 @@ uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state)
         return 1;
     default:
         return 0;
+    }
+}
+
+int exposure_burn_dodge_count(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->burn_dodge_count;
+}
+
+const exposure_burn_dodge_t *exposure_burn_dodge_get(const exposure_state_t *state, int index)
+{
+    if (!state) { return NULL; }
+
+    if (index < 0 || index >= state->burn_dodge_count) {
+        return NULL;
+    }
+
+    return &state->burn_dodge_entry[index];
+}
+
+void exposure_burn_dodge_set(exposure_state_t *state, const exposure_burn_dodge_t *entry, int index)
+{
+    if (!state || !entry) { return; }
+
+    if (index < 0 || index > MIN(state->burn_dodge_count, EXPOSURE_BURN_DODGE_MAX - 1)) {
+        return;
+    }
+
+    memcpy(&state->burn_dodge_entry[index], entry, sizeof(exposure_burn_dodge_t));
+    if (state->burn_dodge_count == index) {
+        state->burn_dodge_count++;
     }
 }
 

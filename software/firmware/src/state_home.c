@@ -143,8 +143,8 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     state->display_dirty = true;
 
     // Clear any burn/dodge adjustments if in calibration mode
-    if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION
-        && exposure_state->burn_dodge_count > 0) {
+    if (exposure_get_mode(exposure_state) == EXPOSURE_MODE_CALIBRATION
+        && exposure_burn_dodge_count(exposure_state) > 0) {
         exposure_burn_dodge_delete_all(exposure_state);
     }
 }
@@ -165,6 +165,8 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     // Handle the next keypad event
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
+        exposure_mode_t mode = exposure_get_mode(exposure_state);
+
         if (state->change_inc_pending) {
             if (keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
                 state->change_inc_swallow_release_up = false;
@@ -210,31 +212,32 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 exposure_adj_decrease(exposure_state);
                 state->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING) {
                     exposure_contrast_increase(exposure_state);
-                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
                     exposure_calibration_pev_increase(exposure_state);
                 }
                 state->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING) {
                     exposure_contrast_decrease(exposure_state);
-                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
                     exposure_calibration_pev_decrease(exposure_state);
                 }
                 state->display_dirty = true;
             } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT
-                && exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                && mode == EXPOSURE_MODE_PRINTING) {
                 if (keypad_event.pressed || keypad_event.repeated) {
                     state->adjustment_repeat++;
                 } else {
+                    int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
                     if (state->adjustment_repeat > 2) {
-                        if (exposure_state->burn_dodge_count > 0) {
+                        if (burn_dodge_count > 0) {
                             state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
                         }
                     } else {
-                        if (exposure_state->burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
-                            state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, exposure_state->burn_dodge_count);
+                        if (burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
+                            state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, burn_dodge_count);
                         }
                     }
                     state->adjustment_repeat = 0;
@@ -268,9 +271,9 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
                 && relay_enlarger_is_enabled()) {
-                if (exposure_state->mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING) {
                     state_home_print_reading(state, controller);
-                } else if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
                     state_home_calibration_reading(state, controller);
                 }
                 state->display_dirty = true;
@@ -328,7 +331,7 @@ void state_home_calibration_reading(state_home_t *state, state_controller_t *con
     if (result == METER_READING_OK) {
         //TODO If CCT is far from the enlarger profile, warn about filters/safelights/etc
         exposure_add_meter_reading(exposure_state, lux);
-        ESP_LOGI(TAG, "Measured PEV=%lu, CCT=%luK", exposure_state->calibration_pev, cct);
+        ESP_LOGI(TAG, "Measured PEV=%lu, CCT=%luK", exposure_get_calibration_pev(exposure_state), cct);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
         state_home_reading_warning_beep();
@@ -441,7 +444,7 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
     // Draw the current mode
-    switch (exposure_state->mode) {
+    switch (exposure_get_mode(exposure_state)) {
     case EXPOSURE_MODE_PRINTING:
         display_draw_mode_text("Printing");
         break;
@@ -458,15 +461,15 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)
             || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-            switch (exposure_state->mode) {
+            switch (exposure_get_mode(exposure_state)) {
             case EXPOSURE_MODE_PRINTING:
-                exposure_state->mode = EXPOSURE_MODE_CALIBRATION;
+                exposure_set_mode(exposure_state, EXPOSURE_MODE_CALIBRATION);
                 break;
             case EXPOSURE_MODE_CALIBRATION:
-                exposure_state->mode = EXPOSURE_MODE_PRINTING;
+                exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING);
                 break;
             default:
-                exposure_state->mode = EXPOSURE_MODE_PRINTING;
+                exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING);
                 break;
             }
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
@@ -490,7 +493,7 @@ void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *contr
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    state->working_value = exposure_state->adjustment_value;
+    state->working_value = exposure_adj_get(exposure_state);
     state->min_value = exposure_adj_min(exposure_state);
     state->max_value = exposure_adj_max(exposure_state);
     state->value_accepted = false;
@@ -546,7 +549,7 @@ void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *c
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    state->working_value = rounded_exposure_time_ms(exposure_state->adjusted_time);
+    state->working_value = rounded_exposure_time_ms(exposure_get_exposure_time(exposure_state));
     state->value_accepted = false;
 }
 

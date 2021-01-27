@@ -10,30 +10,32 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
     //TODO Fix this once the exposure state contains tone graph data
     elements->tone_graph = 0;
 
-    elements->burn_dodge_count = exposure->burn_dodge_count;
+    elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
-    if (exposure->mode == EXPOSURE_MODE_PRINTING) {
-        elements->contrast_grade = convert_exposure_to_display_contrast(exposure->contrast_grade);
+    exposure_mode_t mode = exposure_get_mode(exposure);
+    if (mode == EXPOSURE_MODE_PRINTING) {
+        elements->contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure));
         elements->cal_title1 = NULL;
         elements->cal_title2 = NULL;
         elements->cal_value = 0;
-    } else if (exposure->mode == EXPOSURE_MODE_CALIBRATION) {
+    } else if (mode == EXPOSURE_MODE_CALIBRATION) {
         elements->contrast_grade = DISPLAY_GRADE_MAX;
         elements->cal_title1 = "Print";
         elements->cal_title2 = "Exposure";
-        elements->cal_value = exposure->calibration_pev;
+        elements->cal_value = exposure_get_calibration_pev(exposure);
     }
 
+    float exposure_time = exposure_get_exposure_time(exposure);
     float seconds;
     float fractional;
-    fractional = modff(exposure->adjusted_time, &seconds);
+    fractional = modff(exposure_time, &seconds);
     elements->time_seconds = seconds;
     elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
 
-    if (exposure->adjusted_time < 10) {
+    if (exposure_time < 10) {
         elements->fraction_digits = 2;
 
-    } else if (exposure->adjusted_time < 100) {
+    } else if (exposure_time < 100) {
         elements->fraction_digits = 1;
     } else {
         elements->fraction_digits = 0;

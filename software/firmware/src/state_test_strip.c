@@ -75,7 +75,7 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
     state->elements.time_elements.time_milliseconds = 1;
     state->elements.time_elements.fraction_digits = 1;
 
-    switch (exposure_state->adjustment_increment) {
+    switch (exposure_adj_increment_get(exposure_state)) {
     case EXPOSURE_ADJ_TWELFTH:
         state->elements.title2 = "1/12 Stop";
         break;
@@ -110,7 +110,7 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
         break;
     }
 
-    if (exposure_state->mode == EXPOSURE_MODE_CALIBRATION) {
+    if (exposure_get_mode(exposure_state) == EXPOSURE_MODE_CALIBRATION) {
         for (int i = 0; i < state->exposure_patch_count; i++) {
             state->elements.patch_cal_values[i] =
                 exposure_get_test_strip_patch_pev(exposure_state, state->exposure_patch_min + i);

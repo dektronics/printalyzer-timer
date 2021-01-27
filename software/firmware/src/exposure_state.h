@@ -45,42 +45,47 @@ typedef struct __exposure_adjustment_t {
     uint8_t denominator;
 } exposure_burn_dodge_t;
 
-typedef struct __exposure_state_t {
-    exposure_mode_t mode;
-    exposure_contrast_grade_t contrast_grade;
-    float base_time;
-    float adjusted_time;
-    int adjustment_value;
-    int adjustment_increment;
-    float lux_reading;
-    uint32_t calibration_pev;
-    exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
-    int burn_dodge_count;
-} exposure_state_t;
+typedef struct __exposure_state_t exposure_state_t;
+
+exposure_state_t *exposure_state_create();
+void exposure_state_free(exposure_state_t *state);
 
 void exposure_state_defaults(exposure_state_t *state);
 
+exposure_mode_t exposure_get_mode(const exposure_state_t *state);
+void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode);
+
 void exposure_set_base_time(exposure_state_t *state, float value);
+
+float exposure_get_exposure_time(const exposure_state_t *state);
 
 void exposure_add_meter_reading(exposure_state_t *state, float lux);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
+uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
+
 void exposure_adj_increase(exposure_state_t *state);
 void exposure_adj_decrease(exposure_state_t *state);
+int exposure_adj_get(const exposure_state_t *state);
 void exposure_adj_set(exposure_state_t *state, int value);
 int exposure_adj_min(exposure_state_t *state);
 int exposure_adj_max(exposure_state_t *state);
 
+exposure_contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state);
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
 
 void exposure_calibration_pev_increase(exposure_state_t *state);
 void exposure_calibration_pev_decrease(exposure_state_t *state);
 
+int exposure_adj_increment_get(const exposure_state_t *state);
 void exposure_adj_increment_increase(exposure_state_t *state);
 void exposure_adj_increment_decrease(exposure_state_t *state);
 uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state);
 
+int exposure_burn_dodge_count(const exposure_state_t *state);
+const exposure_burn_dodge_t *exposure_burn_dodge_get(const exposure_state_t *state, int index);
+void exposure_burn_dodge_set(exposure_state_t *state, const exposure_burn_dodge_t *entry, int index);
 void exposure_burn_dodge_delete(exposure_state_t *state, int index);
 void exposure_burn_dodge_delete_all(exposure_state_t *state);
 

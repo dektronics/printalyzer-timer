@@ -2,6 +2,7 @@
 
 #include <FreeRTOS.h>
 #include <cmsis_os.h>
+#include <stdlib.h>
 #include <task.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -34,7 +35,7 @@ struct __state_controller_t {
     uint32_t current_state_param;
     state_identifier_t next_state;
     uint32_t next_state_param;
-    exposure_state_t exposure_state;
+    exposure_state_t *exposure_state;
     enlarger_profile_t enlarger_profile;
     TickType_t focus_start_ticks;
 };
@@ -49,12 +50,21 @@ static state_t state_menu_data = {
 
 void state_controller_init()
 {
+    if (state_controller.exposure_state) {
+        exposure_state_free(state_controller.exposure_state);
+        state_controller.exposure_state = NULL;
+    }
+
     state_controller.current_state = STATE_MAX;
     state_controller.current_state_param = 0;
     state_controller.next_state = STATE_HOME;
     state_controller.next_state_param = 0;
-    exposure_state_defaults(&(state_controller.exposure_state));
+    state_controller.exposure_state = exposure_state_create();
     state_controller.focus_start_ticks = 0;
+
+    if (!state_controller.exposure_state) {
+        abort();
+    }
 
     state_controller_reload_enlarger_profile(&state_controller);
 
@@ -138,7 +148,7 @@ void state_controller_set_next_state(state_controller_t *controller, state_ident
 exposure_state_t *state_controller_get_exposure_state(state_controller_t *controller)
 {
     if (!controller) { return NULL; }
-    return &(controller->exposure_state);
+    return controller->exposure_state;
 }
 
 const enlarger_profile_t *state_controller_get_enlarger_profile(state_controller_t *controller)

@@ -39,7 +39,7 @@ bool state_timer_process(state_t *state_base, state_controller_t *controller)
     const enlarger_profile_t *enlarger_profile = state_controller_get_enlarger_profile(controller);
 
     if (state_timer_main_exposure(exposure_state, enlarger_profile)) {
-        for (int i = 0; i < exposure_state->burn_dodge_count; i++) {
+        for (int i = 0; i < exposure_burn_dodge_count(exposure_state); i++) {
             if (!state_timer_burn_dodge_exposure(exposure_state, enlarger_profile, i)) {
                 break;
             }
@@ -54,14 +54,14 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 {
     bool result;
 
-    float adjusted_exposure_time = exposure_state->adjusted_time;
+    float adjusted_exposure_time = exposure_get_exposure_time(exposure_state);
 
     // If a dodge adjustment is configured, then reduce the base exposure time
-    if (exposure_state->burn_dodge_count > 0 && exposure_state->burn_dodge_entry[0].numerator < 0) {
-        float adj_stops = (float)exposure_state->burn_dodge_entry[0].numerator
-            / (float)exposure_state->burn_dodge_entry[0].denominator;
-        float adj_time = exposure_state->adjusted_time * powf(2.0f, adj_stops);
-        float dodge_time = fabs(exposure_state->adjusted_time - adj_time);
+    const exposure_burn_dodge_t *burn_dodge_entry = exposure_burn_dodge_get(exposure_state, 0);
+    if (burn_dodge_entry && burn_dodge_entry->numerator < 0) {
+        float adj_stops = (float)burn_dodge_entry->numerator / (float)burn_dodge_entry->denominator;
+        float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
+        float dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
         adjusted_exposure_time -= dodge_time;
         if (adjusted_exposure_time < 0) { adjusted_exposure_time = 0; }
         ESP_LOGI(TAG, "Exposure time reduced by %.2fs due to dodge", dodge_time);
@@ -140,7 +140,7 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
 bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enlarger_profile_t *enlarger_profile, int burn_dodge_index)
 {
     bool result;
-    exposure_burn_dodge_t *entry = &(exposure_state->burn_dodge_entry[burn_dodge_index]);
+    const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, burn_dodge_index);
 
     display_adjustment_exposure_elements_t elements = {0};
 
@@ -162,7 +162,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
         elements.contrast_grade = DISPLAY_GRADE_NONE;
     } else {
         if (entry->contrast_grade == CONTRAST_GRADE_MAX) {
-            elements.contrast_grade = convert_exposure_to_display_contrast(exposure_state->contrast_grade);
+            elements.contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure_state));
         } else {
             elements.contrast_grade = convert_exposure_to_display_contrast(entry->contrast_grade);
         }
@@ -170,14 +170,14 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     // Calculate the raw time for the adjustment exposure
     float adj_stops = (float)entry->numerator / (float)entry->denominator;
-    float adj_time = exposure_state->adjusted_time * powf(2.0f, adj_stops);
+    float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
     float burn_dodge_time = 0;
     if (entry->numerator < 0) {
         // Dodge adjustment
-        burn_dodge_time = fabs(exposure_state->adjusted_time - adj_time);
+        burn_dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
     } else {
         // Burn adjustment
-        burn_dodge_time = adj_time - exposure_state->adjusted_time;
+        burn_dodge_time = adj_time - exposure_get_exposure_time(exposure_state);
     }
 
     // Set the exposure time for the adjustment
