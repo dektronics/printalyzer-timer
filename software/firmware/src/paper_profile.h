@@ -82,6 +82,16 @@ typedef struct {
      */
     paper_profile_grade_t grade[CONTRAST_GRADE_MAX];
 
+    /**
+     * Maximum net density (Dn) of the paper.
+     *
+     * This is the paper's maximum density value (Dmax), adjusted to be
+     * relative to the paper base density (Dmin). It is necessary to
+     * correctly place a contrast grade's 'hs_lev100' value on a density
+     * scale.
+     */
+    float max_net_density;
+
 } paper_profile_t;
 
 /**

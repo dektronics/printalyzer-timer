@@ -210,6 +210,12 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_4);
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_5);
 
+        if (isnormal(profile->max_net_density) && profile->max_net_density > 0.0F) {
+            offset += sprintf(buf + offset, "Max net density           [%01.2f]\n", profile->max_net_density);
+        } else {
+            offset += sprintf(buf + offset, "Max net density           [----]\n");
+        }
+
         sprintf(buf + offset, "*** Save Changes ***");
 
         if (index != UINT8_MAX) {
@@ -252,10 +258,22 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 9) {
+            uint16_t value_sel = lroundf(profile->max_net_density * 100);
+            if (display_input_value_f16(
+                "-- Max Net Density --\n"
+                "Maximum density (Dmax) of the\n"
+                "paper, measured relative to the\n"
+                "paper base (Dmin).\n",
+                "", &value_sel, 0, 999, 1, 2, "") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                profile->max_net_density = (float)value_sel / 100.0F;
+            }
+        } else if (option == 10) {
             ESP_LOGD(TAG, "Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 10) {
+        } else if (option == 11) {
             ESP_LOGD(TAG, "Delete profile from profile editor");
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
@@ -328,7 +346,11 @@ menu_result_t menu_paper_profile_edit_grade(paper_profile_t *profile, uint8_t in
     if (strlen(profile->name) > 0) {
         strncpy(buf_title, profile->name, 22);
     } else {
-        sprintf(buf_title, "Paper Profile %d", index + 1);
+        if (index == UINT8_MAX) {
+            sprintf(buf_title, "New Paper Profile");
+        } else {
+            sprintf(buf_title, "Paper Profile %d", index + 1);
+        }
     }
 
     pad_str_to_length(buf_title, ' ', 31 - (grade == CONTRAST_GRADE_00 ? 8 : 7));
@@ -395,7 +417,7 @@ menu_result_t menu_paper_profile_edit_grade(paper_profile_t *profile, uint8_t in
                 "-- ISO Range --\n"
                 "Paper exposure range between the\n"
                 "base exposure and an exposure\n"
-                "that achieves 90% of Dmax\n",
+                "that achieves 90% of Dnet\n",
                 "", &value_sel, 1, 999, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {

@@ -25,6 +25,10 @@ bool paper_profile_is_valid(const paper_profile_t *profile)
         }
     }
 
+    if (!(profile->max_net_density == NAN || (isnormal(profile->max_net_density) && profile->max_net_density >= 0.0F))) {
+        return false;
+    }
+
     return true;
 }
 

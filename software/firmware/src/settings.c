@@ -111,6 +111,7 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define PAPER_PROFILE_GRADE5_HT          108
 #define PAPER_PROFILE_GRADE5_HM          112
 #define PAPER_PROFILE_GRADE5_HS          116
+#define PAPER_PROFILE_DNET               120
 
 /**
  * Size of a memory page.
@@ -683,6 +684,11 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
     profile->grade[CONTRAST_GRADE_5].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HT);
     profile->grade[CONTRAST_GRADE_5].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HM);
     profile->grade[CONTRAST_GRADE_5].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HS);
+
+    profile->max_net_density = copy_to_f32(data + PAPER_PROFILE_DNET);
+    if (profile->max_net_density != NAN && (!isnormal(profile->max_net_density) || profile->max_net_density < 0.0F)) {
+        profile->max_net_density = NAN;
+    }
 }
 
 bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
@@ -735,6 +741,8 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HT, profile->grade[CONTRAST_GRADE_5].ht_lev100);
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HM, profile->grade[CONTRAST_GRADE_5].hm_lev100);
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
+
+    copy_from_f32(data + PAPER_PROFILE_DNET, profile->max_net_density);
 }
 
 void settings_clear_paper_profile(uint8_t index)
