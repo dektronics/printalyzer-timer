@@ -13,6 +13,12 @@
 static const char *TAG = "exposure_state";
 
 /**
+ * Maximum number of light readings used to calculate exposure
+ * and to create the tone graph.
+ */
+#define MAX_LUX_READINGS 8
+
+/**
  * Approximate PEV value to use when recommending a base
  * exposure time in calibration mode. This should help get
  * a starting point that is close enough for test strips
@@ -27,7 +33,8 @@ typedef struct __exposure_state_t {
     float adjusted_time;
     int adjustment_value;
     int adjustment_increment;
-    float lux_reading;
+    float lux_readings[MAX_LUX_READINGS];
+    int lux_reading_count;
     uint32_t calibration_pev;
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
@@ -67,7 +74,10 @@ void exposure_state_defaults(exposure_state_t *state)
     }
     state->burn_dodge_count = 0;
 
-    state->lux_reading = NAN;
+    for (int i = 0; i < MAX_LUX_READINGS; i++) {
+        state->lux_readings[i] = NAN;
+    }
+    state->lux_reading_count = 0;
     state->calibration_pev = 0;
 }
 
@@ -81,7 +91,27 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
 {
     if (!state) { return; }
     if (mode < EXPOSURE_MODE_PRINTING || mode > EXPOSURE_MODE_CALIBRATION) { return; }
-    state->mode = mode;
+
+    if (state->mode != mode) {
+        state->mode = mode;
+
+        if (state->mode == EXPOSURE_MODE_PRINTING) {
+            // Reset the base exposure and light readings if entering printing mode
+            state->base_time = settings_get_default_exposure_time() / 1000.0f;
+            state->adjusted_time = state->base_time;
+            state->adjustment_value = 0;
+
+            for (int i = 0; i < MAX_LUX_READINGS; i++) {
+                state->lux_readings[i] = NAN;
+            }
+            state->lux_reading_count = 0;
+        } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
+            // Clear any burn/dodge adjustments if entering calibration mode
+            if (state->burn_dodge_count > 0) {
+                exposure_burn_dodge_delete_all(state);
+            }
+        }
+    }
 }
 
 void exposure_set_base_time(exposure_state_t *state, float value)
@@ -121,7 +151,9 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
 {
     if (!state) { return; }
 
-    if (state->mode == EXPOSURE_MODE_CALIBRATION) {
+    if (state->mode == EXPOSURE_MODE_PRINTING) {
+        //TODO
+    } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         float updated_base_time = exposure_base_time_for_calibration_pev(lux, CALIBRATION_BASE_PEV);
         if (isnormal(updated_base_time) && updated_base_time > 0) {
             state->base_time = updated_base_time;
@@ -129,16 +161,26 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
             state->base_time = settings_get_default_exposure_time() / 1000.0F;
         }
         state->adjustment_value = 0;
+
+        if (state->lux_reading_count > 1) {
+            for (int i = 1; i < MAX_LUX_READINGS; i++) {
+                state->lux_readings[i] = NAN;
+            }
+        }
+        state->lux_readings[0] = lux;
+        state->lux_reading_count = 1;
     }
 
-    state->lux_reading = lux;
     exposure_recalculate(state);
 }
 
 void exposure_clear_meter_readings(exposure_state_t *state)
 {
     if (!state) { return; }
-    state->lux_reading = NAN;
+    for (int i = 0; i < MAX_LUX_READINGS; i++) {
+        state->lux_readings[i] = NAN;
+    }
+    state->lux_reading_count = 0;
     exposure_recalculate(state);
 }
 
@@ -254,9 +296,10 @@ void exposure_calibration_pev_increase(exposure_state_t *state)
     if (!state) { return; }
 
     if (state->mode == EXPOSURE_MODE_CALIBRATION
-        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        && state->lux_reading_count > 0
+        && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
         if (state->calibration_pev < 999) {
-            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_reading, state->calibration_pev + 1);
+            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], state->calibration_pev + 1);
             if (isnormal(updated_base_time) && updated_base_time <= 999) {
                 state->base_time = updated_base_time;
                 state->adjustment_value = 0;
@@ -271,9 +314,10 @@ void exposure_calibration_pev_decrease(exposure_state_t *state)
     if (!state) { return; }
 
     if (state->mode == EXPOSURE_MODE_CALIBRATION
-        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        && state->lux_reading_count > 0
+        && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
         if (state->calibration_pev > 0) {
-            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_reading, state->calibration_pev - 1);
+            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], state->calibration_pev - 1);
             if (isnormal(updated_base_time) && updated_base_time > 0) {
                 state->base_time = updated_base_time;
                 state->adjustment_value = 0;
@@ -450,9 +494,10 @@ uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int pa
     if (!state) { return 0; }
 
     if (state->mode == EXPOSURE_MODE_CALIBRATION
-        && isnormal(state->lux_reading) && state->lux_reading > 0) {
+        && state->lux_reading_count > 0
+        && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
         float patch_time = exposure_get_test_strip_time_complete(state, patch);
-        float calculated_pev = log10f(patch_time * state->lux_reading) * 100.0;
+        float calculated_pev = log10f(patch_time * state->lux_readings[0]) * 100.0;
         return (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
     } else {
         return 0;
@@ -467,8 +512,8 @@ void exposure_recalculate(exposure_state_t *state)
     if (state->mode == EXPOSURE_MODE_PRINTING) {
         //TODO Update the tone graph
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
-        if (isnormal(state->lux_reading) && state->lux_reading > 0) {
-            float calculated_pev = log10f(state->adjusted_time * state->lux_reading) * 100.0;
+        if (state->lux_reading_count > 0 && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
+            float calculated_pev = log10f(state->adjusted_time * state->lux_readings[0]) * 100.0;
             state->calibration_pev = (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
         } else {
             state->calibration_pev = 0;

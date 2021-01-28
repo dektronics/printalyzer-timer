@@ -38,6 +38,7 @@ typedef struct {
 
 typedef struct {
     state_t base;
+    exposure_mode_t working_value;
 } state_home_change_mode_t;
 
 typedef struct {
@@ -56,8 +57,7 @@ typedef struct {
 
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
-static void state_home_print_reading(state_home_t *state, state_controller_t *controller);
-static void state_home_calibration_reading(state_home_t *state, state_controller_t *controller);
+static void state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
@@ -86,10 +86,14 @@ static state_home_change_time_increment_t state_home_change_time_increment_data 
     }
 };
 
+static void state_home_change_mode_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller);
+static void state_home_change_mode_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_change_mode_t state_home_change_mode_data = {
     .base = {
-        .state_process = state_home_change_mode_process
+        .state_entry = state_home_change_mode_entry,
+        .state_process = state_home_change_mode_process,
+        .state_exit = state_home_change_mode_exit
     }
 };
 
@@ -129,7 +133,6 @@ state_t *state_home()
 void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_t *state = (state_home_t *)state_base;
-    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
     state->change_inc_pending = false;
     state->change_inc_swallow_release_up = false;
@@ -141,12 +144,6 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     state->adjustment_repeat = 0;
     state->cancel_repeat = 0;
     state->display_dirty = true;
-
-    // Clear any burn/dodge adjustments if in calibration mode
-    if (exposure_get_mode(exposure_state) == EXPOSURE_MODE_CALIBRATION
-        && exposure_burn_dodge_count(exposure_state) > 0) {
-        exposure_burn_dodge_delete_all(exposure_state);
-    }
 }
 
 bool state_home_process(state_t *state_base, state_controller_t *controller)
@@ -271,11 +268,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
                 && relay_enlarger_is_enabled()) {
-                if (mode == EXPOSURE_MODE_PRINTING) {
-                    state_home_print_reading(state, controller);
-                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
-                    state_home_calibration_reading(state, controller);
-                }
+                state_home_take_reading(state, controller);
                 state->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
                 state->change_inc_pending = true;
@@ -294,12 +287,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     }
 }
 
-void state_home_print_reading(state_home_t *state, state_controller_t *controller)
-{
-    //TODO Take a meter reading for printing purposes
-}
-
-void state_home_calibration_reading(state_home_t *state, state_controller_t *controller)
+void state_home_take_reading(state_home_t *state, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     meter_probe_result_t result = METER_READING_OK;
@@ -439,12 +427,20 @@ state_t *state_home_change_mode()
     return (state_t *)&state_home_change_mode_data;
 }
 
-bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller)
+void state_home_change_mode_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
+    state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
+    state->working_value = exposure_get_mode(exposure_state);
+}
+
+bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller)
+{
+    state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
+
     // Draw the current mode
-    switch (exposure_get_mode(exposure_state)) {
+    switch (state->working_value) {
     case EXPOSURE_MODE_PRINTING:
         display_draw_mode_text("Printing");
         break;
@@ -461,15 +457,15 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)
             || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-            switch (exposure_get_mode(exposure_state)) {
+            switch (state->working_value) {
             case EXPOSURE_MODE_PRINTING:
-                exposure_set_mode(exposure_state, EXPOSURE_MODE_CALIBRATION);
+                state->working_value = EXPOSURE_MODE_CALIBRATION;
                 break;
             case EXPOSURE_MODE_CALIBRATION:
-                exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING);
+                state->working_value = EXPOSURE_MODE_PRINTING;
                 break;
             default:
-                exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING);
+                state->working_value = EXPOSURE_MODE_PRINTING;
                 break;
             }
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
@@ -481,6 +477,14 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     }
 
     return true;
+}
+
+void state_home_change_mode_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
+{
+    state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    exposure_set_mode(exposure_state, state->working_value);
 }
 
 state_t *state_home_adjust_fine()
