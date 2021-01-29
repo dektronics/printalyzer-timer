@@ -43,6 +43,7 @@ typedef enum {
 
 typedef struct {
     uint32_t tone_graph;
+    uint8_t paper_profile_num;
     uint8_t burn_dodge_count;
     display_grade_t contrast_grade;
     char *cal_title1;

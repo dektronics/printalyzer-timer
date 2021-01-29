@@ -32,6 +32,7 @@ static uint8_t display_brightness = 0x0F;
 static void display_set_freq(uint8_t value);
 
 static void display_draw_tone_graph(uint32_t tone_graph);
+static void display_draw_paper_profile_num(uint8_t num);
 static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
@@ -244,6 +245,67 @@ void display_draw_tone_graph(uint32_t tone_graph)
         u8g2_DrawLine(&u8g2, 253, 1, 253, 3);
         u8g2_DrawPixel(&u8g2, 254, 2);
     }
+}
+
+void display_draw_paper_profile_num(uint8_t num)
+{
+    if (num < 1 || num > 16) { return; }
+
+    asset_info_t asset;
+    switch (num) {
+    case 1:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_1_18);
+        break;
+    case 2:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_2_18);
+        break;
+    case 3:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_3_18);
+        break;
+    case 4:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_4_18);
+        break;
+    case 5:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_5_18);
+        break;
+    case 6:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_6_18);
+        break;
+    case 7:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_7_18);
+        break;
+    case 8:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_8_18);
+        break;
+    case 9:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_9_18);
+        break;
+    case 10:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_10_18);
+        break;
+    case 11:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_11_18);
+        break;
+    case 12:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_12_18);
+        break;
+    case 13:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_13_18);
+        break;
+    case 14:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_14_18);
+        break;
+    case 15:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_15_18);
+        break;
+    case 16:
+        display_asset_get(&asset, ASSET_PAPER_INDEX_16_18);
+        break;
+    default:
+        return;
+    }
+
+    u8g2_DrawXBM(&u8g2, 0, u8g2_GetDisplayHeight(&u8g2) - asset.height, asset.width, asset.height, asset.bits);
 }
 
 void display_draw_burn_dodge_count(uint8_t count)
@@ -601,6 +663,7 @@ void display_draw_main_elements(const display_main_elements_t *elements)
     u8g2_SetBitmapMode(&u8g2, 1);
 
     display_draw_tone_graph(elements->tone_graph);
+    display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
     if (elements->cal_title1 || elements->cal_title2 || elements->cal_value > 0) {

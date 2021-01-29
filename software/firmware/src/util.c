@@ -10,6 +10,13 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
     //TODO Fix this once the exposure state contains tone graph data
     elements->tone_graph = 0;
 
+    int paper_index = exposure_get_active_paper_profile_index(exposure);
+    if (paper_index >= 0) {
+        elements->paper_profile_num = paper_index + 1;
+    } else {
+        elements->paper_profile_num = 0;
+    }
+
     elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
     exposure_mode_t mode = exposure_get_mode(exposure);

@@ -41,7 +41,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 2) {
             menu_result = menu_enlarger_profiles(controller);
         } else if (option == 3) {
-            menu_result = menu_paper_profiles();
+            menu_result = menu_paper_profiles(controller);
         } else if (option == 4) {
             menu_result = menu_diagnostics();
         } else if (option == 5) {

@@ -23,7 +23,7 @@ static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_edit_grade(paper_profile_t *profile, uint8_t index, exposure_contrast_grade_t grade);
 
-menu_result_t menu_paper_profiles()
+menu_result_t menu_paper_profiles(state_controller_t *controller)
 {
     menu_result_t menu_result = MENU_OK;
 
@@ -145,6 +145,11 @@ menu_result_t menu_paper_profiles()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     vPortFree(profile_list);
+
+    // There are many paths in this menu that can change profile settings,
+    // so its easiest to just reload the state controller's active profile
+    // whenever exiting from this menu.
+    state_controller_reload_paper_profile(controller);
 
     return menu_result;
 }

@@ -36,6 +36,8 @@ typedef struct __exposure_state_t {
     float lux_readings[MAX_LUX_READINGS];
     int lux_reading_count;
     uint32_t calibration_pev;
+    int paper_profile_index;
+    paper_profile_t paper_profile;
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
 } exposure_state_t;
@@ -51,6 +53,14 @@ exposure_state_t *exposure_state_create()
         return NULL;
     }
     exposure_state_defaults(state);
+
+    // Initialize fields that aren't reset every time the user
+    // clears state.
+    state->paper_profile_index = settings_get_default_paper_profile_index();
+    if (!settings_get_paper_profile(&state->paper_profile, state->paper_profile_index)) {
+        state->paper_profile_index = -1;
+    }
+
     return state;
 }
 
@@ -133,6 +143,20 @@ float exposure_get_exposure_time(const exposure_state_t *state)
 {
     if (!state) { return 0; }
     return state->adjusted_time;
+}
+
+int exposure_get_active_paper_profile_index(const exposure_state_t *state)
+{
+    if (!state) { return -1; }
+    return state->paper_profile_index;
+}
+
+void exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
+{
+    if (!state) { return; }
+    if (index < 16) {
+        state->paper_profile_index = index;
+    }
 }
 
 float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)

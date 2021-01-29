@@ -167,6 +167,13 @@ void state_controller_reload_enlarger_profile(state_controller_t *controller)
     }
 }
 
+void state_controller_reload_paper_profile(state_controller_t *controller)
+{
+    if (!controller) { return; }
+    uint8_t profile_index = settings_get_default_paper_profile_index();
+    exposure_set_active_paper_profile_index(controller->exposure_state, profile_index);
+}
+
 void state_controller_start_focus_timeout(state_controller_t *controller)
 {
     if (!controller) { return; }
