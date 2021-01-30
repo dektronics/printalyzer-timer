@@ -261,9 +261,12 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state->cancel_repeat++;
                 } else {
                     if (state->cancel_repeat > 2) {
+                        exposure_clear_meter_readings(exposure_state);
                         exposure_state_defaults(exposure_state);
-                        state->display_dirty = true;
+                    } else {
+                        exposure_clear_meter_readings(exposure_state);
                     }
+                    state->display_dirty = true;
                     state->cancel_repeat = 0;
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed

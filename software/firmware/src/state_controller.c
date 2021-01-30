@@ -164,6 +164,7 @@ void state_controller_reload_enlarger_profile(state_controller_t *controller)
     bool result = settings_get_enlarger_profile(&controller->enlarger_profile, profile_index);
     if (!result || !enlarger_profile_is_valid(&controller->enlarger_profile)) {
         enlarger_profile_set_defaults(&controller->enlarger_profile);
+        exposure_set_min_exposure_time(controller->exposure_state, enlarger_profile_min_exposure(&controller->enlarger_profile));
     }
 }
 

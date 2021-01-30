@@ -89,4 +89,12 @@ size_t append_signed_fraction(char *str, int8_t numerator, uint8_t denominator);
  */
 size_t append_exposure_time(char *str, float time);
 
+/**
+ * Perform polynomial interpolation on a graph defined by 3 points.
+ *
+ * Interpolates a graph based on the three (x,y) points provided, and
+ * determines the y value that corresponds to the supplied x value.
+ */
+float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, float x);
+
 #endif /* UTIL_H */

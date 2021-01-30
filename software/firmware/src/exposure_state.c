@@ -7,8 +7,10 @@
 #include <esp_log.h>
 
 #include "settings.h"
+#include "util.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 static const char *TAG = "exposure_state";
 
@@ -19,6 +21,13 @@ static const char *TAG = "exposure_state";
 #define MAX_LUX_READINGS 8
 
 /**
+ * Number of tick marks along the tone graph.
+ * The number of visible elements in the graph should be one less
+ * than this number, plus the limit arrows on either end.
+ */
+#define TONE_GRAPH_MARKS_SIZE 16
+
+/**
  * Approximate PEV value to use when recommending a base
  * exposure time in calibration mode. This should help get
  * a starting point that is close enough for test strips
@@ -26,11 +35,18 @@ static const char *TAG = "exposure_state";
  */
 #define CALIBRATION_BASE_PEV 30
 
+/**
+ * Minimum exposure time that may be offered by calculation
+ * from light readings.
+ */
+#define EXPOSURE_TIME_LOWER_BOUND (1.0F)
+
 typedef struct __exposure_state_t {
     exposure_mode_t mode;
     exposure_contrast_grade_t contrast_grade;
     float base_time;
     float adjusted_time;
+    float min_exposure_time;
     int adjustment_value;
     int adjustment_increment;
     float lux_readings[MAX_LUX_READINGS];
@@ -38,12 +54,17 @@ typedef struct __exposure_state_t {
     uint32_t calibration_pev;
     int paper_profile_index;
     paper_profile_t paper_profile;
+    float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
+    bool tone_graph[TONE_GRAPH_MARKS_SIZE + 1];
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
 } exposure_state_t;
 
 static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
+static void exposure_recalculate_tone_graph_marks(exposure_state_t *state);
+static void exposure_recalculate_base_time(exposure_state_t *state);
+static void exposure_populate_tone_graph(exposure_state_t *state);
 
 exposure_state_t *exposure_state_create()
 {
@@ -52,6 +73,7 @@ exposure_state_t *exposure_state_create()
         ESP_LOGE(TAG, "Unable to allocate exposure state");
         return NULL;
     }
+    memset(state, 0, sizeof(exposure_state_t));
     exposure_state_defaults(state);
 
     // Initialize fields that aren't reset every time the user
@@ -59,7 +81,12 @@ exposure_state_t *exposure_state_create()
     state->paper_profile_index = settings_get_default_paper_profile_index();
     if (!settings_get_paper_profile(&state->paper_profile, state->paper_profile_index)) {
         state->paper_profile_index = -1;
+        paper_profile_set_defaults(&state->paper_profile);
+        ESP_LOGI(TAG, "Set default paper profile");
+    } else {
+        ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", state->paper_profile_index + 1, state->paper_profile.name);
     }
+    exposure_recalculate_tone_graph_marks(state);
 
     return state;
 }
@@ -139,6 +166,18 @@ void exposure_set_base_time(exposure_state_t *state, float value)
     exposure_recalculate(state);
 }
 
+void exposure_set_min_exposure_time(exposure_state_t *state, float value)
+{
+    if (!state) { return; }
+    if (isnormal(value) && value > 0.1F) {
+        state->min_exposure_time = value;
+
+        if (state->lux_reading_count > 0 && state->base_time < MAX(state->min_exposure_time, EXPOSURE_TIME_LOWER_BOUND)) {
+            exposure_recalculate_base_time(state);
+        }
+    }
+}
+
 float exposure_get_exposure_time(const exposure_state_t *state)
 {
     if (!state) { return 0; }
@@ -155,7 +194,13 @@ void exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
 {
     if (!state) { return; }
     if (index < 16) {
-        state->paper_profile_index = index;
+        if (settings_get_paper_profile(&state->paper_profile, index)) {
+            ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", index + 1, state->paper_profile.name);
+            state->paper_profile_index = index;
+            exposure_recalculate_tone_graph_marks(state);
+            exposure_recalculate_base_time(state);
+            exposure_recalculate(state);
+        }
     }
 }
 
@@ -176,7 +221,11 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
     if (!state) { return; }
 
     if (state->mode == EXPOSURE_MODE_PRINTING) {
-        //TODO
+        //TODO consider filtering out "new" readings that are very close to old readings, but unsure of tolerance
+        if (state->lux_reading_count < MAX_LUX_READINGS) {
+            state->lux_readings[state->lux_reading_count++] = lux;
+        }
+        exposure_recalculate_base_time(state);
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         float updated_base_time = exposure_base_time_for_calibration_pev(lux, CALIBRATION_BASE_PEV);
         if (isnormal(updated_base_time) && updated_base_time > 0) {
@@ -206,6 +255,29 @@ void exposure_clear_meter_readings(exposure_state_t *state)
     }
     state->lux_reading_count = 0;
     exposure_recalculate(state);
+}
+
+bool exposure_is_tone_set(const exposure_state_t *state, int offset)
+{
+    if (!state) { return false; }
+
+    size_t index = offset + 8;
+    if (index < 1 || index > TONE_GRAPH_MARKS_SIZE - 1) {
+        return false;
+    }
+    return state->tone_graph[index];
+}
+
+bool exposure_is_tone_lower_bound(const exposure_state_t *state)
+{
+    if (!state) { return false; }
+    return state->tone_graph[0];
+}
+
+bool exposure_is_tone_upper_bound(const exposure_state_t *state)
+{
+    if (!state) { return false; }
+    return state->tone_graph[TONE_GRAPH_MARKS_SIZE];
 }
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
@@ -301,6 +373,8 @@ void exposure_contrast_increase(exposure_state_t *state)
 
     if (state->contrast_grade < CONTRAST_GRADE_5) {
         state->contrast_grade++;
+        exposure_recalculate_tone_graph_marks(state);
+        exposure_recalculate_base_time(state);
         exposure_recalculate(state);
     }
 }
@@ -311,6 +385,8 @@ void exposure_contrast_decrease(exposure_state_t *state)
 
     if (state->contrast_grade > CONTRAST_GRADE_00) {
         state->contrast_grade--;
+        exposure_recalculate_tone_graph_marks(state);
+        exposure_recalculate_base_time(state);
         exposure_recalculate(state);
     }
 }
@@ -534,13 +610,146 @@ void exposure_recalculate(exposure_state_t *state)
     state->adjusted_time = state->base_time * powf(2.0f, stops);
 
     if (state->mode == EXPOSURE_MODE_PRINTING) {
-        //TODO Update the tone graph
+        exposure_populate_tone_graph(state);
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         if (state->lux_reading_count > 0 && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
             float calculated_pev = log10f(state->adjusted_time * state->lux_readings[0]) * 100.0;
             state->calibration_pev = (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
         } else {
             state->calibration_pev = 0;
+        }
+    }
+}
+
+void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
+{
+    /* Make sure there is a valid profile */
+    if (!paper_profile_is_valid(&state->paper_profile)) {
+        ESP_LOGW(TAG, "Cannot recalculate tone graph for invalid profile");
+        for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
+            state->tone_graph_marks[i] = NAN;
+        }
+        return;
+    }
+
+    /* Collect the relevant log exposure values from the paper profile */
+    uint32_t ht_lev100 = state->paper_profile.grade[state->contrast_grade].ht_lev100;
+    uint32_t hm_lev100 = state->paper_profile.grade[state->contrast_grade].hm_lev100;
+    uint32_t hs_lev100 = state->paper_profile.grade[state->contrast_grade].hs_lev100;
+    float d_net = state->paper_profile.max_net_density;
+
+    if (ht_lev100 > 0 && hm_lev100 > 0 && hs_lev100 > 0
+        && ht_lev100 < hs_lev100
+        && ht_lev100 <  hm_lev100 && hm_lev100 < hs_lev100
+        && isnormal(d_net) && d_net > 0) {
+        /*
+         * We have all the relevant fields, with valid relationships, to
+         * interpolate the full tone curve.
+         */
+        ESP_LOGD(TAG, "Tone graph using full T+M+S+Dnet interpolation");
+
+        float d_ht = 0.04F;
+        float d_hm = 0.60F;
+        float d_hs = 0.90F * d_net;
+        float d_range = d_hs - d_ht;
+
+        float d_inc = d_range / (TONE_GRAPH_MARKS_SIZE - 1);
+        float d_mark = d_ht;
+
+        for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
+            state->tone_graph_marks[i] = interpolate(d_ht, ht_lev100, d_hm, hm_lev100, d_hs, hs_lev100, d_mark);
+            d_mark += d_inc;
+        }
+
+    } else if (ht_lev100 > 0 && hs_lev100 > 0 && ht_lev100 < hs_lev100) {
+        /*
+         * We just have the minimum number of relevant fields, so do a linear
+         * graph of the ISO Range.
+         */
+        ESP_LOGD(TAG, "Tone graph using simple T+M ISO(R) line");
+
+        uint32_t iso_r = hs_lev100 - ht_lev100;
+
+        float mark_increment = (float)iso_r / (TONE_GRAPH_MARKS_SIZE - 1);
+        float mark_value = (float)ht_lev100;
+
+        for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
+            state->tone_graph_marks[i] = mark_value;
+            mark_value += mark_increment;
+        }
+    } else {
+        ESP_LOGW(TAG, "Insufficient profile data to calculate tone graph");
+        for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
+            state->tone_graph_marks[i] = NAN;
+        }
+    }
+}
+
+void exposure_recalculate_base_time(exposure_state_t *state)
+{
+    /* Make sure there is a usable Ht value in the active profile */
+    if (state->paper_profile.grade[state->contrast_grade].ht_lev100 == 0) {
+        return;
+    }
+
+    /* Make sure we have at least one meter reading */
+    if (state->lux_reading_count <= 0) {
+        return;
+    }
+
+    /* Find the lowest meter reading */
+    float lux_value = NAN;
+    for (size_t i = 0; i < state->lux_reading_count; i++) {
+        if (isnan(lux_value) || state->lux_readings[i] < lux_value) {
+            lux_value = state->lux_readings[i];
+        }
+    }
+
+    /* Find the target exposure time */
+    float ht_lev100 = state->paper_profile.grade[state->contrast_grade].ht_lev100;
+    float target_time = powf(10, ht_lev100 / 100.0F) / lux_value;
+
+    /* Adjust exposure time if it is too low */
+    float min_time = MAX(state->min_exposure_time, EXPOSURE_TIME_LOWER_BOUND);
+    if (target_time < min_time) {
+        target_time = min_time;
+    }
+
+    /* Set the new base time, if changed */
+    if (fabs(state->base_time - target_time) >= 0.01F) {
+        ESP_LOGD(TAG, "Updating base time from meter reading: %.2f -> %.2f", state->base_time, target_time);
+        state->base_time = target_time;
+    }
+}
+
+void exposure_populate_tone_graph(exposure_state_t *state)
+{
+    /* Clear any existing values */
+    memset(&state->tone_graph, 0, sizeof(state->tone_graph));
+
+    /* Abort if the tone graph marks are not set */
+    if (isnan(state->tone_graph_marks[0])) {
+        return;
+    }
+
+    for (size_t i = 0; i < state->lux_reading_count; i++) {
+        /* Calculate the log-exposure value for the next reading */
+        float lev_value = log10f(state->lux_readings[i] * state->adjusted_time) * 100.0F;
+
+        if (lev_value < state->tone_graph_marks[0]) {
+            /* Check whether to set the lower-bound mark */
+            state->tone_graph[0] = true;
+        } else if (lev_value >= state->tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
+            /* Check whether to set the upper-bound mark */
+            state->tone_graph[TONE_GRAPH_MARKS_SIZE] = true;
+        } else {
+            /* Check which marks of the main graph to set */
+            for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
+                if (lev_value >= state->tone_graph_marks[j] && lev_value < state->tone_graph_marks[j + 1]) {
+                    state->tone_graph[j + 1] = true;
+                    break;
+                }
+            }
         }
     }
 }

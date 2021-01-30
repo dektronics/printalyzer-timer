@@ -7,8 +7,19 @@
 
 void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure)
 {
-    //TODO Fix this once the exposure state contains tone graph data
+    //TODO Track changes from previous to display blinkies
     elements->tone_graph = 0;
+    if (exposure_is_tone_upper_bound(exposure)) {
+        elements->tone_graph |= DISPLAY_TONE_OVER;
+    }
+    if (exposure_is_tone_lower_bound(exposure)) {
+        elements->tone_graph |= DISPLAY_TONE_UNDER;
+    }
+    for (int i = -7; i <=7; i++) {
+        if (exposure_is_tone_set(exposure, i)) {
+            elements->tone_graph |= DISPLAY_TONE_ELEMENT(i);
+        }
+    }
 
     int paper_index = exposure_get_active_paper_profile_index(exposure);
     if (paper_index >= 0) {
@@ -183,4 +194,11 @@ size_t append_exposure_time(char *str, float time)
         count = sprintf(str, "%ds", display_seconds);
     }
     return count;
+}
+
+float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, float x)
+{
+    return (y1 * ((x - x2) / (x1 - x2)) * ((x - x3) / (x1 - x3))) +
+        (y2 * ((x - x1) / (x2 - x1)) * ((x - x3) / (x2 - x3))) +
+        (y3 * ((x - x1) / (x3 - x1)) * ((x - x2) / (x3 - x2)));
 }

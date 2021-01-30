@@ -6,6 +6,7 @@
 #define EXPOSURE_STATE_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define EXPOSURE_BURN_DODGE_MAX 9
 
@@ -57,6 +58,8 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode);
 
 void exposure_set_base_time(exposure_state_t *state, float value);
 
+void exposure_set_min_exposure_time(exposure_state_t *state, float value);
+
 float exposure_get_exposure_time(const exposure_state_t *state);
 
 int exposure_get_active_paper_profile_index(const exposure_state_t *state);
@@ -64,6 +67,10 @@ void exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
 
 void exposure_add_meter_reading(exposure_state_t *state, float lux);
 void exposure_clear_meter_readings(exposure_state_t *state);
+
+bool exposure_is_tone_set(const exposure_state_t *state, int offset);
+bool exposure_is_tone_lower_bound(const exposure_state_t *state);
+bool exposure_is_tone_upper_bound(const exposure_state_t *state);
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
 
