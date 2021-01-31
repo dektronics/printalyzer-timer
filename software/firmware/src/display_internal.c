@@ -59,6 +59,9 @@ const char *display_u16toa(uint16_t v, uint8_t d)
 {
     // Based off u8x8_u16toa with changes to use whitespace padding
     static char buf[6];
+    if (d > 5) {
+        d = 5;
+    }
     sprintf(buf, "%*d", d, v);
     return buf;
 }
@@ -207,6 +210,11 @@ static const char *display_f16toa(uint16_t val, uint8_t wdigits, uint8_t fdigits
     uint8_t fpow = uint_pow(10, fdigits);
     uint16_t wval = val / fpow;
     uint16_t fval = val % fpow;
+
+    if (wdigits + fdigits > 5) {
+        wdigits = 3;
+        fdigits = 2;
+    }
 
     sprintf(buf, "%*d.%0*d", wdigits, wval, fdigits, fval);
     return buf;
@@ -513,6 +521,9 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
                 }
                 event_action = (uint8_t)(result & 0x00FF);
                 event_keycode = (uint8_t)((result & 0xFF00) >> 8);
+            } else {
+                event_action = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+                event_keycode = 0;
             }
 
             if (event_action == U8X8_MSG_GPIO_MENU_SELECT) {
