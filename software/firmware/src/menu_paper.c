@@ -230,7 +230,7 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            display_input_text("Enlarger Name", profile->name, 32);
+            display_input_text("Paper Profile Name", profile->name, 32);
         } else if (option >= 2 && option <= 8) {
             exposure_contrast_grade_t grade;
             switch (option) {
