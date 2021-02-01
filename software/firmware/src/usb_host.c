@@ -4,6 +4,7 @@
 #include <usbh_cdc.h>
 #include <usbh_msc.h>
 #include <usbh_hid.h>
+#include <usbh_serial_ftdi.h>
 
 #include <ff.h>
 
@@ -28,6 +29,7 @@ static uint32_t usb_hid_keyboard_last_event_time = 0;
 static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id);
 static void usb_msc_active();
 static void usb_msc_disconnect();
+static void usb_serial_ftdi_active(USBH_HandleTypeDef *phost);
 
 USBH_StatusTypeDef usb_host_init(void)
 {
@@ -46,6 +48,10 @@ USBH_StatusTypeDef usb_host_init(void)
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_HID_CLASS) != USBH_OK) {
         ESP_LOGE(TAG, "USBH_RegisterClass HID fail");
+        return USBH_FAIL;
+    }
+    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_FTDI_CLASS) != USBH_OK) {
+        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_FTDI fail");
         return USBH_FAIL;
     }
     if (USBH_Start(&hUsbHostFS) != USBH_OK) {
@@ -80,6 +86,8 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
             usb_hid_keyboard_report_state = 0x00;
             memset(&usb_hid_keyboard_last_event, 0, sizeof(HID_KEYBD_Info_TypeDef));
             usb_hid_keyboard_last_event_time = 0;
+        } else if (USBH_FTDI_IsDeviceType(phost)) {
+            usb_serial_ftdi_active(phost);
         }
         break;
     case HOST_USER_CLASS_SELECTED:
@@ -222,4 +230,60 @@ void usb_msc_disconnect()
 bool usb_msc_is_mounted()
 {
     return usb_msc_mounted;
+}
+
+void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
+{
+    ESP_LOGD(TAG, "usb_serial_ftdi_active");
+
+    USBH_StatusTypeDef status;
+
+    do {
+        status = USBH_FTDI_SetBaudRate(phost, 9600);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        USBH_ErrLog("FTDI: USBH_FTDI_SetBaudRate failed: %d", status);
+        return;
+    }
+
+    do {
+        status = USBH_FTDI_SetData(phost, FTDI_SIO_SET_DATA_BITS(8)
+            | FTDI_SIO_SET_DATA_PARITY_NONE | FTDI_SIO_SET_DATA_STOP_BITS_1);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        USBH_ErrLog("FTDI: USBH_FTDI_SetData failed: %d", status);
+        return;
+    }
+
+    do {
+        status = USBH_FTDI_SetFlowControl(phost, FTDI_SIO_DISABLE_FLOW_CTRL);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        USBH_ErrLog("FTDI: USBH_FTDI_SetFlowControl failed: %d", status);
+        return;
+    }
+
+    do {
+        status = USBH_FTDI_SetDtr(phost, false);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        USBH_ErrLog("FTDI: USBH_FTDI_SetDtr failed: %d", status);
+        return;
+    }
+
+    do {
+        status = USBH_FTDI_SetRts(phost, false);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        USBH_ErrLog("FTDI: USBH_FTDI_SetRts failed: %d", status);
+        return;
+    }
+}
+
+void USBH_FTDI_TransmitCallback(USBH_HandleTypeDef *phost)
+{
+}
+
+void USBH_FTDI_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t length)
+{
 }

@@ -17,4 +17,7 @@ USBH_StatusTypeDef usb_host_init(void);
 
 bool usb_msc_is_mounted();
 
+void usb_foo();
+void usb_bar();
+
 #endif /* USB_HOST_H */

@@ -702,6 +702,10 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         {
           phost->gState = HOST_ABORT_STATE;
           USBH_UsrLog("No registered class for this device.");
+          USBH_UsrLog("Class = 0x%02X, SubClass = 0x%02X, Protocol = 0x%02X",
+              phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass,
+              phost->device.CfgDesc.Itf_Desc[0].bInterfaceSubClass,
+              phost->device.CfgDesc.Itf_Desc[0].bInterfaceProtocol);
         }
       }
 
