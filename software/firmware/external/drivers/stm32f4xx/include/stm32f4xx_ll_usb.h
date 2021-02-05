@@ -205,6 +205,10 @@ typedef struct
 
   USB_OTG_HCStateTypeDef state;       /*!< Host Channel state.
                                             This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
+
+  uint8_t   no_reactivate_on_nak; /*!< Do not re-activate the channel when handling an interrupt that halts with a NAK. (DK)
+                                       This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+
 } USB_OTG_HCTypeDef;
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 

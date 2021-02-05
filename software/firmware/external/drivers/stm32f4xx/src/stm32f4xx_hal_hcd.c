@@ -1306,11 +1306,14 @@ static void HCD_HC_IN_IRQHandler(HCD_HandleTypeDef *hhcd, uint8_t chnum)
     else if (hhcd->hc[ch_num].state == HC_NAK)
     {
       hhcd->hc[ch_num].urb_state  = URB_NOTREADY;
-      /* re-activate the channel  */
-      tmpreg = USBx_HC(ch_num)->HCCHAR;
-      tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
-      tmpreg |= USB_OTG_HCCHAR_CHENA;
-      USBx_HC(ch_num)->HCCHAR = tmpreg;
+      if (hhcd->hc[ch_num].no_reactivate_on_nak == 0) /* (DK) */
+      {
+        /* re-activate the channel  */
+        tmpreg = USBx_HC(ch_num)->HCCHAR;
+        tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+        tmpreg |= USB_OTG_HCCHAR_CHENA;
+        USBx_HC(ch_num)->HCCHAR = tmpreg;
+      }
     }
     else if (hhcd->hc[ch_num].state == HC_BBLERR)
     {

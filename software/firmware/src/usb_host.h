@@ -17,7 +17,6 @@ USBH_StatusTypeDef usb_host_init(void);
 
 bool usb_msc_is_mounted();
 
-void usb_foo();
-void usb_bar();
+USBH_StatusTypeDef usb_serial_transmit(const uint8_t *buf, size_t length);
 
 #endif /* USB_HOST_H */
