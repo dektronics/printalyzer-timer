@@ -304,7 +304,7 @@ USBH_StatusTypeDef USBH_FTDI_SetFlowControl(USBH_HandleTypeDef *phost, uint8_t f
 USBH_StatusTypeDef USBH_FTDI_SetDtr(USBH_HandleTypeDef *phost, bool enabled);
 USBH_StatusTypeDef USBH_FTDI_SetRts(USBH_HandleTypeDef *phost, bool enabled);
 
-USBH_StatusTypeDef USBH_FTDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length);
+USBH_StatusTypeDef USBH_FTDI_Transmit(USBH_HandleTypeDef *phost, const uint8_t *pbuff, uint32_t length);
 
 /**
  * Weak function, implement to be notified of transmit complete.

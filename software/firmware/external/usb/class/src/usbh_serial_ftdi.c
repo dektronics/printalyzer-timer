@@ -322,7 +322,7 @@ USBH_StatusTypeDef USBH_FTDI_SetBaudRate(USBH_HandleTypeDef *phost, uint32_t bau
     FTDI_HandleTypeDef *FTDI_Handle = (FTDI_HandleTypeDef *)phost->pActiveClass->pData;
     uint32_t divisor = baudrate_get_divisor(phost, baudrate);
     uint16_t wValue = (uint16_t)divisor;
-    uint16_t wIndex = (uint16_t)(divisor >> 16) | (FTDI_Handle->port_no << 8);
+    uint16_t wIndex = (uint16_t)(divisor >> 16) | (FTDI_Handle->port_no);
 
     phost->Control.setup.b.bmRequestType = USB_H2D | USB_REQ_TYPE_VENDOR | USB_REQ_RECIPIENT_DEVICE;
 
@@ -359,7 +359,8 @@ USBH_StatusTypeDef USBH_FTDI_SetFlowControl(USBH_HandleTypeDef *phost, uint8_t f
     } else {
         phost->Control.setup.b.wValue.w = 0;
     }
-    phost->Control.setup.b.wIndex.w = flow_control | (FTDI_Handle->port_no << 8);
+    phost->Control.setup.b.wIndex.bw.msb = flow_control;
+    phost->Control.setup.b.wIndex.bw.lsb = FTDI_Handle->port_no;
 
     phost->Control.setup.b.wLength.w = 0U;
 
@@ -457,7 +458,7 @@ USBH_StatusTypeDef USBH_FTDI_SOFProcess(USBH_HandleTypeDef *phost)
     return USBH_OK;
 }
 
-USBH_StatusTypeDef USBH_FTDI_Transmit(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint32_t length)
+USBH_StatusTypeDef USBH_FTDI_Transmit(USBH_HandleTypeDef *phost, const uint8_t *pbuff, uint32_t length)
 {
     USBH_StatusTypeDef status = USBH_BUSY;
     FTDI_HandleTypeDef *FTDI_Handle = (FTDI_HandleTypeDef *)phost->pActiveClass->pData;
