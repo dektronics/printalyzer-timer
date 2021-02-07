@@ -5,8 +5,7 @@
 #include <usbh_msc.h>
 #include <usbh_hid.h>
 #include <usbh_serial_ftdi.h>
-#include <usbh_serial_uplcom.h>
-
+#include <usbh_serial_plcom.h>
 #include <ff.h>
 
 #include <esp_log.h>
@@ -58,8 +57,8 @@ USBH_StatusTypeDef usb_host_init(void)
         ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_FTDI fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_UPLCOM_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_UPLCOM fail");
+    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_PLCOM_CLASS) != USBH_OK) {
+        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_PLCOM fail");
         return USBH_FAIL;
     }
     if (USBH_Start(&hUsbHostFS) != USBH_OK) {
@@ -96,7 +95,7 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
             usb_hid_keyboard_last_event_time = 0;
         } else if (USBH_FTDI_IsDeviceType(phost)) {
             usb_serial_ftdi_active(phost);
-        } else if (USBH_UPLCOM_IsDeviceType(phost)) {
+        } else if (USBH_PLCOM_IsDeviceType(phost)) {
             usb_serial_uplcom_active(phost);
         }
         break;
@@ -304,34 +303,34 @@ void usb_serial_uplcom_active(USBH_HandleTypeDef *phost)
     linecoding.b.bParityType = 0;
     linecoding.b.bDataBits = 8;
     do {
-        status = USBH_UPLCOM_SetLineCoding(phost, &linecoding);
+        status = USBH_PLCOM_SetLineCoding(phost, &linecoding);
     } while (status == USBH_BUSY);
 
     do {
-        status = USBH_UPLCOM_SetRtsCts(phost, false);
+        status = USBH_PLCOM_SetRtsCts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_UPLCOM_SetRtsCts failed: %d", status);
+        ESP_LOGE(TAG, "USBH_PLCOM_SetRtsCts failed: %d", status);
         return;
     }
 
     do {
-        status = USBH_UPLCOM_SetDtr(phost, false);
+        status = USBH_PLCOM_SetDtr(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_UPLCOM_SetDtr failed: %d", status);
+        ESP_LOGE(TAG, "USBH_PLCOM_SetDtr failed: %d", status);
         return;
     }
 
     do {
-        status = USBH_UPLCOM_SetRts(phost, false);
+        status = USBH_PLCOM_SetRts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_UPLCOM_SetRts failed: %d", status);
+        ESP_LOGE(TAG, "USBH_PLCOM_SetRts failed: %d", status);
         return;
     }
 
-    ESP_LOGD(TAG, "UPLCOM: active");
+    ESP_LOGD(TAG, "PLCOM: active");
 }
 
 USBH_StatusTypeDef usb_serial_transmit(const uint8_t *buf, size_t length)
@@ -350,9 +349,9 @@ USBH_StatusTypeDef usb_serial_transmit(const uint8_t *buf, size_t length)
         do {
             status = USBH_FTDI_Transmit(&hUsbHostFS, buf, length);
         } while (status == USBH_BUSY);
-    } else if (USBH_UPLCOM_IsDeviceType(&hUsbHostFS)) {
+    } else if (USBH_PLCOM_IsDeviceType(&hUsbHostFS)) {
         do {
-            status = USBH_UPLCOM_Transmit(&hUsbHostFS, buf, length);
+            status = USBH_PLCOM_Transmit(&hUsbHostFS, buf, length);
         } while (status == USBH_BUSY);
     } else {
         status = USBH_NOT_SUPPORTED;
@@ -391,17 +390,17 @@ void USBH_FTDI_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t 
     usb_serial_receive_callback(phost, data, length);
 }
 
-void USBH_UPLCOM_TransmitCallback(USBH_HandleTypeDef *phost)
+void USBH_PLCOM_TransmitCallback(USBH_HandleTypeDef *phost)
 {
     usb_serial_transmit_callback(phost);
 }
 
-void USBH_UPLCOM_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t length)
+void USBH_PLCOM_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t length)
 {
     usb_serial_receive_callback(phost, data, length);
 }
 
-void USBH_UPLCOM_LineCodingChanged(USBH_HandleTypeDef *phost)
+void USBH_PLCOM_LineCodingChanged(USBH_HandleTypeDef *phost)
 {
-    ESP_LOGI(TAG, "USBH_UPLCOM_LineCodingChanged");
+    ESP_LOGI(TAG, "USBH_PLCOM_LineCodingChanged");
 }
