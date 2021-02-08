@@ -73,10 +73,13 @@ typedef struct _SLCOM_Process {
 
 /* Line control values */
 #define SLCOM_STOP_BITS_1  0x00
+#define SLCOM_STOP_BITS_15 0x01
 #define SLCOM_STOP_BITS_2  0x02
 #define SLCOM_PARITY_NONE  0x00
 #define SLCOM_PARITY_ODD   0x10
 #define SLCOM_PARITY_EVEN  0x20
+#define SLCOM_PARITY_MARK  0x30
+#define SLCOM_PARITY_SPACE 0x40
 #define SLCOM_SET_DATA_BITS(x) ((x) << 8)
 
 /**
