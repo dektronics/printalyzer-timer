@@ -18,6 +18,8 @@
 #include "tcs3472.h"
 #include "settings.h"
 #include "illum_controller.h"
+#include "densitometer.h"
+#include "usb_host.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
@@ -26,6 +28,7 @@ static menu_result_t diagnostics_led();
 static menu_result_t diagnostics_buzzer();
 static menu_result_t diagnostics_relay();
 static menu_result_t diagnostics_meter_probe();
+static menu_result_t diagnostics_densitometer();
 static menu_result_t diagnostics_screenshot_mode();
 
 static const char *TAG = "menu_diagnostics";
@@ -43,6 +46,7 @@ menu_result_t menu_diagnostics()
                 "Buzzer Test\n"
                 "Relay Test\n"
                 "Meter Probe Test\n"
+                "Densitometer Test\n"
                 "Screenshot Mode");
 
         if (option == 1) {
@@ -56,6 +60,8 @@ menu_result_t menu_diagnostics()
         } else if (option == 5) {
             menu_result = diagnostics_meter_probe();
         } else if (option == 6) {
+            menu_result = diagnostics_densitometer();
+        } else if (option == 7) {
             menu_result = diagnostics_screenshot_mode();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
@@ -648,6 +654,61 @@ menu_result_t diagnostics_meter_probe()
     tcs3472_disable(&hi2c2);
     relay_enlarger_enable(enlarger_enabled);
 
+    return MENU_OK;
+}
+
+menu_result_t diagnostics_densitometer()
+{
+    char buf[512];
+    densitometer_result_t dens_result = DENSITOMETER_RESULT_UNKNOWN;
+    densitometer_reading_t reading;
+    bool has_reading = false;
+
+    usb_serial_clear_receive_buffer();
+
+    for (;;) {
+        if (has_reading) {
+            const char *mode_str;
+            switch (reading.mode) {
+            case DENSITOMETER_MODE_TRANSMISSION:
+                mode_str = "Transmission";
+                break;
+            case DENSITOMETER_MODE_REFLECTION:
+                mode_str = "Reflection";
+                break;
+            case DENSITOMETER_MODE_UNKNOWN:
+            default:
+                mode_str = "Unknown";
+                break;
+            }
+            sprintf(buf, "\n"
+                "Mode: %s\n"
+                "VIS=%0.02f\n"
+                "R=%0.02f G=%0.02f B=%0.02f",
+                mode_str, reading.visual,
+                reading.red, reading.green, reading.blue);
+        } else {
+            if (usb_serial_is_attached()) {
+                sprintf(buf, "\n\nConnected");
+            } else {
+                sprintf(buf, "\n\n** USB Serial Not Attached **");
+            }
+        }
+        display_static_list("Densitometer Test", buf);
+
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, 100) == HAL_OK) {
+            if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            }
+        }
+
+        dens_result = densitometer_reading_poll(&reading, 100);
+        if (dens_result == DENSITOMETER_RESULT_OK) {
+            densitometer_log_reading(&reading);
+            has_reading = true;
+        }
+    }
     return MENU_OK;
 }
 
