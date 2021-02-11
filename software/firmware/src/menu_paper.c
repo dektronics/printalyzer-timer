@@ -13,6 +13,8 @@
 #include "settings.h"
 #include "paper_profile.h"
 #include "util.h"
+#include "usb_host.h"
+#include "densitometer.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -22,6 +24,7 @@ static menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t i
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_edit_grade(paper_profile_t *profile, uint8_t index, exposure_contrast_grade_t grade);
+static uint16_t menu_paper_densitometer_data_callback(void *user_data);
 
 menu_result_t menu_paper_profiles(state_controller_t *controller)
 {
@@ -264,12 +267,17 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
             }
         } else if (option == 9) {
             uint16_t value_sel = lroundf(profile->max_net_density * 100);
-            if (display_input_value_f16(
+            bool dens_enable = usb_serial_is_attached();
+            if (dens_enable) {
+                usb_serial_clear_receive_buffer();
+            }
+            if (display_input_value_f16_data_cb(
                 "-- Max Net Density --\n"
                 "Maximum density (Dmax) of the\n"
                 "paper, measured relative to the\n"
                 "paper base (Dmin).\n",
-                "", &value_sel, 0, 999, 1, 2, "") == UINT8_MAX) {
+                "", &value_sel, 0, 999, 1, 2, "",
+                menu_paper_densitometer_data_callback, &dens_enable) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 profile->max_net_density = (float)value_sel / 100.0F;
@@ -448,4 +456,19 @@ menu_result_t menu_paper_profile_edit_grade(paper_profile_t *profile, uint8_t in
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     return menu_result;
+}
+
+uint16_t menu_paper_densitometer_data_callback(void *user_data)
+{
+    bool dens_enable = *((bool *)user_data);
+    if (dens_enable) {
+        densitometer_reading_t reading;
+        if (densitometer_reading_poll(&reading, 50) == DENSITOMETER_RESULT_OK) {
+            if ((reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_REFLECTION)
+                && !isnanf(reading.visual) && reading.visual > 0.0F) {
+                return lroundf(reading.visual * 100);
+            }
+        }
+    }
+    return UINT16_MAX;
 }

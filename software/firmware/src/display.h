@@ -12,6 +12,7 @@ typedef enum {
     DISPLAY_MENU_ACCEPT_ENCODER = 0x08,
     DISPLAY_MENU_TIMEOUT_DISABLED = 0x10,
     DISPLAY_MENU_INPUT_ASCII = 0x20,
+    DISPLAY_MENU_INPUT_POLL = 0x40
 } display_menu_params_t;
 
 typedef enum {
@@ -88,6 +89,7 @@ typedef struct {
 } display_adjustment_exposure_elements_t;
 
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
+typedef uint16_t (*display_data_source_callback_t)(void *user_data);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle);
 
@@ -161,6 +163,9 @@ uint8_t display_input_value_u16(const char *title, const char *prefix, uint16_t 
         uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
 uint8_t display_input_value_f16(const char *title, const char *prefix, uint16_t *value,
         uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix);
+uint8_t display_input_value_f16_data_cb(const char *title, const char *prefix, uint16_t *value,
+        uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix,
+        display_data_source_callback_t data_callback, void *user_data);
 uint8_t display_input_value_cb(const char *title, const char *prefix, uint8_t *value,
         uint8_t low, uint8_t high, uint8_t digits, const char *postfix,
         display_input_value_callback_t callback, void *user_data);

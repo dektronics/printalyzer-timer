@@ -221,7 +221,9 @@ static const char *display_f16toa(uint16_t val, uint8_t wdigits, uint8_t fdigits
 }
 
 uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
-    uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix)
+    uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix,
+    display_GetMenuEvent_t event_callback, display_menu_params_t params,
+    display_data_source_callback_t data_callback, void *user_data)
 {
     // Based off u8g2_UserInterfaceInputValue() with changes to
     // support 16-bit numbers displayed in a fixed point format
@@ -239,7 +241,6 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
 
     uint16_t local_value = *value;
     //uint8_t r; /* not used ??? */
-    uint8_t event;
 
     /* only horizontal strings are supported, so force this here */
     u8g2_SetFontDirection(u8g2, 0);
@@ -259,7 +260,6 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
     /* calculate the height in pixel */
     pixel_height = height;
     pixel_height *= line_height;
-
 
     /* calculate offset from top */
     y = 0;
@@ -293,15 +293,25 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
         u8g2_SendBuffer(u8g2);
 
         for(;;) {
-            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
-            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+            uint8_t event_action;
+            if (event_callback) {
+                uint16_t result = event_callback(u8g2_GetU8x8(u8g2), params);
+                if (result == UINT16_MAX) {
+                    return result;
+                }
+                event_action = (uint8_t)(result & 0x00FF);
+            } else {
+                event_action = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            }
+
+            if (event_action == U8X8_MSG_GPIO_MENU_SELECT) {
                 *value = local_value;
                 return 1;
             }
-            else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
             }
-            else if (event == U8X8_MSG_GPIO_MENU_UP) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_UP) {
                 if (local_value >= high) {
                     local_value = low;
                 } else {
@@ -309,7 +319,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 }
                 break;
             }
-            else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_NEXT) {
                 if (local_value >= high) {
                     local_value = low;
                 } else {
@@ -322,7 +332,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 }
                 break;
             }
-            else if (event == U8X8_MSG_GPIO_MENU_DOWN) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_DOWN) {
                 if (local_value <= low) {
                     local_value = high;
                 } else {
@@ -330,7 +340,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 }
                 break;
             }
-            else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_PREV) {
                 if (local_value <= low) {
                     local_value = high;
                 } else {
@@ -342,6 +352,14 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                     }
                 }
                 break;
+            } else {
+                if (data_callback) {
+                    uint16_t input_value = data_callback(user_data);
+                    if (input_value >= low && input_value <= high) {
+                        local_value = input_value;
+                        break;
+                    }
+                }
             }
         }
     }

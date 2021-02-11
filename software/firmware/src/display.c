@@ -16,6 +16,7 @@
 #include "keypad.h"
 
 #define MENU_TIMEOUT_MS 30000
+#define MENU_KEY_POLL_MS 100
 
 static const char *TAG = "display";
 
@@ -1311,7 +1312,31 @@ uint8_t display_input_value_f16(const char *title, const char *prefix, uint16_t 
 
     display_prepare_menu_font();
     keypad_clear_events();
-    uint8_t option = display_UserInterfaceInputValueF16(&u8g2, title, prefix, value, low, high, wdigits, fdigits, postfix);
+
+    uint8_t option = display_UserInterfaceInputValueF16(&u8g2, title, prefix, value, low, high, wdigits, fdigits, postfix,
+        display_GetMenuEvent, DISPLAY_MENU_ACCEPT_MENU, NULL, NULL);
+
+    osMutexRelease(display_mutex);
+
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
+uint8_t display_input_value_f16_data_cb(const char *title, const char *prefix, uint16_t *value,
+        uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix,
+        display_data_source_callback_t data_callback, void *user_data)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU;
+    if (data_callback) {
+        params |= DISPLAY_MENU_INPUT_POLL;
+    }
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+
+    uint8_t option = display_UserInterfaceInputValueF16(&u8g2, title, prefix, value, low, high, wdigits, fdigits, postfix,
+        display_GetMenuEvent, params, data_callback, user_data);
 
     osMutexRelease(display_mutex);
 
@@ -1558,7 +1583,12 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
     // then release that mutex while blocked on the keypad queue.
     osStatus_t mutex_released = osMutexRelease(display_mutex);
 
-    int timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
+    int timeout;
+    if (params & DISPLAY_MENU_INPUT_POLL) {
+        timeout = MENU_KEY_POLL_MS;
+    } else {
+        timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
+    }
 
     keypad_event_t event;
     HAL_StatusTypeDef ret = keypad_wait_for_event(&event, timeout);
@@ -1636,7 +1666,11 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
             }
         }
     } else if (ret == HAL_TIMEOUT) {
-        result = UINT16_MAX;
+        if (params & DISPLAY_MENU_INPUT_POLL) {
+            result = 0;
+        } else {
+            result = UINT16_MAX;
+        }
     }
     return result;
 }
