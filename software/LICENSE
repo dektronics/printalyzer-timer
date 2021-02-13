@@ -120,3 +120,15 @@
  a consistent directory structure for project integration.
 
 ******************************************************************************
+
+ CMSIS-DSP
+
+ Path:     firmware/external/cmsis-dsp
+ Upstream: https://github.com/ARM-software/CMSIS_5
+           CMSIS/DSP
+ License:  Apache License 2.0
+
+ Code has been included as header files and compiled libraries to ease
+ the integration and build process.
+
+******************************************************************************
