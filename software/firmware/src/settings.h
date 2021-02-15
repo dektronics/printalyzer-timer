@@ -12,6 +12,7 @@
 #include "exposure_state.h"
 #include "enlarger_profile.h"
 #include "paper_profile.h"
+#include "step_wedge.h"
 
 #define MAX_ENLARGER_PROFILES 16
 #define MAX_PAPER_PROFILES 16
@@ -202,5 +203,25 @@ bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index);
  * @param index An index value from 0 to 15
  */
 void settings_clear_paper_profile(uint8_t index);
+
+/**
+ * Get the configured step wedge.
+ *
+ * Since step wedges are of variable size, the result will be dynamically
+ * allocated. As such, it must be freed when finished using it.
+ *
+ * @param wedge Pointer to the loaded step wedge configuration.
+ * @return True if a wedge configuration was successfully loaded, false
+ *         otherwise.
+ */
+bool settings_get_step_wedge(step_wedge_t **wedge);
+
+/**
+ * Save the configured step wedge.
+ *
+ * @param wedge Pointer to the step wedge profile to save.
+ * @return True if the profile was successfully saved.
+ */
+bool settings_set_step_wedge(const step_wedge_t *wedge);
 
 #endif /* SETTINGS_H */

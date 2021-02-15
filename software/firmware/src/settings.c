@@ -26,6 +26,7 @@ static const char *TAG = "settings";
 
 #define LATEST_ENLARGER_PROFILE_VERSION 1
 #define LATEST_PAPER_PROFILE_VERSION    1
+#define LATEST_STEP_WEDGE_VERSION       1
 
 /* Handle to I2C peripheral used by the EEPROM */
 static I2C_HandleTypeDef *eeprom_i2c = NULL;
@@ -114,6 +115,18 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define PAPER_PROFILE_DNET               120
 
 /**
+ * Only a single step wedge profile is supported, and
+ * it is given a full 256-byte page.
+ */
+#define PAGE_STEP_WEDGE_BASE             0x03000
+#define STEP_WEDGE_VERSION               0
+#define STEP_WEDGE_NAME                  4  /* char[32] */
+#define STEP_WEDGE_BASE_DENSITY          36
+#define STEP_WEDGE_DENSITY_INCREMENT     40
+#define STEP_WEDGE_STEP_COUNT            44
+#define STEP_WEDGE_STEP_DENSITY_0        48 /* up to 51 steps supported */
+
+/**
  * Size of a memory page.
  */
 #define PAGE_SIZE                        0x00100
@@ -129,6 +142,8 @@ static void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, co
 static void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data);
 static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data);
 static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
+static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data);
+static void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data);
 static bool write_u32(uint32_t address, uint32_t val);
 static bool write_f32(uint32_t address, float val);
 static void copy_from_u32(uint8_t *buf, uint32_t val);
@@ -647,7 +662,6 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
     } while (0);
 
     return (ret == HAL_OK);
-
 }
 
 static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data)
@@ -757,6 +771,104 @@ void settings_clear_paper_profile(uint8_t index)
     m24m01_write_page(eeprom_i2c,
         PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+}
+
+bool settings_get_step_wedge(step_wedge_t **wedge)
+{
+    if (!wedge) { return false; }
+
+    ESP_LOGI(TAG, "Load step wedge");
+
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[PAGE_SIZE];
+    memset(data, 0, sizeof(data));
+
+    do {
+        ret = m24m01_read_buffer(eeprom_i2c, PAGE_STEP_WEDGE_BASE, data, sizeof(data));
+        if (ret != HAL_OK) { break; }
+
+        uint32_t wedge_version = copy_to_u32(data + STEP_WEDGE_VERSION);
+        if (wedge_version == UINT32_MAX) {
+            ESP_LOGD(TAG, "Step wedge is empty");
+            ret = HAL_ERROR;
+            break;
+        }
+        if (wedge_version == 0 || wedge_version > LATEST_STEP_WEDGE_VERSION) {
+            ESP_LOGW(TAG, "Invalid step wedge version %ld", wedge_version);
+            ret = HAL_ERROR;
+            break;
+        }
+
+        settings_step_wedge_parse_page(wedge, data);
+
+    } while (0);
+
+    return (ret == HAL_OK) && *wedge;
+}
+
+void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data)
+{
+    uint32_t step_count = copy_to_u32(data + STEP_WEDGE_STEP_COUNT);
+    if (step_count < MIN_STEP_WEDGE_STEP_COUNT || step_count > MAX_STEP_WEDGE_STEP_COUNT) {
+        ESP_LOGW(TAG, "Invalid step count: %lu", step_count);
+        return;
+    }
+
+    *wedge = step_wedge_create(step_count);
+    if (!(*wedge)) {
+        ESP_LOGW(TAG, "Unable to create step wedge");
+        return;
+    }
+
+    strncpy((*wedge)->name, (const char *)(data + PAPER_PROFILE_NAME), 32);
+    (*wedge)->name[31] = '\0';
+
+    float val = copy_to_f32(data + STEP_WEDGE_BASE_DENSITY);
+    if (isnormal(val) || fpclassify(val) == FP_ZERO) {
+        (*wedge)->base_density = val;
+    }
+
+    val = copy_to_f32(data + STEP_WEDGE_DENSITY_INCREMENT);
+    if (isnormal(val) || fpclassify(val) == FP_ZERO) {
+        (*wedge)->density_increment = val;
+    }
+
+    for (size_t i = 0; i < step_count; i++) {
+        val = copy_to_f32(data + STEP_WEDGE_STEP_DENSITY_0 + (4 * i));
+        if (isnormal(val) || fpclassify(val) == FP_ZERO) {
+            (*wedge)->step_density[i] = val;
+        }
+    }
+}
+
+bool settings_set_step_wedge(const step_wedge_t *wedge)
+{
+    if (!wedge) { return false; }
+
+    ESP_LOGI(TAG, "Save step wedge");
+
+    uint8_t data[PAGE_SIZE];
+    memset(data, 0, sizeof(data));
+
+    settings_step_wedge_populate_page(wedge, data);
+
+    HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c, PAGE_STEP_WEDGE_BASE, data, sizeof(data));
+    return (ret == HAL_OK);
+}
+
+void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
+{
+    copy_from_u32(data + STEP_WEDGE_VERSION, LATEST_STEP_WEDGE_VERSION);
+
+    strncpy((char *)(data + STEP_WEDGE_NAME), wedge->name, 32);
+
+    copy_from_f32(data + STEP_WEDGE_BASE_DENSITY, wedge->base_density);
+    copy_from_f32(data + STEP_WEDGE_DENSITY_INCREMENT, wedge->density_increment);
+    copy_from_u32(data + STEP_WEDGE_STEP_COUNT, wedge->step_count);
+
+    for (size_t i = 0; i < wedge->step_count; i++) {
+        copy_from_f32(data + STEP_WEDGE_STEP_DENSITY_0 + (4 * i), wedge->step_density[i]);
+    }
 }
 
 bool write_u32(uint32_t address, uint32_t val)
