@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 /*
  * Profile describing the characteristics of a step wedge used for
@@ -107,5 +108,13 @@ void step_wedge_free(step_wedge_t *wedge);
  * exists within the profile.
  */
 float step_wedge_get_density(const step_wedge_t *wedge, uint32_t step);
+
+/**
+ * Check whether the step wedge data meets validity criteria.
+ *
+ * A valid profile must have non-negative density values in increasing
+ * order, with no overlaps.
+ */
+bool step_wedge_is_valid(const step_wedge_t *wedge);
 
 #endif /* STEP_WEDGE_H */

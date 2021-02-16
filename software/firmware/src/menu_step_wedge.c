@@ -113,7 +113,7 @@ menu_result_t menu_step_wedge()
                 "Specified density increase of\n"
                 "each successive patch of the\n"
                 "step wedge.\n",
-                "D=", &value_sel, 0, 999, 1, 2, "") == UINT8_MAX) {
+                "D=", &value_sel, 1, 999, 1, 2, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 wedge->density_increment = (float)value_sel / 100.0F;
@@ -121,9 +121,22 @@ menu_result_t menu_step_wedge()
         } else if (option == 5) {
             menu_result = menu_step_wedge_calibration(wedge);
         } else if (option == 6) {
-            if (settings_set_step_wedge(wedge)) {
-                ESP_LOGI(TAG, "Step wedge settings saved");
-                break;
+            if (step_wedge_is_valid(wedge)) {
+                if (settings_set_step_wedge(wedge)) {
+                    ESP_LOGI(TAG, "Step wedge settings saved");
+                    break;
+                }
+            } else {
+                ESP_LOGI(TAG, "Step wedge properties not valid");
+                uint8_t msg_option = display_message(
+                        "Step Wedge Invalid",
+                        NULL,
+                        "Properties must describe a step\n"
+                        "wedge with patches that increase\n"
+                        "in density.", " OK ");
+                if (msg_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
             }
         } else if (option == 7) {
             int index = menu_step_wedge_list_selection();

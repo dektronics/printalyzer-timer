@@ -122,3 +122,48 @@ float step_wedge_get_density(const step_wedge_t *wedge, uint32_t step)
         return wedge->base_density + (wedge->density_increment * step);
     }
 }
+
+bool step_wedge_is_valid(const step_wedge_t *wedge)
+{
+    if (!wedge) {
+        return false;
+    }
+
+    /* Base density must be a valid number */
+    if (!(isnormal(wedge->base_density) || fpclassify(wedge->base_density) == FP_ZERO)) {
+        return false;
+    }
+
+    /* Density increment must be a valid non-zero number */
+    if (!isnormal(wedge->density_increment)) {
+        return false;
+    }
+
+    /* Density increment must be positive and within our display threshold */
+    if (wedge->density_increment < 0.01F) {
+        return false;
+    }
+
+    /* Step count must be within the valid range */
+    if (wedge->step_count < MIN_STEP_WEDGE_STEP_COUNT || wedge->step_count > MAX_STEP_WEDGE_STEP_COUNT) {
+        return false;
+    }
+
+    /* Validate the list of step densities */
+    for (uint32_t i = 1; i < wedge->step_count; i++) {
+        float prev_val = step_wedge_get_density(wedge, i - 1);
+        float cur_val = step_wedge_get_density(wedge, i);
+
+        /* Values must be increasing */
+        if (cur_val <= prev_val) {
+            return false;
+        }
+
+        /* Values may not be equivalent */
+        if (fabsf(cur_val - prev_val) < 0.01F) {
+            return false;
+        }
+    }
+
+    return true;
+}
