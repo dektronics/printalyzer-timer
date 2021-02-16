@@ -11,8 +11,17 @@ bool menu_event_timeout = false;
 
 /* Library function declarations */
 void u8g2_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s);
+uint8_t u8g2_draw_button_line(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cursor, const char *s);
+
+static void display_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s, u8g2_uint_t list_width);
+static u8g2_uint_t display_draw_selection_list_line(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, uint8_t idx, const char *s, u8g2_uint_t list_width);
 
 void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char *list)
+{
+    display_UserInterfaceStaticListDraw(u8g2, title, list, u8g2_GetDisplayWidth(u8g2));
+}
+
+void display_UserInterfaceStaticListDraw(u8g2_t *u8g2, const char *title, const char *list, u8g2_uint_t list_width)
 {
     // Based off u8g2_UserInterfaceSelectionList() with changes to use
     // full frame buffer mode and to remove actual menu functionality.
@@ -49,9 +58,48 @@ void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char
         u8g2_DrawHLine(u8g2, 0, yy - line_height - u8g2_GetDescent(u8g2) + 1, u8g2_GetDisplayWidth(u8g2));
         yy += 3;
     }
-    u8g2_DrawSelectionList(u8g2, &u8sl, yy, list);
+    display_DrawSelectionList(u8g2, &u8sl, yy, list, list_width);
 
     u8g2_SendBuffer(u8g2);
+}
+
+void display_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s, u8g2_uint_t list_width)
+{
+    uint8_t i;
+    for (i = 0; i < u8sl->visible; i++) {
+        y += display_draw_selection_list_line(u8g2, u8sl, y, i+u8sl->first_pos, s, list_width);
+    }
+}
+
+u8g2_uint_t display_draw_selection_list_line(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, uint8_t idx, const char *s, u8g2_uint_t list_width)
+{
+    u8g2_uint_t yy;
+    uint8_t border_size = 0;
+    uint8_t is_invert = 0;
+
+    u8g2_uint_t line_height = u8g2_GetAscent(u8g2) - u8g2_GetDescent(u8g2)+MY_BORDER_SIZE;
+
+    /* calculate offset from display upper border */
+    yy = idx;
+    yy -= u8sl->first_pos;
+    yy *= line_height;
+    yy += y;
+
+    /* check whether this is the current cursor line */
+    if (idx == u8sl->current_pos) {
+        border_size = MY_BORDER_SIZE;
+        is_invert = 1;
+    }
+
+    /* get the line from the array */
+    s = u8x8_GetStringLineStart(idx, s);
+
+    /* draw the line */
+    if (s == NULL) {
+        s = "";
+    }
+    u8g2_DrawUTF8Line(u8g2, MY_BORDER_SIZE, y, list_width-2*MY_BORDER_SIZE, s, border_size, is_invert);
+    return line_height;
 }
 
 /* v = value, d = number of digits */
@@ -560,4 +608,9 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
             }
         }
     }
+}
+
+uint8_t display_DrawButtonLine(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cursor, const char *s)
+{
+    return u8g2_draw_button_line(u8g2, y, w, cursor, s);
 }

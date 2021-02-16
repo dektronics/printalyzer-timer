@@ -97,4 +97,9 @@ size_t append_exposure_time(char *str, float time);
  */
 float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, float x);
 
+/**
+ * Check if the provided floating point number is valid.
+ */
+bool is_valid_number(float num);
+
 #endif /* UTIL_H */

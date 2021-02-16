@@ -1253,6 +1253,100 @@ uint16_t display_selection_list_params(const char *title, uint8_t start_pos, con
     return option;
 }
 
+uint8_t display_message_graph(const char *title, const char *list, const char *buttons, uint8_t *graph_points, size_t graph_size)
+{
+    int8_t result = -1;
+
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_uint_t list_width = u8g2_GetDisplayWidth(&u8g2) / 2;
+
+    /* Clamp the max size of the graph */
+    if (graph_size > 126) {
+        graph_size = 126;
+    }
+
+    display_prepare_menu_font();
+
+    u8g2_ClearBuffer(&u8g2);
+
+    /* Draw static list */
+    display_UserInterfaceStaticListDraw(&u8g2, title, list, list_width);
+
+    /* Draw graph decorations */
+    u8g2_DrawLine(&u8g2, 129, 11, 129, 62);
+    u8g2_DrawLine(&u8g2, 129, 62, 255, 62);
+    for (u8g2_uint_t x = 134; x < 256; x += 5) {
+        u8g2_DrawPixel(&u8g2, x, 63);
+    }
+    for (u8g2_uint_t y = 57; y >= 11; y -= 5) {
+        u8g2_DrawPixel(&u8g2, 128, y);
+    }
+
+    if (graph_points) {
+        /* Draw graph points */
+        for (u8g2_uint_t i = 0; i < graph_size - 1; i++) {
+            uint8_t pt1 = graph_points[i];
+            if (pt1 > 50) {
+                pt1 = 50;
+            }
+            uint8_t pt2 = graph_points[i + 1];
+            if (pt2 > 50) {
+                pt2 = 50;
+            }
+            u8g2_DrawLine(&u8g2, 130 + i, 61 - pt1, 130 + i + 1, 61 - pt2);
+        }
+    }
+
+    /* Draw buttons */
+    u8g2_uint_t yy = u8g2_GetDisplayHeight(&u8g2) - 2;
+    uint8_t cursor = 0;
+
+    for(;;) {
+        uint8_t button_cnt = display_DrawButtonLine(&u8g2, yy, list_width, cursor, buttons);
+        u8g2_SendBuffer(&u8g2);
+
+        for(;;) {
+            uint16_t event;
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+
+            if (event_result == UINT16_MAX) {
+                result = UINT8_MAX;
+                break;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+            }
+
+            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+                result = cursor+1;
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+                result = 0;
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN) {
+                cursor++;
+                if (cursor >= button_cnt) {
+                    cursor = 0;
+                }
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP) {
+                if (cursor == 0) {
+                    cursor = button_cnt;
+                }
+                cursor--;
+                break;
+            }
+        }
+        if (result >= 0) {
+            break;
+        }
+    }
+
+    osMutexRelease(display_mutex);
+
+    return (uint8_t)result;
+}
+
 void display_static_list(const char *title, const char *list)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);

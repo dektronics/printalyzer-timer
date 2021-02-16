@@ -202,3 +202,8 @@ float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, fl
         (y2 * ((x - x1) / (x2 - x1)) * ((x - x3) / (x2 - x3))) +
         (y3 * ((x - x1) / (x3 - x1)) * ((x - x2) / (x3 - x2)));
 }
+
+bool is_valid_number(float num)
+{
+    return isnormal(num) || fpclassify(num) == FP_ZERO;
+}

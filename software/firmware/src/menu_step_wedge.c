@@ -306,6 +306,51 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
     return menu_result;
 }
 
+menu_result_t menu_step_wedge_show(const step_wedge_t *wedge)
+{
+    menu_result_t menu_result = MENU_OK;
+    char buf[256];
+
+    if (!wedge) {
+        return MENU_OK;
+    }
+
+    size_t offset = 0;
+    int cal_status = calibration_status(wedge);
+
+    offset += sprintf(buf + offset,
+        "Steps:                        %2lu\n"
+        "Base density:             D=%0.02f\n"
+        "Density increment:        D=%0.02f\n"
+        "Calibration:        ",
+        wedge->step_count,
+        wedge->base_density,
+        wedge->density_increment);
+
+    if (cal_status == 1) {
+        offset += sprintf(buf + offset,
+            "  Calibrated\n");
+    } else if (cal_status == 2) {
+        offset += sprintf(buf + offset,
+            "     Partial\n");
+    } else {
+        offset += sprintf(buf + offset,
+            "Uncalibrated\n");
+    }
+
+    uint8_t option;
+    if (wedge->name && strlen(wedge->name) > 0) {
+        option = display_message(wedge->name, NULL, buf, " OK ");
+    } else {
+        option = display_message("Step Wedge", NULL, buf, " OK ");
+    }
+
+    if (option == UINT8_MAX) {
+        menu_result = MENU_TIMEOUT;
+    }
+    return menu_result;
+}
+
 uint16_t menu_step_wedge_densitometer_data_callback(void *user_data)
 {
     bool dens_enable = *((bool *)user_data);

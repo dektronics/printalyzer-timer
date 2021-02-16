@@ -25,6 +25,8 @@ typedef uint16_t (*display_GetMenuEvent_t)(u8x8_t *u8x8, display_menu_params_t p
 
 void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char *list);
 
+void display_UserInterfaceStaticListDraw(u8g2_t *u8g2, const char *title, const char *list, u8g2_uint_t list_width);
+
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
 
@@ -41,5 +43,7 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
     display_GetMenuEvent_t event_callback, display_menu_params_t params);
 
 const char *display_u16toa(uint16_t v, uint8_t d);
+
+uint8_t display_DrawButtonLine(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cursor, const char *s);
 
 #endif /* DISPLAY_INTERNAL_H */

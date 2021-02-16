@@ -38,6 +38,7 @@ typedef enum {
 } display_patches_t;
 
 #define DISPLAY_MENU_ROW_LENGTH 32
+#define DISPLAY_HALF_ROW_LENGTH 16
 #define DISPLAY_TONE_UNDER 0x10000
 #define DISPLAY_TONE_OVER  0x00001
 #define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
@@ -154,6 +155,21 @@ uint8_t display_selection_list(const char *title, uint8_t start_pos, const char 
  */
 uint16_t display_selection_list_params(const char *title, uint8_t start_pos, const char *list,
     display_menu_params_t params);
+
+/**
+ * Display a list of items, selectable buttons, and a 2D graph of data.
+ *
+ * The title and list formats is the same as a regular selection or static
+ * list, however the item width cuts off at around 15 characters.
+ *
+ * The button format is similar to the message display, albeit with
+ * the actual button space far more constrained.
+ *
+ * The graph is a simple 2D line, with X values ranging from 0 to 126
+ * and Y values ranging from 0 to 50. Any values in excess of these
+ * ranges may be clipped or not drawn.
+ */
+uint8_t display_message_graph(const char *title, const char *list, const char *buttons, uint8_t *graph_points, size_t graph_size);
 
 void display_static_list(const char *title, const char *list);
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);
