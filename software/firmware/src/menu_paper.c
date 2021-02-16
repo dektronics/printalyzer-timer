@@ -219,9 +219,9 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_5);
 
         if (isnormal(profile->max_net_density) && profile->max_net_density > 0.0F) {
-            offset += sprintf(buf + offset, "Max net density           [%01.2f]\n", profile->max_net_density);
+            offset += sprintf(buf + offset, "Max net density         [D=%01.2f]\n", profile->max_net_density);
         } else {
-            offset += sprintf(buf + offset, "Max net density           [----]\n");
+            offset += sprintf(buf + offset, "Max net density         [------]\n");
         }
 
         sprintf(buf + offset, "*** Save Changes ***");
@@ -276,7 +276,7 @@ menu_result_t menu_paper_profile_edit(paper_profile_t *profile, uint8_t index)
                 "Maximum density (Dmax) of the\n"
                 "paper, measured relative to the\n"
                 "paper base (Dmin).\n",
-                "", &value_sel, 0, 999, 1, 2, "",
+                "D=", &value_sel, 0, 999, 1, 2, "",
                 menu_paper_densitometer_data_callback, &dens_enable) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
