@@ -158,6 +158,9 @@ void main_task_start(void *argument)
             uniqueId[5], uniqueId[6], uniqueId[7], uniqueId[8], uniqueId[9],
             uniqueId[10], uniqueId[11]);
 
+    printf("Build date: %s\r\n", VERSION_BUILD_DATE);
+    printf("Build describe: %s\r\n", VERSION_BUILD_DESCRIBE);
+
     printf("-----------------------\r\n");
     fflush(stdout);
 

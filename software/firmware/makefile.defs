@@ -1,0 +1,15 @@
+#
+# Makefile definitions used to setup initial build properties
+#
+
+ifeq ($(SHELL), cmd.exe)
+BUILD_DATE := $(shell python -c "from datetime import datetime; print(datetime.utcnow().strftime('%Y-%m-%d %H:%M'))")
+else
+BUILD_DATE := $(shell date -u +"%Y-%m-%d %H:%M")
+endif 
+
+BUILD_DESCRIBE := $(shell git describe --long --dirty --tags)
+BUILD_DESCRIBE_SHORT := g$(shell git describe --always --dirty --exclude '*')
+
+$(info Build Time: $(BUILD_DATE))
+$(info Build Version: $(BUILD_DESCRIBE))

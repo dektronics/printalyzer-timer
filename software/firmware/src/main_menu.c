@@ -61,24 +61,19 @@ menu_result_t main_menu_start(state_controller_t *controller)
 menu_result_t menu_about()
 {
     menu_result_t menu_result = MENU_OK;
-    char buf[512];
+    char buf[384];
 
-    uint32_t hal_ver = HAL_GetHalVersion();
-    uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
-    uint32_t hal_sysclock = HAL_RCC_GetSysClockFreq();
+    const char *describe = VERSION_BUILD_DESCRIBE;
+    if (strlen(describe) > DISPLAY_MENU_ROW_LENGTH) {
+        describe = VERSION_BUILD_DESCRIBE_SHORT;
+    }
 
     sprintf(buf,
             "Enlarging Timer & Exposure Meter\n"
             "\n"
-            "HAL Version: %d.%d.%d%c\n"
-            "FreeRTOS: %s\n"
-            "SysClock: %ldMHz",
-            ((uint8_t)(hal_ver >> 24)) & 0x0F,
-            ((uint8_t)(hal_ver >> 16)) & 0x0F,
-            ((uint8_t)(hal_ver >> 8)) & 0x0F,
-            (hal_ver_code > 0 ? (char)hal_ver_code : ' '),
-            tskKERNEL_VERSION_NUMBER,
-            hal_sysclock / 1000000);
+            "%s\n"
+            "%s\n",
+            describe, VERSION_BUILD_DATE);
 
     uint8_t option = display_message(
             "Printalyzer",
