@@ -13,5 +13,3 @@ BUILD_DESCRIBE_SHORT := g$(shell git describe --always --dirty --exclude '*')
 
 $(info Build Time: $(BUILD_DATE))
 $(info Build Version: $(BUILD_DESCRIBE))
-
-OBJCOPY_BIN += printalyzer-out.elf printalyzer-out.bin

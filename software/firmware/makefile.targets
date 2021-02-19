@@ -1,0 +1,18 @@
+#
+# Custom Makefile targets
+#
+
+printalyzer-crc.dat: printalyzer.bin
+	arm-none-eabi-objcopy -O binary --gap-fill 0xFF printalyzer.elf printalyzer-tmp.bin && \
+	../tools/checksum.pl printalyzer-tmp.bin printalyzer-crc.dat && \
+	rm printalyzer-tmp.bin
+
+printalyzer-out.elf: printalyzer.elf printalyzer-crc.dat
+	arm-none-eabi-objcopy --add-section .crc32=printalyzer-crc.dat \
+	  --set-section-flags .crc32=alloc \
+	  --change-section-address .crc32=0x0807FFFC \
+	  --gap-fill 0xFF \
+	  printalyzer.elf printalyzer-out.elf
+
+printalyzer-out.bin: printalyzer-out.elf
+	arm-none-eabi-objcopy -O binary --gap-fill 0xFF printalyzer-out.elf "printalyzer-out.bin"
