@@ -300,14 +300,13 @@ void state_home_take_reading(state_home_t *state, state_controller_t *controller
     display_draw_mode_text("Measuring");
 
     do {
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
+        osDelay(SAFELIGHT_OFF_DELAY / 2);
+
         result = meter_probe_initialize();
         if (result != METER_READING_OK) {
             break;
         }
-
-        illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
-
-        osDelay(pdMS_TO_TICKS(750));
 
         result = meter_probe_measure(&lux, &cct);
         if (result != METER_READING_OK) {
