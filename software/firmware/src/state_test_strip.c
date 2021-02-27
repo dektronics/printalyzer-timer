@@ -150,12 +150,12 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
             || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
 
-            if (state->patches_covered == 0) {
-                illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-                osDelay(SAFELIGHT_OFF_DELAY);
-            }
+            illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+            osDelay(SAFELIGHT_OFF_DELAY);
 
             if (state_test_strip_countdown(enlarger_profile, patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
                 if (state->patches_covered < state->exposure_patch_count) {
                     state->patches_covered++;
                 }
