@@ -322,6 +322,9 @@ menu_result_t diagnostics_buzzer()
         case PAM8904E_FREQ_2000HZ:
             freq_num = 2000;
             break;
+        case PAM8904E_FREQ_4800HZ:
+            freq_num = 4800;
+            break;
         default:
             freq_num = 0;
         }
@@ -347,7 +350,7 @@ menu_result_t diagnostics_buzzer()
                     freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (freq < PAM8904E_FREQ_2000HZ) {
+                if (freq < PAM8904E_FREQ_4800HZ) {
                     freq++;
                     freq_changed = true;
                 }

@@ -36,6 +36,11 @@ void pam8904e_set_frequency(pam8904e_handle_t *handle, pam8904e_freq_t freq)
         __HAL_TIM_SET_AUTORELOAD(handle->din_tim, 47999);
         __HAL_TIM_SET_COMPARE(handle->din_tim, handle->din_tim_channel, 23999);
         break;
+    case PAM8904E_FREQ_4800HZ:
+        __HAL_TIM_SET_PRESCALER(handle->din_tim, 0);
+        __HAL_TIM_SET_AUTORELOAD(handle->din_tim, 19999);
+        __HAL_TIM_SET_COMPARE(handle->din_tim, handle->din_tim_channel, 9999);
+        break;
     default:
         break;
     }

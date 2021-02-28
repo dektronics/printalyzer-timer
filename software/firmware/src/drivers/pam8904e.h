@@ -29,6 +29,7 @@ typedef enum {
     PAM8904E_FREQ_1000HZ,
     PAM8904E_FREQ_1500HZ,
     PAM8904E_FREQ_2000HZ,
+    PAM8904E_FREQ_4800HZ
 } pam8904e_freq_t;
 
 void pam8904e_set_gain(pam8904e_handle_t *handle, pam8904e_gain_t gain);
