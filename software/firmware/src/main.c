@@ -484,8 +484,8 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
     __disable_irq();
-    while (1) {
-    }
+    __ASM volatile("BKPT #01");
+    while (1) { }
 }
 
 #ifdef USE_FULL_ASSERT
