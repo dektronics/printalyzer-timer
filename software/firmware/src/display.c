@@ -38,6 +38,8 @@ static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
 static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
+static void display_draw_density_prefix();
+static void display_draw_density_placeholder();
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
 static void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements);
 static void display_prepare_menu_font();
@@ -514,6 +516,37 @@ void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_gr
     }
 }
 
+void display_draw_density_prefix()
+{
+    u8g2_uint_t x = 101;
+    u8g2_uint_t y = 8;
+
+    // "="
+    u8g2_DrawBox(&u8g2, x, y + 18, 20, 5);
+    u8g2_DrawBox(&u8g2, x, y + 34, 20, 5);
+
+    // "D"
+    x -= 42;
+    display_draw_digit_letter_d(&u8g2, x, y);
+}
+
+void display_draw_density_placeholder()
+{
+    u8g2_uint_t x = 217;
+    u8g2_uint_t y = 8;
+
+    display_draw_digit_sign(&u8g2, x, y, false);
+    x -= 36;
+
+    display_draw_digit_sign(&u8g2, x, y, false);
+    x -= 12;
+
+    u8g2_DrawBox(&u8g2, x, y + 50, 6, 6);
+    x -= 36;
+
+    display_draw_digit_sign(&u8g2, x, y, false);
+}
+
 void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits)
 {
     if (milliseconds >= 1000) {
@@ -654,7 +687,7 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
     }
 }
 
-void display_draw_main_elements(const display_main_elements_t *elements)
+void display_draw_main_elements_printing(const display_main_elements_t *elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -667,11 +700,53 @@ void display_draw_main_elements(const display_main_elements_t *elements)
     display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
-    if (elements->cal_title1 || elements->cal_title2 || elements->cal_value > 0) {
-        display_draw_calibration_value(9 + 24, 8, elements->cal_title1, elements->cal_title2, elements->cal_value);
-    } else if (elements->contrast_grade != DISPLAY_GRADE_MAX) {
-        display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+    display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+
+    display_draw_counter_time(elements->time_seconds,
+        elements->time_milliseconds,
+        elements->fraction_digits);
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+
+void display_draw_main_elements_densitometer(const display_main_elements_t *elements)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    display_draw_density_prefix();
+
+    if (elements->time_seconds == UINT16_MAX
+        && elements->time_milliseconds == UINT16_MAX
+        && elements->fraction_digits == UINT8_MAX) {
+        display_draw_density_placeholder();
+    } else {
+        display_draw_counter_time(elements->time_seconds,
+            elements->time_milliseconds,
+            elements->fraction_digits);
     }
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+
+void display_draw_main_elements_calibration(const display_main_elements_t *elements)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+    u8g2_SetBitmapMode(&u8g2, 1);
+
+    display_draw_calibration_value(9 + 24, 8, elements->cal_title1, elements->cal_title2, elements->cal_value);
 
     display_draw_counter_time(elements->time_seconds,
         elements->time_milliseconds,

@@ -20,6 +20,11 @@ void display_draw_digit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digi
 void display_draw_digit_sign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool positive);
 
 /**
+ * Draw the letter "D"  on a 30x56 pixel digit grid
+ */
+void display_draw_digit_letter_d(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y);
+
+/**
  * Draw a 18x37 pixel digit
  */
 void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);

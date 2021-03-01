@@ -106,7 +106,10 @@ void display_save_screenshot();
 void display_draw_test_pattern(bool mode);
 void display_draw_logo();
 
-void display_draw_main_elements(const display_main_elements_t *elements);
+void display_draw_main_elements_printing(const display_main_elements_t *elements);
+void display_draw_main_elements_densitometer(const display_main_elements_t *elements);
+void display_draw_main_elements_calibration(const display_main_elements_t *elements);
+
 void display_draw_stop_increment(uint8_t increment_den);
 void display_draw_mode_text(const char *text);
 void display_draw_exposure_adj(int value);

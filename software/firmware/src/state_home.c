@@ -150,20 +150,26 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 {
     state_home_t *state = (state_home_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    exposure_mode_t mode = exposure_get_mode(exposure_state);
 
     if (state->display_dirty) {
         // Draw current exposure state
         display_main_elements_t main_elements;
         convert_exposure_to_display(&main_elements, exposure_state);
-        display_draw_main_elements(&main_elements);
+        if (mode == EXPOSURE_MODE_PRINTING) {
+            display_draw_main_elements_printing(&main_elements);
+        } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
+            display_draw_main_elements_densitometer(&main_elements);
+        } else if (mode == EXPOSURE_MODE_CALIBRATION) {
+            display_draw_main_elements_calibration(&main_elements);
+        }
+
         state->display_dirty = false;
     }
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
-        exposure_mode_t mode = exposure_get_mode(exposure_state);
-
         if (state->change_inc_pending) {
             if (keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
                 state->change_inc_swallow_release_up = false;
@@ -189,7 +195,9 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
         } else {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-                state_controller_set_next_state(controller, STATE_TIMER, 0);
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    state_controller_set_next_state(controller, STATE_TIMER, 0);
+                }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
                     ESP_LOGI(TAG, "Focus mode enabled");
@@ -203,11 +211,15 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state_controller_stop_focus_timeout(controller);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-                exposure_adj_increase(exposure_state);
-                state->display_dirty = true;
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    exposure_adj_increase(exposure_state);
+                    state->display_dirty = true;
+                }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-                exposure_adj_decrease(exposure_state);
-                state->display_dirty = true;
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    exposure_adj_decrease(exposure_state);
+                    state->display_dirty = true;
+                }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (mode == EXPOSURE_MODE_PRINTING) {
                     exposure_contrast_increase(exposure_state);
@@ -241,18 +253,22 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
-                state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+                }
             } else if (keypad_event.key == KEYPAD_ENCODER) {
-                if (keypad_event.pressed || keypad_event.repeated) {
-                    state->encoder_repeat++;
-                } else {
-                    if (state->encoder_repeat > 2) {
-                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    if (keypad_event.pressed || keypad_event.repeated) {
+                        state->encoder_repeat++;
                     } else {
-                        state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
+                        if (state->encoder_repeat > 2) {
+                            state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
+                        } else {
+                            state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
+                        }
+                        state->encoder_repeat = 0;
+                        state->display_dirty = true;
                     }
-                    state->encoder_repeat = 0;
-                    state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
                 state_controller_set_next_state(controller, STATE_MENU, 0);
@@ -446,6 +462,9 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     case EXPOSURE_MODE_PRINTING:
         display_draw_mode_text("Printing");
         break;
+    case EXPOSURE_MODE_DENSITOMETER:
+        display_draw_mode_text("Densitometer");
+        break;
     case EXPOSURE_MODE_CALIBRATION:
         display_draw_mode_text("Calibration");
         break;
@@ -457,14 +476,31 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     // Handle the next keypad event
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
-        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)
-            || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
             switch (state->working_value) {
             case EXPOSURE_MODE_PRINTING:
+                state->working_value = EXPOSURE_MODE_DENSITOMETER;
+                break;
+            case EXPOSURE_MODE_DENSITOMETER:
                 state->working_value = EXPOSURE_MODE_CALIBRATION;
                 break;
             case EXPOSURE_MODE_CALIBRATION:
                 state->working_value = EXPOSURE_MODE_PRINTING;
+                break;
+            default:
+                state->working_value = EXPOSURE_MODE_PRINTING;
+                break;
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+            switch (state->working_value) {
+            case EXPOSURE_MODE_CALIBRATION:
+                state->working_value = EXPOSURE_MODE_DENSITOMETER;
+                break;
+            case EXPOSURE_MODE_DENSITOMETER:
+                state->working_value = EXPOSURE_MODE_PRINTING;
+                break;
+            case EXPOSURE_MODE_PRINTING:
+                state->working_value = EXPOSURE_MODE_CALIBRATION;
                 break;
             default:
                 state->working_value = EXPOSURE_MODE_PRINTING;

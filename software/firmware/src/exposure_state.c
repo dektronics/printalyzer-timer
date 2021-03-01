@@ -130,7 +130,7 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
         state->mode = mode;
 
         if (state->mode == EXPOSURE_MODE_PRINTING) {
-            // Reset the base exposure and light readings if entering printing mode
+            // Reset the base exposure and light readings if entering printing or densitometer mode
             state->base_time = settings_get_default_exposure_time() / 1000.0f;
             state->adjusted_time = state->base_time;
             state->adjustment_value = 0;
@@ -139,6 +139,34 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
                 state->lux_readings[i] = NAN;
             }
             state->lux_reading_count = 0;
+        } else if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
+            // Reset the base exposure
+            state->base_time = settings_get_default_exposure_time() / 1000.0f;
+            state->adjusted_time = state->base_time;
+            state->adjustment_value = 0;
+
+            // Select just the lowest light reading
+            float lowest_lux = NAN;
+            for (int i = 0; i < state->lux_reading_count; i++) {
+                if (isnanf(lowest_lux) || state->lux_readings[i] < lowest_lux) {
+                    lowest_lux = state->lux_readings[i];
+                }
+            }
+
+            for (int i = 0; i < MAX_LUX_READINGS; i++) {
+                state->lux_readings[i] = NAN;
+            }
+
+            if (!isnanf(lowest_lux)) {
+                state->lux_readings[0] = lowest_lux;
+                state->lux_reading_count = 1;
+            } else {
+                state->lux_reading_count = 0;
+            }
+
+            if (state->burn_dodge_count > 0) {
+                exposure_burn_dodge_delete_all(state);
+            }
         } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
             // Clear any burn/dodge adjustments if entering calibration mode
             if (state->burn_dodge_count > 0) {
@@ -179,6 +207,26 @@ float exposure_get_exposure_time(const exposure_state_t *state)
 {
     if (!state) { return 0; }
     return state->adjusted_time;
+}
+
+float exposure_get_relative_density(const exposure_state_t *state)
+{
+    if (!state) { return NAN; }
+
+    if (state->lux_reading_count == 0) {
+        return NAN;
+    } else if (state->lux_reading_count == 1) {
+        return 0.0F;
+    } else if (state->lux_reading_count == 2) {
+        if (isnormal(state->lux_readings[0]) && state->lux_readings[0] >= 0.01F
+            && isnormal(state->lux_readings[1]) && state->lux_readings[1] > state->lux_readings[0]) {
+            return log10f(state->lux_readings[1] / state->lux_readings[0]);
+        } else {
+            return 0.0F;
+        }
+    } else {
+        return NAN;
+    }
 }
 
 int exposure_get_active_paper_profile_index(const exposure_state_t *state)
@@ -223,6 +271,28 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
             state->lux_readings[state->lux_reading_count++] = lux;
         }
         exposure_recalculate_base_time(state);
+    } else if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
+        //TODO consider using a tolerance when deciding to add/replace readings
+        if (state->lux_reading_count == 0) {
+            state->lux_readings[0] = lux;
+            state->lux_reading_count = 1;
+        } else if (state->lux_reading_count == 1) {
+            if (lux < state->lux_readings[0]) {
+                state->lux_readings[0] = lux;
+            } else {
+                state->lux_readings[1] = lux;
+                state->lux_reading_count = 2;
+            }
+        } else {
+            if (lux < state->lux_readings[0]) {
+                state->lux_readings[0] = lux;
+                state->lux_readings[1] = NAN;
+                state->lux_reading_count = 1;
+            } else {
+                state->lux_readings[1] = lux;
+                state->lux_reading_count = 2;
+            }
+        }
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         float updated_base_time = exposure_base_time_for_calibration_pev(lux, CALIBRATION_BASE_PEV);
         if (isnormal(updated_base_time) && updated_base_time > 0) {

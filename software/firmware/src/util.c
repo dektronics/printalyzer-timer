@@ -36,6 +36,8 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
         elements->cal_title1 = NULL;
         elements->cal_title2 = NULL;
         elements->cal_value = 0;
+    } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
+        elements->contrast_grade = DISPLAY_GRADE_MAX;
     } else if (mode == EXPOSURE_MODE_CALIBRATION) {
         elements->contrast_grade = DISPLAY_GRADE_MAX;
         elements->cal_title1 = "Print";
@@ -43,20 +45,36 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
         elements->cal_value = exposure_get_calibration_pev(exposure);
     }
 
-    float exposure_time = exposure_get_exposure_time(exposure);
-    float seconds;
-    float fractional;
-    fractional = modff(exposure_time, &seconds);
-    elements->time_seconds = seconds;
-    elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
+    if (mode == EXPOSURE_MODE_PRINTING || mode == EXPOSURE_MODE_CALIBRATION) {
+        float exposure_time = exposure_get_exposure_time(exposure);
+        float seconds;
+        float fractional;
+        fractional = modff(exposure_time, &seconds);
+        elements->time_seconds = seconds;
+        elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
 
-    if (exposure_time < 10) {
-        elements->fraction_digits = 2;
+        if (exposure_time < 10) {
+            elements->fraction_digits = 2;
 
-    } else if (exposure_time < 100) {
-        elements->fraction_digits = 1;
-    } else {
-        elements->fraction_digits = 0;
+        } else if (exposure_time < 100) {
+            elements->fraction_digits = 1;
+        } else {
+            elements->fraction_digits = 0;
+        }
+    } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
+        float density = exposure_get_relative_density(exposure);
+        if (isnanf(density)) {
+            elements->time_seconds = UINT16_MAX;
+            elements->time_milliseconds = UINT16_MAX;
+            elements->fraction_digits = UINT8_MAX;
+        } else {
+            float whole;
+            float fractional;
+            fractional = modff(density, &whole);
+            elements->time_seconds = whole;
+            elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
+            elements->fraction_digits = 2;
+        }
     }
 }
 

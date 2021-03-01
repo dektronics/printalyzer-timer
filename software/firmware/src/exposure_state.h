@@ -12,6 +12,7 @@
 
 typedef enum {
     EXPOSURE_MODE_PRINTING = 0,
+    EXPOSURE_MODE_DENSITOMETER,
     EXPOSURE_MODE_CALIBRATION
 } exposure_mode_t;
 
@@ -61,6 +62,8 @@ void exposure_set_base_time(exposure_state_t *state, float value);
 void exposure_set_min_exposure_time(exposure_state_t *state, float value);
 
 float exposure_get_exposure_time(const exposure_state_t *state);
+
+float exposure_get_relative_density(const exposure_state_t *state);
 
 int exposure_get_active_paper_profile_index(const exposure_state_t *state);
 void exposure_set_active_paper_profile_index(exposure_state_t *state, int index);

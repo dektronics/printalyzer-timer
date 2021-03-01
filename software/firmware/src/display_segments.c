@@ -48,6 +48,23 @@ void display_draw_digit_sign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool po
     }
 }
 
+void display_draw_digit_letter_d(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y)
+{
+    display_draw_segment(u8g2, x, y, seg_a | seg_b | seg_c| seg_d);
+
+    u8g2_DrawLine(u8g2, x + 12, y + 6, x + 12, y + 25);
+    u8g2_DrawLine(u8g2, x + 13, y + 6, x + 13, y + 26);
+    u8g2_DrawLine(u8g2, x + 14, y + 6, x + 14, y + 27);
+    u8g2_DrawLine(u8g2, x + 15, y + 6, x + 15, y + 26);
+    u8g2_DrawLine(u8g2, x + 16, y + 6, x + 16, y + 25);
+
+    u8g2_DrawLine(u8g2, x + 12, y + 31, x + 12, y + 49);
+    u8g2_DrawLine(u8g2, x + 13, y + 30, x + 13, y + 49);
+    u8g2_DrawLine(u8g2, x + 14, y + 29, x + 14, y + 49);
+    u8g2_DrawLine(u8g2, x + 15, y + 30, x + 15, y + 49);
+    u8g2_DrawLine(u8g2, x + 16, y + 31, x + 16, y + 49);
+}
+
 void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
     display_draw_digit_impl(u8g2, x, y, digit, display_draw_msegment);
