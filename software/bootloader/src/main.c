@@ -54,7 +54,9 @@ static void delay_with_usb(uint32_t delay);
 void Error_Handler(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
+#ifndef MIN
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+#endif
 
 #define FW_FILENAME "printalyzer-fw.bin"
 

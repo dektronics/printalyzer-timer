@@ -208,13 +208,27 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   USBH_MSC_BOT_Init(phost);
 
   /* Open the new channels */
-  USBH_OpenPipe(phost, MSC_Handle->OutPipe, MSC_Handle->OutEp,
+  if ((MSC_Handle->OutEp != 0U) && (MSC_Handle->OutEpSize != 0U))
+  {
+    (void)USBH_OpenPipe(phost, MSC_Handle->OutPipe, MSC_Handle->OutEp,
                 phost->device.address, phost->device.speed,
                 USB_EP_TYPE_BULK, MSC_Handle->OutEpSize);
+  }
+  else
+  {
+    return USBH_NOT_SUPPORTED;
+  }
 
-  USBH_OpenPipe(phost, MSC_Handle->InPipe, MSC_Handle->InEp,
+  if ((MSC_Handle->InEp != 0U) && (MSC_Handle->InEpSize != 0U))
+  {
+    (void)USBH_OpenPipe(phost, MSC_Handle->InPipe, MSC_Handle->InEp,
                 phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
                 MSC_Handle->InEpSize);
+  }
+  else
+  {
+    return USBH_NOT_SUPPORTED;
+  }
 
   USBH_LL_SetToggle(phost, MSC_Handle->InPipe, 0U);
   USBH_LL_SetToggle(phost, MSC_Handle->OutPipe, 0U);
