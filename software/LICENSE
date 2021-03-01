@@ -76,7 +76,7 @@
  Path:     firmware/external/usb
  Upstream: https://github.com/STMicroelectronics/STM32CubeF4
            Middlewares/ST/STM32_USB_Host_Library
-           Middlewares/ST/STM32_USB_Device_Library
+           https://github.com/STMicroelectronics/stm32_mw_usb_host
  License:  ST Ultimate Liberty License (SLA0044)
 
  Code has been combined into a consistent directory structure and modified

@@ -79,10 +79,10 @@
 #define USBH_MAX_NUM_SUPPORTED_CLASS    8U
 
 /*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION     256U
+#define USBH_MAX_SIZE_CONFIGURATION     0x200U
 
 /*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER            512U
+#define USBH_MAX_DATA_BUFFER            0x200U
 
 /*----------   -----------*/
 #define USBH_DEBUG_LEVEL                2U

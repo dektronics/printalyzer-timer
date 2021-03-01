@@ -642,10 +642,21 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
       if ((phost->device.CfgDesc.bmAttributes) & (1U << 5))
       {
-        if (USBH_SetFeature(phost, FEATURE_SELECTOR_REMOTEWAKEUP) == USBH_OK)
+        status = USBH_SetFeature(phost, FEATURE_SELECTOR_REMOTEWAKEUP);
+
+        if (status == USBH_OK)
         {
           USBH_UsrLog("Device remote wakeup enabled");
           phost->gState = HOST_CHECK_CLASS;
+        }
+        else if (status == USBH_NOT_SUPPORTED)
+        {
+          USBH_UsrLog("Remote wakeup not supported by the device");
+          phost->gState = HOST_CHECK_CLASS;
+        }
+        else
+        {
+          /* .. */
         }
       }
       else
