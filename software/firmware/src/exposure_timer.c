@@ -26,6 +26,8 @@ static exposure_timer_state_t timer_state = EXPOSURE_TIMER_STATE_NONE;
 static uint32_t time_elapsed = 0;
 static uint32_t buzz_start = 0;
 static uint32_t buzz_stop = 0;
+static uint32_t relay_on_event_ticks = 0;
+static uint32_t relay_off_event_ticks = 0;
 
 void exposure_timer_init(TIM_HandleTypeDef *htim)
 {
@@ -66,7 +68,7 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
 
     // Log all the relevant time properties
     ESP_LOGD(TAG, "Set for desired time of %ldms", exposure_time);
-    ESP_LOGD(TAG, "Actual exposure time: %ldms", config->relay_on_delay + config->exposure_time);
+    ESP_LOGD(TAG, "Adjusted exposure time: %ldms", config->relay_on_delay + config->exposure_time);
     ESP_LOGD(TAG, "On delay: %dms", config->relay_on_delay);
     ESP_LOGD(TAG, "Off delay: %dms", config->relay_off_delay);
     ESP_LOGD(TAG, "End delay: %dms", config->exposure_end_delay);
@@ -105,6 +107,8 @@ HAL_StatusTypeDef exposure_timer_run()
     timer_cancel_request = false;
     timer_state = EXPOSURE_TIMER_STATE_NONE;
     time_elapsed = 0;
+    relay_on_event_ticks = 0;
+    relay_off_event_ticks = 0;
 
     buzzer_volume_t current_volume = buzzer_get_volume();
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
@@ -141,6 +145,9 @@ HAL_StatusTypeDef exposure_timer_run()
     }
 
     ESP_LOGI(TAG, "Exposure timer complete");
+
+    ESP_LOGD(TAG, "Actual relay on/off time: %lums",
+        (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);
 
     // Handling the completion beep outside the ISR for simplicity.
     if (timer_cancel_request) {
@@ -194,6 +201,7 @@ void exposure_timer_notify()
     }
 
     if (!relay_activated) {
+        relay_on_event_ticks = osKernelGetTickCount();
         relay_enlarger_enable(true);
         relay_activated = true;
     } else {
@@ -221,6 +229,7 @@ void exposure_timer_notify()
 
     if (!relay_deactivated
         && ((time_elapsed >= timer_config.relay_on_delay + (timer_config.exposure_time - timer_config.relay_off_delay)) || cancel_flag)) {
+        relay_off_event_ticks = osKernelGetTickCount();
         relay_enlarger_enable(false);
         relay_deactivated = true;
     }
