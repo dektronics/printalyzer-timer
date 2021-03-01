@@ -21,8 +21,6 @@
 #include "illum_controller.h"
 #include "util.h"
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 #define REFERENCE_READING_ITERATIONS 100
 #define PROFILE_ITERATIONS 5
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)

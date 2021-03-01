@@ -11,8 +11,6 @@
 #include "usb_host.h"
 #include "densitometer.h"
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 static const char *TAG = "menu_step_wedge";
 
 static int calibration_status(const step_wedge_t *wedge);

@@ -2,8 +2,7 @@
 
 #include "display.h"
 #include "u8g2.h"
-
-#define MAX(a,b) (((a)>(b))?(a):(b))
+#include "util.h"
 
 typedef enum {
     seg_a = 0x01,

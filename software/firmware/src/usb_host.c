@@ -13,10 +13,9 @@
 
 #include "keypad.h"
 #include "fatfs.h"
+#include "util.h"
 
 static const char *TAG = "usb_host";
-
-#define MIN(a,b) (((a)<(b))?(a):(b))
 
 #define REPORT_KEY_NUM_LOCK 0x01
 #define REPORT_KEY_CAPS_LOCK 0x02

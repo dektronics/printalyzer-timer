@@ -5,10 +5,9 @@
 #include <strings.h>
 
 #include "i2c_util.h"
+#include "util.h"
 
 static const char *TAG = "m24m01";
-
-#define MIN(x,  y)   (((x) < (y)) ? (x) : (y))
 
 /* I2C device base address */
 static const uint8_t M24M01_ADDRESS = 0x50 << 1;

@@ -20,9 +20,6 @@
 #include "menu_step_wedge.h"
 #include "exposure_state.h"
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
 static const char *TAG = "menu_paper";
 
 typedef struct {

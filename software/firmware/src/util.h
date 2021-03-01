@@ -13,6 +13,14 @@
 
 #define SAFELIGHT_OFF_DELAY pdMS_TO_TICKS(500)
 
+#ifndef MIN
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef MAX
+#define MAX(a, b)  (((a) > (b)) ? (a) : (b))
+#endif
+
 /**
  * Convert the current exposure state into display elements.
  */
