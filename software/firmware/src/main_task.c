@@ -135,6 +135,7 @@ void main_task_exposure_timer_init()
 
 void main_task_start(void *argument)
 {
+    uint32_t logo_ticks = 0;
     UNUSED(argument);
 
     /* Print various startup log messages */
@@ -164,11 +165,6 @@ void main_task_start(void *argument)
     printf("-----------------------\r\n");
     fflush(stdout);
 
-    /* Initialize the USB host framework */
-    if (usb_host_init() != USBH_OK) {
-        ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
-    }
-
     /* Initialize the system settings */
     settings_init(&hi2c1);
 
@@ -178,6 +174,7 @@ void main_task_start(void *argument)
     /* Initialize the display */
     main_task_display_init();
     display_draw_logo();
+    logo_ticks = osKernelGetTickCount();
 
     /* Initialize the LED driver */
     main_task_led_init();
@@ -213,6 +210,11 @@ void main_task_start(void *argument)
     /* Set the startup safelight state */
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
+    /* Initialize the USB host framework */
+    if (usb_host_init() != USBH_OK) {
+        ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
+    }
+
     /* Startup beep */
     buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
     buzzer_set_volume(settings_get_buzzer_volume());
@@ -222,7 +224,7 @@ void main_task_start(void *argument)
     buzzer_set_volume(BUZZER_VOLUME_OFF);
 
     ESP_LOGI(TAG, "Startup complete");
-    osDelay(500);
+    osDelayUntil(logo_ticks + 750);
 
     /* Initialize state controller */
     state_controller_init();

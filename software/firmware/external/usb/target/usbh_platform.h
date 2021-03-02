@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : usbh_platform.h
@@ -16,9 +15,7 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 
-/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBH_PLATFORM_H__
 #define __USBH_PLATFORM_H__
 
@@ -26,13 +23,7 @@
  extern "C" {
 #endif
 
-/* Includes ------------------------------------------------------------------*/
 #include <stdint.h>
-//FIXME #include "usb_host.h"
-
-/* USER CODE BEGIN INCLUDE */
-
-/* USER CODE END INCLUDE */
 
 void MX_DriverVbusFS(uint8_t state);
 
@@ -41,5 +32,3 @@ void MX_DriverVbusFS(uint8_t state);
 #endif
 
 #endif /* __USBH_PLATFORM_H__ */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

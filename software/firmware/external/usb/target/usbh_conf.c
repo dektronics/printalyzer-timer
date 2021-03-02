@@ -439,15 +439,22 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe
   */
 USBH_StatusTypeDef USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost, uint8_t state)
 {
-  if (phost->id == HOST_FS) {
-    MX_DriverVbusFS(state);
+    if (phost->id == HOST_FS) {
+        MX_DriverVbusFS(state);
+    }
+
+  /*
+   * There was originally a blanket 200ms delay here, which seemed to
+   * accomplish little beyond making system startup a bit slower.
+   * The delay is now only implemented if this function is called from
+   * within the USB task, where it cannot block other system activities.
+   */
+#if (USBH_USE_OS == 1U)
+  if (phost->thread == osThreadGetId()) {
+      osDelay(200);
   }
+#endif
 
-  /* USER CODE BEGIN 0 */
-
-  /* USER CODE END 0*/
-
-  HAL_Delay(200);
   return USBH_OK;
 }
 

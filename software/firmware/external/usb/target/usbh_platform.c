@@ -17,31 +17,26 @@
   ******************************************************************************
   */
 
-/* Includes ------------------------------------------------------------------*/
 #include <stm32f4xx_hal.h>
 #include "usbh_platform.h"
 
 /**
-  * @brief  Drive VBUS.
-  * @param  state : VBUS state
-  *          This parameter can be one of the these values:
-  *           - 1 : VBUS Active
-  *           - 0 : VBUS Inactive
-  */
+ * @brief  Drive VBUS.
+ * @param  state : VBUS state
+ *          This parameter can be one of the these values:
+ *           - 1 : VBUS Active
+ *           - 0 : VBUS Inactive
+ */
 void MX_DriverVbusFS(uint8_t state)
 {
-  uint8_t data = state;
-  /* USER CODE BEGIN PREPARE_GPIO_DATA_VBUS_FS */
-  if(state == 0)
-  {
-    /* Drive high Charge pump */
-    data = GPIO_PIN_SET;
-  }
-  else
-  {
-    /* Drive low Charge pump */
-    data = GPIO_PIN_RESET;
-  }
-  /* USER CODE END PREPARE_GPIO_DATA_VBUS_FS */
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)data);
+    uint8_t data = state;
+    if (state == 0) {
+        /* Drive high Charge pump */
+        data = GPIO_PIN_SET;
+    } else {
+        /* Drive low Charge pump */
+        data = GPIO_PIN_RESET;
+    }
+
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, (GPIO_PinState)data);
 }
