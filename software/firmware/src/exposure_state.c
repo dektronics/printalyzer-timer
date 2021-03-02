@@ -33,6 +33,14 @@ static const char *TAG = "exposure_state";
 #define CALIBRATION_BASE_PEV 30
 
 /**
+ * Approximate PEV value to use when recommending a step wedge
+ * exposure time in calibration mode. This should help get a
+ * starting point that is close enough for step wedge exposures
+ * when attempting to determine a paper's characteristic curve.
+ */
+#define CALIBRATION_STRIP_PEV 220
+
+/**
  * Minimum exposure time that may be offered by calculation
  * from light readings.
  */
@@ -49,6 +57,7 @@ typedef struct __exposure_state_t {
     float lux_readings[MAX_LUX_READINGS];
     int lux_reading_count;
     uint32_t calibration_pev;
+    exposure_pev_preset_t calibration_pev_preset;
     int paper_profile_index;
     paper_profile_t paper_profile;
     float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
@@ -62,6 +71,7 @@ static void exposure_recalculate(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks(exposure_state_t *state);
 static void exposure_recalculate_base_time(exposure_state_t *state);
 static void exposure_populate_tone_graph(exposure_state_t *state);
+static uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset);
 
 exposure_state_t *exposure_state_create()
 {
@@ -113,6 +123,7 @@ void exposure_state_defaults(exposure_state_t *state)
     }
     state->lux_reading_count = 0;
     state->calibration_pev = 0;
+    state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
 }
 
 exposure_mode_t exposure_get_mode(const exposure_state_t *state)
@@ -172,6 +183,8 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
             if (state->burn_dodge_count > 0) {
                 exposure_burn_dodge_delete_all(state);
             }
+
+            state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
         }
     }
 }
@@ -294,7 +307,7 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
             }
         }
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
-        float updated_base_time = exposure_base_time_for_calibration_pev(lux, CALIBRATION_BASE_PEV);
+        float updated_base_time = exposure_base_time_for_calibration_pev(lux, exposure_pev_for_preset(state->calibration_pev_preset));
         if (isnormal(updated_base_time) && updated_base_time > 0) {
             state->base_time = updated_base_time;
         } else {
@@ -454,6 +467,33 @@ void exposure_contrast_decrease(exposure_state_t *state)
         state->contrast_grade--;
         exposure_recalculate_tone_graph_marks(state);
         exposure_recalculate_base_time(state);
+        exposure_recalculate(state);
+    }
+}
+
+exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state)
+{
+    if (!state) { return EXPOSURE_PEV_PRESET_BASE; }
+    return state->calibration_pev_preset;
+}
+
+void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_preset_t preset)
+{
+    if (!state) { return; }
+
+    if (state->mode == EXPOSURE_MODE_CALIBRATION
+        && state->lux_reading_count > 0
+        && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0
+        && preset != state->calibration_pev_preset
+        && preset >= EXPOSURE_PEV_PRESET_BASE && preset <= EXPOSURE_PEV_PRESET_STRIP) {
+        state->calibration_pev_preset = preset;
+        float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], exposure_pev_for_preset(state->calibration_pev_preset));
+        if (isnormal(updated_base_time) && updated_base_time > 0) {
+            state->base_time = updated_base_time;
+        } else {
+            state->base_time = settings_get_default_exposure_time() / 1000.0F;
+        }
+        state->adjustment_value = 0;
         exposure_recalculate(state);
     }
 }
@@ -850,5 +890,17 @@ const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade)
         return "5";
     default:
         return "";
+    }
+}
+
+uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset)
+{
+    switch (preset) {
+    case EXPOSURE_PEV_PRESET_BASE:
+        return CALIBRATION_BASE_PEV;
+    case EXPOSURE_PEV_PRESET_STRIP:
+        return CALIBRATION_STRIP_PEV;
+    default:
+        return 0;
     }
 }

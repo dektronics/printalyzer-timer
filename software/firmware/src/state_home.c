@@ -234,22 +234,31 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     exposure_calibration_pev_decrease(exposure_state);
                 }
                 state->display_dirty = true;
-            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT
-                && mode == EXPOSURE_MODE_PRINTING) {
-                if (keypad_event.pressed || keypad_event.repeated) {
-                    state->adjustment_repeat++;
-                } else {
-                    int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
-                    if (state->adjustment_repeat > 2) {
-                        if (burn_dodge_count > 0) {
-                            state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
-                        }
+            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
+                if (mode == EXPOSURE_MODE_PRINTING) {
+                    if (keypad_event.pressed || keypad_event.repeated) {
+                        state->adjustment_repeat++;
                     } else {
-                        if (burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
-                            state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, burn_dodge_count);
+                        int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
+                        if (state->adjustment_repeat > 2) {
+                            if (burn_dodge_count > 0) {
+                                state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
+                            }
+                        } else {
+                            if (burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
+                                state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, burn_dodge_count);
+                            }
                         }
+                        state->adjustment_repeat = 0;
+                        state->display_dirty = true;
                     }
-                    state->adjustment_repeat = 0;
+                } else if (mode == EXPOSURE_MODE_CALIBRATION && !keypad_event.pressed) {
+                    exposure_pev_preset_t preset = exposure_calibration_pev_get_preset(exposure_state);
+                    if (preset == EXPOSURE_PEV_PRESET_BASE) {
+                        exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_STRIP);
+                    } else if (preset == EXPOSURE_PEV_PRESET_STRIP) {
+                        exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_BASE);
+                    }
                     state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {

@@ -41,6 +41,11 @@ typedef enum {
     EXPOSURE_ADJ_WHOLE = 12
 } exposure_adjustment_increment_t;
 
+typedef enum {
+    EXPOSURE_PEV_PRESET_BASE = 0,
+    EXPOSURE_PEV_PRESET_STRIP
+} exposure_pev_preset_t;
+
 typedef struct __exposure_adjustment_t {
     exposure_contrast_grade_t contrast_grade;
     int8_t numerator;
@@ -88,6 +93,8 @@ exposure_contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *st
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
 
+exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state);
+void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_preset_t preset);
 void exposure_calibration_pev_increase(exposure_state_t *state);
 void exposure_calibration_pev_decrease(exposure_state_t *state);
 
