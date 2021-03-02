@@ -125,7 +125,7 @@
  */
 
 
-#define _USE_LFN     0
+#define _USE_LFN     3
 #define _MAX_LFN     255
 /* The _USE_LFN switches the support of long file name (LFN).
 /
@@ -264,7 +264,7 @@
 /      lock control is independent of re-entrancy. */
 
 #define _FS_REENTRANT    1
-#define _USE_MUTEX       0
+#define _USE_MUTEX       1
 /* Use CMSIS-OS mutexes as _SYNC_t object instead of Semaphores */
 
 #if _FS_REENTRANT
