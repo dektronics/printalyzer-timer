@@ -296,14 +296,14 @@ void settings_init_parse_config_page(const uint8_t *data)
     }
 
     val = copy_to_u32(data + CONFIG_ENLARGER_PROFILE);
-    if (val < 16) {
+    if (val < MAX_ENLARGER_PROFILES) {
         setting_enlarger_profile = val;
     } else {
         setting_enlarger_profile = DEFAULT_ENLARGER_PROFILE;
     }
 
     val = copy_to_u32(data + CONFIG_PAPER_PROFILE);
-    if (val < 16) {
+    if (val < MAX_PAPER_PROFILES) {
         setting_paper_profile = val;
     } else {
         setting_paper_profile = DEFAULT_PAPER_PROFILE;
@@ -496,7 +496,7 @@ uint8_t settings_get_default_enlarger_profile_index()
 
 void settings_set_default_enlarger_profile_index(uint8_t index)
 {
-    if (setting_enlarger_profile != index && index < 16) {
+    if (setting_enlarger_profile != index && index < MAX_ENLARGER_PROFILES) {
         if (write_u32(PAGE_CONFIG + CONFIG_ENLARGER_PROFILE, index)) {
             setting_enlarger_profile = index;
         }
@@ -510,7 +510,7 @@ uint8_t settings_get_default_paper_profile_index()
 
 void settings_set_default_paper_profile_index(uint8_t index)
 {
-    if (setting_paper_profile != index && index < 16) {
+    if (setting_paper_profile != index && index < MAX_PAPER_PROFILES) {
         if (write_u32(PAGE_CONFIG + CONFIG_PAPER_PROFILE, index)) {
             setting_paper_profile = index;
         }
@@ -533,7 +533,7 @@ void settings_set_tcs3472_ga_factor(float value)
 
 bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
 {
-    if (!profile || index >= 16) { return false; }
+    if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
 
     ESP_LOGI(TAG, "Load enlarger profile: %d", index);
 
@@ -584,7 +584,7 @@ void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uin
 
 bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index)
 {
-    if (!profile || index >= 16) { return false; }
+    if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
 
     ESP_LOGI(TAG, "Save enlarger profile: %d", index);
 
@@ -616,7 +616,7 @@ void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, 
 
 void settings_clear_enlarger_profile(uint8_t index)
 {
-    if (index >= 16) { return; }
+    if (index >= MAX_ENLARGER_PROFILES) { return; }
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0xFF, sizeof(data));
@@ -630,7 +630,7 @@ void settings_clear_enlarger_profile(uint8_t index)
 
 bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
 {
-    if (!profile || index >= 16) { return false; }
+    if (!profile || index >= MAX_PAPER_PROFILES) { return false; }
 
     ESP_LOGI(TAG, "Load paper profile: %d", index);
 
@@ -707,7 +707,7 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
 
 bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
 {
-    if (!profile || index >= 16) { return false; }
+    if (!profile || index >= MAX_PAPER_PROFILES) { return false; }
 
     ESP_LOGI(TAG, "Save paper profile: %d", index);
 
@@ -761,7 +761,7 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
 
 void settings_clear_paper_profile(uint8_t index)
 {
-    if (index >= 16) { return; }
+    if (index >= MAX_PAPER_PROFILES) { return; }
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0xFF, sizeof(data));
