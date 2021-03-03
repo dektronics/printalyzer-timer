@@ -113,6 +113,11 @@ bool paper_profile_grade_is_empty(const paper_profile_grade_t *profile_grade);
 bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade);
 
 /**
+ * Check whether the two enlarger profiles are equivalent.
+ */
+bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_t *profile2);
+
+/**
  * Update the values of any calculated paper profile members.
  *
  * This refreshes the values of portions of the profile that are derived

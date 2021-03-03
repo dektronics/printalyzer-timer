@@ -117,4 +117,9 @@ float step_wedge_get_density(const step_wedge_t *wedge, uint32_t step);
  */
 bool step_wedge_is_valid(const step_wedge_t *wedge);
 
+/**
+ * Check whether the two step wedge profiles are equivalent.
+ */
+bool step_wedge_compare(const step_wedge_t *wedge1, const step_wedge_t *wedge2);
+
 #endif /* STEP_WEDGE_H */

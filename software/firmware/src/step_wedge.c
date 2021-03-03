@@ -3,6 +3,7 @@
 #include <FreeRTOS.h>
 #include <string.h>
 #include <math.h>
+#include "util.h"
 
 static const step_wedge_t stock_wedges[] = {
     { "Stouffer T1015", 0.05, 0.15, 10 },
@@ -161,6 +162,52 @@ bool step_wedge_is_valid(const step_wedge_t *wedge)
 
         /* Values may not be equivalent */
         if (fabsf(cur_val - prev_val) < 0.01F) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool step_wedge_compare(const step_wedge_t *wedge1, const step_wedge_t *wedge2)
+{
+    /* Both are the same pointer */
+    if (wedge1 == wedge2) {
+        return true;
+    }
+
+    /* Both are null */
+    if (!wedge1 && !wedge2) {
+        return true;
+    }
+
+    /* One is null and the other is not */
+    if ((wedge1 && !wedge2) || (!wedge1 && wedge2)) {
+        return false;
+    }
+
+    /* Compare the name strings */
+    if (strncmp(wedge1->name, wedge2->name, sizeof(wedge1->name)) != 0) {
+        return false;
+    }
+
+    /* Compare the fields */
+    if (fabsf(wedge1->base_density - wedge2->base_density) > 0.001F) {
+        return false;
+    }
+    if (fabsf(wedge1->density_increment - wedge2->density_increment) > 0.001F) {
+        return false;
+    }
+    if (wedge1->step_count != wedge2->step_count) {
+        return false;
+    }
+
+    /* Compare the step density list */
+    for (size_t i = 0; i < wedge1->step_count; i++) {
+        if (is_valid_number(wedge1->step_density[i]) && is_valid_number(wedge2->step_density[i])
+            && fabsf(wedge1->step_density[i] - wedge2->step_density[i]) > 0.001F) {
+            return false;
+        } else if (fpclassify(wedge1->step_density[i]) != fpclassify(wedge2->step_density[i])) {
             return false;
         }
     }

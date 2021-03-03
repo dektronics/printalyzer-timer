@@ -82,6 +82,45 @@ bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade)
     return true;
 }
 
+bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_t *profile2)
+{
+    /* Both are the same pointer */
+    if (profile1 == profile2) {
+        return true;
+    }
+
+    /* Both are null */
+    if (!profile1 && !profile2) {
+        return true;
+    }
+
+    /* One is null and the other is not */
+    if ((profile1 && !profile2) || (!profile1 && profile2)) {
+        return false;
+    }
+
+    /* Compare the name strings */
+    if (strncmp(profile1->name, profile2->name, sizeof(profile1->name)) != 0) {
+        return false;
+    }
+
+    /* Compare the floating point fields with a tight tolerance */
+    if (fabsf(profile1->max_net_density - profile2->max_net_density) > 0.0001F) {
+        return false;
+    }
+
+    /* Compare each contrast grade entry */
+    for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
+        if (profile1->grade[i].ht_lev100 != profile2->grade[i].ht_lev100
+            || profile1->grade[i].hm_lev100 != profile2->grade[i].hm_lev100
+            || profile1->grade[i].hs_lev100 != profile2->grade[i].hs_lev100) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 void paper_profile_recalculate(paper_profile_t *profile)
 {
     if (!profile) {

@@ -524,7 +524,7 @@ float settings_get_tcs3472_ga_factor()
 
 void settings_set_tcs3472_ga_factor(float value)
 {
-    if (isnormal(value) && value > 0) {
+    if (isnormal(value) && value > 0.0F && value < 10.0F && fabsf(setting_tcs3472_ga_factor - value) > 0.001F) {
         if (write_f32(PAGE_CONFIG + CONFIG_TCS3472_GA_FACTOR, value)) {
             setting_tcs3472_ga_factor = value;
         }
@@ -619,6 +619,23 @@ void settings_clear_enlarger_profile(uint8_t index)
     if (index >= MAX_ENLARGER_PROFILES) { return; }
 
     uint8_t data[PAGE_SIZE];
+
+    /* Read the profile page, and abort if it is already blank */
+    if (m24m01_read_buffer(eeprom_i2c,
+        PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+        data, sizeof(data)) == HAL_OK) {
+        bool is_empty = true;
+        for (size_t i = 0; i < PAGE_SIZE; i++) {
+            if (data[i] != 0xFF) {
+                is_empty = false;
+                break;
+            }
+        }
+        if (is_empty) {
+            return;
+        }
+    }
+
     memset(data, 0xFF, sizeof(data));
 
     ESP_LOGI(TAG, "Clear enlarger profile: %d", index);
@@ -764,6 +781,23 @@ void settings_clear_paper_profile(uint8_t index)
     if (index >= MAX_PAPER_PROFILES) { return; }
 
     uint8_t data[PAGE_SIZE];
+
+    /* Read the profile page, and abort if it is already blank */
+    if (m24m01_read_buffer(eeprom_i2c,
+        PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
+        data, sizeof(data)) == HAL_OK) {
+        bool is_empty = true;
+        for (size_t i = 0; i < PAGE_SIZE; i++) {
+            if (data[i] != 0xFF) {
+                is_empty = false;
+                break;
+            }
+        }
+        if (is_empty) {
+            return;
+        }
+    }
+
     memset(data, 0xFF, sizeof(data));
 
     ESP_LOGI(TAG, "Clear paper profile: %d", index);

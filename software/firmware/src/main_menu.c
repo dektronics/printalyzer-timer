@@ -15,6 +15,7 @@
 #include "menu_enlarger.h"
 #include "menu_paper.h"
 #include "menu_step_wedge.h"
+#include "menu_import_export.h"
 #include "menu_diagnostics.h"
 
 static const char *TAG = "main_menu";
@@ -35,6 +36,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "Enlarger Profiles\n"
                 "Paper Profiles\n"
                 "Step Wedge Properties\n"
+                "Import / Export\n"
                 "Diagnostics\n"
                 "About");
 
@@ -47,8 +49,10 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 4) {
             menu_result = menu_step_wedge();
         } else if (option == 5) {
-            menu_result = menu_diagnostics();
+            menu_result = menu_import_export(controller);
         } else if (option == 6) {
+            menu_result = menu_diagnostics();
+        } else if (option == 7) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;

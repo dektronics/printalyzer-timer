@@ -59,6 +59,11 @@ typedef struct {
 bool enlarger_profile_is_valid(const enlarger_profile_t *profile);
 
 /**
+ * Check whether the two enlarger profiles are equivalent.
+ */
+bool enlarger_profile_compare(const enlarger_profile_t *profile1, const enlarger_profile_t *profile2);
+
+/**
  * Clear out the provided profile and set sensible default values.
  */
 void enlarger_profile_set_defaults(enlarger_profile_t *profile);
