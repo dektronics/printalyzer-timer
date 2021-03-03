@@ -132,3 +132,11 @@
  the integration and build process.
 
 ******************************************************************************
+
+ coreJSON
+
+ Path:     firmware/src/core_json.*
+ Upstream: https://github.com/FreeRTOS/coreJSON/
+ License:  MIT
+
+******************************************************************************
