@@ -906,7 +906,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
     float32_t *coeffs = NULL;
 
     /* Buffer array used for the interpolation */
-    float32_t *temp_buffer;
+    float32_t *temp_buffer = NULL;
 
     /* Output X-axis is the full range of PEV values from min to max */
     float32_t *xq_pev_f32 = NULL;
