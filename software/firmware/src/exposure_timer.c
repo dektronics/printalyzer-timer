@@ -7,6 +7,7 @@
 #include <esp_log.h>
 
 #include "exposure_timer.h"
+#include "illum_controller.h"
 #include "buzzer.h"
 #include "relay.h"
 #include "settings.h"
@@ -115,6 +116,9 @@ HAL_StatusTypeDef exposure_timer_run()
     buzzer_set_volume(settings_get_buzzer_volume());
     buzzer_set_frequency(PAM8904E_FREQ_500HZ);
 
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+    osDelay(SAFELIGHT_OFF_DELAY);
+
     ESP_LOGI(TAG, "Starting exposure timer");
 
     HAL_TIM_Base_Start_IT(timer_htim);
@@ -145,6 +149,8 @@ HAL_StatusTypeDef exposure_timer_run()
     }
 
     ESP_LOGI(TAG, "Exposure timer complete");
+
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     ESP_LOGD(TAG, "Actual relay on/off time: %lums",
         (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);

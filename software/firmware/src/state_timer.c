@@ -95,9 +95,6 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     display_draw_exposure_timer(&elements, 0);
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-    osDelay(SAFELIGHT_OFF_DELAY);
-
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
         ESP_LOGE(TAG, "Exposure timer canceled");
@@ -111,7 +108,6 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     ESP_LOGI(TAG, "Exposure timer complete");
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     return result;
 }
 
@@ -227,9 +223,6 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     elements.contrast_grade = DISPLAY_GRADE_MAX;
     display_draw_adjustment_exposure_elements(&elements);
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-    osDelay(SAFELIGHT_OFF_DELAY);
-
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
         ESP_LOGE(TAG, "Exposure timer canceled");
@@ -242,8 +235,6 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     }
 
     ESP_LOGI(TAG, "Exposure timer complete");
-
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return result;
 }
