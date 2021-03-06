@@ -369,7 +369,7 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
         .repeated = false,
         .keypad_state = button_state
     };
-    ESP_LOGI(TAG, "Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
+    ESP_LOGD(TAG, "Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
 
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }
@@ -400,7 +400,7 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
         .repeated = true,
         .keypad_state = button_state
     };
-    ESP_LOGI(TAG, "Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
+    ESP_LOGD(TAG, "Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
 
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }
