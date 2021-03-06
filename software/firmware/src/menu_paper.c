@@ -253,7 +253,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 usb_serial_clear_receive_buffer();
             }
             if (display_input_value_f16_data_cb(
-                "-- Max Net Density --\n"
+                "Max Net Density",
                 "Maximum density (Dmax) of the\n"
                 "paper, measured relative to the\n"
                 "paper base (Dmin).\n",
@@ -417,7 +417,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         if (option == 1) {
             uint16_t value_sel = working_grade.ht_lev100;
             if (display_input_value_u16(
-                "-- Base Exposure --\n"
+                "Base Exposure",
                 "Paper exposure value necessary\n"
                 "to achieve a density of D=0.04\n"
                 "above the paper base (Dmin).\n",
@@ -430,7 +430,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         } else if (option == 2) {
             uint16_t value_sel = working_grade.hm_lev100;
             if (display_input_value_u16(
-                "-- Speed Point (optional) --\n"
+                "Speed Point (optional)",
                 "Paper exposure value necessary\n"
                 "to achieve a density of D=0.60\n"
                 "above the paper base (Dmin).\n",
@@ -442,7 +442,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         } else if (option == 3) {
             uint16_t value_sel = iso_r;
             if (display_input_value_u16(
-                "-- ISO Range --\n"
+                "ISO Range",
                 "Paper exposure range between the\n"
                 "base exposure and an exposure\n"
                 "that achieves 90% of Dnet\n",
@@ -604,7 +604,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 usb_serial_clear_receive_buffer();
             }
             if (display_input_value_f16_data_cb(
-                "-- Paper Dmin (optional) --\n"
+                "Paper Dmin (optional)",
                 "Minimum density of the paper,\n"
                 "used as an offset for the\n"
                 "step measurements.\n",
@@ -631,7 +631,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         } else if (option == 4) {
             uint16_t value_sel = calibration_pev;
             if (display_input_value_u16(
-                "-- Paper Exposure Value --\n"
+                "Paper Exposure Value",
                 "Paper exposure value used for\n"
                 "the step wedge exposure being\n"
                 "measured.\n",
@@ -644,12 +644,13 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
             int step_index = option - 5;
 
             uint8_t patch_option;
+            char patch_title_buf[32];
             char patch_buf[128];
+            sprintf(patch_title_buf, "Step %d", step_index + 1);
             sprintf(patch_buf,
-                "-- Step %d --\n\n"
-                "Measured density at patch %d\n"
+                "\nMeasured density at patch %d\n"
                 "of the exposed paper.\n",
-                step_index + 1, step_index + 1);
+                step_index + 1);
 
             /* Constrain the input based on Dmin and Dmax */
             uint16_t min_value = lroundf(paper_dmin * 100);
@@ -671,7 +672,8 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 usb_serial_clear_receive_buffer();
             }
 
-            patch_option = display_input_value_f16_data_cb(patch_buf,
+            patch_option = display_input_value_f16_data_cb(
+                patch_title_buf, patch_buf,
                 "D=", &value_sel, min_value, max_value, 1, 2, "",
                 menu_paper_densitometer_data_callback, &dens_enable);
             if (patch_option == 1) {

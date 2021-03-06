@@ -290,7 +290,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 2) {
             uint16_t value_sel = profile->turn_on_delay;
             if (display_input_value_u16(
-                "-- Turn On Delay --\n"
+                "Turn On Delay",
                 "Time period from when the\n"
                 "enlarger is activated until its\n"
                 "light level starts to rise.\n",
@@ -302,7 +302,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 3) {
             uint16_t value_sel = profile->rise_time;
             if (display_input_value_u16(
-                "-- Rise Time --\n"
+                "Rise Time",
                 "Time period from when the\n"
                 "enlarger light level starts to\n"
                 "rise until it peaks.\n",
@@ -314,7 +314,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 4) {
             uint16_t value_sel = profile->rise_time_equiv;
             if (display_input_value_u16(
-                "-- Rise Time Equivalent --\n"
+                "Rise Time Equivalent",
                 "Time period at peak output\n"
                 "for an exposure equivalent to\n"
                 "the rise time period.\n",
@@ -326,7 +326,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 5) {
             uint16_t value_sel = profile->turn_off_delay;
             if (display_input_value_u16(
-                "-- Turn Off Delay --\n"
+                "Turn Off Delay",
                 "Time period from when the\n"
                 "enlarger is deactivated until\n"
                 "its light level starts to fall.\n",
@@ -338,7 +338,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 6) {
             uint16_t value_sel = profile->fall_time;
             if (display_input_value_u16(
-                "-- Fall Time --\n"
+                "Fall Time",
                 "Time period from when the\n"
                 "enlarger light level starts to\n"
                 "fall until it is completely off.\n",
@@ -350,7 +350,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 7) {
             uint16_t value_sel = profile->fall_time_equiv;
             if (display_input_value_u16(
-                "-- Fall Time Equivalent --\n"
+                "Fall Time Equivalent",
                 "Time period at peak output\n"
                 "for an exposure equivalent to\n"
                 "the fall time period.\n",
@@ -362,7 +362,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         } else if (option == 8) {
             uint16_t value_sel = profile->color_temperature;
             if (display_input_value_u16(
-                "-- Color Temperature --\n"
+                "Color Temperature",
                 "The unfiltered color temperature\n"
                 "of the enlarger lamp.\n",
                 "", &value_sel, 0, UINT16_MAX, 5, " K") == UINT8_MAX) {

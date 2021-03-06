@@ -79,8 +79,8 @@ menu_result_t menu_step_wedge()
         } else if (option == 2) {
             uint8_t value_sel = wedge->step_count;
             if (display_input_value(
-                "-- Step Count --\n\n"
-                "Number of distinct patches\n"
+                "Step Count",
+                "\nNumber of distinct patches\n"
                 "on the step wedge.\n",
                 "", &value_sel, MIN_STEP_WEDGE_STEP_COUNT, MAX_STEP_WEDGE_STEP_COUNT, 2, " steps") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
@@ -96,7 +96,7 @@ menu_result_t menu_step_wedge()
         } else if (option == 3) {
             uint16_t value_sel = lroundf(wedge->base_density * 100);
             if (display_input_value_f16(
-                "-- Base Density --\n\n"
+                "Base Density",
                 "Specified density of the base\n"
                 "material of the step wedge.\n",
                 "D=", &value_sel, 0, 999, 1, 2, "") == UINT8_MAX) {
@@ -107,7 +107,7 @@ menu_result_t menu_step_wedge()
         } else if (option == 4) {
             uint16_t value_sel = lroundf(wedge->density_increment * 100);
             if (display_input_value_f16(
-                "-- Density Increment --\n"
+                "Density Increment",
                 "Specified density increase of\n"
                 "each successive patch of the\n"
                 "step wedge.\n",
@@ -255,19 +255,21 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
 
         if (option > 0 && option <= wedge->step_count) {
             uint8_t patch_option;
+            char patch_title_buf[32];
             char patch_buf[128];
+            sprintf(patch_title_buf, "Step %d", option);
             sprintf(patch_buf,
-                "-- Step %d --\n\n"
-                "Measured density at patch %d\n"
+                "\nMeasured density at patch %d\n"
                 "of the step wedge.\n",
-                option, option);
+                option);
             uint16_t value_sel = lroundf(step_wedge_get_density(wedge, option - 1) * 100);
             bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
 
-            patch_option = display_input_value_f16_data_cb(patch_buf,
+            patch_option = display_input_value_f16_data_cb(
+                patch_title_buf, patch_buf,
                 "D=", &value_sel, 0, 999, 1, 2, "",
                 menu_step_wedge_densitometer_data_callback, &dens_enable);
             if (patch_option == 1) {

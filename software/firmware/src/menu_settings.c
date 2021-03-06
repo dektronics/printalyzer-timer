@@ -216,7 +216,7 @@ menu_result_t menu_settings_default_exposure()
             break;
         } else if (option == 2) {
             uint8_t value_sel = time_setting / 1000;
-            if (display_input_value("Default Exposure Time\n", "", &value_sel, 5, 30, 2, " seconds") == UINT8_MAX) {
+            if (display_input_value("Default Exposure Time", "\n", "", &value_sel, 5, 30, 2, " seconds") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             }
             time_setting = value_sel * 1000;
@@ -507,7 +507,7 @@ menu_result_t menu_settings_display_brightness()
             break;
         } else if (option == 2) {
             uint8_t value_sel = display_setting & 0x0F;
-            if (display_input_value_cb("Screen Brightness\n", "", &value_sel, 0, 0x0F, 2, "",
+            if (display_input_value_cb("Screen Brightness", "\n", "", &value_sel, 0, 0x0F, 2, "",
                 screen_brightness_adjust_callback, NULL) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
@@ -516,7 +516,7 @@ menu_result_t menu_settings_display_brightness()
             display_set_brightness(display_setting);
         } else if (option == 3) {
             uint8_t value_sel = led_setting;
-            if (display_input_value_cb("Panel Brightness\n", "", &value_sel, 0, 0xFF, 3, "",
+            if (display_input_value_cb("Panel Brightness", "\n", "", &value_sel, 0, 0xFF, 3, "",
                 panel_brightness_adjust_callback, NULL) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
@@ -623,7 +623,7 @@ menu_result_t menu_settings_sensor_adjustment()
 
     uint16_t value_sel = lroundf(settings_get_tcs3472_ga_factor() * 100);
     if (display_input_value_f16(
-        "-- TCS3472 GA Factor --\n"
+        "TCS3472 GA Factor",
         "Ratio between a calibrated lux\n"
         "reading and an uncalibrated\n"
         "reading from the meter probe.\n",
