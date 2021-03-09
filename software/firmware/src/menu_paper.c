@@ -201,11 +201,14 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
     char buf[512];
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
+    bool profile_dirty;
 
     if (index == UINT8_MAX) {
         sprintf(buf_title, "New Paper Profile");
+        profile_dirty = true;
     } else {
         sprintf(buf_title, "Paper Profile %d", index + 1);
+        profile_dirty = false;
     }
 
     do {
@@ -245,9 +248,12 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            display_input_text("Paper Profile Name", profile->name, 32);
+            if (display_input_text("Paper Profile Name", profile->name, 32) > 0) {
+                profile_dirty = true;
+            }
         } else if (option == 2) {
             uint16_t value_sel = lroundf(profile->max_net_density * 100);
+            uint16_t value_sel_prev = value_sel;
             bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
@@ -261,7 +267,10 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 menu_paper_densitometer_data_callback, &dens_enable) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->max_net_density = (float)value_sel / 100.0F;
+                if (value_sel != value_sel_prev) {
+                    profile->max_net_density = (float)value_sel / 100.0F;
+                    profile_dirty = true;
+                }
             }
         } else if (option >= 3 && option <= 9) {
             exposure_contrast_grade_t grade;
@@ -291,7 +300,10 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 grade = CONTRAST_GRADE_2;
                 break;
             }
-            if (menu_paper_profile_edit_grade(controller, profile, index, grade) == MENU_TIMEOUT) {
+            menu_result_t sub_result = menu_paper_profile_edit_grade(controller, profile, index, grade);
+            if (sub_result == MENU_SAVE) {
+                profile_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 10) {
@@ -303,6 +315,18 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
                 break;
+            }
+        } else if (option == 0 && profile_dirty) {
+            menu_result_t sub_result = menu_confirm_cancel(buf_title);
+            if (sub_result == MENU_SAVE) {
+                menu_result = MENU_SAVE;
+                break;
+            } else if (sub_result == MENU_OK || sub_result == MENU_TIMEOUT) {
+                menu_result = sub_result;
+                break;
+            } else if (sub_result == MENU_CANCEL) {
+                option = 1;
+                continue;
             }
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
