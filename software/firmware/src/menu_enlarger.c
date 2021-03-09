@@ -240,11 +240,14 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
     char buf[512];
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
+    bool profile_dirty;
 
     if (index == UINT8_MAX) {
         sprintf(buf_title, "New Enlarger Profile");
+        profile_dirty = true;
     } else {
         sprintf(buf_title, "Enlarger Profile %d", index + 1);
+        profile_dirty = false;
     }
 
     do {
@@ -286,7 +289,9 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            display_input_text("Enlarger Name", profile->name, 32);
+            if (display_input_text("Enlarger Name", profile->name, 32) > 0) {
+                profile_dirty = true;
+            }
         } else if (option == 2) {
             uint16_t value_sel = profile->turn_on_delay;
             if (display_input_value_u16(
@@ -297,7 +302,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->turn_on_delay = value_sel;
+                if (profile->turn_on_delay != value_sel) {
+                    profile->turn_on_delay = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 3) {
             uint16_t value_sel = profile->rise_time;
@@ -309,7 +317,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->rise_time = value_sel;
+                if (profile->rise_time != value_sel) {
+                    profile->rise_time = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 4) {
             uint16_t value_sel = profile->rise_time_equiv;
@@ -321,7 +332,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->rise_time_equiv = value_sel;
+                if (profile->rise_time_equiv != value_sel) {
+                    profile->rise_time_equiv = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 5) {
             uint16_t value_sel = profile->turn_off_delay;
@@ -333,7 +347,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->turn_off_delay = value_sel;
+                if (profile->turn_off_delay != value_sel) {
+                    profile->turn_off_delay = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 6) {
             uint16_t value_sel = profile->fall_time;
@@ -345,7 +362,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->fall_time = value_sel;
+                if (profile->fall_time != value_sel) {
+                    profile->fall_time = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 7) {
             uint16_t value_sel = profile->fall_time_equiv;
@@ -357,7 +377,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " ms") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->fall_time_equiv = value_sel;
+                if (profile->fall_time_equiv != value_sel) {
+                    profile->fall_time_equiv = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 8) {
             uint16_t value_sel = profile->color_temperature;
@@ -368,7 +391,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 "", &value_sel, 0, UINT16_MAX, 5, " K") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
-                profile->color_temperature = value_sel;
+                if (profile->color_temperature != value_sel) {
+                    profile->color_temperature = value_sel;
+                    profile_dirty = true;
+                }
             }
         } else if (option == 9) {
             ESP_LOGD(TAG, "Run calibration from profile editor");
@@ -381,7 +407,10 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 " Start \n Cancel ");
 
             if (sub_option == 1) {
-                if (menu_enlarger_calibration(profile) == MENU_TIMEOUT) {
+                menu_result_t sub_result = menu_enlarger_calibration(profile);
+                if (sub_result == MENU_OK) {
+                    profile_dirty = true;
+                } else if (sub_result == MENU_TIMEOUT) {
                     menu_result = MENU_TIMEOUT;
                     break;
                 }
@@ -405,6 +434,17 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
             if (menu_enlarger_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
                 break;
+            }
+        } else if (option == 0 && profile_dirty) {
+            menu_result_t sub_result = menu_confirm_cancel(buf_title);
+            if (sub_result == MENU_SAVE) {
+                menu_result = MENU_SAVE;
+            } else if (sub_result == MENU_OK || sub_result == MENU_TIMEOUT) {
+                menu_result = sub_result;
+                break;
+            } else if (sub_result == MENU_CANCEL) {
+                option = 1;
+                continue;
             }
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
