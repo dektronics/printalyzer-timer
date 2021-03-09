@@ -71,7 +71,7 @@ float exposure_get_exposure_time(const exposure_state_t *state);
 float exposure_get_relative_density(const exposure_state_t *state);
 
 int exposure_get_active_paper_profile_index(const exposure_state_t *state);
-void exposure_set_active_paper_profile_index(exposure_state_t *state, int index);
+bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index);
 
 void exposure_add_meter_reading(exposure_state_t *state, float lux);
 void exposure_clear_meter_readings(exposure_state_t *state);

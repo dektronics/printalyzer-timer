@@ -248,9 +248,9 @@ int exposure_get_active_paper_profile_index(const exposure_state_t *state)
     return state->paper_profile_index;
 }
 
-void exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
+bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
 {
-    if (!state) { return; }
+    if (!state) { return false; }
     if (index < 16) {
         if (settings_get_paper_profile(&state->paper_profile, index)) {
             ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", index + 1, state->paper_profile.name);
@@ -258,8 +258,10 @@ void exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
             exposure_recalculate_tone_graph_marks(state);
             exposure_recalculate_base_time(state);
             exposure_recalculate(state);
+            return true;
         }
     }
+    return false;
 }
 
 float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)

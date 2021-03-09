@@ -4,6 +4,7 @@
 #include <cmsis_os.h>
 #include <esp_log.h>
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 
 #include "keypad.h"
@@ -27,6 +28,7 @@ typedef struct {
     bool change_mode_swallow_release_left;
     bool change_mode_swallow_release_right;
     int encoder_repeat;
+    int test_strip_repeat;
     int adjustment_repeat;
     int cancel_repeat;
     bool display_dirty;
@@ -57,6 +59,7 @@ typedef struct {
 
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
+static void state_home_select_paper_profile(state_controller_t *controller);
 static void state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
@@ -74,6 +77,7 @@ static state_home_t state_home_data = {
     .change_mode_swallow_release_left = false,
     .change_mode_swallow_release_right = false,
     .encoder_repeat = 0,
+    .test_strip_repeat = 0,
     .adjustment_repeat = 0,
     .cancel_repeat = 0,
     .display_dirty = true
@@ -141,6 +145,7 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     state->change_mode_swallow_release_left = false;
     state->change_mode_swallow_release_right = false;
     state->encoder_repeat = 0;
+    state->test_strip_repeat = 0;
     state->adjustment_repeat = 0;
     state->cancel_repeat = 0;
     state->display_dirty = true;
@@ -261,9 +266,19 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     }
                     state->display_dirty = true;
                 }
-            } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
+            } else if (keypad_event.key == KEYPAD_TEST_STRIP) {
                 if (mode != EXPOSURE_MODE_DENSITOMETER) {
-                    state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+                    if (keypad_event.pressed || keypad_event.repeated) {
+                        state->test_strip_repeat++;
+                    } else {
+                        if (state->test_strip_repeat > 2 && mode == EXPOSURE_MODE_PRINTING) {
+                            state_home_select_paper_profile(controller);
+                        } else {
+                            state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+                        }
+                        state->test_strip_repeat = 0;
+                        state->display_dirty = true;
+                    }
                 }
             } else if (keypad_event.key == KEYPAD_ENCODER) {
                 if (mode != EXPOSURE_MODE_DENSITOMETER) {
@@ -313,6 +328,62 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     } else {
         return false;
     }
+}
+
+void state_home_select_paper_profile(state_controller_t *controller)
+{
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    paper_profile_t *profile_list;
+    profile_list = pvPortMalloc(sizeof(paper_profile_t) * MAX_PAPER_PROFILES);
+    if (!profile_list) {
+        ESP_LOGE(TAG, "Unable to allocate memory for profile list");
+        return;
+    }
+
+    char buf[640];
+    size_t offset;
+    uint8_t profile_index = 0;
+    size_t profile_count = 0;
+    uint8_t option = 1;
+
+    profile_count = 0;
+    profile_index = exposure_get_active_paper_profile_index(exposure_state);
+    for (size_t i = 0; i < MAX_PAPER_PROFILES; i++) {
+        if (!settings_get_paper_profile(&profile_list[i], i)) {
+            break;
+        } else {
+            profile_count = i + 1;
+        }
+    }
+    ESP_LOGI(TAG, "Loaded %d profiles, selected is %d", profile_count, profile_index);
+
+    offset = 0;
+    for (size_t i = 0; i < profile_count; i++) {
+        if (profile_list[i].name && strlen(profile_list[i].name) > 0) {
+            sprintf(buf + offset, "%s %s",
+                ((i == profile_index) ? "-->" : "   "),
+                profile_list[i].name);
+        } else {
+            sprintf(buf + offset, "%s Paper profile %d",
+                ((i == profile_index) ? "-->" : "   "),
+                i + 1);
+        }
+        offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
+        if (i < profile_count) {
+            buf[offset++] = '\n';
+            buf[offset] = '\0';
+        }
+    }
+
+    do {
+        option = display_selection_list("Paper Profiles", profile_index + 1, buf);
+        if (option > 0 && option <= profile_count) {
+            exposure_set_active_paper_profile_index(exposure_state, option - 1);
+            break;
+        }
+    } while (option != 0 && option != UINT8_MAX);
+
+    vPortFree(profile_list);
 }
 
 void state_home_take_reading(state_home_t *state, state_controller_t *controller)
