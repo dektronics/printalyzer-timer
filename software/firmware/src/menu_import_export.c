@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <errno.h>
+#include <ctype.h>
 
 #include <esp_log.h>
 #include <ff.h>
@@ -15,6 +16,7 @@
 #include "usb_host.h"
 #include "core_json.h"
 #include "util.h"
+#include "file_picker.h"
 
 static const char *TAG = "menu_import_export";
 
@@ -66,6 +68,7 @@ static bool write_section_step_wedge(FIL *fp);
 static void json_write_string(FIL *fp, int indent, const char *key, const char *val, bool has_more);
 static void json_write_int(FIL *fp, int indent, const char *key, int val, bool has_more);
 static void json_write_float02(FIL *fp, int indent, const char *key, float val, bool has_more);
+static bool scrub_export_filename(char *filename);
 
 menu_result_t menu_import_export(state_controller_t *controller)
 {
@@ -95,6 +98,7 @@ menu_result_t menu_import_export(state_controller_t *controller)
 menu_result_t menu_import_config(state_controller_t *controller)
 {
     char buf[256];
+    char path_buf[256];
     uint8_t option;
 
     if (!usb_msc_is_mounted()) {
@@ -111,13 +115,24 @@ menu_result_t menu_import_config(state_controller_t *controller)
         }
     }
 
-    //TODO add filename prompt
+    option = file_picker_show("Select Configuration File", path_buf, sizeof(path_buf));
+    if (option == MENU_TIMEOUT) {
+        return MENU_TIMEOUT;
+    } else if (option != MENU_OK) {
+        return MENU_OK;
+    }
 
-    if (import_config_file(CONF_FILENAME)) {
+    if (import_config_file(path_buf)) {
+        char filename[33];
+        if (file_picker_expand_filename(filename, 33, path_buf)) {
+            filename[32] = '\0';
+        } else {
+            sprintf(filename, "----");
+        }
         sprintf(buf,
             "\n"
             "Configuration loaded from file:\n"
-            "%s\n", CONF_FILENAME);
+            "%s\n", filename);
         option = display_message(
             "Import from USB device",
             NULL, buf, " OK ");
@@ -943,6 +958,7 @@ float json_parse_float(const char *buf, size_t len, float def_value)
 menu_result_t menu_export_config()
 {
     char buf[256];
+    char filename[32];
     uint8_t option;
 
     if (!usb_msc_is_mounted()) {
@@ -959,13 +975,18 @@ menu_result_t menu_export_config()
         }
     }
 
-    //TODO add filename prompt
+    strcpy(filename, CONF_FILENAME);
+    do {
+        if (display_input_text("Configuration File Name", filename, sizeof(filename)) == 0) {
+            return MENU_OK;
+        }
+    } while (scrub_export_filename(filename));
 
-    if (export_config_file(CONF_FILENAME)) {
+    if (export_config_file(filename)) {
         sprintf(buf,
             "\n"
             "Configuration saved to file:\n"
-            "%s\n", CONF_FILENAME);
+            "%s\n", filename);
         option = display_message(
             "Export to USB device",
             NULL, buf, " OK ");
@@ -1208,4 +1229,56 @@ void json_write_float02(FIL *fp, int indent, const char *key, float val, bool ha
     if (has_more) {
         f_puts(",\n", fp);
     }
+}
+
+static const char* const VALID_NONALPHA_CHARS = "!#$%&'()-@^_`{}~+,;=[]";
+
+bool scrub_export_filename(char *filename)
+{
+    char buf[32];
+    size_t len;
+    char ch;
+    char *p;
+    bool changed = false;
+
+    /* Copy the filename to a working buffer, keeping only legal characters */
+    len = MIN(strlen(filename), 30);
+    memset(buf, 0, sizeof(buf));
+    p = buf;
+    for (size_t i = 0; i < len; i++) {
+        ch = filename[i];
+        if (isalnum(ch) || ch == ' ' || ch == '.' || ch > 0x80
+            || strchr(VALID_NONALPHA_CHARS, ch)) {
+            *p = ch;
+            p++;
+        }
+    }
+
+    /* Trim any trailing dots or spaces */
+    while (p > buf && (*(p - 1) == '.' || *(p - 1) == ' ')) { p--; *p = '\0'; }
+
+    /* Strip the file extension */
+    p = strrchr(buf, '.');
+    if (p && p > buf) {
+        *p = '\0';
+    }
+
+    /* Truncate the name */
+    buf[31] = '\0';
+    buf[30] = '\0';
+    buf[29] = '\0';
+    buf[28] = '\0';
+    buf[27] = '\0';
+    buf[26] = '\0';
+
+    /* Make sure the file ends in the correct extension */
+    strcat(buf, ".dat");
+
+    /* If the file actually changed, copy back and take note */
+    if (strcmp(filename, buf) != 0) {
+        strcpy(filename, buf);
+        changed = true;
+    }
+
+    return changed;
 }
