@@ -72,6 +72,10 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
                 break;
             }
         } else if (result == MENU_CANCEL) {
+            if (option_index == 0) {
+                break;
+            }
+
             q = strrchr(path_buf, '/');
             if (q && q > p) {
                 path_len = q - path_buf;
