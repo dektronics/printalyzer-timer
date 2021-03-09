@@ -87,8 +87,7 @@ exposure_state_t *exposure_state_create()
     // clears state.
     state->paper_profile_index = settings_get_default_paper_profile_index();
     if (!settings_get_paper_profile(&state->paper_profile, state->paper_profile_index)) {
-        state->paper_profile_index = -1;
-        paper_profile_set_defaults(&state->paper_profile);
+        exposure_clear_active_paper_profile(state);
         ESP_LOGI(TAG, "Set default paper profile");
     } else {
         ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", state->paper_profile_index + 1, state->paper_profile.name);
@@ -262,6 +261,13 @@ bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
         }
     }
     return false;
+}
+
+void exposure_clear_active_paper_profile(exposure_state_t *state)
+{
+    if (!state) { return; }
+    state->paper_profile_index = -1;
+    paper_profile_set_defaults(&state->paper_profile);
 }
 
 float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)

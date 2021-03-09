@@ -356,6 +356,16 @@ void state_home_select_paper_profile(state_controller_t *controller)
         }
     }
     ESP_LOGI(TAG, "Loaded %d profiles, selected is %d", profile_count, profile_index);
+    if (profile_count == 0) {
+        ESP_LOGW(TAG, "No profiles available");
+        return;
+    }
+
+    if (profile_index >= profile_count) {
+        option = 1;
+    } else {
+        option = profile_index + 1;
+    }
 
     offset = 0;
     for (size_t i = 0; i < profile_count; i++) {
@@ -376,7 +386,8 @@ void state_home_select_paper_profile(state_controller_t *controller)
     }
 
     do {
-        option = display_selection_list("Paper Profiles", profile_index + 1, buf);
+
+        option = display_selection_list("Paper Profiles", option, buf);
         if (option > 0 && option <= profile_count) {
             exposure_set_active_paper_profile_index(exposure_state, option - 1);
             break;

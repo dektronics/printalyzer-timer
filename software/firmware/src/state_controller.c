@@ -175,7 +175,9 @@ void state_controller_reload_paper_profile(state_controller_t *controller)
     uint8_t profile_index = exposure_get_active_paper_profile_index(controller->exposure_state);
     if (!exposure_set_active_paper_profile_index(controller->exposure_state, profile_index)) {
         profile_index = settings_get_default_paper_profile_index();
-        exposure_set_active_paper_profile_index(controller->exposure_state, profile_index);
+        if (!exposure_set_active_paper_profile_index(controller->exposure_state, profile_index)) {
+            exposure_clear_active_paper_profile(controller->exposure_state);
+        }
     }
 }
 
