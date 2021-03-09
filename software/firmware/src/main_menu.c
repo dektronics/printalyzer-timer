@@ -62,6 +62,31 @@ menu_result_t main_menu_start(state_controller_t *controller)
     return menu_result;
 }
 
+menu_result_t menu_confirm_cancel(const char *title)
+{
+    uint8_t option;
+    char buf[128];
+
+    if (title && strlen(title) > 0) {
+        sprintf(buf, "%s\n", title);
+    } else {
+        sprintf(buf, "\n");
+    }
+
+    option = display_message(buf, "Would you like to save changes?", "\n",
+        " Yes \n No \n Cancel ");
+
+    if (option == 1) {
+        return MENU_SAVE;
+    } else if (option == 2) {
+        return MENU_OK;
+    } else if (option == UINT8_MAX) {
+        return MENU_TIMEOUT;
+    } else {
+        return MENU_CANCEL;
+    }
+}
+
 menu_result_t menu_about()
 {
     menu_result_t menu_result = MENU_OK;

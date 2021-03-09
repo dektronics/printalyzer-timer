@@ -22,7 +22,7 @@ static const char *TAG = "display";
 
 static u8g2_t u8g2;
 
-static osMutexId_t display_mutex;
+osMutexId_t display_mutex;
 static const osMutexAttr_t display_mutex_attributes = {
   .name = "display_mutex"
 };
@@ -1453,7 +1453,7 @@ uint8_t display_input_value(const char *title, const char *msg, const char *pref
 
     display_prepare_menu_font();
     keypad_clear_events();
-    uint8_t option = display_UserInterfaceInputValue(&u8g2, title, msg, prefix, value, low, high, digits, postfix); //XXX
+    uint8_t option = display_UserInterfaceInputValue(&u8g2, title, msg, prefix, value, low, high, digits, postfix);
 
     osMutexRelease(display_mutex);
 

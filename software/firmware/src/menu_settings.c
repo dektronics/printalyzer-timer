@@ -228,6 +228,18 @@ menu_result_t menu_settings_default_exposure()
             menu_result = MENU_TIMEOUT;
             break;
         } else if (option == 0) {
+            if (time_setting != settings_get_default_exposure_time()
+                || grade_setting != settings_get_default_contrast_grade()) {
+                menu_result = menu_confirm_cancel("Default Exposure");
+                if (menu_result == MENU_SAVE) {
+                    menu_result = MENU_OK;
+                    accepted = true;
+                } else if (menu_result == MENU_OK || menu_result == MENU_TIMEOUT) {
+                    break;
+                } else if (menu_result == MENU_CANCEL) {
+                    continue;
+                }
+            }
             break;
         }
     }
@@ -356,6 +368,18 @@ menu_result_t menu_settings_test_strip_mode()
             menu_result = MENU_TIMEOUT;
             break;
         } else if (option == 0) {
+            if (mode_setting != settings_get_teststrip_mode()
+                || patch_setting != settings_get_teststrip_patches()) {
+                menu_result = menu_confirm_cancel("Test Strip Mode");
+                if (menu_result == MENU_SAVE) {
+                    menu_result = MENU_OK;
+                    accepted = true;
+                } else if (menu_result == MENU_OK || menu_result == MENU_TIMEOUT) {
+                    break;
+                } else if (menu_result == MENU_CANCEL) {
+                    continue;
+                }
+            }
             break;
         }
     }
@@ -527,6 +551,18 @@ menu_result_t menu_settings_display_brightness()
             menu_result = MENU_TIMEOUT;
             break;
         } else if (option == 0) {
+            if (display_setting != settings_get_display_brightness()
+                || led_setting != settings_get_led_brightness()) {
+                menu_result = menu_confirm_cancel("Display Brightness");
+                if (menu_result == MENU_SAVE) {
+                    menu_result = MENU_OK;
+                    accepted = true;
+                } else if (menu_result == MENU_OK || menu_result == MENU_TIMEOUT) {
+                    break;
+                } else if (menu_result == MENU_CANCEL) {
+                    continue;
+                }
+            }
             break;
         }
     }

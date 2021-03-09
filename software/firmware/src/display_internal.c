@@ -1,11 +1,17 @@
 #include "display_internal.h"
 
+#include <FreeRTOS.h>
+#include <semphr.h>
+#include <cmsis_os.h>
+
 #include <stdio.h>
 #include <string.h>
 #include "display.h"
 #include "u8g2.h"
 
 #define MY_BORDER_SIZE 1
+
+extern osMutexId_t display_mutex;
 
 bool menu_event_timeout = false;
 
@@ -448,7 +454,9 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
                     local_value++;
                 }
                 if (callback) {
+                    osMutexRelease(display_mutex);
                     callback(local_value, user_data);
+                    osMutexAcquire(display_mutex, portMAX_DELAY);
                 }
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN) {
@@ -458,7 +466,9 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
                     local_value--;
                 }
                 if (callback) {
+                    osMutexRelease(display_mutex);
                     callback(local_value, user_data);
+                    osMutexAcquire(display_mutex, portMAX_DELAY);
                 }
                 break;
             }
