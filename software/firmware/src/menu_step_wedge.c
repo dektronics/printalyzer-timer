@@ -24,11 +24,13 @@ menu_result_t menu_step_wedge()
     step_wedge_t *wedge = NULL;
     uint8_t option = 1;
     char buf[512];
+    bool wedge_changed = false;
 
     /* Load step wedge configuration */
     if (!settings_get_step_wedge(&wedge)) {
         ESP_LOGI(TAG, "No saved step wedge, loading default");
         wedge = step_wedge_create_from_stock(DEFAULT_STOCK_WEDGE_INDEX);
+        wedge_changed = true;
         if (!wedge) {
             ESP_LOGE(TAG, "Unable to load default wedge");
             return MENU_OK;
@@ -148,6 +150,47 @@ menu_result_t menu_step_wedge()
                 }
             } else if (index == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
+            }
+        } else if (option == 0) {
+            /*
+             * Compare the updated wedge to the saved one, to avoid needing
+             * to dirty-track the whole multi-screen editing process.
+             */
+            if (!wedge_changed) {
+                step_wedge_t *saved_wedge = NULL;
+                if (settings_get_step_wedge(&saved_wedge)) {
+                    wedge_changed = !step_wedge_compare(wedge, saved_wedge);
+                    step_wedge_free(saved_wedge);
+                }
+            }
+            if (wedge_changed) {
+                menu_result_t sub_result = menu_confirm_cancel("Step Wedge Properties");
+                if (sub_result == MENU_SAVE) {
+                    if (step_wedge_is_valid(wedge)) {
+                        if (settings_set_step_wedge(wedge)) {
+                            ESP_LOGI(TAG, "Step wedge settings saved");
+                            break;
+                        }
+                    } else {
+                        ESP_LOGI(TAG, "Step wedge properties not valid");
+                        uint8_t msg_option = display_message(
+                                "Step Wedge Invalid",
+                                NULL,
+                                "Properties must describe a step\n"
+                                "wedge with patches that increase\n"
+                                "in density.", " OK ");
+                        if (msg_option == UINT8_MAX) {
+                            menu_result = MENU_TIMEOUT;
+                        }
+                        option = 1;
+                    }
+                } else if (sub_result == MENU_OK || sub_result == MENU_TIMEOUT) {
+                    menu_result = sub_result;
+                    break;
+                } else if (sub_result == MENU_CANCEL) {
+                    option = 1;
+                    continue;
+                }
             }
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
