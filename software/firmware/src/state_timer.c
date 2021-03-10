@@ -116,10 +116,11 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
     display_exposure_timer_t *elements = user_data;
     display_exposure_timer_t prev_elements;
 
-    memcpy(&prev_elements, elements, sizeof(display_exposure_timer_t));
-
-    update_display_timer(elements, time_ms);
-    display_draw_exposure_timer(elements, &prev_elements);
+    if (time_ms != UINT32_MAX) {
+        memcpy(&prev_elements, elements, sizeof(display_exposure_timer_t));
+        update_display_timer(elements, time_ms);
+        display_draw_exposure_timer(elements, &prev_elements);
+    }
 
     // Handle the next keypad event without blocking
     keypad_event_t keypad_event;
@@ -199,6 +200,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     // Prepare the exposure timer
     exposure_timer_config_t timer_config = {0};
+    timer_config.start_tone = EXPOSURE_TIMER_START_TONE_COUNTDOWN;
     timer_config.end_tone = EXPOSURE_TIMER_END_TONE_REGULAR;
     timer_config.timer_callback = state_timer_burn_dodge_exposure_callback;
     timer_config.user_data = &(elements.time_elements);
@@ -243,8 +245,10 @@ bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint
 {
     display_exposure_timer_t *time_elements = user_data;
 
-    update_display_timer(time_elements, time_ms);
-    display_draw_adjustment_exposure_timer(time_elements);
+    if (time_ms != UINT32_MAX) {
+        update_display_timer(time_elements, time_ms);
+        display_draw_adjustment_exposure_timer(time_elements);
+    }
 
     // Handle the next keypad event without blocking
     keypad_event_t keypad_event;

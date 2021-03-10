@@ -114,80 +114,116 @@ HAL_StatusTypeDef exposure_timer_run()
     buzzer_volume_t current_volume = buzzer_get_volume();
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
     buzzer_set_volume(settings_get_buzzer_volume());
-    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-    osDelay(SAFELIGHT_OFF_DELAY);
-
-    ESP_LOGI(TAG, "Starting exposure timer");
-
-    HAL_TIM_Base_Start_IT(timer_htim);
-
-    uint32_t ulNotifiedValue = 0;
-    for (;;) {
-        xTaskNotifyWait(0, UINT32_MAX, &ulNotifiedValue, portMAX_DELAY);
-        uint8_t state = (uint8_t)((ulNotifiedValue & 0xFF000000) >> 24);
-        uint32_t timer = ulNotifiedValue & 0x00FFFFFF;
-
-        if (timer_config.timer_callback) {
-            if (!timer_config.timer_callback(state, timer, timer_config.user_data)) {
-                ESP_LOGI(TAG, "Timer cancel requested");
-                taskENTER_CRITICAL();
+    if (timer_config.start_tone == EXPOSURE_TIMER_START_TONE_COUNTDOWN) {
+        do {
+            buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+            buzzer_start();
+            osDelay(pdMS_TO_TICKS(50));
+            buzzer_stop();
+            osDelay(pdMS_TO_TICKS(950));
+            if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
                 timer_cancel_request = true;
-                taskEXIT_CRITICAL();
+                break;
+            }
+
+            buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+            buzzer_start();
+            osDelay(pdMS_TO_TICKS(50));
+            buzzer_stop();
+            osDelay(pdMS_TO_TICKS(950));
+            if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
+                timer_cancel_request = true;
+                break;
+            }
+
+            buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+            buzzer_start();
+            osDelay(pdMS_TO_TICKS(50));
+            buzzer_stop();
+            osDelay(pdMS_TO_TICKS(950));
+            if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
+                timer_cancel_request = true;
+                break;
+            }
+        } while (0);
+    }
+
+    if (!timer_cancel_request) {
+        buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+        osDelay(SAFELIGHT_OFF_DELAY);
+
+        ESP_LOGI(TAG, "Starting exposure timer");
+
+        HAL_TIM_Base_Start_IT(timer_htim);
+
+        uint32_t ulNotifiedValue = 0;
+        for (;;) {
+            xTaskNotifyWait(0, UINT32_MAX, &ulNotifiedValue, portMAX_DELAY);
+            uint8_t state = (uint8_t)((ulNotifiedValue & 0xFF000000) >> 24);
+            uint32_t timer = ulNotifiedValue & 0x00FFFFFF;
+
+            if (timer_config.timer_callback) {
+                if (!timer_config.timer_callback(state, timer, timer_config.user_data)) {
+                    ESP_LOGI(TAG, "Timer cancel requested");
+                    taskENTER_CRITICAL();
+                    timer_cancel_request = true;
+                    taskEXIT_CRITICAL();
+                }
+            }
+
+            if (state == EXPOSURE_TIMER_STATE_START) {
+                ESP_LOGI(TAG, "Exposure timer started");
+            } else if (state == EXPOSURE_TIMER_STATE_END) {
+                ESP_LOGI(TAG, "Exposure timer ended");
+            } else if (state == EXPOSURE_TIMER_STATE_DONE) {
+                ESP_LOGI(TAG, "Exposure timer process complete");
+                break;
             }
         }
 
-        if (state == EXPOSURE_TIMER_STATE_START) {
-            ESP_LOGI(TAG, "Exposure timer started");
-        } else if (state == EXPOSURE_TIMER_STATE_END) {
-            ESP_LOGI(TAG, "Exposure timer ended");
-        } else if (state == EXPOSURE_TIMER_STATE_DONE) {
-            ESP_LOGI(TAG, "Exposure timer process complete");
-            break;
-        }
-    }
+        ESP_LOGI(TAG, "Exposure timer complete");
 
-    ESP_LOGI(TAG, "Exposure timer complete");
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+        ESP_LOGD(TAG, "Actual relay on/off time: %lums",
+            (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);
 
-    ESP_LOGD(TAG, "Actual relay on/off time: %lums",
-        (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);
-
-    // Handling the completion beep outside the ISR for simplicity.
-    if (timer_cancel_request) {
-        buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-    } else {
-        if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_SHORT) {
+        // Handling the completion beep outside the ISR for simplicity.
+        if (timer_cancel_request) {
             buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
             buzzer_start();
-            osDelay(pdMS_TO_TICKS(50));
-            buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-            osDelay(pdMS_TO_TICKS(50));
-            buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
-            osDelay(pdMS_TO_TICKS(50));
+            osDelay(pdMS_TO_TICKS(100));
             buzzer_stop();
-        } else if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_REGULAR) {
-            buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+            osDelay(pdMS_TO_TICKS(100));
             buzzer_start();
-            osDelay(pdMS_TO_TICKS(120));
-            buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-            osDelay(pdMS_TO_TICKS(120));
-            buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
-            osDelay(pdMS_TO_TICKS(120));
+            osDelay(pdMS_TO_TICKS(100));
             buzzer_stop();
+        } else {
+            if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_SHORT) {
+                buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_stop();
+            } else if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_REGULAR) {
+                buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(120));
+                buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+                osDelay(pdMS_TO_TICKS(120));
+                buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+                osDelay(pdMS_TO_TICKS(120));
+                buzzer_stop();
+            }
         }
+        osDelay(pdMS_TO_TICKS(500));
     }
-    osDelay(pdMS_TO_TICKS(500));
-
     buzzer_set_volume(current_volume);
     buzzer_set_frequency(current_frequency);
 

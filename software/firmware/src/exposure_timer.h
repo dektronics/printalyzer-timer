@@ -7,6 +7,11 @@
 #include "enlarger_profile.h"
 
 typedef enum {
+    EXPOSURE_TIMER_START_TONE_NONE = 0,
+    EXPOSURE_TIMER_START_TONE_COUNTDOWN
+} exposure_timer_start_tone_t;
+
+typedef enum {
     EXPOSURE_TIMER_END_TONE_NONE = 0,
     EXPOSURE_TIMER_END_TONE_SHORT,
     EXPOSURE_TIMER_END_TONE_REGULAR
@@ -40,6 +45,9 @@ typedef struct {
 
     /* Time delay between the end of the timer period and the completion of the timer process */
     uint16_t exposure_end_delay;
+
+    /* Tone sequence to play at the start of the exposure sequence */
+    exposure_timer_start_tone_t start_tone;
 
     /* Tone sequence to play at the end of the exposure sequence */
     exposure_timer_end_tone_t end_tone;
