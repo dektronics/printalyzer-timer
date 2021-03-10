@@ -2,8 +2,8 @@
 
 ##
 ## This script performs CRC-32 checksum calculations on an STM32
-## binary image, and writes that checksum to a file suitable
-## for appending to that binary.
+## binary image, and writes an updated app descriptor section
+## containing that checksum to be injected into the binary.
 ##
 
 use 5.006;
@@ -67,16 +67,24 @@ while (1) {
 }
 close $in;
 
-# Pad the file out to 384K, with room for the checksum
-my $remaining = (0x60000 - length($cont)) - 4;
-if ($remaining > 0) {
-    $cont .= "\xFF" x $remaining;
+# Save the descriptor portion, minus the checksum bytes
+my $descriptor = substr($cont, length($cont) - 256, 256 - 4);
+
+# Check that the descriptor starts with the magic bytes
+if (substr($descriptor, 0, 4) ne "\x54\x76\xCD\xAB") {
+	die "Invalid descriptor magic"
 }
+
+# Truncate the last 4 bytes that are excluded from checksum calculation
+$cont = substr($cont, 0, length($cont) - 4);
 
 # Calculate the CRC32 checksum
 my $crc = pack('V', stm_crc32_fast_block(0xFFFFFFFF, $cont));
 
+# Append the checksum to the descriptor
+$descriptor .= $crc;
+
 # Write the output file
 open my $out, '>', $outfile or die;
-print $out $crc;
+print $out $descriptor;
 close $out;

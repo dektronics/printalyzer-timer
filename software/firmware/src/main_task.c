@@ -22,6 +22,7 @@
 #include "state_controller.h"
 #include "illum_controller.h"
 #include "settings.h"
+#include "app_descriptor.h"
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
@@ -135,11 +136,12 @@ void main_task_exposure_timer_init()
 
 void main_task_start(void *argument)
 {
+    const app_descriptor_t *app_descriptor = app_descriptor_get();
     uint32_t logo_ticks = 0;
     UNUSED(argument);
 
     /* Print various startup log messages */
-    printf("---- STM32 Startup ----\r\n");
+    printf("---- %s Startup ----\r\n", app_descriptor->project_name);
     uint32_t hal_ver = HAL_GetHalVersion();
     uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
     uint32_t hal_sysclock = HAL_RCC_GetSysClockFreq();
@@ -159,8 +161,10 @@ void main_task_start(void *argument)
             uniqueId[5], uniqueId[6], uniqueId[7], uniqueId[8], uniqueId[9],
             uniqueId[10], uniqueId[11]);
 
-    printf("Build date: %s\r\n", VERSION_BUILD_DATE);
-    printf("Build describe: %s\r\n", VERSION_BUILD_DESCRIBE);
+    printf("App version: %s\r\n", app_descriptor->version);
+    printf("Build date: %s\r\n", app_descriptor->build_date);
+    printf("Build describe: %s\r\n", app_descriptor->build_describe);
+    printf("Build checksum: %08lX\r\n", __bswap32(app_descriptor->crc32));
 
     printf("-----------------------\r\n");
     fflush(stdout);

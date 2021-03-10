@@ -17,6 +17,7 @@
 #include "core_json.h"
 #include "util.h"
 #include "file_picker.h"
+#include "app_descriptor.h"
 
 static const char *TAG = "menu_import_export";
 
@@ -1052,11 +1053,12 @@ bool export_config_file(const char *filename)
 
 bool write_section_header(FIL *fp)
 {
+    const app_descriptor_t *app_descriptor = app_descriptor_get();
     f_printf(fp, "  \"header\": {\n");
     json_write_int(fp, 4, "version", HEADER_EXPORT_VERSION, true);
-    json_write_string(fp, 4, "device", "Printalyzer", true);
-    json_write_string(fp, 4, "build_describe", VERSION_BUILD_DESCRIBE, true);
-    json_write_string(fp, 4, "build_date", VERSION_BUILD_DATE, false);
+    json_write_string(fp, 4, "device", app_descriptor->project_name, true);
+    json_write_string(fp, 4, "build_describe", app_descriptor->build_describe, true);
+    json_write_string(fp, 4, "build_date", app_descriptor->build_date, false);
     f_printf(fp, "\n  }");
     return true;
 }

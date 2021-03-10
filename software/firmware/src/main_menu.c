@@ -10,6 +10,7 @@
 #include "display.h"
 #include "keypad.h"
 #include "led.h"
+#include "app_descriptor.h"
 
 #include "menu_settings.h"
 #include "menu_enlarger.h"
@@ -89,25 +90,23 @@ menu_result_t menu_confirm_cancel(const char *title)
 
 menu_result_t menu_about()
 {
+    const app_descriptor_t *app_descriptor = app_descriptor_get();
     menu_result_t menu_result = MENU_OK;
     char buf[384];
 
-    const char *describe = VERSION_BUILD_DESCRIBE;
-    if (strlen(describe) > DISPLAY_MENU_ROW_LENGTH) {
-        describe = VERSION_BUILD_DESCRIBE_SHORT;
-    }
-
     sprintf(buf,
-            "Enlarging Timer & Exposure Meter\n"
-            "\n"
-            "%s\n"
-            "%s\n",
-            describe, VERSION_BUILD_DATE);
+        "Enlarging Timer & Exposure Meter\n"
+        "\n"
+        "%s (%s)\n"
+        "%s\n",
+        app_descriptor->version,
+        app_descriptor->build_describe,
+        app_descriptor->build_date);
 
     uint8_t option = display_message(
-            "Printalyzer",
-            NULL,
-            buf, " OK ");
+        app_descriptor->project_name,
+        NULL,
+        buf, " OK ");
     if (option == UINT8_MAX) {
         menu_result = MENU_TIMEOUT;
     }

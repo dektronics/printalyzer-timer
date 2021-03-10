@@ -8,10 +8,9 @@ else
 BUILD_DATE := $(shell date -u +"%Y-%m-%d %H:%M")
 endif 
 
-BUILD_DESCRIBE := $(shell git describe --long --dirty --tags)
-BUILD_DESCRIBE_SHORT := g$(shell git describe --always --dirty --exclude '*')
+BUILD_DESCRIBE := g$(shell git describe --always --dirty --exclude '*')
 
 $(info Build Time: $(BUILD_DATE))
-$(info Build Version: $(BUILD_DESCRIBE))
+$(info Build Describe: $(BUILD_DESCRIBE))
 
 OBJCOPY_BIN += printalyzer-out.elf printalyzer-out.bin
