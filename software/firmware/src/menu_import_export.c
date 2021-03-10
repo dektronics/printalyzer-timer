@@ -42,7 +42,7 @@ static const char *TAG = "menu_import_export";
 #define STEP_WEDGE_EXPORT_VERSION 1
 
 static menu_result_t menu_import_config(state_controller_t *controller);
-static bool import_config_file(const char *filename);
+static bool import_config_file(const char *filename, bool *reload_paper);
 static bool validate_section_header(const char *buf, size_t len);
 static menu_result_t import_section_prompt(bool *has_settings, int *has_enlargers, int *has_papers, bool *has_step_wedge);
 static int parse_section_version(const char *buf, size_t len);
@@ -100,6 +100,7 @@ menu_result_t menu_import_config(state_controller_t *controller)
     char buf[256];
     char path_buf[256];
     uint8_t option;
+    bool reload_paper = false;
 
     if (!usb_msc_is_mounted()) {
         option = display_message(
@@ -122,7 +123,7 @@ menu_result_t menu_import_config(state_controller_t *controller)
         return MENU_OK;
     }
 
-    if (import_config_file(path_buf)) {
+    if (import_config_file(path_buf, &reload_paper)) {
         char filename[33];
         if (file_picker_expand_filename(filename, 33, path_buf)) {
             filename[32] = '\0';
@@ -146,7 +147,9 @@ menu_result_t menu_import_config(state_controller_t *controller)
 
     /* Reload active profiles that may have changed */
     state_controller_reload_enlarger_profile(controller);
-    state_controller_reload_paper_profile(controller);
+    if (reload_paper) {
+        state_controller_reload_paper_profile(controller, true);
+    }
 
     if (option == UINT8_MAX) {
         return MENU_TIMEOUT;
@@ -155,7 +158,7 @@ menu_result_t menu_import_config(state_controller_t *controller)
     }
 }
 
-bool import_config_file(const char *filename)
+bool import_config_file(const char *filename, bool *reload_paper)
 {
     FRESULT res;
     FIL fp;
@@ -319,6 +322,7 @@ bool import_config_file(const char *filename)
         } else {
             settings_set_default_paper_profile_index(0);
         }
+        if (reload_paper) { *reload_paper = true; }
     }
 
     if (file_open) {

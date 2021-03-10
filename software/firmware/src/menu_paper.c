@@ -53,6 +53,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
     char buf[640];
     size_t offset;
     bool reload_profiles = true;
+    bool default_profile_changed = false;
     uint8_t profile_default_index = 0;
     size_t profile_count = 0;
     uint8_t option = 1;
@@ -155,6 +156,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 ESP_LOGI(TAG, "Set default profile at index: %d", option - 1);
                 settings_set_default_paper_profile_index(option - 1);
                 profile_default_index = option - 1;
+                default_profile_changed = true;
             }
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
@@ -164,7 +166,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
     // There are many paths in this menu that can change profile settings,
     // so its easiest to just reload the state controller's active profile
     // whenever exiting from this menu.
-    state_controller_reload_paper_profile(controller);
+    state_controller_reload_paper_profile(controller, default_profile_changed);
 
     return menu_result;
 }
