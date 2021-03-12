@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "app_descriptor.h"
+
 typedef void (*jump_function_t)(void); /*!< Function pointer definition */
 
 /** Private variable for tracking flashing progress */
@@ -243,6 +245,7 @@ bootloader_status_t bootloader_check_size(uint32_t appsize)
  */
 bootloader_status_t bootloader_verify_checksum(CRC_HandleTypeDef *hcrc)
 {
+    const app_descriptor_t *app_descriptor = (const app_descriptor_t *)APP_DESCRIPTOR_ADDRESS;
     volatile uint32_t calculated_crc = 0;
 
     calculated_crc =
@@ -251,7 +254,7 @@ bootloader_status_t bootloader_verify_checksum(CRC_HandleTypeDef *hcrc)
     __HAL_RCC_CRC_FORCE_RESET();
     __HAL_RCC_CRC_RELEASE_RESET();
 
-    if ((*(uint32_t*)CRC_ADDRESS) == calculated_crc) {
+    if (app_descriptor->crc32 == calculated_crc) {
         return BL_OK;
     }
 

@@ -31,12 +31,11 @@
  * changing the application start address or size.
  */
 
-/** Start address of application checksum in flash */
-#define CRC_ADDRESS 0x0807FFFCUL
+/** Start address of the application descriptor structure in flash */
+#define APP_DESCRIPTOR_ADDRESS 0x0807FF00UL
 
 /** Address of System Memory (ST Bootloader) */
 #define SYSMEM_ADDRESS 0x1FFF0000UL
-
 
 /** Size of application in DWORD (32bits or 4bytes) */
 #define APP_SIZE ((uint32_t)(((END_ADDRESS - APP_ADDRESS) + 3UL) / 4UL))

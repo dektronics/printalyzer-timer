@@ -11,6 +11,7 @@
 #include "keypad.h"
 #include "display.h"
 #include "bootloader.h"
+#include "app_descriptor.h"
 
 UART_HandleTypeDef huart1;
 
@@ -636,7 +637,7 @@ bool process_firmware_update()
     UINT bytes_to_read;
     UINT bytes_read;
     uint32_t calculated_crc = 0;
-    uint32_t footer_crc = 0;
+    app_descriptor_t image_descriptor = {0};
     uint32_t *flash_ptr;
     uint32_t data;
     uint32_t counter;
@@ -723,29 +724,48 @@ bool process_firmware_update()
         __HAL_RCC_CRC_FORCE_RESET();
         __HAL_RCC_CRC_RELEASE_RESET();
 
-        /* Read the checksum footer from the firmware file */
-        res = f_read(&fp, buf, 4, &bytes_read);
-        if (res != FR_OK || bytes_read != 4) {
-            printf("Unable to read checksum from firmware file: %d\r\n", res);
+        /* Read the app descriptor from the end of the firmware file */
+        res = f_lseek(&fp, f_tell(&fp) - (sizeof(app_descriptor_t) - 4));
+        if (res != FR_OK) {
+            printf("Unable to seek to read the firmware file descriptor: %d\r\n", res);
             break;
         }
-        footer_crc = ((uint32_t)buf[0])
-            | ((uint32_t)buf[1] << 8)
-            | ((uint32_t)buf[2] << 16)
-            | ((uint32_t)buf[3] << 24);
+        res = f_read(&fp, &image_descriptor, sizeof(app_descriptor_t), &bytes_read);
+        if (res != FR_OK || bytes_read != sizeof(app_descriptor_t)) {
+            printf("Unable to read the firmware file descriptor: %d\r\n", res);
+            break;
+        }
 
         f_rewind(&fp);
 
-        if (calculated_crc != footer_crc) {
-            printf("Firmware checksum mismatch: %08lX != %08lX\r\n", footer_crc, calculated_crc);
+        if (calculated_crc != image_descriptor.crc32) {
+            printf("Firmware checksum mismatch: %08lX != %08lX\r\n",
+                image_descriptor.crc32, calculated_crc);
             break;
         }
         printf("Firmware checksum is okay.\r\n");
 
-        display_static_message(
-            "Firmware found.\n"
-            "Press Start button to proceed\n"
-            "with the update.");
+        if (image_descriptor.magic_word == APP_DESCRIPTOR_MAGIC_WORD) {
+            char msg_buf[256];
+            sprintf(msg_buf,
+                "Firmware found:\n"
+                "\n"
+                "%s\n"
+                "%s (%s)\n"
+                "\n"
+                "Press Start button to proceed\n"
+                "with the update.",
+                image_descriptor.project_name,
+                image_descriptor.version,
+                image_descriptor.build_describe);
+            display_static_message(msg_buf);
+        } else {
+            display_static_message(
+                "Firmware found.\n"
+                "\n"
+                "Press Start button to proceed\n"
+                "with the update.");
+        }
 
         key_count = 0;
         do {
