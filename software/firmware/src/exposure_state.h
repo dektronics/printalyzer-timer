@@ -54,6 +54,10 @@ typedef struct __exposure_adjustment_t {
 
 typedef struct __exposure_state_t exposure_state_t;
 
+#define EXPOSURE_TONE_IS_LOWER_BOUND(x) ((x) & 0x00000001UL)
+#define EXPOSURE_TONE_IS_UPPER_BOUND(x) ((x) & 0x00010000UL)
+#define EXPOSURE_TONE_IS_SET(x, i)      ((x) & (1UL << (i)))
+
 exposure_state_t *exposure_state_create();
 void exposure_state_free(exposure_state_t *state);
 
@@ -77,9 +81,23 @@ void exposure_clear_active_paper_profile(exposure_state_t *state);
 void exposure_add_meter_reading(exposure_state_t *state, float lux);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
-bool exposure_is_tone_set(const exposure_state_t *state, int offset);
-bool exposure_is_tone_lower_bound(const exposure_state_t *state);
-bool exposure_is_tone_upper_bound(const exposure_state_t *state);
+/*
+ * Get the tone graph for the current exposure and readings.
+ *
+ * The tone graph is represented with bit flags in the lower
+ * 17 bits of a 32-bit unsigned integer as follows:
+ *
+ *  1 | 1  1  1  1  1  1       |
+ *  6 | 5  4  3  2  1  0  9  8 | 7  6  5  4  3  2  1  0
+ * [<]|[ ][ ][ ][ ][ ][ ][ ][ ]|[ ][ ][ ][ ][ ][ ][ ][>]
+ *  + | 1  1  1  1  1  1  9  8 | 7  6  5  4  3  2  1  -
+ *
+ * The low bit represents an under-exposure tone, and the high
+ * bit represents an over-exposure tone. The tones in-between
+ * are numbered from 1 through 15. Macros for parsing this are
+ * provided for convenience.
+ */
+uint32_t exposure_get_tone_graph(const exposure_state_t *state);
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
 

@@ -61,7 +61,7 @@ typedef struct __exposure_state_t {
     int paper_profile_index;
     paper_profile_t paper_profile;
     float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
-    bool tone_graph[TONE_GRAPH_MARKS_SIZE + 1];
+    uint32_t tone_graph;
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
 } exposure_state_t;
@@ -345,27 +345,10 @@ void exposure_clear_meter_readings(exposure_state_t *state)
     exposure_recalculate(state);
 }
 
-bool exposure_is_tone_set(const exposure_state_t *state, int offset)
+uint32_t exposure_get_tone_graph(const exposure_state_t *state)
 {
-    if (!state) { return false; }
-
-    size_t index = offset + 8;
-    if (index < 1 || index > TONE_GRAPH_MARKS_SIZE - 1) {
-        return false;
-    }
-    return state->tone_graph[index];
-}
-
-bool exposure_is_tone_lower_bound(const exposure_state_t *state)
-{
-    if (!state) { return false; }
-    return state->tone_graph[0];
-}
-
-bool exposure_is_tone_upper_bound(const exposure_state_t *state)
-{
-    if (!state) { return false; }
-    return state->tone_graph[TONE_GRAPH_MARKS_SIZE];
+    if (!state) { return 0; }
+    return state->tone_graph;
 }
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
@@ -840,7 +823,7 @@ void exposure_recalculate_base_time(exposure_state_t *state)
 void exposure_populate_tone_graph(exposure_state_t *state)
 {
     /* Clear any existing values */
-    memset(&state->tone_graph, 0, sizeof(state->tone_graph));
+    state->tone_graph = 0;
 
     /* Abort if the tone graph marks are not set */
     if (isnan(state->tone_graph_marks[0])) {
@@ -853,15 +836,15 @@ void exposure_populate_tone_graph(exposure_state_t *state)
 
         if (lev_value < state->tone_graph_marks[0]) {
             /* Check whether to set the lower-bound mark */
-            state->tone_graph[0] = true;
+            state->tone_graph |= 0x00000001UL;
         } else if (lev_value >= state->tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
             /* Check whether to set the upper-bound mark */
-            state->tone_graph[TONE_GRAPH_MARKS_SIZE] = true;
+            state->tone_graph |= 0x00010000UL;
         } else {
             /* Check which marks of the main graph to set */
             for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
                 if (lev_value >= state->tone_graph_marks[j] && lev_value < state->tone_graph_marks[j + 1]) {
-                    state->tone_graph[j + 1] = true;
+                    state->tone_graph |= (1UL << (j + 1));
                     break;
                 }
             }

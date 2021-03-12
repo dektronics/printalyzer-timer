@@ -8,15 +8,16 @@
 void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure)
 {
     //TODO Track changes from previous to display blinkies
+    uint32_t exposure_tone_graph = exposure_get_tone_graph(exposure);
     elements->tone_graph = 0;
-    if (exposure_is_tone_upper_bound(exposure)) {
+    if (EXPOSURE_TONE_IS_UPPER_BOUND(exposure_tone_graph)) {
         elements->tone_graph |= DISPLAY_TONE_OVER;
     }
-    if (exposure_is_tone_lower_bound(exposure)) {
+    if (EXPOSURE_TONE_IS_LOWER_BOUND(exposure_tone_graph)) {
         elements->tone_graph |= DISPLAY_TONE_UNDER;
     }
     for (int i = -7; i <=7; i++) {
-        if (exposure_is_tone_set(exposure, i)) {
+        if (EXPOSURE_TONE_IS_SET(exposure_tone_graph, i + 8)) {
             elements->tone_graph |= DISPLAY_TONE_ELEMENT(i);
         }
     }
