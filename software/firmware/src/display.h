@@ -44,23 +44,31 @@ typedef enum {
 #define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
 
 typedef struct {
-    uint32_t tone_graph;
-    uint8_t paper_profile_num;
-    uint8_t burn_dodge_count;
-    display_grade_t contrast_grade;
-    char *cal_title1;
-    char *cal_title2;
-    uint16_t cal_value;
-    uint16_t time_seconds;
-    uint16_t time_milliseconds;
-    uint8_t fraction_digits;
-} display_main_elements_t;
-
-typedef struct {
     uint16_t time_seconds;
     uint16_t time_milliseconds;
     uint8_t fraction_digits;
 } display_exposure_timer_t;
+
+typedef struct {
+    uint32_t tone_graph;
+    uint8_t paper_profile_num;
+    uint8_t burn_dodge_count;
+    display_grade_t contrast_grade;
+    display_exposure_timer_t time_elements;
+} display_main_printing_elements_t;
+
+typedef struct {
+    uint16_t density_whole;
+    uint16_t density_fractional;
+    uint8_t fraction_digits;
+} display_main_densitometer_elements_t;
+
+typedef struct {
+    char *cal_title1;
+    char *cal_title2;
+    uint16_t cal_value;
+    display_exposure_timer_t time_elements;
+} display_main_calibration_elements_t;
 
 typedef struct {
     display_patches_t patches;
@@ -106,9 +114,9 @@ void display_save_screenshot();
 void display_draw_test_pattern(bool mode);
 void display_draw_logo();
 
-void display_draw_main_elements_printing(const display_main_elements_t *elements);
-void display_draw_main_elements_densitometer(const display_main_elements_t *elements);
-void display_draw_main_elements_calibration(const display_main_elements_t *elements);
+void display_draw_main_elements_printing(const display_main_printing_elements_t *elements);
+void display_draw_main_elements_densitometer(const display_main_densitometer_elements_t *elements);
+void display_draw_main_elements_calibration(const display_main_calibration_elements_t *elements);
 
 void display_draw_stop_increment(uint8_t increment_den);
 void display_draw_mode_text(const char *text);

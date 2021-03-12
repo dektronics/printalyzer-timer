@@ -159,13 +159,17 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 
     if (state->display_dirty) {
         // Draw current exposure state
-        display_main_elements_t main_elements;
-        convert_exposure_to_display(&main_elements, exposure_state);
         if (mode == EXPOSURE_MODE_PRINTING) {
+            display_main_printing_elements_t main_elements;
+            convert_exposure_to_display_printing(&main_elements, exposure_state);
             display_draw_main_elements_printing(&main_elements);
         } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
+            display_main_densitometer_elements_t main_elements;
+            convert_exposure_to_display_densitometer(&main_elements, exposure_state);
             display_draw_main_elements_densitometer(&main_elements);
         } else if (mode == EXPOSURE_MODE_CALIBRATION) {
+            display_main_calibration_elements_t main_elements;
+            convert_exposure_to_display_calibration(&main_elements, exposure_state);
             display_draw_main_elements_calibration(&main_elements);
         }
 

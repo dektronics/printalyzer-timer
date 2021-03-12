@@ -5,7 +5,9 @@
 #include <string.h>
 #include <math.h>
 
-void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure)
+static void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time);
+
+void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure)
 {
     //TODO Track changes from previous to display blinkies
     uint32_t exposure_tone_graph = exposure_get_tone_graph(exposure);
@@ -31,52 +33,37 @@ void convert_exposure_to_display(display_main_elements_t *elements, const exposu
 
     elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
-    exposure_mode_t mode = exposure_get_mode(exposure);
-    if (mode == EXPOSURE_MODE_PRINTING) {
-        elements->contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure));
-        elements->cal_title1 = NULL;
-        elements->cal_title2 = NULL;
-        elements->cal_value = 0;
-    } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
-        elements->contrast_grade = DISPLAY_GRADE_MAX;
-    } else if (mode == EXPOSURE_MODE_CALIBRATION) {
-        elements->contrast_grade = DISPLAY_GRADE_MAX;
-        elements->cal_title1 = "Print";
-        elements->cal_title2 = "Exposure";
-        elements->cal_value = exposure_get_calibration_pev(exposure);
-    }
+    elements->contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure));
 
-    if (mode == EXPOSURE_MODE_PRINTING || mode == EXPOSURE_MODE_CALIBRATION) {
-        float exposure_time = exposure_get_exposure_time(exposure);
-        float seconds;
+    float exposure_time = exposure_get_exposure_time(exposure);
+    convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
+}
+
+void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure)
+{
+    float density = exposure_get_relative_density(exposure);
+    if (isnanf(density)) {
+        elements->density_whole = UINT16_MAX;
+        elements->density_fractional = UINT16_MAX;
+        elements->fraction_digits = UINT8_MAX;
+    } else {
+        float whole;
         float fractional;
-        fractional = modff(exposure_time, &seconds);
-        elements->time_seconds = seconds;
-        elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
-
-        if (exposure_time < 10) {
-            elements->fraction_digits = 2;
-
-        } else if (exposure_time < 100) {
-            elements->fraction_digits = 1;
-        } else {
-            elements->fraction_digits = 0;
-        }
-    } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
-        float density = exposure_get_relative_density(exposure);
-        if (isnanf(density)) {
-            elements->time_seconds = UINT16_MAX;
-            elements->time_milliseconds = UINT16_MAX;
-            elements->fraction_digits = UINT8_MAX;
-        } else {
-            float whole;
-            float fractional;
-            fractional = modff(density, &whole);
-            elements->time_seconds = whole;
-            elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
-            elements->fraction_digits = 2;
-        }
+        fractional = modff(density, &whole);
+        elements->density_whole = whole;
+        elements->density_fractional = round_to_10(roundf(fractional * 1000.0f));
+        elements->fraction_digits = 2;
     }
+}
+
+void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements, const exposure_state_t *exposure)
+{
+    elements->cal_title1 = "Print";
+    elements->cal_title2 = "Exposure";
+    elements->cal_value = exposure_get_calibration_pev(exposure);
+
+    float exposure_time = exposure_get_exposure_time(exposure);
+    convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
 }
 
 display_grade_t convert_exposure_to_display_contrast(exposure_contrast_grade_t contrast_grade)
@@ -108,6 +95,24 @@ display_grade_t convert_exposure_to_display_contrast(exposure_contrast_grade_t c
         return DISPLAY_GRADE_5;
     default:
         return DISPLAY_GRADE_NONE;
+    }
+}
+
+void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time)
+{
+    float seconds;
+    float fractional;
+    fractional = modff(exposure_time, &seconds);
+    elements->time_seconds = seconds;
+    elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
+
+    if (exposure_time < 10) {
+        elements->fraction_digits = 2;
+
+    } else if (exposure_time < 100) {
+        elements->fraction_digits = 1;
+    } else {
+        elements->fraction_digits = 0;
     }
 }
 

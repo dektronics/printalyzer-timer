@@ -22,9 +22,19 @@
 #endif
 
 /**
- * Convert the current exposure state into display elements.
+ * Convert the current exposure state into printing display elements.
  */
-void convert_exposure_to_display(display_main_elements_t *elements, const exposure_state_t *exposure);
+void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure);
+
+/**
+ * Convert the current exposure state into densitometer mode display elements.
+ */
+void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure);
+
+/**
+ * Convert the current exposure state into calibration mode display elements.
+ */
+void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements, const exposure_state_t *exposure);
 
 /**
  * Convert a contrast grade from the exposure enum to the display enum.

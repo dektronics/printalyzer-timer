@@ -687,7 +687,7 @@ void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const displ
     }
 }
 
-void display_draw_main_elements_printing(const display_main_elements_t *elements)
+void display_draw_main_elements_printing(const display_main_printing_elements_t *elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -702,16 +702,16 @@ void display_draw_main_elements_printing(const display_main_elements_t *elements
 
     display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
 
-    display_draw_counter_time(elements->time_seconds,
-        elements->time_milliseconds,
-        elements->fraction_digits);
+    display_draw_counter_time(elements->time_elements.time_seconds,
+        elements->time_elements.time_milliseconds,
+        elements->time_elements.fraction_digits);
 
     u8g2_SendBuffer(&u8g2);
 
     osMutexRelease(display_mutex);
 }
 
-void display_draw_main_elements_densitometer(const display_main_elements_t *elements)
+void display_draw_main_elements_densitometer(const display_main_densitometer_elements_t *elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -722,13 +722,13 @@ void display_draw_main_elements_densitometer(const display_main_elements_t *elem
 
     display_draw_density_prefix();
 
-    if (elements->time_seconds == UINT16_MAX
-        && elements->time_milliseconds == UINT16_MAX
+    if (elements->density_whole == UINT16_MAX
+        && elements->density_fractional == UINT16_MAX
         && elements->fraction_digits == UINT8_MAX) {
         display_draw_density_placeholder();
     } else {
-        display_draw_counter_time(elements->time_seconds,
-            elements->time_milliseconds,
+        display_draw_counter_time(elements->density_whole,
+            elements->density_fractional,
             elements->fraction_digits);
     }
 
@@ -737,7 +737,7 @@ void display_draw_main_elements_densitometer(const display_main_elements_t *elem
     osMutexRelease(display_mutex);
 }
 
-void display_draw_main_elements_calibration(const display_main_elements_t *elements)
+void display_draw_main_elements_calibration(const display_main_calibration_elements_t *elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -748,9 +748,9 @@ void display_draw_main_elements_calibration(const display_main_elements_t *eleme
 
     display_draw_calibration_value(9 + 24, 8, elements->cal_title1, elements->cal_title2, elements->cal_value);
 
-    display_draw_counter_time(elements->time_seconds,
-        elements->time_milliseconds,
-        elements->fraction_digits);
+    display_draw_counter_time(elements->time_elements.time_seconds,
+        elements->time_elements.time_milliseconds,
+        elements->time_elements.fraction_digits);
 
     u8g2_SendBuffer(&u8g2);
 
