@@ -558,8 +558,8 @@ void startup_messages()
             uniqueId[5], uniqueId[6], uniqueId[7], uniqueId[8], uniqueId[9],
             uniqueId[10], uniqueId[11]);
 
-    printf("Bootloader build date: %s\r\n", VERSION_BUILD_DATE);
-    printf("Bootloader build describe: %s\r\n", VERSION_BUILD_DESCRIBE);
+    printf("Bootloader build date: %s\r\n", BOOTLOADER_BUILD_DATE);
+    printf("Bootloader build describe: %s\r\n", BOOTLOADER_BUILD_DESCRIBE);
     printf("\r\n");
 }
 
