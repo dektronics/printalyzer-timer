@@ -90,7 +90,7 @@ void exposure_clear_meter_readings(exposure_state_t *state);
  *  1 | 1  1  1  1  1  1       |
  *  6 | 5  4  3  2  1  0  9  8 | 7  6  5  4  3  2  1  0
  * [<]|[ ][ ][ ][ ][ ][ ][ ][ ]|[ ][ ][ ][ ][ ][ ][ ][>]
- *  + | 1  1  1  1  1  1  9  8 | 7  6  5  4  3  2  1  -
+ *  + |                        |                      -
  *
  * The low bit represents an under-exposure tone, and the high
  * bit represents an over-exposure tone. The tones in-between

@@ -39,9 +39,6 @@ typedef enum {
 
 #define DISPLAY_MENU_ROW_LENGTH 32
 #define DISPLAY_HALF_ROW_LENGTH 16
-#define DISPLAY_TONE_UNDER 0x10000
-#define DISPLAY_TONE_OVER  0x00001
-#define DISPLAY_TONE_ELEMENT(x) ((x < 0) ? (0x100 << (-1 * x)) : (0x100 >> x))
 
 typedef struct {
     uint16_t time_seconds;

@@ -224,26 +224,29 @@ void display_draw_tone_graph(uint32_t tone_graph)
      *  1 | 1  1  1  1  1  1       |
      *  6 | 5  4  3  2  1  0  9  8 | 7  6  5  4  3  2  1  0
      * [<]|[ ][ ][ ][ ][ ][ ][ ][ ]|[ ][ ][ ][ ][ ][ ][ ][>]
-     *  - | 7  6  5  4  3  2  1  0 | 1  2  3  4  5  6  7  +
+     *  + |                        |                      -
+     *
+     *  It is rendered in the opposite direction, with the under tones
+     *  on the left side of the display.
      */
 
-    if (tone_graph & DISPLAY_TONE_UNDER) {
+    if (tone_graph & 0x00000001UL) {
         u8g2_DrawPixel(&u8g2, 1, 2);
         u8g2_DrawLine(&u8g2, 2, 1, 2, 3);
         u8g2_DrawBox(&u8g2, 3, 0, 4, 5);
     }
 
-    uint32_t mask = 0x08000;
+    uint32_t mask = 0x00000002UL;
     uint16_t x_offset = 9;
     do {
         if (tone_graph & mask) {
             u8g2_DrawBox(&u8g2, x_offset, 0, 14, 5);
         }
         x_offset += 16;
-        mask = mask >> 1;
-    } while (mask != 0x00001);
+        mask = mask << 1UL;
+    } while (mask != 0x00010000UL);
 
-    if (tone_graph & DISPLAY_TONE_OVER) {
+    if (tone_graph & 0x00010000UL) {
         u8g2_DrawBox(&u8g2, 249, 0, 4, 5);
         u8g2_DrawLine(&u8g2, 253, 1, 253, 3);
         u8g2_DrawPixel(&u8g2, 254, 2);
