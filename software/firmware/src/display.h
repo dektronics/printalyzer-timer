@@ -77,6 +77,7 @@ typedef struct {
 } display_test_strip_elements_t;
 
 typedef struct {
+    uint32_t tone_graph;
     const char *adj_title1;
     const char *adj_title2;
     const char *base_title1;

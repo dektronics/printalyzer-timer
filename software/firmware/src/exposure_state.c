@@ -69,9 +69,13 @@ typedef struct __exposure_state_t {
 static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks(exposure_state_t *state);
+static void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state,
+    exposure_contrast_grade_t contrast_grade, float *tone_graph_marks);
 static void exposure_recalculate_base_time(exposure_state_t *state);
 static void exposure_populate_tone_graph(exposure_state_t *state);
 static uint32_t exposure_calculate_tone_graph(const exposure_state_t *state, float adjusted_time);
+static uint32_t exposure_calculate_tone_graph_impl(const exposure_state_t *state,
+    const float *tone_graph_marks, float adjusted_time);
 static uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset);
 
 exposure_state_t *exposure_state_create()
@@ -354,6 +358,7 @@ uint32_t exposure_get_tone_graph(const exposure_state_t *state)
 
 uint32_t exposure_get_adjusted_tone_graph(const exposure_state_t *state, int adjustment)
 {
+    if (!state) { return 0; }
     float stops = adjustment / 12.0f;
     float adjusted_time = state->base_time * powf(2.0f, stops);
     return exposure_calculate_tone_graph(state, adjusted_time);
@@ -361,7 +366,25 @@ uint32_t exposure_get_adjusted_tone_graph(const exposure_state_t *state, int adj
 
 uint32_t exposure_get_absolute_tone_graph(const exposure_state_t *state, float exposure_time)
 {
+    if (!state) { return 0; }
     return exposure_calculate_tone_graph(state, exposure_time);
+}
+
+uint32_t exposure_get_burn_dodge_tone_graph(const exposure_state_t *state, const exposure_burn_dodge_t *burn_dodge)
+{
+    if (!state || !burn_dodge) { return 0; }
+
+    if (burn_dodge->contrast_grade != CONTRAST_GRADE_MAX && burn_dodge->contrast_grade != state->contrast_grade) {
+        float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
+        exposure_recalculate_tone_graph_marks_impl(state, burn_dodge->contrast_grade, tone_graph_marks);
+        float stops = (float)burn_dodge->numerator / (float)burn_dodge->denominator;
+        float adjusted_time = state->base_time * powf(2.0f, stops);
+        return exposure_calculate_tone_graph_impl(state, tone_graph_marks, adjusted_time);
+    } else {
+        float stops = (float)burn_dodge->numerator / (float)burn_dodge->denominator;
+        float adjusted_time = state->base_time * powf(2.0f, stops);
+        return exposure_calculate_tone_graph(state, adjusted_time);
+    }
 }
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
@@ -734,19 +757,24 @@ void exposure_recalculate(exposure_state_t *state)
 
 void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
 {
+    exposure_recalculate_tone_graph_marks_impl(state, state->contrast_grade, state->tone_graph_marks);
+}
+
+void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, exposure_contrast_grade_t contrast_grade, float *tone_graph_marks)
+{
     /* Make sure there is a valid profile */
     if (!paper_profile_is_valid(&state->paper_profile)) {
         ESP_LOGW(TAG, "Cannot recalculate tone graph for invalid profile");
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
-            state->tone_graph_marks[i] = NAN;
+            tone_graph_marks[i] = NAN;
         }
         return;
     }
 
     /* Collect the relevant log exposure values from the paper profile */
-    uint32_t ht_lev100 = state->paper_profile.grade[state->contrast_grade].ht_lev100;
-    uint32_t hm_lev100 = state->paper_profile.grade[state->contrast_grade].hm_lev100;
-    uint32_t hs_lev100 = state->paper_profile.grade[state->contrast_grade].hs_lev100;
+    uint32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
+    uint32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
+    uint32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
     float d_net = state->paper_profile.max_net_density;
 
     if (ht_lev100 > 0 && hm_lev100 > 0 && hs_lev100 > 0
@@ -768,7 +796,7 @@ void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
         float d_mark = d_ht;
 
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
-            state->tone_graph_marks[i] = interpolate(d_ht, ht_lev100, d_hm, hm_lev100, d_hs, hs_lev100, d_mark);
+            tone_graph_marks[i] = interpolate(d_ht, ht_lev100, d_hm, hm_lev100, d_hs, hs_lev100, d_mark);
             d_mark += d_inc;
         }
 
@@ -785,13 +813,13 @@ void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
         float mark_value = (float)ht_lev100;
 
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
-            state->tone_graph_marks[i] = mark_value;
+            tone_graph_marks[i] = mark_value;
             mark_value += mark_increment;
         }
     } else {
         ESP_LOGW(TAG, "Insufficient profile data to calculate tone graph");
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
-            state->tone_graph_marks[i] = NAN;
+            tone_graph_marks[i] = NAN;
         }
     }
 }
@@ -838,12 +866,18 @@ void exposure_populate_tone_graph(exposure_state_t *state)
     state->tone_graph = exposure_calculate_tone_graph(state, state->adjusted_time);
 }
 
+
 uint32_t exposure_calculate_tone_graph(const exposure_state_t *state, float adjusted_time)
+{
+    return exposure_calculate_tone_graph_impl(state, state->tone_graph_marks, adjusted_time);
+}
+
+uint32_t exposure_calculate_tone_graph_impl(const exposure_state_t *state, const float *tone_graph_marks, float adjusted_time)
 {
     uint32_t tone_graph = 0;
 
     /* Abort if the tone graph marks are not set */
-    if (isnan(state->tone_graph_marks[0])) {
+    if (isnan(tone_graph_marks[0])) {
         return tone_graph;
     }
 
@@ -851,16 +885,16 @@ uint32_t exposure_calculate_tone_graph(const exposure_state_t *state, float adju
         /* Calculate the log-exposure value for the next reading */
         float lev_value = log10f(state->lux_readings[i] * adjusted_time) * 100.0F;
 
-        if (lev_value < state->tone_graph_marks[0]) {
+        if (lev_value < tone_graph_marks[0]) {
             /* Check whether to set the lower-bound mark */
             tone_graph |= 0x00000001UL;
-        } else if (lev_value >= state->tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
+        } else if (lev_value >= tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
             /* Check whether to set the upper-bound mark */
             tone_graph |= 0x00010000UL;
         } else {
             /* Check which marks of the main graph to set */
             for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
-                if (lev_value >= state->tone_graph_marks[j] && lev_value < state->tone_graph_marks[j + 1]) {
+                if (lev_value >= tone_graph_marks[j] && lev_value < tone_graph_marks[j + 1]) {
                     tone_graph |= (1UL << (j + 1));
                     break;
                 }

@@ -1223,6 +1223,9 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
     u8g2_uint_t x = 0;
     u8g2_uint_t y = 11;
 
+    // Draw the tone graph
+    display_draw_tone_graph(elements->tone_graph);
+
     // Draw adjustment icon
     display_asset_get(&asset, ASSET_ADJUST_ICON_24);
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
