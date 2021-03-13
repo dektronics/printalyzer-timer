@@ -88,7 +88,7 @@ void state_controller_loop()
         if (state_controller.next_state != state_controller.current_state
             || state_controller.next_state_param != state_controller.current_state_param) {
             // Transition to the new state
-            ESP_LOGI(TAG, "State transition: %d[%ld] -> %d[%ld]",
+            ESP_LOGI(TAG, "State transition: %d[%lu] -> %d[%lu]",
                 state_controller.current_state, state_controller.current_state_param,
                 state_controller.next_state, state_controller.next_state_param);
             state_identifier_t prev_state = state_controller.current_state;
