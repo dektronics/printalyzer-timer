@@ -816,7 +816,7 @@ void display_draw_mode_text(const char *text)
     osMutexRelease(display_mutex);
 }
 
-void display_draw_exposure_adj(int value)
+void display_draw_exposure_adj(int value, uint32_t tone_graph)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -824,6 +824,8 @@ void display_draw_exposure_adj(int value)
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
+
+    display_draw_tone_graph(tone_graph);
 
     asset_info_t asset;
     display_asset_get(&asset, ASSET_EXPOSURE_ADJ_ICON_48);
@@ -855,7 +857,7 @@ void display_draw_exposure_adj(int value)
     osMutexRelease(display_mutex);
 }
 
-void display_draw_timer_adj(const display_exposure_timer_t *elements)
+void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t tone_graph)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -863,6 +865,8 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements)
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
+
+    display_draw_tone_graph(tone_graph);
 
     asset_info_t asset;
     display_asset_get(&asset, ASSET_TIMER_ADJ_ICON_48);

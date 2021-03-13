@@ -98,6 +98,8 @@ void exposure_clear_meter_readings(exposure_state_t *state);
  * provided for convenience.
  */
 uint32_t exposure_get_tone_graph(const exposure_state_t *state);
+uint32_t exposure_get_adjusted_tone_graph(const exposure_state_t *state, int adjustment);
+uint32_t exposure_get_absolute_tone_graph(const exposure_state_t *state, float exposure_time);
 
 uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
 

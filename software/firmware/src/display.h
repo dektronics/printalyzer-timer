@@ -117,8 +117,8 @@ void display_draw_main_elements_calibration(const display_main_calibration_eleme
 
 void display_draw_stop_increment(uint8_t increment_den);
 void display_draw_mode_text(const char *text);
-void display_draw_exposure_adj(int value);
-void display_draw_timer_adj(const display_exposure_timer_t *elements);
+void display_draw_exposure_adj(int value, uint32_t tone_graph);
+void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t tone_graph);
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);
 
 /**

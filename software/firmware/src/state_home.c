@@ -639,8 +639,10 @@ void state_home_adjust_fine_entry(state_t *state_base, state_controller_t *contr
 bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *controller)
 {
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    uint32_t tone_graph = exposure_get_adjusted_tone_graph(exposure_state, state->working_value);
 
-    display_draw_exposure_adj(state->working_value);
+    display_draw_exposure_adj(state->working_value, tone_graph);
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
@@ -693,11 +695,13 @@ void state_home_adjust_absolute_entry(state_t *state_base, state_controller_t *c
 bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t *controller)
 {
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    uint32_t tone_graph = exposure_get_absolute_tone_graph(exposure_state, state->working_value / 1000.0f);
 
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, state->working_value);
 
-    display_draw_timer_adj(&elements);
+    display_draw_timer_adj(&elements, tone_graph);
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
