@@ -123,6 +123,13 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t t
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);
 
 /**
+ * Redraw the tone graph portion of the display.
+ *
+ * Note: This will not clear any existing display contents.
+ */
+void display_redraw_tone_graph(uint32_t tone_graph);
+
+/**
  * Draw the complete set of burn/dodge display elements.
  */
 void display_draw_adjustment_exposure_elements(const display_adjustment_exposure_elements_t *elements);
@@ -130,7 +137,7 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
 /**
  * Redraw the timer component of the burn/dodge display elements.
  */
-void display_draw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements);
+void display_redraw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements);
 
 /**
  * Draw the complete set of test strip display elements.
@@ -142,7 +149,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
  * This function assumes the test strip elements are already
  * visible on the display, and thus skips a lot of normal setup.
  */
-void display_draw_test_strip_timer(const display_exposure_timer_t *elements);
+void display_redraw_test_strip_timer(const display_exposure_timer_t *elements);
 
 void display_draw_edit_adjustment_elements(const display_edit_adjustment_elements_t *elements);
 

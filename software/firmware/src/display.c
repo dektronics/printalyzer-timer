@@ -216,6 +216,24 @@ void display_draw_logo()
     osMutexRelease(display_mutex);
 }
 
+void display_redraw_tone_graph(uint32_t tone_graph)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    /* Clear the tone graph area */
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, 0, 0, u8g2_GetDisplayWidth(&u8g2), 5);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    /* Redraw the tone graph */
+    display_draw_tone_graph(tone_graph);
+
+    /* Update just the modified display area */
+    u8g2_UpdateDisplayArea(&u8g2, 0, 0, u8g2_GetDisplayWidth(&u8g2) / 8, 1);
+
+    osMutexRelease(display_mutex);
+}
+
 void display_draw_tone_graph(uint32_t tone_graph)
 {
     /*
@@ -1015,7 +1033,7 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
     osMutexRelease(display_mutex);
 }
 
-void display_draw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements)
+void display_redraw_adjustment_exposure_timer(const display_exposure_timer_t *time_elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -1186,7 +1204,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
     osMutexRelease(display_mutex);
 }
 
-void display_draw_test_strip_timer(const display_exposure_timer_t *elements)
+void display_redraw_test_strip_timer(const display_exposure_timer_t *elements)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 

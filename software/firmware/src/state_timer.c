@@ -247,7 +247,7 @@ bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint
 
     if (time_ms != UINT32_MAX) {
         update_display_timer(time_elements, time_ms);
-        display_draw_adjustment_exposure_timer(time_elements);
+        display_redraw_adjustment_exposure_timer(time_elements);
     }
 
     // Handle the next keypad event without blocking

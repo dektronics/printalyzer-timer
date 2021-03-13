@@ -9,7 +9,6 @@ static void convert_exposure_float_to_display_timer(display_exposure_timer_t *el
 
 void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure)
 {
-    //TODO Track changes from previous to display blinkies
     elements->tone_graph = exposure_get_tone_graph(exposure);
 
     int paper_index = exposure_get_active_paper_profile_index(exposure);

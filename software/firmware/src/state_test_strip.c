@@ -177,7 +177,7 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     display_exposure_timer_t *elements = user_data;
 
     update_display_timer(elements, time_ms);
-    display_draw_test_strip_timer(elements);
+    display_redraw_test_strip_timer(elements);
 
     // Handle the next keypad event without blocking
     keypad_event_t keypad_event;
@@ -215,7 +215,7 @@ bool state_test_strip_countdown(const enlarger_profile_t *enlarger_profile, uint
 
     exposure_timer_set_config(&timer_config);
 
-    display_draw_test_strip_timer(&elements);
+    display_redraw_test_strip_timer(&elements);
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {

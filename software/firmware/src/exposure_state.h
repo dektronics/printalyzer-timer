@@ -78,7 +78,7 @@ int exposure_get_active_paper_profile_index(const exposure_state_t *state);
 bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index);
 void exposure_clear_active_paper_profile(exposure_state_t *state);
 
-void exposure_add_meter_reading(exposure_state_t *state, float lux);
+uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
 /*

@@ -76,6 +76,8 @@ static void exposure_populate_tone_graph(exposure_state_t *state);
 static uint32_t exposure_calculate_tone_graph(const exposure_state_t *state, float adjusted_time);
 static uint32_t exposure_calculate_tone_graph_impl(const exposure_state_t *state,
     const float *tone_graph_marks, float adjusted_time);
+static uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading,
+    const float *tone_graph_marks, float adjusted_time);
 static uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset);
 
 exposure_state_t *exposure_state_create()
@@ -287,14 +289,16 @@ float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)
     return base_time;
 }
 
-void exposure_add_meter_reading(exposure_state_t *state, float lux)
+uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
 {
-    if (!state) { return; }
+    bool place_added_reading = false;
+    if (!state) { return 0; }
 
     if (state->mode == EXPOSURE_MODE_PRINTING) {
         //TODO consider filtering out "new" readings that are very close to old readings, but unsure of tolerance
         if (state->lux_reading_count < MAX_LUX_READINGS) {
             state->lux_readings[state->lux_reading_count++] = lux;
+            place_added_reading = true;
         }
         exposure_recalculate_base_time(state);
     } else if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
@@ -338,6 +342,12 @@ void exposure_add_meter_reading(exposure_state_t *state, float lux)
     }
 
     exposure_recalculate(state);
+
+    if (place_added_reading) {
+        return exposure_calculate_tone_graph_element_impl(lux, state->tone_graph_marks, state->adjusted_time);
+    } else {
+        return 0;
+    }
 }
 
 void exposure_clear_meter_readings(exposure_state_t *state)
@@ -876,32 +886,41 @@ uint32_t exposure_calculate_tone_graph_impl(const exposure_state_t *state, const
 {
     uint32_t tone_graph = 0;
 
+    for (size_t i = 0; i < state->lux_reading_count; i++) {
+        tone_graph |= exposure_calculate_tone_graph_element_impl(state->lux_readings[i], tone_graph_marks, adjusted_time);
+    }
+    return tone_graph;
+}
+
+uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading, const float *tone_graph_marks, float adjusted_time)
+{
+    uint32_t result = 0;
+
     /* Abort if the tone graph marks are not set */
     if (isnan(tone_graph_marks[0])) {
-        return tone_graph;
+        return result;
     }
 
-    for (size_t i = 0; i < state->lux_reading_count; i++) {
-        /* Calculate the log-exposure value for the next reading */
-        float lev_value = log10f(state->lux_readings[i] * adjusted_time) * 100.0F;
+    /* Calculate the log-exposure value for the next reading */
+    float lev_value = log10f(lux_reading * adjusted_time) * 100.0F;
 
-        if (lev_value < tone_graph_marks[0]) {
-            /* Check whether to set the lower-bound mark */
-            tone_graph |= 0x00000001UL;
-        } else if (lev_value >= tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
-            /* Check whether to set the upper-bound mark */
-            tone_graph |= 0x00010000UL;
-        } else {
-            /* Check which marks of the main graph to set */
-            for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
-                if (lev_value >= tone_graph_marks[j] && lev_value < tone_graph_marks[j + 1]) {
-                    tone_graph |= (1UL << (j + 1));
-                    break;
-                }
+    if (lev_value < tone_graph_marks[0]) {
+        /* Check whether to set the lower-bound mark */
+        result |= 0x00000001UL;
+    } else if (lev_value >= tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
+        /* Check whether to set the upper-bound mark */
+        result |= 0x00010000UL;
+    } else {
+        /* Check which marks of the main graph to set */
+        for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
+            if (lev_value >= tone_graph_marks[j] && lev_value < tone_graph_marks[j + 1]) {
+                result |= (1UL << (j + 1));
+                break;
             }
         }
     }
-    return tone_graph;
+
+    return result;
 }
 
 const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade)

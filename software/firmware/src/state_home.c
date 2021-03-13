@@ -31,6 +31,7 @@ typedef struct {
     int test_strip_repeat;
     int adjustment_repeat;
     int cancel_repeat;
+    uint32_t updated_tone_element;
     bool display_dirty;
 } state_home_t;
 
@@ -60,7 +61,7 @@ typedef struct {
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
 static void state_home_select_paper_profile(state_controller_t *controller);
-static void state_home_take_reading(state_home_t *state, state_controller_t *controller);
+static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
@@ -80,6 +81,7 @@ static state_home_t state_home_data = {
     .test_strip_repeat = 0,
     .adjustment_repeat = 0,
     .cancel_repeat = 0,
+    .updated_tone_element = 0,
     .display_dirty = true
 };
 
@@ -148,6 +150,7 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     state->test_strip_repeat = 0;
     state->adjustment_repeat = 0;
     state->cancel_repeat = 0;
+    state->updated_tone_element = 0;
     state->display_dirty = true;
 }
 
@@ -161,8 +164,26 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
         // Draw current exposure state
         if (mode == EXPOSURE_MODE_PRINTING) {
             display_main_printing_elements_t main_elements;
-            convert_exposure_to_display_printing(&main_elements, exposure_state);
-            display_draw_main_elements_printing(&main_elements);
+            if (state->updated_tone_element != 0) {
+                /* Blink the most recently added tone graph element */
+                uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
+                convert_exposure_to_display_printing(&main_elements, exposure_state);
+                display_draw_main_elements_printing(&main_elements);
+
+                if ((tone_graph | state->updated_tone_element) == tone_graph) {
+                    osDelay(100);
+                    tone_graph ^= state->updated_tone_element;
+                    display_redraw_tone_graph(tone_graph);
+                    osDelay(100);
+                    tone_graph ^= state->updated_tone_element;
+                    display_redraw_tone_graph(tone_graph);
+                }
+
+                state->updated_tone_element = 0;
+            } else {
+                convert_exposure_to_display_printing(&main_elements, exposure_state);
+                display_draw_main_elements_printing(&main_elements);
+            }
         } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
             display_main_densitometer_elements_t main_elements;
             convert_exposure_to_display_densitometer(&main_elements, exposure_state);
@@ -315,7 +336,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
                 && relay_enlarger_is_enabled()) {
-                state_home_take_reading(state, controller);
+                state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
                 state->change_inc_pending = true;
@@ -401,12 +422,13 @@ void state_home_select_paper_profile(state_controller_t *controller)
     vPortFree(profile_list);
 }
 
-void state_home_take_reading(state_home_t *state, state_controller_t *controller)
+uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     meter_probe_result_t result = METER_READING_OK;
     float lux = 0;
     uint32_t cct = 0;
+    uint32_t updated_tone_element = 0;
 
     display_draw_mode_text("Measuring");
 
@@ -431,7 +453,7 @@ void state_home_take_reading(state_home_t *state, state_controller_t *controller
 
     if (result == METER_READING_OK) {
         //TODO If CCT is far from the enlarger profile, warn about filters/safelights/etc
-        exposure_add_meter_reading(exposure_state, lux);
+        updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
         ESP_LOGI(TAG, "Measured PEV=%lu, CCT=%luK", exposure_get_calibration_pev(exposure_state), cct);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
@@ -450,6 +472,7 @@ void state_home_take_reading(state_home_t *state, state_controller_t *controller
         state_home_reading_error_beep();
         osDelay(pdMS_TO_TICKS(2000));
     }
+    return updated_tone_element;
 }
 
 void state_home_reading_warning_beep()
