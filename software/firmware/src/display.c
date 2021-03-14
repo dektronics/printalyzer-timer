@@ -736,6 +736,12 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
         elements->time_elements.time_milliseconds,
         elements->time_elements.fraction_digits);
 
+    if (elements->time_too_short) {
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
+        u8g2_DrawXBM(&u8g2, 106, 10, asset.width, asset.height, asset.bits);
+    }
+
     u8g2_SendBuffer(&u8g2);
 
     osMutexRelease(display_mutex);
@@ -781,6 +787,12 @@ void display_draw_main_elements_calibration(const display_main_calibration_eleme
     display_draw_counter_time(elements->time_elements.time_seconds,
         elements->time_elements.time_milliseconds,
         elements->time_elements.fraction_digits);
+
+    if (elements->time_too_short) {
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
+        u8g2_DrawXBM(&u8g2, 106, 10, asset.width, asset.height, asset.bits);
+    }
 
     u8g2_SendBuffer(&u8g2);
 

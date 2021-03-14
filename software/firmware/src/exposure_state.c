@@ -214,12 +214,23 @@ void exposure_set_base_time(exposure_state_t *state, float value)
 void exposure_set_min_exposure_time(exposure_state_t *state, float value)
 {
     if (!state) { return; }
-    if (isnormal(value) && value > 0.1F) {
+    if (isnormal(value) && value > 0.01F) {
         state->min_exposure_time = value;
 
         if (state->lux_reading_count > 0 && state->base_time < MAX(state->min_exposure_time, EXPOSURE_TIME_LOWER_BOUND)) {
             exposure_recalculate_base_time(state);
         }
+    }
+}
+
+float exposure_get_min_exposure_time(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+
+    if (isnormal(state->min_exposure_time) && state->min_exposure_time > 0.01F) {
+        return state->min_exposure_time;
+    } else {
+        return 0;
     }
 }
 

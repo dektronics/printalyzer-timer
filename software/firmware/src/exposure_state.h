@@ -55,6 +55,7 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode);
 void exposure_set_base_time(exposure_state_t *state, float value);
 
 void exposure_set_min_exposure_time(exposure_state_t *state, float value);
+float exposure_get_min_exposure_time(const exposure_state_t *state);
 
 float exposure_get_exposure_time(const exposure_state_t *state);
 

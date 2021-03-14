@@ -37,6 +37,7 @@ typedef struct {
     contrast_grade_t contrast_grade;
     const char *contrast_note;
     display_exposure_timer_t time_elements;
+    bool time_too_short;
 } display_main_printing_elements_t;
 
 typedef struct {
@@ -50,6 +51,7 @@ typedef struct {
     char *cal_title2;
     uint16_t cal_value;
     display_exposure_timer_t time_elements;
+    bool time_too_short;
 } display_main_calibration_elements_t;
 
 typedef struct {

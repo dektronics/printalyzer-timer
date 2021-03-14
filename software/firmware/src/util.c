@@ -30,6 +30,9 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
+
+    float min_exposure_time = exposure_get_min_exposure_time(exposure);
+    elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
 }
 
 void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure)
@@ -57,6 +60,9 @@ void convert_exposure_to_display_calibration(display_main_calibration_elements_t
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
+
+    float min_exposure_time = exposure_get_min_exposure_time(exposure);
+    elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
 }
 
 void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time)
