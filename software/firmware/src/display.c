@@ -36,8 +36,8 @@ static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_paper_profile_num(uint8_t num);
 static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
-static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
-static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade);
+static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade);
+static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade);
 static void display_draw_density_prefix();
 static void display_draw_density_placeholder();
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
@@ -415,54 +415,54 @@ void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *ti
     display_draw_mdigit(&u8g2, x, y, value % 10);
 }
 
-void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade)
+void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade)
 {
     bool show_half = false;
 
     switch (grade) {
-    case DISPLAY_GRADE_00:
+    case CONTRAST_GRADE_00:
         display_draw_digit(&u8g2, x, y, 0);
         display_draw_digit(&u8g2, x + 36, y, 0);
         break;
-    case DISPLAY_GRADE_0:
+    case CONTRAST_GRADE_0:
         display_draw_digit(&u8g2, x, y, 0);
         break;
-    case DISPLAY_GRADE_0_HALF:
+    case CONTRAST_GRADE_0_HALF:
         x -= 40;
         show_half = true;
         break;
-    case DISPLAY_GRADE_1:
+    case CONTRAST_GRADE_1:
         display_draw_digit(&u8g2, x, y, 1);
         break;
-    case DISPLAY_GRADE_1_HALF:
+    case CONTRAST_GRADE_1_HALF:
         display_draw_digit(&u8g2, x, y, 1);
         show_half = true;
         break;
-    case DISPLAY_GRADE_2:
+    case CONTRAST_GRADE_2:
         display_draw_digit(&u8g2, x, y, 2);
         break;
-    case DISPLAY_GRADE_2_HALF:
+    case CONTRAST_GRADE_2_HALF:
         display_draw_digit(&u8g2, x, y, 2);
         show_half = true;
         break;
-    case DISPLAY_GRADE_3:
+    case CONTRAST_GRADE_3:
         display_draw_digit(&u8g2, x, y, 3);
         break;
-    case DISPLAY_GRADE_3_HALF:
+    case CONTRAST_GRADE_3_HALF:
         display_draw_digit(&u8g2, x, y, 3);
         show_half = true;
         break;
-    case DISPLAY_GRADE_4:
+    case CONTRAST_GRADE_4:
         display_draw_digit(&u8g2, x, y, 4);
         break;
-    case DISPLAY_GRADE_4_HALF:
+    case CONTRAST_GRADE_4_HALF:
         display_draw_digit(&u8g2, x, y, 4);
         show_half = true;
         break;
-    case DISPLAY_GRADE_5:
+    case CONTRAST_GRADE_5:
         display_draw_digit(&u8g2, x, y, 5);
         break;
-    case DISPLAY_GRADE_NONE:
+    case CONTRAST_GRADE_MAX:
     default:
         return;
     }
@@ -476,54 +476,54 @@ void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_grade_t g
     }
 }
 
-void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, display_grade_t grade)
+void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade)
 {
     bool show_half = false;
 
     switch (grade) {
-    case DISPLAY_GRADE_00:
+    case CONTRAST_GRADE_00:
         display_draw_mdigit(&u8g2, x, y, 0);
         display_draw_mdigit(&u8g2, x + 22, y, 0);
         break;
-    case DISPLAY_GRADE_0:
+    case CONTRAST_GRADE_0:
         display_draw_mdigit(&u8g2, x, y, 0);
         break;
-    case DISPLAY_GRADE_0_HALF:
+    case CONTRAST_GRADE_0_HALF:
         x -= 21;
         show_half = true;
         break;
-    case DISPLAY_GRADE_1:
+    case CONTRAST_GRADE_1:
         display_draw_mdigit(&u8g2, x, y, 1);
         break;
-    case DISPLAY_GRADE_1_HALF:
+    case CONTRAST_GRADE_1_HALF:
         display_draw_mdigit(&u8g2, x, y, 1);
         show_half = true;
         break;
-    case DISPLAY_GRADE_2:
+    case CONTRAST_GRADE_2:
         display_draw_mdigit(&u8g2, x, y, 2);
         break;
-    case DISPLAY_GRADE_2_HALF:
+    case CONTRAST_GRADE_2_HALF:
         display_draw_mdigit(&u8g2, x, y, 2);
         show_half = true;
         break;
-    case DISPLAY_GRADE_3:
+    case CONTRAST_GRADE_3:
         display_draw_mdigit(&u8g2, x, y, 3);
         break;
-    case DISPLAY_GRADE_3_HALF:
+    case CONTRAST_GRADE_3_HALF:
         display_draw_mdigit(&u8g2, x, y, 3);
         show_half = true;
         break;
-    case DISPLAY_GRADE_4:
+    case CONTRAST_GRADE_4:
         display_draw_mdigit(&u8g2, x, y, 4);
         break;
-    case DISPLAY_GRADE_4_HALF:
+    case CONTRAST_GRADE_4_HALF:
         display_draw_mdigit(&u8g2, x, y, 4);
         show_half = true;
         break;
-    case DISPLAY_GRADE_5:
+    case CONTRAST_GRADE_5:
         display_draw_mdigit(&u8g2, x, y, 5);
         break;
-    case DISPLAY_GRADE_NONE:
+    case CONTRAST_GRADE_MAX:
     default:
         return;
     }
@@ -721,7 +721,16 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
     display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
-    display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+    if (elements->contrast_note) {
+        u8g2_SetFont(&u8g2, u8g2_font_logisoso16_tr);
+        u8g2_SetFontMode(&u8g2, 0);
+        u8g2_SetFontDirection(&u8g2, 0);
+        u8g2_SetFontPosBaseline(&u8g2);
+        display_draw_contrast_grade_medium(9 + 24, 8, elements->contrast_grade);
+        u8g2_DrawUTF8(&u8g2, 9 + 24, 64, elements->contrast_note);
+    } else {
+        display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+    }
 
     display_draw_counter_time(elements->time_elements.time_seconds,
         elements->time_elements.time_milliseconds,
@@ -969,8 +978,9 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
 
     // Draw adjustment title text
     if (elements->title) {
+        u8g2_uint_t y_offset = elements->contrast_note ? 4 : 11;
         u8g2_DrawUTF8(&u8g2,
-            0, 11 + u8g2_GetAscent(&u8g2),
+            0, y_offset + u8g2_GetAscent(&u8g2),
             elements->title);
     }
 
@@ -1014,9 +1024,14 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
         u8g2_DrawXBM(&u8g2, 0, 28, asset.width, asset.height, asset.bits);
     }
 
-    if (elements->contrast_grade < DISPLAY_GRADE_MAX) {
+    if (elements->contrast_grade < CONTRAST_GRADE_MAX) {
         // Draw contrast grade
-        display_draw_contrast_grade_medium(50, 26, elements->contrast_grade);
+        if (elements->contrast_note) {
+            display_draw_contrast_grade_medium(50, 15, elements->contrast_grade);
+            u8g2_DrawUTF8(&u8g2, 50, 65, elements->contrast_note);
+        } else {
+            display_draw_contrast_grade_medium(50, 26, elements->contrast_grade);
+        }
     } else {
         // Draw timer clock icon
         display_asset_get(&asset, ASSET_TIMER_ICON_32);

@@ -59,9 +59,9 @@ void settings_set_default_exposure_time(uint32_t exposure_time);
 /**
  * Default contrast grade displayed at startup and reset
  */
-exposure_contrast_grade_t settings_get_default_contrast_grade();
+contrast_grade_t settings_get_default_contrast_grade();
 
-void settings_set_default_contrast_grade(exposure_contrast_grade_t contrast_grade);
+void settings_set_default_contrast_grade(contrast_grade_t contrast_grade);
 
 /**
  * Default exposure adjustment step size.

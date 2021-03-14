@@ -64,12 +64,12 @@ menu_result_t menu_settings()
     return menu_result;
 }
 
-menu_result_t menu_settings_default_exposure_contrast(exposure_contrast_grade_t *grade_setting)
+menu_result_t menu_settings_default_exposure_contrast(contrast_grade_t *grade_setting)
 {
     char buf[512];
     menu_result_t menu_result = MENU_OK;
 
-    exposure_contrast_grade_t setting = *grade_setting;
+    contrast_grade_t setting = *grade_setting;
 
     uint8_t option;
     switch (setting) {
@@ -201,7 +201,7 @@ menu_result_t menu_settings_default_exposure()
     char buf2[64];
 
     uint32_t time_setting = settings_get_default_exposure_time();
-    exposure_contrast_grade_t grade_setting = settings_get_default_contrast_grade();
+    contrast_grade_t grade_setting = settings_get_default_contrast_grade();
 
     bool accepted = false;
 

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <math.h>
 
+#include "paper_profile.h"
+
 static void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time);
 
 void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure)
@@ -20,7 +22,11 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
-    elements->contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure));
+    elements->contrast_grade = exposure_get_contrast_grade(exposure);
+
+    elements->contrast_note = contrast_filter_str(
+        exposure_get_contrast_filter(exposure),
+        exposure_get_contrast_grade(exposure));
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
@@ -51,38 +57,6 @@ void convert_exposure_to_display_calibration(display_main_calibration_elements_t
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
-}
-
-display_grade_t convert_exposure_to_display_contrast(exposure_contrast_grade_t contrast_grade)
-{
-    switch (contrast_grade) {
-    case CONTRAST_GRADE_00:
-        return DISPLAY_GRADE_00;
-    case CONTRAST_GRADE_0:
-        return DISPLAY_GRADE_0;
-    case CONTRAST_GRADE_0_HALF:
-        return DISPLAY_GRADE_0_HALF;
-    case CONTRAST_GRADE_1:
-        return DISPLAY_GRADE_1;
-    case CONTRAST_GRADE_1_HALF:
-        return DISPLAY_GRADE_1_HALF;
-    case CONTRAST_GRADE_2:
-        return DISPLAY_GRADE_2;
-    case CONTRAST_GRADE_2_HALF:
-        return DISPLAY_GRADE_2_HALF;
-    case CONTRAST_GRADE_3:
-        return DISPLAY_GRADE_3;
-    case CONTRAST_GRADE_3_HALF:
-        return DISPLAY_GRADE_3_HALF;
-    case CONTRAST_GRADE_4:
-        return DISPLAY_GRADE_4;
-    case CONTRAST_GRADE_4_HALF:
-        return DISPLAY_GRADE_4_HALF;
-    case CONTRAST_GRADE_5:
-        return DISPLAY_GRADE_5;
-    default:
-        return DISPLAY_GRADE_NONE;
-    }
 }
 
 void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time)

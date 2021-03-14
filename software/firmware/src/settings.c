@@ -33,7 +33,7 @@ static I2C_HandleTypeDef *eeprom_i2c = NULL;
 
 /* Persistent user settings backed by EEPROM values */
 static uint32_t setting_default_exposure_time = DEFAULT_EXPOSURE_TIME;
-static exposure_contrast_grade_t setting_default_contrast_grade = DEFAULT_CONTRAST_GRADE;
+static contrast_grade_t setting_default_contrast_grade = DEFAULT_CONTRAST_GRADE;
 static exposure_adjustment_increment_t setting_default_step_size = DEFAULT_STEP_SIZE;
 static safelight_mode_t setting_safelight_mode = DEFAULT_SAFELIGHT_MODE;
 static uint32_t setting_enlarger_focus_timeout = DEFAULT_ENLARGER_FOCUS_TIMEOUT;
@@ -113,6 +113,7 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define PAPER_PROFILE_GRADE5_HM          112
 #define PAPER_PROFILE_GRADE5_HS          116
 #define PAPER_PROFILE_DNET               120
+#define PAPER_PROFILE_CONTRAST_FILTER    124
 
 /**
  * Only a single step wedge profile is supported, and
@@ -355,12 +356,12 @@ void settings_set_default_exposure_time(uint32_t exposure_time)
     }
 }
 
-exposure_contrast_grade_t settings_get_default_contrast_grade()
+contrast_grade_t settings_get_default_contrast_grade()
 {
     return setting_default_contrast_grade;
 }
 
-void settings_set_default_contrast_grade(exposure_contrast_grade_t contrast_grade)
+void settings_set_default_contrast_grade(contrast_grade_t contrast_grade)
 {
     if (setting_default_contrast_grade != contrast_grade
         && contrast_grade >= CONTRAST_GRADE_00 && contrast_grade <= CONTRAST_GRADE_5) {
@@ -720,6 +721,13 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
     if (profile->max_net_density != NAN && (!isnormal(profile->max_net_density) || profile->max_net_density < 0.0F)) {
         profile->max_net_density = NAN;
     }
+
+    uint32_t val = copy_to_u32(data + PAPER_PROFILE_CONTRAST_FILTER);
+    if (val >= CONTRAST_FILTER_REGULAR && val < CONTRAST_FILTER_MAX) {
+        profile->contrast_filter = val;
+    } else {
+        profile->contrast_filter = CONTRAST_FILTER_REGULAR;
+    }
 }
 
 bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
@@ -774,6 +782,7 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
 
     copy_from_f32(data + PAPER_PROFILE_DNET, profile->max_net_density);
+    copy_from_u32(data + PAPER_PROFILE_CONTRAST_FILTER, profile->contrast_filter);
 }
 
 void settings_clear_paper_profile(uint8_t index)

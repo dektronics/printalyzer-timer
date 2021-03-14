@@ -739,6 +739,11 @@ bool parse_section_paper(const char *buf, size_t len, paper_profile_t *profile)
                 } else {
                     profile->max_net_density = NAN;
                 }
+            } else if (strncmp("contrast_filter", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= CONTRAST_FILTER_MAX) {
+                    profile->contrast_filter = num;
+                }
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
@@ -1145,7 +1150,8 @@ bool write_section_papers(FIL *fp)
                 profile.grade[j].ht_lev100, profile.grade[j].hm_lev100, profile.grade[j].hs_lev100);
         }
         f_printf(fp, "\n      ],\n");
-        json_write_float02(fp, 6, "max_net_density", profile.max_net_density, false);
+        json_write_float02(fp, 6, "max_net_density", profile.max_net_density, true);
+        json_write_int(fp, 6, "contrast_filter", (uint32_t)profile.contrast_filter, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {

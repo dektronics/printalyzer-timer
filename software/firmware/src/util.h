@@ -37,11 +37,6 @@ void convert_exposure_to_display_densitometer(display_main_densitometer_elements
 void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements, const exposure_state_t *exposure);
 
 /**
- * Convert a contrast grade from the exposure enum to the display enum.
- */
-display_grade_t convert_exposure_to_display_contrast(exposure_contrast_grade_t contrast_grade);
-
-/**
  * Populate display timer elements with a fresh time value.
  *
  * This sets both the time and the number of fraction digits.

@@ -33,7 +33,7 @@ typedef struct {
 static menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_profile_t *profile, uint8_t index);
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
-static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, exposure_contrast_grade_t grade);
+static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade);
 static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density);
 static uint16_t menu_paper_densitometer_data_callback(void *user_data);
 static menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibration_params_t *params);
@@ -171,7 +171,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
     return menu_result;
 }
 
-size_t menu_paper_profile_edit_append_grade(char *str, const paper_profile_t *profile, exposure_contrast_grade_t grade)
+size_t menu_paper_profile_edit_append_grade(char *str, const paper_profile_t *profile, contrast_grade_t grade)
 {
     size_t offset;
     bool valid = paper_profile_grade_is_valid(&profile->grade[grade]);
@@ -216,22 +216,39 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
     do {
         size_t offset = 0;
 
-        size_t name_len = MIN(strlen(profile->name), 25);
-
-        strcpy(buf, "Name ");
-        offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (name_len + 2));
-        buf[offset++] = '[';
-        strncpy(buf + offset, profile->name, name_len + 1);
-        offset += name_len;
-        buf[offset++] = ']';
-        buf[offset++] = '\n';
-        buf[offset] = '\0';
+        offset = menu_build_padded_str_row(buf, "Name", profile->name);
 
         if (isnormal(profile->max_net_density) && profile->max_net_density > 0.0F) {
             offset += sprintf(buf + offset, "Max net density         [D=%01.2f]\n", profile->max_net_density);
         } else {
             offset += sprintf(buf + offset, "Max net density         [------]\n");
         }
+
+        const char *filter_str;
+        switch (profile->contrast_filter) {
+        case CONTRAST_FILTER_REGULAR:
+            filter_str = "Regular";
+            break;
+        case CONTRAST_FILTER_DURST_170M:
+            filter_str = "Durst (170M)";
+            break;
+        case CONTRAST_FILTER_DURST_130M:
+            filter_str = "Durst (130M)";
+            break;
+        case CONTRAST_FILTER_KODAK:
+            filter_str = "Kodak";
+            break;
+        case CONTRAST_FILTER_LEITZ_FOCOMAT_V35:
+            filter_str = "Focomat V35";
+            break;
+        case CONTRAST_FILTER_MEOPTA:
+            filter_str = "Meopta";
+            break;
+        default:
+            filter_str = "";
+            break;
+        }
+        offset += menu_build_padded_str_row(buf + offset, "Contrast filter", filter_str);
 
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_00);
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_0);
@@ -274,28 +291,45 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                     profile_dirty = true;
                 }
             }
-        } else if (option >= 3 && option <= 9) {
-            exposure_contrast_grade_t grade;
+        } else if (option == 3) {
+            uint8_t sub_option = display_selection_list(
+                "Contrast filter", profile->contrast_filter + 1,
+                "Regular\n"
+                "Durst (max 170M)\n"
+                "Durst (max 130M)\n"
+                "Kodak\n"
+                "Leitz Focomat V35\n"
+                "Meopta");
+            if (sub_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                if (sub_option - 1 != profile->contrast_filter) {
+                    profile->contrast_filter = sub_option - 1;
+                    profile_dirty = true;
+                }
+            }
+        } else if (option >= 4 && option <= 10) {
+            contrast_grade_t grade;
             switch (option) {
-            case 3:
+            case 4:
                 grade = CONTRAST_GRADE_00;
                 break;
-            case 4:
+            case 5:
                 grade = CONTRAST_GRADE_0;
                 break;
-            case 5:
+            case 6:
                 grade = CONTRAST_GRADE_1;
                 break;
-            case 6:
+            case 7:
                 grade = CONTRAST_GRADE_2;
                 break;
-            case 7:
+            case 8:
                 grade = CONTRAST_GRADE_3;
                 break;
-            case 8:
+            case 9:
                 grade = CONTRAST_GRADE_4;
                 break;
-            case 9:
+            case 10:
                 grade = CONTRAST_GRADE_5;
                 break;
             default:
@@ -308,11 +342,11 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
-        } else if (option == 10) {
+        } else if (option == 11) {
             ESP_LOGD(TAG, "Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 11) {
+        } else if (option == 12) {
             ESP_LOGD(TAG, "Delete profile from profile editor");
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
@@ -385,7 +419,7 @@ bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t in
     }
 }
 
-menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, exposure_contrast_grade_t grade)
+menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade)
 {
     char buf_title[36];
     char buf[512];

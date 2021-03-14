@@ -156,14 +156,17 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     // Set the contrast grade, if applicable
     if (entry->numerator < 0) {
-        elements.contrast_grade = DISPLAY_GRADE_NONE;
+        elements.contrast_grade = CONTRAST_GRADE_MAX;
     } else {
         if (entry->contrast_grade == CONTRAST_GRADE_MAX) {
-            elements.contrast_grade = convert_exposure_to_display_contrast(exposure_get_contrast_grade(exposure_state));
+            elements.contrast_grade = exposure_get_contrast_grade(exposure_state);
         } else {
-            elements.contrast_grade = convert_exposure_to_display_contrast(entry->contrast_grade);
+            elements.contrast_grade = entry->contrast_grade;
         }
     }
+    elements.contrast_note = contrast_filter_str(
+        exposure_get_contrast_filter(exposure_state), elements.contrast_grade);
+
 
     // Calculate the raw time for the adjustment exposure
     float adj_stops = (float)entry->numerator / (float)entry->denominator;
@@ -222,7 +225,8 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     ESP_LOGI(TAG, "Starting burn/dodge exposure timer for %ldms", exposure_time_ms);
 
     // Redraw the display elements in exposure timer mode
-    elements.contrast_grade = DISPLAY_GRADE_MAX;
+    elements.contrast_grade = CONTRAST_GRADE_MAX;
+    elements.contrast_note = NULL;
     display_draw_adjustment_exposure_elements(&elements);
 
     HAL_StatusTypeDef ret = exposure_timer_run();

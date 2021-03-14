@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "contrast.h"
+
 #define EXPOSURE_BURN_DODGE_MAX 9
 
 typedef enum {
@@ -15,22 +17,6 @@ typedef enum {
     EXPOSURE_MODE_DENSITOMETER,
     EXPOSURE_MODE_CALIBRATION
 } exposure_mode_t;
-
-typedef enum {
-    CONTRAST_GRADE_00 = 0,
-    CONTRAST_GRADE_0,
-    CONTRAST_GRADE_0_HALF,
-    CONTRAST_GRADE_1,
-    CONTRAST_GRADE_1_HALF,
-    CONTRAST_GRADE_2,
-    CONTRAST_GRADE_2_HALF,
-    CONTRAST_GRADE_3,
-    CONTRAST_GRADE_3_HALF,
-    CONTRAST_GRADE_4,
-    CONTRAST_GRADE_4_HALF,
-    CONTRAST_GRADE_5,
-    CONTRAST_GRADE_MAX
-} exposure_contrast_grade_t;
 
 typedef enum {
     EXPOSURE_ADJ_TWELFTH = 1,
@@ -47,7 +33,7 @@ typedef enum {
 } exposure_pev_preset_t;
 
 typedef struct __exposure_adjustment_t {
-    exposure_contrast_grade_t contrast_grade;
+    contrast_grade_t contrast_grade;
     int8_t numerator;
     uint8_t denominator;
 } exposure_burn_dodge_t;
@@ -111,7 +97,8 @@ void exposure_adj_set(exposure_state_t *state, int value);
 int exposure_adj_min(exposure_state_t *state);
 int exposure_adj_max(exposure_state_t *state);
 
-exposure_contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state);
+contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state);
+contrast_filter_t exposure_get_contrast_filter(const exposure_state_t *state);
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
 
@@ -135,7 +122,5 @@ float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
     int patch_min, unsigned int patches_covered);
 float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
 uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch);
-
-const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade);
 
 #endif /* EXPOSURE_STATE_H */

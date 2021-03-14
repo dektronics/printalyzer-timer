@@ -8,6 +8,7 @@
 
 #include "settings.h"
 #include "util.h"
+#include "paper_profile.h"
 
 static const char *TAG = "exposure_state";
 
@@ -48,7 +49,7 @@ static const char *TAG = "exposure_state";
 
 typedef struct __exposure_state_t {
     exposure_mode_t mode;
-    exposure_contrast_grade_t contrast_grade;
+    contrast_grade_t contrast_grade;
     float base_time;
     float adjusted_time;
     float min_exposure_time;
@@ -70,7 +71,7 @@ static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state,
-    exposure_contrast_grade_t contrast_grade, float *tone_graph_marks);
+    contrast_grade_t contrast_grade, float *tone_graph_marks);
 static void exposure_recalculate_base_time(exposure_state_t *state);
 static void exposure_populate_tone_graph(exposure_state_t *state);
 static uint32_t exposure_calculate_tone_graph(const exposure_state_t *state, float adjusted_time);
@@ -478,10 +479,16 @@ int exposure_adj_max(exposure_state_t *state)
     return max_adj;
 }
 
-exposure_contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state)
+contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state)
 {
     if (!state) { return CONTRAST_GRADE_MAX; }
     return state->contrast_grade;
+}
+
+contrast_filter_t exposure_get_contrast_filter(const exposure_state_t *state)
+{
+    if (!state) { return CONTRAST_FILTER_REGULAR; }
+    return state->paper_profile.contrast_filter;
 }
 
 void exposure_contrast_increase(exposure_state_t *state)
@@ -770,7 +777,7 @@ void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
     exposure_recalculate_tone_graph_marks_impl(state, state->contrast_grade, state->tone_graph_marks);
 }
 
-void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, exposure_contrast_grade_t contrast_grade, float *tone_graph_marks)
+void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, contrast_grade_t contrast_grade, float *tone_graph_marks)
 {
     /* Make sure there is a valid profile */
     if (!paper_profile_is_valid(&state->paper_profile)) {
@@ -921,38 +928,6 @@ uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading, const flo
     }
 
     return result;
-}
-
-const char *contrast_grade_str(exposure_contrast_grade_t contrast_grade)
-{
-    switch (contrast_grade) {
-    case CONTRAST_GRADE_00:
-        return "00";
-    case CONTRAST_GRADE_0:
-        return "0";
-    case CONTRAST_GRADE_0_HALF:
-        return "1/2";
-    case CONTRAST_GRADE_1:
-        return "1";
-    case CONTRAST_GRADE_1_HALF:
-        return "1-1/2";
-    case CONTRAST_GRADE_2:
-        return "2";
-    case CONTRAST_GRADE_2_HALF:
-        return "2-1/2";
-    case CONTRAST_GRADE_3:
-        return "3";
-    case CONTRAST_GRADE_3_HALF:
-        return "3-1/2";
-    case CONTRAST_GRADE_4:
-        return "4";
-    case CONTRAST_GRADE_4_HALF:
-        return "4-1/2";
-    case CONTRAST_GRADE_5:
-        return "5";
-    default:
-        return "";
-    }
 }
 
 uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset)

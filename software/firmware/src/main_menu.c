@@ -10,6 +10,7 @@
 #include "display.h"
 #include "keypad.h"
 #include "led.h"
+#include "util.h"
 #include "app_descriptor.h"
 
 #include "menu_settings.h"
@@ -86,6 +87,25 @@ menu_result_t menu_confirm_cancel(const char *title)
     } else {
         return MENU_CANCEL;
     }
+}
+
+size_t menu_build_padded_str_row(char *buf, const char *label, const char *value)
+{
+    size_t offset = 0;
+    size_t label_len = strlen(label);
+    size_t value_len = MIN(strlen(value), DISPLAY_MENU_ROW_LENGTH - (label_len + 2));
+
+    strcpy(buf, label);
+    strcat(buf, " ");
+
+    offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (value_len + 2));
+    buf[offset++] = '[';
+    strncpy(buf + offset, value, value_len + 1);
+    offset += value_len;
+    buf[offset++] = ']';
+    buf[offset++] = '\n';
+    buf[offset] = '\0';
+    return offset;
 }
 
 menu_result_t menu_about()

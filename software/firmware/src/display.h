@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "stm32f4xx_hal.h"
 #include "u8g2_stm32_hal.h"
+#include "contrast.h"
 
 typedef enum {
     DISPLAY_MENU_ACCEPT_MENU = 0x01,
@@ -14,23 +15,6 @@ typedef enum {
     DISPLAY_MENU_INPUT_ASCII = 0x20,
     DISPLAY_MENU_INPUT_POLL = 0x40
 } display_menu_params_t;
-
-typedef enum {
-    DISPLAY_GRADE_00,
-    DISPLAY_GRADE_0,
-    DISPLAY_GRADE_0_HALF,
-    DISPLAY_GRADE_1,
-    DISPLAY_GRADE_1_HALF,
-    DISPLAY_GRADE_2,
-    DISPLAY_GRADE_2_HALF,
-    DISPLAY_GRADE_3,
-    DISPLAY_GRADE_3_HALF,
-    DISPLAY_GRADE_4,
-    DISPLAY_GRADE_4_HALF,
-    DISPLAY_GRADE_5,
-    DISPLAY_GRADE_NONE,
-    DISPLAY_GRADE_MAX
-} display_grade_t;
 
 typedef enum {
     DISPLAY_PATCHES_5,
@@ -50,7 +34,8 @@ typedef struct {
     uint32_t tone_graph;
     uint8_t paper_profile_num;
     uint8_t burn_dodge_count;
-    display_grade_t contrast_grade;
+    contrast_grade_t contrast_grade;
+    const char *contrast_note;
     display_exposure_timer_t time_elements;
 } display_main_printing_elements_t;
 
@@ -91,7 +76,8 @@ typedef struct {
 typedef struct {
     const char *title;
     uint8_t burn_dodge_index;
-    display_grade_t contrast_grade;
+    contrast_grade_t contrast_grade;
+    const char *contrast_note;
     display_exposure_timer_t time_elements;
 } display_adjustment_exposure_elements_t;
 
