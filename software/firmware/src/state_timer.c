@@ -184,6 +184,10 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     uint32_t exposure_time_ms = rounded_exposure_time_ms(burn_dodge_time);
     convert_exposure_to_display_timer(&(elements.time_elements), exposure_time_ms);
 
+    // Check for the short-time case
+    uint32_t min_exposure_time_ms = enlarger_profile_min_exposure(enlarger_profile);
+    elements.time_too_short = (min_exposure_time_ms > 0) && (exposure_time_ms < min_exposure_time_ms);
+
     display_draw_adjustment_exposure_elements(&elements);
 
     // Wait for start or cancel

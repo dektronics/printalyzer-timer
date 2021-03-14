@@ -103,6 +103,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
     char buf_adj_title2[32];
     char buf_base_title2[32];
     uint32_t tone_graph;
+    bool time_too_short = false;
 
     if (state->working_value.numerator == 0) {
         sprintf(buf_adj_title1, "Burn/Dodge");
@@ -110,20 +111,27 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
     } else {
         float adj_stops = (float)state->working_value.numerator / (float)state->working_value.denominator;
         float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
+        float min_exposure_time = exposure_get_min_exposure_time(exposure_state);
 
         if (state->working_value.numerator > 0) {
+            float burn_time = adj_time - exposure_get_exposure_time(exposure_state);
             sprintf(buf_adj_title1, "Burn Area %d", state->working_index + 1);
             size_t offset = sprintf(buf_adj_title2, "+");
-            offset += append_exposure_time(buf_adj_title2 + offset, adj_time - exposure_get_exposure_time(exposure_state));
+            offset += append_exposure_time(buf_adj_title2 + offset, burn_time);
             if (state->working_value.contrast_grade < CONTRAST_GRADE_MAX) {
                 sprintf(buf_adj_title2 + offset, " [%s]", contrast_grade_str(state->working_value.contrast_grade));
             } else {
                 sprintf(buf_adj_title2 + offset, " [B]");
             }
+            time_too_short = (min_exposure_time > 0) && (burn_time < min_exposure_time);
         } else {
+            float dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
+            float adj_base_time = exposure_get_exposure_time(exposure_state) - dodge_time;
             sprintf(buf_adj_title1, "Dodge Area %d", state->working_index + 1);
             size_t offset = sprintf(buf_adj_title2, "-");
-            append_exposure_time(buf_adj_title2 + offset, fabs(exposure_get_exposure_time(exposure_state) - adj_time));
+            append_exposure_time(buf_adj_title2 + offset, dodge_time);
+            time_too_short = (min_exposure_time > 0)
+                && ((dodge_time < min_exposure_time) || (adj_base_time < min_exposure_time));
         }
     }
 
@@ -141,7 +149,8 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         .tip_up = state->working_value.numerator == 0 ? "Burn" : 0,
         .tip_down = (state->working_value.numerator == 0 && state->working_index == 0) ? "Dodge" : 0,
         .adj_num = state->working_value.numerator,
-        .adj_den = state->working_value.denominator
+        .adj_den = state->working_value.denominator,
+        .time_too_short = time_too_short
     };
 
     display_draw_edit_adjustment_elements(&elements);

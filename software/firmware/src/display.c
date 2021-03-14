@@ -1055,6 +1055,12 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
         elements->time_elements.time_milliseconds,
         elements->time_elements.fraction_digits);
 
+    if (elements->time_too_short) {
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
+        u8g2_DrawXBM(&u8g2, 106, 10, asset.width, asset.height, asset.bits);
+    }
+
     u8g2_SendBuffer(&u8g2);
 
     osMutexRelease(display_mutex);
@@ -1272,8 +1278,14 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
     display_draw_tone_graph(elements->tone_graph);
 
     // Draw adjustment icon
-    display_asset_get(&asset, ASSET_ADJUST_ICON_24);
-    u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+    if (elements->time_too_short) {
+        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
+        u8g2_DrawXBM(&u8g2, x, y - 1, asset.width, asset.height, asset.bits);
+
+    } else {
+        display_asset_get(&asset, ASSET_ADJUST_ICON_24);
+        u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+    }
 
     y += 28;
 

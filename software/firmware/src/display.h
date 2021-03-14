@@ -73,6 +73,7 @@ typedef struct {
     const char *tip_down;
     int16_t adj_num;
     uint16_t adj_den;
+    bool time_too_short;
 } display_edit_adjustment_elements_t;
 
 typedef struct {
@@ -81,6 +82,7 @@ typedef struct {
     contrast_grade_t contrast_grade;
     const char *contrast_note;
     display_exposure_timer_t time_elements;
+    bool time_too_short;
 } display_adjustment_exposure_elements_t;
 
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
