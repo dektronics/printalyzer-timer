@@ -620,7 +620,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
             "Paper Dmin              [D=%0.02f]\n",
             paper_dmin);
 
-        if (isnormal(paper_dmax)) {
+        if (isnormal(paper_dmax) && paper_dmax > 0.0F) {
             offset += sprintf(buf + offset,
                 "Paper Dmax              {D=%0.02f}\n",
                 paper_dmax);
@@ -638,7 +638,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         }
 
         for (uint32_t i = 0; i < wedge->step_count; i++) {
-            if (isnormal(patch_density[i]) && patch_density[i] >= paper_dmin) {
+            if (is_valid_number(patch_density[i]) && patch_density[i] >= paper_dmin) {
                 offset += sprintf(buf + offset,
                     "Step %-2lu        {D=%0.02f} [D=%0.02f]\n",
                     i + 1,
@@ -737,7 +737,13 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 "D=", &value_sel, min_value, max_value, 1, 2, "",
                 menu_paper_densitometer_data_callback, &dens_enable);
             if (patch_option == 1) {
-                patch_density[step_index] = (float)value_sel / 100.0F;
+                if (value_sel <= min_value) {
+                    patch_density[step_index] = paper_dmin;
+                } else if (value_sel >= max_value) {
+                    patch_density[step_index] = paper_dmax;
+                } else {
+                    patch_density[step_index] = (float)value_sel / 100.0F;
+                }
             } else if (patch_option == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             }
