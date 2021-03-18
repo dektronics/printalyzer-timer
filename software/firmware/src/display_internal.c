@@ -388,7 +388,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                     if (local_value > high - 10) {
                         local_value = high;
                     } else {
-                        local_value += 100;
+                        local_value += 10;
                     }
                 }
                 break;
