@@ -7,7 +7,7 @@ Sheet 1 1
 Title "Printalyzer - Meter Probe"
 Date "2020-10-28"
 Rev "A"
-Comp "LogicProbe.org"
+Comp "Dektronics, Inc."
 Comment1 "Derek Konigsberg"
 Comment2 ""
 Comment3 ""

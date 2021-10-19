@@ -7,7 +7,7 @@ Sheet 2 4
 Title "Printalyzer - Main Board (Power Supply and Control)"
 Date "2020-11-16"
 Rev "A"
-Comp "LogicProbe.org"
+Comp "Dektronics, Inc."
 Comment1 "Derek Konigsberg"
 Comment2 ""
 Comment3 ""

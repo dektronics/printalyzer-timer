@@ -7,7 +7,7 @@ Sheet 4 4
 Title "Printalyzer - Main Board (Front External Connections)"
 Date "2020-11-16"
 Rev "A"
-Comp "LogicProbe.org"
+Comp "Dektronics, Inc."
 Comment1 "Derek Konigsberg"
 Comment2 ""
 Comment3 ""

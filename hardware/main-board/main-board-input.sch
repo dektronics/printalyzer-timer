@@ -7,7 +7,7 @@ Sheet 3 4
 Title "Printalyzer - Main Board (User Input)"
 Date "2020-11-16"
 Rev "A"
-Comp "LogicProbe.org"
+Comp "Dektronics, Inc."
 Comment1 "Derek Konigsberg"
 Comment2 ""
 Comment3 ""
