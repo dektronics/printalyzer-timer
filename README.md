@@ -20,7 +20,7 @@ Note: This project is currently a work-in-progress, so expect the hardware and s
 ## Project Layout
 
 ### Hardware
-The "hardware" directory contains [KiCad](http://kicad.org/) projects
+The "hardware" directory contains [KiCad](https://www.kicad.org/) projects
 with the complete circuit schematics, bill-of-materials, and
 PCB layouts.
 
