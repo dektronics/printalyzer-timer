@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name Marquadt_Switch)(type Legacy)(uri ${KIPRJMOD}/../library/Marquadt_Switch.lib)(options "")(descr "Marquadt Key Switches"))
-  (lib (name Project)(type Legacy)(uri ${KIPRJMOD}/../library/Project.lib)(options "")(descr "Project-specific components"))
+  (lib (name "Marquadt_Switch")(type "KiCad")(uri "${KIPRJMOD}/../library/Marquadt_Switch.kicad_sym")(options "")(descr "Marquadt Key Switches"))
+  (lib (name "Project")(type "KiCad")(uri "${KIPRJMOD}/../library/Project.kicad_sym")(options "")(descr "Project-specific components"))
 )

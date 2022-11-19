@@ -1,4 +1,4 @@
-# For PCBs designed using KiCad: http://www.kicad-pcb.org/
+# For PCBs designed using KiCad: http://www.kicad.org/
 
 # Temporary files
 *.000
@@ -12,6 +12,8 @@ _autosave-*
 *-save.pro
 *-save.kicad_pcb
 fp-info-cache
+*-bak
+*-backups/
 
 # Netlist files (exported from Eeschema)
 *.net
@@ -23,7 +25,9 @@ fp-info-cache
 # Exported BOM files
 *.xml
 *.csv
+*.html
 
 # Output directories
 **/gerber
 **/bom
+build
