@@ -1562,7 +1562,7 @@
       (net 1 "GND") (tstamp 30686ee8-5776-4426-9c70-533ac4317d92))
     (pad "S2" thru_hole circle locked (at 6.7 -5.6 180) (size 3.516 3.516) (drill 2.5) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 8ed3cca7-4c74-4a39-9045-99c61e35306a))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/CUI_MD-60SM.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/CUI_MD-60SM.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -1699,7 +1699,7 @@
       (net 1 "GND") (tstamp 0f50d6b8-d3a2-42f6-9778-a170e1e7e8aa))
     (pad "5" thru_hole circle locked (at -3.07 2.71) (size 3 3) (drill 2.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 780fafcd-9f17-40ca-8a1c-cea6af85ea2a))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Molex_676432910.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Molex_676432910.step"
       (offset (xyz 3.5 2.25 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -1756,7 +1756,7 @@
       (net 40 "LINE") (tstamp 6458a126-8618-4ffe-a997-0cc5b209893e))
     (pad "5" thru_hole circle locked (at 0 0 90) (size 3 3) (drill 1.3) (layers *.Cu *.Mask)
       (net 2 "+12V") (tstamp 3adf8a0f-c31d-48ca-937c-acaa9440b544))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/G2RL-1A.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/G2RL-1A.step"
       (offset (xyz 0 -7.5 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -1813,7 +1813,7 @@
       (net 40 "LINE") (tstamp 20413592-5956-4838-9c01-ffe9ed7154f3))
     (pad "5" thru_hole circle locked (at 0 0 90) (size 3 3) (drill 1.3) (layers *.Cu *.Mask)
       (net 2 "+12V") (tstamp d1fda2a2-31bd-456e-b778-d04814943e04))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/G2RL-1A.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/G2RL-1A.step"
       (offset (xyz 0 -7.5 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -1853,7 +1853,7 @@
       (net 2 "+12V") (tstamp aa8589d9-32b9-4ea5-a88d-ca8b8a509e72))
     (pad "2" smd rect locked (at 1.35 0 180) (size 2 3.5) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 3 "Net-(C2-Pad1)") (tstamp 5ed1642a-b255-4957-9634-26b83450d800))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/RLS-126.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/RLS-126.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -1914,7 +1914,7 @@
       (net 68 "NEUT") (tstamp 48397e8c-991a-42c9-8097-4bb04188dbd6))
     (pad "3" thru_hole circle locked (at 0 9.95) (size 3.2 3.2) (drill 1.6) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 0ff3f282-4f8d-47a8-b460-9c27dc6babaf))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PX0580-PC.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PX0580-PC.step"
       (offset (xyz 0 6.25 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -180 0 180))
@@ -1979,7 +1979,7 @@
       (net 68 "NEUT") (tstamp 3f93b448-3d66-43a5-9471-b525e9853744))
     (pad "3" thru_hole circle locked (at 0 15.1) (size 3.2 3.2) (drill 1.6) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 0ec90e9f-9dfb-41a3-bb92-1dd8d96c3bc1))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PX0675-PC.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PX0675-PC.step"
       (offset (xyz 0 8.75 16))
       (scale (xyz 1 1 1))
       (rotate (xyz -180 0 180))
@@ -2029,7 +2029,7 @@
       (net 2 "+12V") (tstamp 236852b3-843f-45d9-a481-1a3583d60e8c))
     (pad "4" thru_hole circle locked (at 45.72 10.16) (size 3 3) (drill 1.5) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp e7d4595d-9957-4e36-9012-3df9fc2b4f02))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/CUI_PSK-6B-S12.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/CUI_PSK-6B-S12.step"
       (offset (xyz 22.85 -10.15 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -3847,7 +3847,7 @@
       (net 68 "NEUT") (tstamp d2cd62f0-6e71-462d-815d-8d7b5ba76012))
     (pad "3" thru_hole circle locked (at 0 15.1) (size 3.2 3.2) (drill 1.6) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp e1416c02-1cb1-4586-8090-c530ae2c2be0))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PX0675-PC.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PX0675-PC.step"
       (offset (xyz 0 8.75 16))
       (scale (xyz 1 1 1))
       (rotate (xyz -180 0 180))
@@ -4150,7 +4150,7 @@
       (net 66 "Net-(LS1-Pad1)") (tstamp c2b3f653-603c-47af-a736-0ff4690bd765))
     (pad "2" thru_hole circle locked (at 5 0 90) (size 2 2) (drill 1) (layers *.Cu *.Mask)
       (net 67 "Net-(LS1-Pad2)") (tstamp d62b13ad-21b8-4009-91b6-45c60c62f41e))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PKM22EPPH4001-B0.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PKM22EPPH4001-B0.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -4310,7 +4310,7 @@
       (net 2 "+12V") (tstamp f2267880-7e9d-417c-8fc6-c7d56550bd0b))
     (pad "2" smd rect locked (at 1.35 0 180) (size 2 3.5) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 5 "Net-(C5-Pad1)") (tstamp 13c25fe8-2331-47d9-9e51-8b7976b2612e))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/RLS-126.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/RLS-126.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -4466,7 +4466,7 @@
       (net 35 "/USART1_RX") (tstamp f2c4d76c-3825-430c-94b5-51ac0b7294b7))
     (pad "14" smd rect locked (at 3.81 -2.032) (size 0.7366 2.794) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 34 "/USART1_TX") (tstamp 780b887d-71bb-45fe-b51d-973e8fa8825c))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/FTSH-107-01-L-DV-K-A.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/FTSH-107-01-L-DV-K-A.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 0))
@@ -7812,7 +7812,7 @@
       (net 87 "/User Input/BTN1") (tstamp 919f1479-afbf-4f85-bb54-dd39ee53c160))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 3d012074-754f-4755-9ada-9a291c673fe6))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_1101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_1101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -7859,7 +7859,7 @@
       (net 88 "/User Input/BTN2") (tstamp 8b37c31b-02e4-40d6-b8dd-816ae0999f0e))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 21ab688b-a986-44af-81b1-814d76c924b9))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_1101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_1101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -7904,7 +7904,7 @@
       (net 89 "/User Input/BTN3") (tstamp 4e42dde9-c612-4afd-b8f7-7d3d4614b921))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp f5da0856-8d32-4de1-a73d-941f72776b78))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_0101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_0101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -7949,7 +7949,7 @@
       (net 90 "/User Input/BTN4") (tstamp 2ac817c6-eaf4-4584-87f4-a857dd701a15))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp b347e196-7aa3-45fb-9d80-4f855a3389e5))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_0101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_0101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -7994,7 +7994,7 @@
       (net 91 "/User Input/BTN5") (tstamp 6bb74286-8237-4fb9-a63c-9d591fa6cc3a))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp c46e1fd1-74cc-40a9-af33-5a86633f4774))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_0101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_0101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8039,7 +8039,7 @@
       (net 92 "/User Input/BTN6") (tstamp 3c68391b-afde-4138-8dcf-cfd7f96d9721))
     (pad "2" thru_hole circle locked (at 0 5.08 180) (size 2.2 2.2) (drill 1.3) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 4a705fd4-b405-4cec-b2ec-49feb1f514d6))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_0101.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_0101.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8088,7 +8088,7 @@
       (net 93 "/User Input/IND7_T") (tstamp 669faac7-db67-4c8d-b73f-c4ca5e160014))
     (pad "4" thru_hole circle locked (at -5.95 4.15 180) (size 1.8 1.8) (drill 0.9) (layers *.Cu *.Mask)
       (net 4 "+3V3") (tstamp c071c5ab-d636-4ef1-86eb-f8cee0ab5eb4))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_3111.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_3111.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8137,7 +8137,7 @@
       (net 96 "/User Input/IND8_T") (tstamp 4966c3d5-4998-45f7-be05-c01d9942612d))
     (pad "4" thru_hole circle locked (at -5.95 4.15 180) (size 1.8 1.8) (drill 0.9) (layers *.Cu *.Mask)
       (net 4 "+3V3") (tstamp 6e181451-f691-43c8-a110-b963045c4414))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_3111.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_3111.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8186,7 +8186,7 @@
       (net 97 "/User Input/IND9_T") (tstamp 804b305a-8534-4b61-bd10-efc124f51821))
     (pad "4" thru_hole circle locked (at -5.95 4.15 180) (size 1.8 1.8) (drill 0.9) (layers *.Cu *.Mask)
       (net 4 "+3V3") (tstamp 8a3fe6ac-c291-4a97-8bd1-55cd108698b6))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_3111.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_3111.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8235,7 +8235,7 @@
       (net 100 "/User Input/IND10_T") (tstamp b101a175-7ff3-434a-aea4-087e6bc8f8df))
     (pad "4" thru_hole circle locked (at -5.95 4.15 180) (size 1.8 1.8) (drill 0.9) (layers *.Cu *.Mask)
       (net 4 "+3V3") (tstamp fa810c31-3cf5-4da7-892a-f56e6ee65fba))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_3111.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_3111.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8299,7 +8299,7 @@
       (net 101 "/User Input/ENC_BTN") (tstamp 241aca2f-ec9d-4459-8979-50fc1e7284fa))
     (pad "S2" thru_hole circle locked (at 2.5 7 180) (size 2 2) (drill 1.2) (layers *.Cu *.Mask)
       (net 1 "GND") (tstamp 5614639b-0422-4a6e-81af-e576863941c7))
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/CUI_ACZ11BR1E-15FD1.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/CUI_ACZ11BR1E-15FD1.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -8403,7 +8403,7 @@
       (scale (xyz 1 1 1))
       (rotate (xyz 0 180 90))
     )
-    (model "${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/NHD-3.12-25664UCxx.step"
+    (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/NHD-3.12-25664UCxx.step"
       (offset (xyz 0 0 4))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))

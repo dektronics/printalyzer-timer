@@ -2,8 +2,7 @@ ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('FreeCAD Model'),'2;1');
 FILE_NAME(
-'/home/octo/devel/printalyzer/hardware/modules/packages3d/lib_
-fp.3dshapes/AMS_TCS3472.step','2020-10-18T14:34:00',(''),(''),
+'AMS_TCS3472.step','2020-10-18T14:34:00',(''),(''),
   'Open CASCADE STEP processor 7.4','FreeCAD','Unknown');
 FILE_SCHEMA(('CONFIG_CONTROL_DESIGN','SHAPE_APPEARANCE_LAYER_MIM'));
 ENDSEC;

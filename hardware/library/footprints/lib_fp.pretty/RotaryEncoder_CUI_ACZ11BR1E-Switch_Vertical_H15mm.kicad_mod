@@ -43,7 +43,7 @@
   (pad B thru_hole circle (at 2.5 7.5) (size 2 2) (drill 1.2) (layers *.Cu *.Mask))
   (pad C thru_hole circle (at 0 7.5) (size 2 2) (drill 1.2) (layers *.Cu *.Mask))
   (pad A thru_hole rect (at -2.5 7.5) (size 2 2) (drill 1.2) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/CUI_ACZ11BR1E-15FD1.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/CUI_ACZ11BR1E-15FD1.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

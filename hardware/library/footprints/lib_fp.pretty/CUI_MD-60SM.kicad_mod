@@ -36,7 +36,7 @@
   (pad 4 thru_hole circle (at -3.25 -8.5 180) (size 1.508 1.508) (drill 1) (layers *.Cu *.Mask))
   (pad 5 thru_hole circle (at 3.25 -11 180) (size 1.508 1.508) (drill 1) (layers *.Cu *.Mask))
   (pad 6 thru_hole circle (at -3.25 -11 180) (size 1.508 1.508) (drill 1) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/CUI_MD-60SM.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/CUI_MD-60SM.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

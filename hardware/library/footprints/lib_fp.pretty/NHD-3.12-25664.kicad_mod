@@ -73,7 +73,7 @@
     (scale (xyz 1 1 1))
     (rotate (xyz 0 180 90))
   )
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/NHD-3.12-25664UCxx.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/NHD-3.12-25664UCxx.step
     (offset (xyz 0 0 10))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

@@ -22,7 +22,7 @@
   )
   (pad 1 thru_hole rect (at -5 0) (size 2 2) (drill 1) (layers *.Cu *.Mask))
   (pad 2 thru_hole circle (at 5 0) (size 2 2) (drill 1) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PKM22EPPH4001-B0.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PKM22EPPH4001-B0.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

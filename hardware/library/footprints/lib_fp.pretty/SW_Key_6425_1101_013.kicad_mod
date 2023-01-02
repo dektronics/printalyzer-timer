@@ -29,7 +29,7 @@
   (pad "" np_thru_hole circle (at -5.08 5.08) (size 1.4 1.4) (drill 1.4) (layers *.Cu *.Mask))
   (pad "" np_thru_hole circle (at 0 -10.8) (size 3 3) (drill 3) (layers *.Cu *.Mask))
   (pad "" np_thru_hole circle (at 0 10.8) (size 3 3) (drill 3) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/Marquardt_6425_1101.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_1101.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

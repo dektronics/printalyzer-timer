@@ -46,7 +46,7 @@
   (pad "" np_thru_hole circle (at -20 0) (size 3.4 3.4) (drill 3.4) (layers *.Cu *.Mask))
   (pad "" np_thru_hole circle (at 20 0) (size 3.4 3.4) (drill 3.4) (layers *.Cu *.Mask))
   (pad 2 thru_hole circle (at 7 15.1) (size 3.2 3.2) (drill 1.6) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/PX0675-PC.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/PX0675-PC.step
     (offset (xyz 0 8.75 16))
     (scale (xyz 1 1 1))
     (rotate (xyz -180 0 180))

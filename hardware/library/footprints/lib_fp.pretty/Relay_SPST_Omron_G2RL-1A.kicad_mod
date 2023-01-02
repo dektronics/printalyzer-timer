@@ -37,7 +37,7 @@
   (pad 1 thru_hole circle (at 0 7.5) (size 3 3) (drill 1.3) (layers *.Cu *.Mask))
   (pad 4 thru_hole circle (at 20 0) (size 3 3) (drill 1.3) (layers *.Cu *.Mask))
   (pad 3 thru_hole circle (at 23.5 7.5) (size 3 3) (drill 1.3) (layers *.Cu *.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/G2RL-1A.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/G2RL-1A.step
     (offset (xyz 0 -7.5 0))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 0))

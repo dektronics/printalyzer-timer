@@ -104,8 +104,8 @@
         "min_copper_edge_clearance": 0.019049999999999997,
         "min_hole_clearance": 0.25,
         "min_hole_to_hole": 0.25,
-        "min_microvia_diameter": 0.0,
-        "min_microvia_drill": 0.0,
+        "min_microvia_diameter": 0.19999999999999998,
+        "min_microvia_drill": 0.09999999999999999,
         "min_silk_clearance": 0.0,
         "min_through_hole_diameter": 0.19999999999999998,
         "min_track_width": 0.08889999999999999,
@@ -354,8 +354,13 @@
     }
   },
   "libraries": {
-    "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_footprint_libs": [
+      "lib_fp"
+    ],
+    "pinned_symbol_libs": [
+      "Marquadt_Switch",
+      "Project"
+    ]
   },
   "meta": {
     "filename": "main-board.kicad_pro",

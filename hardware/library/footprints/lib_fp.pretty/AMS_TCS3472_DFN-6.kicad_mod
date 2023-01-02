@@ -63,7 +63,7 @@
       (gr_poly (pts
          (xy 0.3 -0.2) (xy -0.5 -0.2) (xy -0.5 0.2) (xy 0.3 0.2)) (width 0))
     ))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/AMS_TCS3472.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/AMS_TCS3472.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz 0 0 0))

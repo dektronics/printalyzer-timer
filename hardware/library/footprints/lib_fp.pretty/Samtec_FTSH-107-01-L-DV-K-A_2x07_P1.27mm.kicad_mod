@@ -42,7 +42,7 @@
   (pad 12 smd rect (at 2.54 -2.032) (size 0.7366 2.794) (layers F.Cu F.Paste F.Mask))
   (pad 13 smd rect (at 3.81 2.032) (size 0.7366 2.794) (layers F.Cu F.Paste F.Mask))
   (pad 14 smd rect (at 3.81 -2.032) (size 0.7366 2.794) (layers F.Cu F.Paste F.Mask))
-  (model ${KIPRJMOD}/../modules/packages3d/lib_fp.3dshapes/FTSH-107-01-L-DV-K-A.step
+  (model ${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/FTSH-107-01-L-DV-K-A.step
     (at (xyz 0 0 0))
     (scale (xyz 1 1 1))
     (rotate (xyz -90 0 0))
