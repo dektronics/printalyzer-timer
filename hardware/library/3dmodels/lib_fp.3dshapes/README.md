@@ -100,3 +100,7 @@ this directory's `.gitignore` file.
 ### RLS-126
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://recom-power.com/en/products/dc-dc-converters/rec-p-RLS-126.html>
+
+### ER-OLEDM032-xx
+* Status: Included (Contributed to source by Roman Ty, no terms listed with download)
+* Source: 3D ContentCentral <https://www.3dcontentcentral.com/download-model.aspx?catalogid=171&id=559278>
