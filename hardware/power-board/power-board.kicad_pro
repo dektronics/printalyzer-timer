@@ -377,9 +377,7 @@
     "pinned_footprint_libs": [
       "lib_fp"
     ],
-    "pinned_symbol_libs": [
-      "Project"
-    ]
+    "pinned_symbol_libs": []
   },
   "meta": {
     "filename": "power-board.kicad_pro",
