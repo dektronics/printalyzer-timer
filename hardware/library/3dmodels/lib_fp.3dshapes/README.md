@@ -104,3 +104,7 @@ this directory's `.gitignore` file.
 ### ER-OLEDM032-xx
 * Status: Included (Contributed to source by Roman Ty, no terms listed with download)
 * Source: 3D ContentCentral <https://www.3dcontentcentral.com/download-model.aspx?catalogid=171&id=559278>
+
+### Neutrik\_NC5FBH
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.neutrik.com/en/product/nc5fbh>
