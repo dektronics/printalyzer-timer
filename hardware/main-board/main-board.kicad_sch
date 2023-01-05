@@ -4610,17 +4610,11 @@
   )
 
   (symbol_instances
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fb6c483"
-      (reference "#FLG0101") (unit 1) (value "PWR_FLAG") (footprint "")
+    (path "/00000000-0000-0000-0000-00005f8b674d/9b812c6d-95af-4c26-8a70-adbc7d2bbac4"
+      (reference "#FLG01") (unit 1) (value "PWR_FLAG") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fb6eeff"
-      (reference "#FLG0102") (unit 1) (value "PWR_FLAG") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fb701ac"
-      (reference "#FLG0103") (unit 1) (value "PWR_FLAG") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fb7300a"
-      (reference "#FLG0104") (unit 1) (value "PWR_FLAG") (footprint "")
+    (path "/00000000-0000-0000-0000-00005f8b674d/33006bfb-e803-466c-b6c9-e0c1d388e55b"
+      (reference "#FLG02") (unit 1) (value "PWR_FLAG") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fb783f6"
       (reference "#FLG0105") (unit 1) (value "PWR_FLAG") (footprint "")
@@ -4676,53 +4670,17 @@
     (path "/00000000-0000-0000-0000-00005fb2cf53"
       (reference "#PWR014") (unit 1) (value "GND") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9d7202"
+    (path "/00000000-0000-0000-0000-00005f8b674d/6ba1f954-412b-4c4e-a797-c3bd767939f6"
       (reference "#PWR015") (unit 1) (value "+12V") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa436a2"
-      (reference "#PWR016") (unit 1) (value "LINE") (footprint "")
+    (path "/00000000-0000-0000-0000-00005f8b674d/098eb593-fce0-49e7-8db9-2e9cec28f9e0"
+      (reference "#PWR016") (unit 1) (value "GND") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3b1c5"
-      (reference "#PWR017") (unit 1) (value "NEUT") (footprint "")
+    (path "/00000000-0000-0000-0000-00005f8b674d/ab9783a1-d4ef-4444-a1fb-987c73588808"
+      (reference "#PWR017") (unit 1) (value "+12V") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3c444"
-      (reference "#PWR018") (unit 1) (value "NEUT") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa39a0c"
-      (reference "#PWR019") (unit 1) (value "Earth") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3a312"
-      (reference "#PWR020") (unit 1) (value "Earth") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9d8e8d"
-      (reference "#PWR021") (unit 1) (value "GND") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9d78ae"
-      (reference "#PWR022") (unit 1) (value "+12V") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa43cf0"
-      (reference "#PWR023") (unit 1) (value "LINE") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa37bc0"
-      (reference "#PWR024") (unit 1) (value "LINE") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3c998"
-      (reference "#PWR025") (unit 1) (value "NEUT") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9de431"
-      (reference "#PWR026") (unit 1) (value "GND") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3a71b"
-      (reference "#PWR027") (unit 1) (value "Earth") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa1bd34"
-      (reference "#PWR028") (unit 1) (value "+12V") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa3216f"
-      (reference "#PWR029") (unit 1) (value "NEUT") (footprint "")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa1cc5a"
-      (reference "#PWR030") (unit 1) (value "GND") (footprint "")
+    (path "/00000000-0000-0000-0000-00005f8b674d/5fd68d09-c266-41a1-a355-766e68b1b0dd"
+      (reference "#PWR018") (unit 1) (value "GND") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9f546c"
       (reference "#PWR031") (unit 1) (value "+12V") (footprint "")
@@ -5099,12 +5057,6 @@
     (path "/00000000-0000-0000-0000-00005fa19aff/00000000-0000-0000-0000-00005faa8a21"
       (reference "D13") (unit 1) (value "DT2636-04S") (footprint "Package_TO_SOT_SMD:SOT-363_SC-70-6")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f99293e"
-      (reference "F1") (unit 1) (value "Fuse") (footprint "Fuse:Fuseholder_Cylinder-5x20mm_Bulgin_FX0457_Horizontal_Closed")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f992d5f"
-      (reference "F2") (unit 1) (value "Fuse") (footprint "Fuse:Fuseholder_Cylinder-5x20mm_Schurter_0031_8201_Horizontal_Open")
-    )
     (path "/00000000-0000-0000-0000-00005fa7b7ea"
       (reference "H1") (unit 1) (value "MountingHole_Pad") (footprint "MountingHole:MountingHole_3.2mm_M3_Pad_Via")
     )
@@ -5117,8 +5069,8 @@
     (path "/00000000-0000-0000-0000-00005fa7e48d"
       (reference "H4") (unit 1) (value "MountingHole_Pad") (footprint "MountingHole:MountingHole_3.2mm_M3_Pad_Via")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa44a38"
-      (reference "J1") (unit 1) (value "SW_SPST") (footprint "Connector_Wire:SolderWire-1.5sqmm_1x02_P7.8mm_D1.7mm_OD3.9mm")
+    (path "/00000000-0000-0000-0000-00005f8b674d/0183ee69-1197-4b57-96dc-242038d84a39"
+      (reference "J1") (unit 1) (value "Conn_01x04") (footprint "Connector_JST:JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical")
     )
     (path "/00000000-0000-0000-0000-00005fa6ac8d"
       (reference "J2") (unit 1) (value "STDC14") (footprint "lib_fp:Samtec_FTSH-107-01-L-DV-K-A_2x07_P1.27mm")
@@ -5138,12 +5090,6 @@
     (path "/00000000-0000-0000-0000-00005fa19aff/00000000-0000-0000-0000-00005fa5b3dc"
       (reference "J7") (unit 1) (value "USB_A") (footprint "Connector_USB:USB_A_Molex_67643_Horizontal")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f996900"
-      (reference "K1") (unit 1) (value "SPST-NO") (footprint "lib_fp:Relay_SPST_Omron_G2RL-1A")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f996f15"
-      (reference "K2") (unit 1) (value "SPST-NO") (footprint "lib_fp:Relay_SPST_Omron_G2RL-1A")
-    )
     (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9fe48e"
       (reference "L1") (unit 1) (value "12uH") (footprint "lib_fp:L_Recom_RLS-126")
     )
@@ -5155,18 +5101,6 @@
     )
     (path "/00000000-0000-0000-0000-00005fb6070d"
       (reference "LS1") (unit 1) (value "Buzzer") (footprint "lib_fp:PKM22EPPH4001-B0")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f98e141"
-      (reference "P1") (unit 1) (value "IEC320-C14") (footprint "lib_fp:Bulgin_PX0580-PC")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f98f474"
-      (reference "P2") (unit 1) (value "IEC320-C13") (footprint "lib_fp:Bulgin_PX0675-PC")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f98fd81"
-      (reference "P3") (unit 1) (value "IEC320-C13") (footprint "lib_fp:Bulgin_PX0675-PC")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f98ea9a"
-      (reference "PS1") (unit 1) (value "PSK-6B-S12") (footprint "lib_fp:Converter_ACDC_CUI_PSK-6B")
     )
     (path "/00000000-0000-0000-0000-00005fa19aff/00000000-0000-0000-0000-00005fa4f969"
       (reference "Q1") (unit 1) (value "BSS138") (footprint "Package_TO_SOT_SMD:SOT-23")
@@ -5279,10 +5213,10 @@
     (path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa5a5ad"
       (reference "SW11") (unit 1) (value "Rotary_Encoder_Switch") (footprint "lib_fp:RotaryEncoder_CUI_ACZ11BR1E-Switch_Vertical_H15mm")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa68d53"
+    (path "/00000000-0000-0000-0000-00005f8b674d/e1f60053-aab9-4ab3-a07b-8ac750da8468"
       (reference "TP1") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Keystone_5005-5009_Compact")
     )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa674ff"
+    (path "/00000000-0000-0000-0000-00005f8b674d/d38059c4-1465-47ff-adf7-1be668eb3dac"
       (reference "TP2") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Keystone_5005-5009_Compact")
     )
     (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005fa67e89"
@@ -5296,9 +5230,6 @@
     )
     (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f9e6e96"
       (reference "U2") (unit 1) (value "R-78E5.0-0.5") (footprint "Converter_DCDC:Converter_DCDC_RECOM_R-78E-0.5_THT")
-    )
-    (path "/00000000-0000-0000-0000-00005f8b674d/00000000-0000-0000-0000-00005f99946f"
-      (reference "U3") (unit 1) (value "NUD3112DMT1G") (footprint "Package_SO:SC-74-6_1.5x2.9mm_P0.95mm")
     )
     (path "/00000000-0000-0000-0000-00005f8a24aa"
       (reference "U4") (unit 1) (value "STM32F411RET6") (footprint "Package_QFP:LQFP-64_10x10mm_P0.5mm")
