@@ -416,7 +416,6 @@
           "LINE",
           "NEUT",
           "Net-(F1-Pad2)",
-          "Net-(F2-Pad1)",
           "Net-(J1-Pad1)",
           "Net-(K1-Pad3)",
           "Net-(K2-Pad3)"
@@ -440,7 +439,7 @@
       "idf": "",
       "netlist": "power-board.net",
       "specctra_dsn": "",
-      "step": "",
+      "step": "power-board.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""

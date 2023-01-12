@@ -417,7 +417,7 @@
       "idf": "",
       "netlist": "main-board.net",
       "specctra_dsn": "",
-      "step": "",
+      "step": "main-board.step",
       "vrml": ""
     },
     "page_layout_descr_file": ""
