@@ -3629,7 +3629,7 @@
     (property "Value" "S14K350" (id 1) (at 38.1 77.47 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Varistor:RV_Disc_D15.5mm_W5.2mm_P7.5mm" (id 2) (at 33.782 76.2 90)
+    (property "Footprint" "lib_fp:RV_Disc_D15.5mm_W5.6mm_P7.5mm" (id 2) (at 33.782 76.2 90)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "https://www.tdk-electronics.tdk.com/inf/70/db/var/SIOV_Leaded_StandarD.pdf?ref_disty=digikey" (id 3) (at 35.56 76.2 0)
@@ -3892,7 +3892,7 @@
       (reference "R1") (unit 1) (value "120R") (footprint "Resistor_SMD:R_0805_2012Metric")
     )
     (path "/f5398c79-1a1f-4900-9b5f-64ae06197d36"
-      (reference "RV1") (unit 1) (value "S14K350") (footprint "Varistor:RV_Disc_D15.5mm_W5.2mm_P7.5mm")
+      (reference "RV1") (unit 1) (value "S14K350") (footprint "lib_fp:RV_Disc_D15.5mm_W5.6mm_P7.5mm")
     )
     (path "/a48e8f3d-4996-4de2-bb69-8eac29ff1d08"
       (reference "TP1") (unit 1) (value "TestPoint") (footprint "TestPoint:TestPoint_Keystone_5005-5009_Compact")
