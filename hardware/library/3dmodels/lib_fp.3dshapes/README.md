@@ -112,3 +112,7 @@ this directory's `.gitignore` file.
 ### Keystone\_5006
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5006/Keystone%20Electronics%20Corp./view-part/>
+
+### SM06B-SRSS-TB-LF
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/SM06B-SRSS-TB(LF)(SN)/JST%20Sales/view-part/>
