@@ -108,3 +108,7 @@ this directory's `.gitignore` file.
 ### Neutrik\_NC5FBH
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.neutrik.com/en/product/nc5fbh>
+
+### Keystone\_5006
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/5006/Keystone%20Electronics%20Corp./view-part/>
