@@ -116,3 +116,8 @@ this directory's `.gitignore` file.
 ### SM06B-SRSS-TB-LF
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/SM06B-SRSS-TB(LF)(SN)/JST%20Sales/view-part/>
+
+### S4B-PH-SM4-TB
+* Status: Not included (Not redistributable)
+* Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=199>
+
