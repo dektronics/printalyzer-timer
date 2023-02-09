@@ -65,6 +65,10 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <http://download.ia.omron.com/download/page/G2RL_1A/ECB>
 
+### G2RL-1A-E
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://download.ia.omron.com/download/page/G2RL_1A_E/ECB>
+
 ### Marquardt\_6425\_0101
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
