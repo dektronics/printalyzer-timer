@@ -33,9 +33,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 1.6,
-          "height": 2.8,
-          "width": 2.8
+          "drill": 1.3,
+          "height": 2.5,
+          "width": 2.5
         },
         "silk_line_width": 0.15239999999999998,
         "silk_text_italic": false,
@@ -419,9 +419,7 @@
           "LINE",
           "NEUT",
           "Net-(F1-Pad2)",
-          "Net-(J1-Pad1)",
-          "Net-(K1-Pad3)",
-          "Net-(K2-Pad3)"
+          "Net-(J1-Pad1)"
         ],
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",

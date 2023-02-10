@@ -1488,10 +1488,10 @@
     (symbol "G2RL-1A4-E-DC12_0_0"
       (polyline
         (pts
-          (xy 5.08 5.08)
-          (xy 5.08 1.905)
-          (xy 4.445 2.54)
-          (xy 5.08 3.175)
+          (xy 6.985 3.81)
+          (xy 6.985 1.27)
+          (xy 6.35 1.905)
+          (xy 6.985 2.54)
         )
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type none))
@@ -1572,16 +1572,40 @@
       )
       (polyline
         (pts
-          (xy 5.08 -2.54)
-          (xy 3.175 3.175)
+          (xy 4.445 0)
+          (xy 5.08 0)
+        )
+        (stroke (width 0.254) (type default) (color 0 0 0 0))
+        (fill (type none))
+      )
+      (polyline
+        (pts
+          (xy 5.08 -3.81)
+          (xy 5.08 -5.08)
+        )
+        (stroke (width 0) (type default) (color 0 0 0 0))
+        (fill (type none))
+      )
+      (polyline
+        (pts
+          (xy 5.08 3.81)
+          (xy 5.08 5.08)
+        )
+        (stroke (width 0) (type default) (color 0 0 0 0))
+        (fill (type none))
+      )
+      (polyline
+        (pts
+          (xy 6.985 -2.54)
+          (xy 5.08 2.54)
         )
         (stroke (width 0.508) (type default) (color 0 0 0 0))
         (fill (type none))
       )
       (polyline
         (pts
-          (xy 5.08 -2.54)
-          (xy 5.08 -5.08)
+          (xy 6.985 -2.54)
+          (xy 6.985 -3.81)
         )
         (stroke (width 0) (type default) (color 0 0 0 0))
         (fill (type none))
