@@ -128,3 +128,12 @@ this directory's `.gitignore` file.
 ### DF22-2P-7.92DSA
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.hirose.com/en/product/p/CL0680-1014-8-53>
+
+### DF63M-2P-3.96DSA
+* Status: Not included (Not redistributable)
+* Source: Manufacturer <https://www.hirose.com/product/p/CL0680-0567-0-00>
+
+### TE\_350428-01
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.te.com/usa-en/product-350428-1.html>
+
