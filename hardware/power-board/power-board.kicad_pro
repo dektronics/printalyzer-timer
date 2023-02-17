@@ -495,7 +495,9 @@
     "meta": {
       "version": 3
     },
-    "net_colors": null,
+    "net_colors": {
+      "Earth": "rgb(0, 132, 0)"
+    },
     "netclass_assignments": null,
     "netclass_patterns": [
       {
