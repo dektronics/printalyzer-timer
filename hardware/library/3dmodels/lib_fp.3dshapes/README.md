@@ -125,3 +125,6 @@ this directory's `.gitignore` file.
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=199>
 
+### DF22-2P-7.92DSA
+* Status: Not included (Not redistributable)
+* Source: Manufacturer <https://www.hirose.com/en/product/p/CL0680-1014-8-53>
