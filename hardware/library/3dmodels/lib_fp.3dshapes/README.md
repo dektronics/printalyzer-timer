@@ -137,3 +137,6 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.te.com/usa-en/product-350428-1.html>
 
+### Cincom\_CFM06Sxxx-E
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.cincon.com/productdetail/CFM06S.html>
