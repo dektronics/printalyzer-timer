@@ -140,3 +140,7 @@ this directory's `.gitignore` file.
 ### Cincom\_CFM06Sxxx-E
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cincon.com/productdetail/CFM06S.html>
+
+### Schurter\_6182\_0033.step
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=6182.0033>
