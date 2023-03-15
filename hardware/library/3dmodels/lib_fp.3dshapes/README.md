@@ -144,3 +144,8 @@ this directory's `.gitignore` file.
 ### Schurter\_6182\_0033.step
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=6182.0033>
+
+### Schurter\_GSP1\_9113\_1.step
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=GSP1.9113.1>
+* Notes: Original model has been modified to better reflect the specific part variant being used.
