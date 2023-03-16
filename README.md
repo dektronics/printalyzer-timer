@@ -15,7 +15,8 @@ A good overview of the project can be found in these blog posts:
 Videos demonstrating the project are here:
 * [Introducing the Printalyzer](https://youtu.be/2FPqqqVILP8)
 
-Note: This project is currently a work-in-progress, so expect the hardware and software to be continuously evolving.
+Note: This project is currently a work-in-progress, so expect the hardware and software to be continuously evolving.  The last functional version of this repository, using the revision A prototype hardware, was
+'main-board-rev-a-186-g9bce418'.
 
 ## Project Layout
 
@@ -23,6 +24,20 @@ Note: This project is currently a work-in-progress, so expect the hardware and s
 The "hardware" directory contains [KiCad](https://www.kicad.org/) projects
 with the complete circuit schematics, bill-of-materials, and
 PCB layouts.
+
+* Main Board (main-board)
+  * The main circuit board which contains all of the top panel controls and front panel ports
+  * Runs off a +12V DC input, and contains regulators for all other voltage rails
+
+* Power Board (power-board)
+  * The AC power input board, which is the only part of the system that should ever touch mains AC power
+  * Runs off power from an IEC320 C14 inlet, and provides output power to drive two IEC320 C13 outlets
+  * Outputs the +12V DC power supply to run the rest of the system
+  * Contains any connectors that need to be on the rear panel, isolating them if they do not involve mains AC power
+
+* Meter Probe (meter-probe)
+  * The circuit board contained within the external light meter probe peripheral
+  * Runs off a +5V DC input from its connecting cable
 
 ### Software
 The "software" directory contains all the source code for the firmware
