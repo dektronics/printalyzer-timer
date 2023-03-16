@@ -6,8 +6,8 @@
 
   (title_block
     (title "Printalyzer - Main Board")
-    (date "2020-11-16")
-    (rev "A")
+    (date "2023-03-16")
+    (rev "B")
     (company "Dektronics, Inc.")
     (comment 1 "Derek Konigsberg")
   )
