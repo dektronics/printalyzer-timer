@@ -149,3 +149,7 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=GSP1.9113.1>
 * Notes: Original model has been modified to better reflect the specific part variant being used.
+
+### Molex\_768290002
+* Status: Included (Vague terms listed with download)
+* Source: Manufacturer <https://www.molex.com/molex/part/partModels.jsp?&prodLevel=part&partNo=768290002&channel=products>
