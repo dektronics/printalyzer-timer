@@ -153,3 +153,11 @@ this directory's `.gitignore` file.
 ### Molex\_768290002
 * Status: Included (Vague terms listed with download)
 * Source: Manufacturer <https://www.molex.com/molex/part/partModels.jsp?&prodLevel=part&partNo=768290002&channel=products>
+
+### L\_XND5050XA
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXND5050XAT3R3MMG&u=M>
+
+### L\_XNH8080YK
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXNH8080YKL100MJG&u=M>
