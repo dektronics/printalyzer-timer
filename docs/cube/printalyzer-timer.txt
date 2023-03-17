@@ -1,6 +1,6 @@
-Configuration	printalyzer-cube
-STM32CubeMX 	6.1.0
-Date	12/07/2020
+Configuration	printalyzer-timer
+STM32CubeMX 	6.8.0
+Date	03/17/2023
 MCU	STM32F411RETx
 
 
@@ -25,6 +25,7 @@ TIM1	Encoder Mode	TIM1_CH1	PA8
 TIM1	Encoder Mode	TIM1_CH2	PA9
 TIM3	PWM Generation CH1	TIM3_CH1	PC6
 TIM9	PWM Generation CH1	TIM9_CH1	PA2
+TIM10	Enable_Timer	TIM10_VS_ClockSourceINT	VP_TIM10_VS_ClockSourceINT
 USART1	Asynchronous	USART1_RX	PA10
 USART1	Asynchronous	USART1_TX	PB6
 USB_OTG_FS	Host_Only	USB_OTG_FS_DM	PA11
@@ -87,6 +88,7 @@ TIM1	Encoder Mode	TIM1_CH1	PA8
 TIM1	Encoder Mode	TIM1_CH2	PA9
 TIM3	PWM Generation CH1	TIM3_CH1	PC6
 TIM9	PWM Generation CH1	TIM9_CH1	PA2
+TIM10	Enable_Timer	TIM10_VS_ClockSourceINT	VP_TIM10_VS_ClockSourceINT
 USART1	Asynchronous	USART1_RX	PA10
 USART1	Asynchronous	USART1_TX	PB6
 USB_OTG_FS	Host_Only	USB_OTG_FS_DM	PA11
@@ -135,10 +137,10 @@ Pin Nb	PINs	FUNCTIONs	LABELs
 SOFTWARE PROJECT
 
 Project Settings : 
-Project Name : printalyzer-cube
-Project Folder : /home/octo/devel/printalyzer-cube
+Project Name : printalyzer-timer
+Project Folder : /home/octo/devel/printalyzer-cube/firmware_b
 Toolchain / IDE : STM32CubeIDE
-Firmware Package Name and Version : STM32Cube FW_F4 V1.25.2
+Firmware Package Name and Version : STM32Cube FW_F4 V1.27.1
 
 
 Code Generation Settings : 
