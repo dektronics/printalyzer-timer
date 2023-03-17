@@ -1199,7 +1199,7 @@
     (uuid e51d68d7-f0b2-4ed5-ad07-47f2b54894c9)
   )
 
-  (hierarchical_label "DMX512_RX" (shape input) (at 45.085 143.51 0) (fields_autoplaced)
+  (hierarchical_label "DMX512_RX" (shape output) (at 45.085 143.51 0) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid 0fa3d46f-e9a2-4eb5-9e91-e9c4de929bf5)
   )
