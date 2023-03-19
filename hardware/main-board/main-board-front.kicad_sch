@@ -2995,7 +2995,7 @@
     (property "Footprint" "lib_fp:CUI_MD-60SM" (at 166.37 54.61 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "https://www.cuidevices.com/product/resource/digikeypdf/md-sm-series.pdf" (at 166.37 39.37 0)
+    (property "Datasheet" "https://www.cuidevices.com/product/resource/md-sm.pdf" (at 166.37 39.37 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "User Label" "Meter Probe" (at 166.37 31.115 0)
