@@ -48,9 +48,9 @@ this directory's `.gitignore` file.
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
 
-### CUI_MD-60SM
-* Status: Included (Same license as project)
-* Source: Created for project using Autodesk Fusion 360
+### CUI\_MD-60SM
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.cuidevices.com/product/resource/3dmodel/md-60sm>
 
 ### CUI_PSK-6B-S12
 * Status: Included (No terms listed with download)
