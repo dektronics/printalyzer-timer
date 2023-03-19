@@ -161,3 +161,7 @@ this directory's `.gitignore` file.
 ### L\_XNH8080YK
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXNH8080YKL100MJG&u=M>
+
+### CUI\_MJ-3502
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.cuidevices.com/product/resource/digikey3dmodel/mj-3502>
