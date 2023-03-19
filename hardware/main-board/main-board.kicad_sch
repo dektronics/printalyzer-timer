@@ -1651,7 +1651,6 @@
     (uuid fa735e69-8ced-4b28-b8fe-a9f5b5ca40e7)
   )
 
-  (no_connect (at 34.29 144.78) (uuid 0e4de751-7934-45fb-9028-3d7667e20546))
   (no_connect (at 67.31 99.06) (uuid 1e08299e-d61b-4e25-899c-1aa922308c3a))
   (no_connect (at 102.87 91.44) (uuid 221fd0c9-024f-441d-8dd6-28349989f20e))
   (no_connect (at 102.87 114.3) (uuid 227ce83b-6c4d-4a1a-a401-533ae0b666d8))
@@ -4980,6 +4979,31 @@
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
           (reference "#PWR01") (unit 1)
+        )
+      )
+    )
+  )
+
+  (symbol (lib_id "power:+3.3V") (at 34.29 144.78 0) (unit 1)
+    (in_bom yes) (on_board yes) (dnp no)
+    (uuid 088ec8b1-4ecb-4089-9a98-aafaf6c27877)
+    (property "Reference" "#PWR085" (at 34.29 148.59 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Value" "+3.3V" (at 34.29 141.224 0)
+      (effects (font (size 1.27 1.27)))
+    )
+    (property "Footprint" "" (at 34.29 144.78 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (property "Datasheet" "" (at 34.29 144.78 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (pin "1" (uuid e1248534-7d8a-41eb-8661-dbff9f8b97c2))
+    (instances
+      (project "main-board"
+        (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+          (reference "#PWR085") (unit 1)
         )
       )
     )
