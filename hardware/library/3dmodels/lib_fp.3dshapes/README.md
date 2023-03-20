@@ -165,3 +165,8 @@ this directory's `.gitignore` file.
 ### CUI\_MJ-3502
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cuidevices.com/product/resource/digikey3dmodel/mj-3502>
+
+### CNC\_3220-14-0300
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <http://www.cnctech.us/pdfs/3220-14-0300.zip>
+* Notes: Original model has been modified to convert from IGES to STEP and to add colors
