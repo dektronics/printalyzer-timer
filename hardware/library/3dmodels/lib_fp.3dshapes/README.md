@@ -113,9 +113,25 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.neutrik.com/en/product/nc5fbh>
 
+### Keystone\_5005
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/5005/Keystone%20Electronics%20Corp./view-part/>
+
 ### Keystone\_5006
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5006/Keystone%20Electronics%20Corp./view-part/>
+
+### Keystone\_5007
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/5007/Keystone%20Electronics%20Corp./view-part/>
+
+### Keystone\_5008
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/5008/Keystone%20Electronics%20Corp./view-part/>
+
+### Keystone\_5009
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/5009/Keystone%20Electronics%20Corp./view-part/>
 
 ### SM06B-SRSS-TB-LF
 * Status: Included
