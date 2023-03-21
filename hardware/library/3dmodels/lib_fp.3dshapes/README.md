@@ -170,3 +170,15 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <http://www.cnctech.us/pdfs/3220-14-0300.zip>
 * Notes: Original model has been modified to convert from IGES to STEP and to add colors
+
+### B2B-PH-SM4-TB(LF)(SN)
+* Status: Included (CC BY-SA /w Design Exception 1.0)
+* Source: SnapEDA <https://www.snapeda.com/parts/B2B-PH-SM4-TB(LF)(SN)/JST%20SALES%20AMERICA%20INC%20(VA)/view-part/>
+
+### B4B-PH-SM4-TB(LF)(SN)
+* Status: Included (CC BY-SA /w Design Exception 1.0)
+* Source: SnapEDA <https://www.snapeda.com/parts/B4B-PH-SM4-TB%28LF%29%28SN%29/JST%20Sales/view-part/>
+
+### BM02B-SRSS-TB
+* Status: Not included (Not redistributable)
+* Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=231>
