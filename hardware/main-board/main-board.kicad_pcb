@@ -7,7 +7,7 @@
   (paper "USLetter")
   (title_block
     (title "Printalyzer - Main Board")
-    (date "2020-11-16")
+    (date "2023-03-23")
     (rev "B")
     (company "Dektronics, Inc.")
     (comment 1 "Derek Konigsberg")
@@ -4965,13 +4965,13 @@
 
   (footprint "lib_fp:Printalyzer-logo-25_4mm" (layer "F.Cu")
     (tstamp 00000000-0000-0000-0000-00005fadb9a7)
-    (at 218.937 54.526 90)
+    (at 39.4 24.7)
     (attr through_hole)
-    (fp_text reference "G***" (at 0 0 90) (layer "F.SilkS") hide
+    (fp_text reference "G***" (at 0 0) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp 7f7df272-6fe1-4919-b329-b0eb137a8faa)
     )
-    (fp_text value "LOGO" (at 0.75 0 90) (layer "F.SilkS") hide
+    (fp_text value "LOGO" (at 0.75 0) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3)))
       (tstamp 3a923dbf-cffc-4d00-a4d6-b5814e700854)
     )
@@ -7331,15 +7331,15 @@
 
   (footprint "Symbol:OSHW-Symbol_6.7x6mm_SilkScreen" (layer "F.Cu")
     (tstamp 00000000-0000-0000-0000-00005fadcfa4)
-    (at 221.687 33.776 90)
+    (at 22.4 39.9)
     (descr "Open Source Hardware Symbol")
     (tags "Logo Symbol OSHW")
     (attr exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "REF**" (at 0 0 90) (layer "F.SilkS") hide
+    (fp_text reference "REF**" (at 0 0) (layer "F.SilkS") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp e4701e9b-4e03-40a3-922a-f599d642145a)
     )
-    (fp_text value "OSHW-Symbol_6.7x6mm_SilkScreen" (at 0.75 0 90) (layer "F.Fab") hide
+    (fp_text value "OSHW-Symbol_6.7x6mm_SilkScreen" (at 0.75 0) (layer "F.Fab") hide
         (effects (font (size 1 1) (thickness 0.15)))
       (tstamp fe8ab087-0e40-419d-828f-cad259321547)
     )
@@ -7882,15 +7882,15 @@
 
   (footprint "lib_fp:Dektronics-logo" (layer "F.Cu")
     (tstamp 0c6d8f74-b40e-41c6-9e5c-6e4f0856ea8a)
-    (at 226.187 49.276 90)
+    (at 44.65 31.95)
     (descr "Converted using: svg2mod -i Monotone-Black-sm.svg")
     (tags "svg2mod")
     (attr exclude_from_pos_files exclude_from_bom)
-    (fp_text reference "LOGO" (at 0 -2 90) (layer "F.SilkS") hide
+    (fp_text reference "LOGO" (at 0 -2) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp 1455ccc9-d58d-4926-b2a1-82fce5b493dd)
     )
-    (fp_text value "G***" (at 0 2.3 90) (layer "F.SilkS") hide
+    (fp_text value "G***" (at 0 2.3) (layer "F.SilkS") hide
         (effects (font (size 1.524 1.524) (thickness 0.3048)))
       (tstamp 378d05ce-665e-4b21-ad20-cf722227965d)
     )
@@ -12424,15 +12424,17 @@
     )
   )
 
-  (gr_line (start 224.937 59.072) (end 224.937 67.776)
+  (gr_line (start 34.854 30.7) (end 26.15 30.7)
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp 00000000-0000-0000-0000-00005fadc70e))
-  (gr_line (start 227.937 67.776) (end 227.937 59.072)
+  (gr_rect (start 26 128) (end 52 134)
+    (stroke (width 0.1524) (type solid)) (fill solid) (layer "F.SilkS") (tstamp 2d94a45b-c93b-4857-aed6-182877831916))
+  (gr_line (start 26.15 33.7) (end 34.854 33.7)
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp 5c229018-5ca3-4422-ba74-f7b2e31d5294))
-  (gr_line (start 224.937 67.776) (end 227.937 67.776)
+  (gr_line (start 26.15 30.7) (end 26.15 33.7)
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp 6271d841-1ae8-435a-9c78-73c93dc30ab2))
   (gr_circle locked (center 201.5 108.81) (end 201.68 108.81)
     (stroke (width 0.381) (type solid)) (fill solid) (layer "F.SilkS") (tstamp b01cafb7-65b7-4a93-848a-3e10b4aae601))
-  (gr_line (start 227.937 59.072) (end 224.937 59.072)
+  (gr_line (start 34.854 33.7) (end 34.854 30.7)
     (stroke (width 0.1524) (type solid)) (layer "F.SilkS") (tstamp df5848e3-2904-4615-96e9-7aed0620824b))
   (gr_arc (start 204 131) (mid 202.535534 134.535534) (end 199 136)
     (stroke (width 0.0381) (type solid)) (layer "Edge.Cuts") (tstamp 00000000-0000-0000-0000-00005faa9ed5))
@@ -13709,10 +13711,10 @@
   (gr_text "USB" (at 167.5 134) (layer "B.SilkS") (tstamp f5373069-f54d-43fe-853e-3b814d12c8df)
     (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
   )
-  (gr_text "Rev: ${REVISION}\n${ISSUE_DATE}" (at 226.437 67.526 90) (layer "F.SilkS") (tstamp 0471d4f6-47dc-40c5-a9fe-35d25c25a11c)
+  (gr_text "Rev: ${REVISION}\n${ISSUE_DATE}" (at 26.4 32.2) (layer "F.SilkS") (tstamp 0471d4f6-47dc-40c5-a9fe-35d25c25a11c)
     (effects (font (size 0.8128 0.8128) (thickness 0.1524)) (justify left))
   )
-  (gr_text "Darkroom Enlarger Timer & Exposure Meter" (at 222.437 54.026 90) (layer "F.SilkS") (tstamp 17cc3e61-9e02-4223-8a7b-6e943e0c1658)
+  (gr_text "Darkroom Enlarger Timer & Exposure Meter" (at 39.9 28.2) (layer "F.SilkS") (tstamp 17cc3e61-9e02-4223-8a7b-6e943e0c1658)
     (effects (font (size 0.8128 0.8128) (thickness 0.1524)))
   )
   (gr_text "DMX512" (at 181 22) (layer "F.SilkS") (tstamp 1e91471b-39c7-41fa-9729-bbc415f67542)
@@ -39815,9 +39817,8 @@
       17cc3e61-9e02-4223-8a7b-6e943e0c1658
     )
   )
-  (group "" (id 5a0636e8-109f-4afa-93b6-690de848ea94)
+  (group "" (id 5cf4dac1-af76-4961-892c-cb9d8678c115)
     (members
-      00000000-0000-0000-0000-00005fadcfa4
       0c6d8f74-b40e-41c6-9e5c-6e4f0856ea8a
       0ea179b1-3fb5-4b97-8b62-29ff05b4ac33
       1dfb92b3-cb34-4069-b48c-52f043f308a1
