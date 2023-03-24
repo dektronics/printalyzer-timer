@@ -1,7 +1,7 @@
 (kicad_pcb (version 20221018) (generator pcbnew)
 
   (general
-    (thickness 0.57)
+    (thickness 1.62)
   )
 
   (paper "USLetter")
@@ -42,7 +42,7 @@
       (layer "F.Paste" (type "Top Solder Paste"))
       (layer "F.Mask" (type "Top Solder Mask") (thickness 0.01))
       (layer "F.Cu" (type "copper") (thickness 0.035))
-      (layer "dielectric 1" (type "core") (thickness 0.48) (material "FR4") (epsilon_r 4.5) (loss_tangent 0.02))
+      (layer "dielectric 1" (type "core") (thickness 1.53) (material "FR4") (epsilon_r 4.5) (loss_tangent 0.02))
       (layer "B.Cu" (type "copper") (thickness 0.035))
       (layer "B.Mask" (type "Bottom Solder Mask") (thickness 0.01))
       (layer "B.Paste" (type "Bottom Solder Paste"))
@@ -2241,7 +2241,7 @@
     (pad "G" thru_hole circle locked (at 10.17 -4.44 90) (size 2.9 2.9) (drill 1.2) (layers "*.Cu" "*.Mask")
       (net 9 "Earth") (pintype "passive") (tstamp 47f7a65b-3059-4510-b260-20199fd2d082))
     (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Neutrik_NC5FBH.step"
-      (offset (xyz 17.5 -3.81 12.5))
+      (offset (xyz 17.15 -3.81 12.5))
       (scale (xyz 1 1 1))
       (rotate (xyz -90 0 90))
     )
