@@ -12472,6 +12472,14 @@
     (stroke (width 0.0381) (type solid)) (layer "Edge.Cuts") (tstamp ce70ac55-cb00-40b9-8712-51488b5dad20))
   (gr_arc (start 199 21) (mid 202.535534 22.464466) (end 204 26)
     (stroke (width 0.0381) (type solid)) (layer "Edge.Cuts") (tstamp fc9e959e-f092-4780-a356-f011a2f8b097))
+  (gr_circle (center 152.5 57.49) (end 155.5 57.49)
+    (stroke (width 0.05) (type default)) (fill none) (layer "B.CrtYd") (tstamp 17a381b0-33d5-4840-845c-f4ca9832ac79))
+  (gr_circle locked (center 152.5 28.99) (end 155.5 28.99)
+    (stroke (width 0.05) (type default)) (fill none) (layer "B.CrtYd") (tstamp 19d3cb54-ea37-40b6-86a4-e751bd4a8027))
+  (gr_circle locked (center 57.5 57.49) (end 60.5 57.49)
+    (stroke (width 0.05) (type default)) (fill none) (layer "B.CrtYd") (tstamp 2206826b-03c8-4f94-bcd3-659394bdcd68))
+  (gr_circle locked (center 57.5 28.99) (end 60.5 28.99)
+    (stroke (width 0.05) (type default)) (fill none) (layer "B.CrtYd") (tstamp aa8f49a9-0cd2-4ce0-bb02-3e96c000c8fa))
   (image (at 109.25 -32) (layer "F.Fab") (scale 0.424562)
     (data
       iVBORw0KGgoAAAANSUhEUgAAApAAAAOdCAIAAAC9PsVtAAAAA3NCSVQICAjb4U/gAAAgAElEQVR4
@@ -13770,7 +13778,7 @@
   (dimension (type aligned) (layer "Cmts.User") (tstamp 66e61c23-5bc2-42af-9bd0-3d16ddd3a220)
     (pts (xy 204 21) (xy 204 136))
     (height -5)
-    (gr_text "4527.5591 mils" (at 207.85 78.5 90) (layer "Cmts.User") (tstamp 66e61c23-5bc2-42af-9bd0-3d16ddd3a220)
+    (gr_text "115.0000 mm" (at 207.85 78.5 90) (layer "Cmts.User") (tstamp 66e61c23-5bc2-42af-9bd0-3d16ddd3a220)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (format (prefix "") (suffix "") (units 3) (units_format 1) (precision 4))
