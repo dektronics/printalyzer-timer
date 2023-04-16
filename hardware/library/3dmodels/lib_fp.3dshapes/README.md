@@ -198,3 +198,15 @@ this directory's `.gitignore` file.
 ### BM02B-SRSS-TB
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=231>
+
+### LED\_XLUR11D\_ELM-2-120\_Assembly
+* Created as a merged and customized version of two component models
+  * LED modified for color and lead length
+  * Spacer modified for color and body length
+  * Combined to represent component as intended to be used
+* XLUR11D
+  * Status: Included (No terms listed with download)
+  * Source: Manufacturer via link on Digi-Key <https://www.sunledusa.com/products/3d%20file/e/XLxx11.step>
+* ELM 2-120
+  * Status: Included (No terms listed with download)
+  * Source: Manufacturer via link on Digi-Key <https://www.bivar.com/parts_content/Models/ELM%202.IGS>
