@@ -2241,7 +2241,7 @@
     (effects (font (size 1.27 1.27) italic) (justify right))
     (uuid 2842dd13-9857-4cd5-a065-a67df0c7fcac)
   )
-  (hierarchical_label "SENSOR_BTN" (shape input) (at 31.75 120.65 180) (fields_autoplaced)
+  (hierarchical_label "PROBE_BTN" (shape input) (at 31.75 120.65 180) (fields_autoplaced)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid 4e13019d-3696-4118-a398-8a3e17ccfc3d)
   )
