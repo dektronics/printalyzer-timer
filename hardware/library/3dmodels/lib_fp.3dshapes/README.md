@@ -210,3 +210,7 @@ this directory's `.gitignore` file.
 * ELM 2-120
   * Status: Included (No terms listed with download)
   * Source: Manufacturer via link on Digi-Key <https://www.bivar.com/parts_content/Models/ELM%202.IGS>
+
+### AVX-00-9175-003-001-906
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.kyocera-avx.com/products/connectors/wire-to-board/standard-26-28-awg-00-9175/>
