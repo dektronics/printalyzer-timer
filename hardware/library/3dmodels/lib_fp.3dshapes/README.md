@@ -214,3 +214,7 @@ this directory's `.gitignore` file.
 ### AVX-00-9175-003-001-906
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.kyocera-avx.com/products/connectors/wire-to-board/standard-26-28-awg-00-9175/>
+
+### IRM-10-12
+* Status: Included (Contributed to source by Glenn McKie, no terms listed with download)
+* Source: 3D ContentCentral <https://www.3dcontentcentral.com/Download-Model.aspx?catalogid=171&id=609491>
