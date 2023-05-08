@@ -222,3 +222,7 @@ this directory's `.gitignore` file.
 ### Schurter\_FPG5\_3101\_0050
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=3101.0050>
+
+### Amphenol\_87583-3010xx
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on Digi-Key <https://cdn.amphenol-cs.com/media/wysiwyg/files/3d/s87583-3010xx.zip>
