@@ -218,3 +218,7 @@ this directory's `.gitignore` file.
 ### IRM-10-12
 * Status: Included (Contributed to source by Glenn McKie, no terms listed with download)
 * Source: 3D ContentCentral <https://www.3dcontentcentral.com/Download-Model.aspx?catalogid=171&id=609491>
+
+### Schurter\_FPG5\_3101\_0050
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=3101.0050>
