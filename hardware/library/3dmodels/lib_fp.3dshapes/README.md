@@ -226,3 +226,7 @@ this directory's `.gitignore` file.
 ### Amphenol\_87583-3010xx
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on Digi-Key <https://cdn.amphenol-cs.com/media/wysiwyg/files/3d/s87583-3010xx.zip>
+
+### Weidmuller\_1825960000
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on product page <https://catalog.weidmueller.com/catalog/Start.do?ObjectID=1825960000>
