@@ -4152,7 +4152,7 @@
     (property "Footprint" "lib_fp:Fuseholder_Cylinder-5x20mm_Schurter_FPG5_3101.0050_Horizontal_Closed" (at 27.94 53.848 90)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Datasheet" "https://www.bulgin.com/products/pub/media/bulgin/data/Fuseholders.pdf" (at 27.94 52.07 0)
+    (property "Datasheet" "https://www.schurter.com/en/datasheet/typ_FPG5.pdf" (at 27.94 52.07 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "User Label" "Main Fuse" (at 27.94 48.895 90)
