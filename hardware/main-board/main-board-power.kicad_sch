@@ -6,7 +6,7 @@
 
   (title_block
     (title "Printalyzer - Main Board (Power Supply and Control)")
-    (date "2023-03-16")
+    (date "2023-05-16")
     (rev "B")
     (company "Dektronics, Inc.")
     (comment 1 "Derek Konigsberg")
@@ -1403,7 +1403,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x04") (at 33.02 29.845 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 0183ee69-1197-4b57-96dc-242038d84a39)
-    (property "Reference" "J1" (at 30.48 29.8449 0)
+    (property "Reference" "J3" (at 30.48 29.8449 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Power Board" (at 30.48 32.3849 0)
@@ -1430,14 +1430,14 @@
     (property "Supplier PN" "37K9959" (at 33.02 29.845 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 5df4557c-ff92-44b0-b1f2-8769881b7806))
-    (pin "2" (uuid f5294ce2-363a-4e70-8ca3-3458aab4b85f))
-    (pin "3" (uuid 83e74ff4-df05-4d5a-ac35-36c0c6a76ddb))
-    (pin "4" (uuid 115f89cf-1f22-4156-94b8-42bda202ed6d))
+    (pin "1" (uuid a083c443-e4f6-4d79-8090-694f23f35bba))
+    (pin "2" (uuid 61762e4f-a72b-4012-9140-52e6e23e8abb))
+    (pin "3" (uuid 9c483cac-3198-4ea3-8e31-63faf7ea771b))
+    (pin "4" (uuid 7fd3ef65-f82d-4807-9d2a-adc08b6514cd))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "J1") (unit 1)
+          (reference "J3") (unit 1)
         )
       )
     )
@@ -1446,7 +1446,7 @@
   (symbol (lib_id "power:GND") (at 55.245 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 04e8126c-d3b4-4fd6-b923-0e80843c933a)
-    (property "Reference" "#PWR022" (at 55.245 73.66 0)
+    (property "Reference" "#PWR040" (at 55.245 73.66 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 55.245 71.12 0)
@@ -1458,16 +1458,16 @@
     (property "Datasheet" "" (at 55.245 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 923c4f01-7b6b-44bf-91b5-a52a30339d83))
+    (pin "1" (uuid 2413cb3e-9b80-4d1a-b7d7-971c05b17bed))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR022") (unit 1)
+          (reference "#PWR040") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR07") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1476,7 +1476,7 @@
   (symbol (lib_id "power:GND") (at 40.005 36.83 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 098eb593-fce0-49e7-8db9-2e9cec28f9e0)
-    (property "Reference" "#PWR016" (at 40.005 43.18 0)
+    (property "Reference" "#PWR035" (at 40.005 43.18 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 40.005 40.64 0)
@@ -1488,11 +1488,11 @@
     (property "Datasheet" "" (at 40.005 36.83 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 715be26b-d13a-48c8-a0ad-8fe37e521c0b))
+    (pin "1" (uuid bff4937b-c524-4020-b3f6-f7ae4e2cbf1a))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR016") (unit 1)
+          (reference "#PWR035") (unit 1)
         )
       )
     )
@@ -1501,7 +1501,7 @@
   (symbol (lib_id "power:GND") (at 30.48 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 12ce7019-cc68-4f4e-a78b-9c627d6d91d7)
-    (property "Reference" "#PWR020" (at 30.48 73.66 0)
+    (property "Reference" "#PWR032" (at 30.48 73.66 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 30.48 71.12 0)
@@ -1513,16 +1513,16 @@
     (property "Datasheet" "" (at 30.48 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 5533a634-65cc-48db-9772-d7dea32d1e69))
+    (pin "1" (uuid 0febe492-a3e4-45dd-9fc3-fc9f4cbc3fdd))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR020") (unit 1)
+          (reference "#PWR032") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR08") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1531,7 +1531,7 @@
   (symbol (lib_id "power:GND") (at 159.385 111.125 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 17a6603c-8d81-430c-9be4-ea4fda524f11)
-    (property "Reference" "#PWR090" (at 159.385 117.475 0)
+    (property "Reference" "#PWR056" (at 159.385 117.475 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 159.385 114.935 0)
@@ -1543,16 +1543,16 @@
     (property "Datasheet" "" (at 159.385 111.125 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 206e9d4c-1cdd-49c1-9bd3-b2d5b801f5f5))
+    (pin "1" (uuid d92df33e-b53b-41b5-9d38-abf6793b1e24))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR090") (unit 1)
+          (reference "#PWR056") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1561,7 +1561,7 @@
   (symbol (lib_id "power:GND") (at 174.625 111.125 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 18476b7c-1d4a-4f02-b404-ec5230b663c9)
-    (property "Reference" "#PWR099" (at 174.625 117.475 0)
+    (property "Reference" "#PWR058" (at 174.625 117.475 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 174.625 114.935 0)
@@ -1573,16 +1573,16 @@
     (property "Datasheet" "" (at 174.625 111.125 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 1336e87f-f91a-4d56-8403-7cdb62959904))
+    (pin "1" (uuid 456dc250-93eb-4bb8-a3ad-a8dfc16e9f6b))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR099") (unit 1)
+          (reference "#PWR058") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1618,8 +1618,8 @@
     (property "Supplier PN" "587-3459-1-ND" (at 47.625 60.325 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 60b83dd6-66d0-4884-84f2-d5647362a312))
-    (pin "2" (uuid d881b14f-4b32-4b45-a1da-0068730ab455))
+    (pin "1" (uuid 5a19418c-6925-4045-997f-a0416e7d02b8))
+    (pin "2" (uuid 766cd0dc-84f7-47d8-b513-b26a99dc9dbd))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
@@ -1628,7 +1628,7 @@
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "L2") (unit 1)
+          (reference "L?") (unit 1)
         )
       )
     )
@@ -1637,7 +1637,7 @@
   (symbol (lib_id "power:GND") (at 150.495 111.125 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 19ac3275-dd3c-4543-b221-d444b1c4f725)
-    (property "Reference" "#PWR037" (at 150.495 117.475 0)
+    (property "Reference" "#PWR054" (at 150.495 117.475 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 150.495 114.935 0)
@@ -1649,16 +1649,16 @@
     (property "Datasheet" "" (at 150.495 111.125 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b17787bf-21ea-40ce-b8a3-a8320d119275))
+    (pin "1" (uuid 53af28d2-2c02-47ef-842d-dcd6357644c1))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR037") (unit 1)
+          (reference "#PWR054") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1667,7 +1667,7 @@
   (symbol (lib_id "Device:R_Small") (at 139.065 114.3 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 1bd67859-da78-41ab-95cd-38aa8a19eb1a)
-    (property "Reference" "R27" (at 140.97 113.665 0)
+    (property "Reference" "R7" (at 140.97 113.665 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "17.4k" (at 140.97 116.205 0)
@@ -1694,17 +1694,17 @@
     (property "Supplier PN" "P17.4KHCT-ND" (at 139.065 114.3 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 173b4803-8d58-4d2b-a124-de204333af5a))
-    (pin "2" (uuid 2c153d5c-b872-4b5f-ac17-62b57083d9fc))
+    (pin "1" (uuid 869f8178-fba6-42e3-a8a1-a26e12996d99))
+    (pin "2" (uuid 6f0708ae-ef46-48a8-adb8-b10a00c8a1d7))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "R27") (unit 1)
+          (reference "R7") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "R2") (unit 1)
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -1713,7 +1713,7 @@
   (symbol (lib_id "power:GND") (at 40.005 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 1ee5e740-994b-4b34-aa20-dbfaf11d9002)
-    (property "Reference" "#PWR031" (at 40.005 113.03 0)
+    (property "Reference" "#PWR037" (at 40.005 113.03 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 40.005 110.49 0)
@@ -1725,16 +1725,16 @@
     (property "Datasheet" "" (at 40.005 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 186ee9ad-e87c-4678-9bdd-8e68be319d6f))
+    (pin "1" (uuid 4c7ab787-f912-4114-8c7a-955a6c85c615))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR031") (unit 1)
+          (reference "#PWR037") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR08") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1743,7 +1743,7 @@
   (symbol (lib_id "power:GND") (at 159.385 71.755 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 20fb5c36-6b13-4ac2-ae2f-148533e1c8f7)
-    (property "Reference" "#PWR089" (at 159.385 78.105 0)
+    (property "Reference" "#PWR055" (at 159.385 78.105 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 159.385 75.565 0)
@@ -1755,16 +1755,16 @@
     (property "Datasheet" "" (at 159.385 71.755 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 2b7dfa30-1dc6-4088-a2ea-fd64e4c82adf))
+    (pin "1" (uuid 7778d49c-37c9-4207-99d3-3466e71673dc))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR089") (unit 1)
+          (reference "#PWR055") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -1773,7 +1773,7 @@
   (symbol (lib_id "Device:C_Small") (at 30.48 64.77 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 249a8158-ba0d-4742-bb3a-8709688cffa0)
-    (property "Reference" "C1" (at 32.385 64.135 0)
+    (property "Reference" "C18" (at 32.385 64.135 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 32.385 66.675 0)
@@ -1800,17 +1800,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 30.48 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 1d0677ea-b3ae-470c-b977-2985c2df6180))
-    (pin "2" (uuid 51637c0e-c8f7-4873-bfbd-b676e244a3eb))
+    (pin "1" (uuid f4b88b5c-01d0-496a-acff-7226af687c2d))
+    (pin "2" (uuid 4a8f17ab-3d0e-4b7f-8be4-c28b68ea1d82))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C1") (unit 1)
+          (reference "C18") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -1819,7 +1819,7 @@
   (symbol (lib_id "Device:C_Small") (at 150.495 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 27fd8475-c66a-411a-9740-4fc7a51951ee)
-    (property "Reference" "C35" (at 152.4 106.045 0)
+    (property "Reference" "C30" (at 152.4 106.045 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 152.4 108.585 0)
@@ -1846,17 +1846,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 150.495 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 1fd31b28-91f1-43ac-ab9d-6d2dcf9a902b))
-    (pin "2" (uuid 4fd9f7b6-61bc-4fe7-8fa7-3047668fc96d))
+    (pin "1" (uuid a3b8e108-5693-4779-b271-4533d8ade397))
+    (pin "2" (uuid fc10c043-a0c5-486a-a34e-aa0bde3d722a))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C35") (unit 1)
+          (reference "C30") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -1892,7 +1892,7 @@
     (property "Supplier PN" "36-5006-ND" (at 191.135 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid f2e706d6-910f-469a-8e3f-788fbafa92f5))
+    (pin "1" (uuid d6dfcd56-5d06-4930-ad33-c8f857c2a9c5))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
@@ -1905,7 +1905,7 @@
   (symbol (lib_id "power:PWR_FLAG") (at 40.005 29.845 270) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 33006bfb-e803-466c-b6c9-e0c1d388e55b)
-    (property "Reference" "#FLG02" (at 41.91 29.845 0)
+    (property "Reference" "#FLG03" (at 41.91 29.845 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "PWR_FLAG" (at 43.815 29.845 0)
@@ -1917,11 +1917,11 @@
     (property "Datasheet" "~" (at 40.005 29.845 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d9787e35-959f-4c9b-9fb7-d1056d1b5dbf))
+    (pin "1" (uuid 109a2e46-8979-4d4a-bf86-9e70df149fc6))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#FLG02") (unit 1)
+          (reference "#FLG03") (unit 1)
         )
       )
     )
@@ -1930,7 +1930,7 @@
   (symbol (lib_id "Device:C_Small") (at 183.515 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 3304989a-566c-4978-9ed2-9f1a9aa51434)
-    (property "Reference" "C46" (at 185.42 106.045 0)
+    (property "Reference" "C36" (at 185.42 106.045 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 185.42 108.585 0)
@@ -1957,17 +1957,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 183.515 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d6b5c935-95dd-498a-81bc-39bdcccdf887))
-    (pin "2" (uuid c9350080-74fe-4cbc-8fd8-dd8e5a46ec5e))
+    (pin "1" (uuid 40f1fcbf-4b55-4179-87a4-00f358f70765))
+    (pin "2" (uuid 636ea84b-1fc9-40b1-b4bd-d6f18741732d))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C46") (unit 1)
+          (reference "C36") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -1976,7 +1976,7 @@
   (symbol (lib_id "power:+12V") (at 22.86 60.325 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 38333b58-aca4-4424-ae0c-e0574b81658e)
-    (property "Reference" "#PWR019" (at 22.86 64.135 0)
+    (property "Reference" "#PWR030" (at 22.86 64.135 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (at 22.86 56.515 0)
@@ -1988,16 +1988,16 @@
     (property "Datasheet" "" (at 22.86 60.325 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d030fbf6-30ca-4828-a03b-04932483173e))
+    (pin "1" (uuid 73fac089-6956-4ed5-b820-6bc9d3e06d59))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR019") (unit 1)
+          (reference "#PWR030") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR010") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2006,7 +2006,7 @@
   (symbol (lib_id "power:+12V") (at 22.86 99.695 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 45882461-cce1-4bcf-9481-93aa58473818)
-    (property "Reference" "#PWR029" (at 22.86 103.505 0)
+    (property "Reference" "#PWR031" (at 22.86 103.505 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (at 22.86 95.885 0)
@@ -2018,16 +2018,16 @@
     (property "Datasheet" "" (at 22.86 99.695 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 96af3617-a387-47d1-ace7-4e3056adcc01))
+    (pin "1" (uuid 62e4f538-c709-460b-a14c-ba66405e47e8))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR029") (unit 1)
+          (reference "#PWR031") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR010") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2036,7 +2036,7 @@
   (symbol (lib_id "Device:C_Polarized_Small") (at 55.245 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 45b38dbf-06ff-41fe-85d9-9b6fd54e57dd)
-    (property "Reference" "C32" (at 58.42 102.9589 0)
+    (property "Reference" "C23" (at 58.42 102.9589 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "47uF" (at 58.42 105.4989 0)
@@ -2063,17 +2063,17 @@
     (property "Supplier PN" "399-6717-1-ND" (at 55.245 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid c40498b1-1377-4035-9d8c-1f6bb2401b15))
-    (pin "2" (uuid ae653dd9-7670-49d1-b654-bc499d3af3c0))
+    (pin "1" (uuid 50df199f-f664-46e8-9c05-3419c3f294e7))
+    (pin "2" (uuid cec0acb1-5cb4-4702-a4f7-db7a1f5290cf))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C32") (unit 1)
+          (reference "C23") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C5") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -2082,7 +2082,7 @@
   (symbol (lib_id "Device:R_Small") (at 139.065 74.93 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 4d19ee20-16da-4be6-97ca-e67787d7c2df)
-    (property "Reference" "R25" (at 140.97 74.295 0)
+    (property "Reference" "R5" (at 140.97 74.295 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "32.4k" (at 140.97 76.835 0)
@@ -2109,17 +2109,17 @@
     (property "Supplier PN" "P32.4KHCT-ND" (at 139.065 74.93 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 3ba18695-fa98-409c-bdda-d1fca0f60871))
-    (pin "2" (uuid af711937-5a99-4109-a9f2-d211533ec4b3))
+    (pin "1" (uuid 22acaa0c-b2e3-4272-861b-1c3736606c7d))
+    (pin "2" (uuid 769a2b13-88e2-4949-83f5-3debeb38946f))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "R25") (unit 1)
+          (reference "R5") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "R2") (unit 1)
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -2128,7 +2128,7 @@
   (symbol (lib_id "Device:L_Small") (at 47.625 99.695 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 5169b742-21c5-426c-9a55-353f22d3100c)
-    (property "Reference" "L4" (at 47.625 95.25 90)
+    (property "Reference" "L2" (at 47.625 95.25 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "3.3uH" (at 47.625 97.79 90)
@@ -2155,17 +2155,17 @@
     (property "Supplier PN" "587-3459-1-ND" (at 47.625 99.695 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid db1afcd2-29ce-402b-a552-17320cdf61e4))
-    (pin "2" (uuid 5b942085-7087-407e-88fa-ecf78f0f481e))
+    (pin "1" (uuid f5d8871a-df81-4bbc-8d95-84e592891506))
+    (pin "2" (uuid 01364b14-0ab8-44d6-b127-39453ed81d83))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "L4") (unit 1)
+          (reference "L2") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "L2") (unit 1)
+          (reference "L?") (unit 1)
         )
       )
     )
@@ -2174,7 +2174,7 @@
   (symbol (lib_id "power:GND") (at 30.48 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 549fc0ae-28c7-4686-9f62-0c437230ac16)
-    (property "Reference" "#PWR030" (at 30.48 113.03 0)
+    (property "Reference" "#PWR033" (at 30.48 113.03 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 30.48 110.49 0)
@@ -2186,16 +2186,16 @@
     (property "Datasheet" "" (at 30.48 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 20b0596e-dc9c-48e9-8db6-f2a8778c9461))
+    (pin "1" (uuid bd61d732-2a62-4f29-ad2b-87c5471d4351))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR030") (unit 1)
+          (reference "#PWR033") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR08") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2204,7 +2204,7 @@
   (symbol (lib_id "power:GND") (at 41.91 155.575 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 56ec50b7-0aaf-450a-ac27-674d7273585f)
-    (property "Reference" "#PWR082" (at 41.91 161.925 0)
+    (property "Reference" "#PWR039" (at 41.91 161.925 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 41.91 159.385 0)
@@ -2216,16 +2216,16 @@
     (property "Datasheet" "" (at 41.91 155.575 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 9d9a17af-ce10-4394-acf8-f72e6c88e3db))
+    (pin "1" (uuid 1e249036-b339-455e-8ba8-9bd27e224f3a))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR082") (unit 1)
+          (reference "#PWR039") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR04") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2234,7 +2234,7 @@
   (symbol (lib_id "power:GND") (at 74.93 31.115 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 5fd68d09-c266-41a1-a355-766e68b1b0dd)
-    (property "Reference" "#PWR018" (at 74.93 37.465 0)
+    (property "Reference" "#PWR045" (at 74.93 37.465 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 74.93 34.925 0)
@@ -2246,11 +2246,11 @@
     (property "Datasheet" "" (at 74.93 31.115 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b4a4f232-31ed-4cee-aba1-0a5b6884f6dc))
+    (pin "1" (uuid ec559772-d741-438b-a4c2-84d115369531))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR018") (unit 1)
+          (reference "#PWR045") (unit 1)
         )
       )
     )
@@ -2259,7 +2259,7 @@
   (symbol (lib_id "power:+5V") (at 191.135 100.33 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 606dbea9-cd2f-4a5d-b0cd-9429cea179fe)
-    (property "Reference" "#PWR038" (at 191.135 104.14 0)
+    (property "Reference" "#PWR062" (at 191.135 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+5V" (at 191.135 96.52 0)
@@ -2271,11 +2271,11 @@
     (property "Datasheet" "" (at 191.135 100.33 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid a793d489-05fd-4950-8fcf-71e231779927))
+    (pin "1" (uuid 207d697f-abd6-4cc9-8396-84a8b307dd61))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR038") (unit 1)
+          (reference "#PWR062") (unit 1)
         )
       )
     )
@@ -2284,7 +2284,7 @@
   (symbol (lib_id "Device:C_Small") (at 69.85 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 62b1c4c8-93ab-42bf-bed3-d673daadfde7)
-    (property "Reference" "C33" (at 71.755 103.505 0)
+    (property "Reference" "C25" (at 71.755 103.505 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 71.755 106.045 0)
@@ -2311,17 +2311,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 69.85 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid db352464-f117-4efc-90ff-aeda93cf6a80))
-    (pin "2" (uuid b2277384-11c2-4621-ae1c-325d7e801cfa))
+    (pin "1" (uuid ec6110f0-0985-4ae0-b3b8-d02d8f5bc6db))
+    (pin "2" (uuid 2c2c24fb-7fdc-4ae2-bde5-081139d7727d))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C33") (unit 1)
+          (reference "C25") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -2330,7 +2330,7 @@
   (symbol (lib_id "power:GND") (at 174.625 71.755 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6afb4ffa-9fdb-410b-b65d-f030072d38d0)
-    (property "Reference" "#PWR097" (at 174.625 78.105 0)
+    (property "Reference" "#PWR057" (at 174.625 78.105 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 174.625 75.565 0)
@@ -2342,16 +2342,16 @@
     (property "Datasheet" "" (at 174.625 71.755 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid a1de052a-d096-4b23-aefa-17d0b7a9602e))
+    (pin "1" (uuid 49a55128-2e9c-49b3-ac4e-f4a7f1fc79ad))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR097") (unit 1)
+          (reference "#PWR057") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2360,7 +2360,7 @@
   (symbol (lib_id "power:+12V") (at 40.005 25.4 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6ba1f954-412b-4c4e-a797-c3bd767939f6)
-    (property "Reference" "#PWR015" (at 40.005 29.21 0)
+    (property "Reference" "#PWR034" (at 40.005 29.21 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (at 39.624 21.0058 0)
@@ -2372,11 +2372,11 @@
     (property "Datasheet" "" (at 40.005 25.4 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid ced43164-879f-47b3-a4d7-05200c719fb2))
+    (pin "1" (uuid 84662581-2669-496f-8698-c7408e5fb0b6))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR015") (unit 1)
+          (reference "#PWR034") (unit 1)
         )
       )
     )
@@ -2385,7 +2385,7 @@
   (symbol (lib_id "power:GND") (at 139.065 116.84 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6dbf61c4-e7f1-407c-9415-2410fd890eca)
-    (property "Reference" "#PWR036" (at 139.065 123.19 0)
+    (property "Reference" "#PWR052" (at 139.065 123.19 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 139.065 120.65 0)
@@ -2397,16 +2397,16 @@
     (property "Datasheet" "" (at 139.065 116.84 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 2bd4e514-9afc-4e65-892b-f8e015ac4fdd))
+    (pin "1" (uuid 601f9751-57c6-4c23-bcba-cb68a5801a89))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR036") (unit 1)
+          (reference "#PWR052") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR05") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2415,7 +2415,7 @@
   (symbol (lib_id "Device:L_Small") (at 134.62 102.235 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 6ec4cc1b-e7ab-4299-b34f-9a8944699dbe)
-    (property "Reference" "L5" (at 134.62 97.79 90)
+    (property "Reference" "L4" (at 134.62 97.79 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "15uH" (at 134.62 100.33 90)
@@ -2442,17 +2442,17 @@
     (property "Supplier PN" "587-2973-1-ND" (at 134.62 102.235 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 2aea4958-e764-4224-8606-61a6222adcb7))
-    (pin "2" (uuid 060e8364-f93a-4937-bb8e-e3c69f0960b8))
+    (pin "1" (uuid 5048bce5-1353-4892-a637-5309e7b70dae))
+    (pin "2" (uuid a550acf9-8e73-43c8-b812-ae61b02c4aa8))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "L5") (unit 1)
+          (reference "L4") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "L1") (unit 1)
+          (reference "L?") (unit 1)
         )
       )
     )
@@ -2461,7 +2461,7 @@
   (symbol (lib_id "power:PWR_FLAG") (at 191.135 102.235 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 7213e8c7-6ac6-4900-9e1c-637d593718db)
-    (property "Reference" "#FLG06" (at 191.135 104.14 0)
+    (property "Reference" "#FLG07" (at 191.135 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "PWR_FLAG" (at 191.135 106.045 0)
@@ -2488,16 +2488,16 @@
     (property "Supplier PN" "" (at 191.135 102.235 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid a872df29-9bb2-4373-8fcf-2d1911d7c192))
+    (pin "1" (uuid 34094ba5-22b0-4b15-9562-5e40a3cb571c))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#FLG06") (unit 1)
+          (reference "#FLG07") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#FLG04") (unit 1)
+          (reference "#FLG?") (unit 1)
         )
       )
     )
@@ -2506,7 +2506,7 @@
   (symbol (lib_id "power:GND") (at 97.79 70.485 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 72b57776-9e63-409c-8a21-6125f920ef02)
-    (property "Reference" "#PWR024" (at 97.79 76.835 0)
+    (property "Reference" "#PWR047" (at 97.79 76.835 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 97.79 74.295 0)
@@ -2518,16 +2518,16 @@
     (property "Datasheet" "" (at 97.79 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid dcdfee38-fef7-4d0f-9a29-64de423b2416))
+    (pin "1" (uuid b848fb33-df44-4dd9-a401-887d40a8baad))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR024") (unit 1)
+          (reference "#PWR047") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR01") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2536,7 +2536,7 @@
   (symbol (lib_id "Device:C_Small") (at 121.92 97.79 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 7b55faa1-087f-4691-b995-5cd0b61c7cf3)
-    (property "Reference" "C34" (at 124.46 97.1613 0)
+    (property "Reference" "C28" (at 124.46 97.1613 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10nF" (at 124.46 99.7013 0)
@@ -2563,17 +2563,17 @@
     (property "Supplier PN" "1276-1009-1-ND" (at 121.92 97.79 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid ebe729ff-4693-4168-a5eb-e6a247534a09))
-    (pin "2" (uuid 470b2058-fbc3-47ed-96cf-c99f94ec5f2f))
+    (pin "1" (uuid 25a9e339-55f8-4b8c-9d49-a5cad05dd16e))
+    (pin "2" (uuid 350d2ff2-41f4-442b-9561-2980f3af30e0))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C34") (unit 1)
+          (reference "C28") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C3") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -2582,7 +2582,7 @@
   (symbol (lib_id "Device:C_Small") (at 174.625 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 7d93cbca-ba75-41ef-9419-cd0c65c0efef)
-    (property "Reference" "C43" (at 176.53 66.675 0)
+    (property "Reference" "C33" (at 176.53 66.675 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 176.53 69.215 0)
@@ -2609,17 +2609,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 174.625 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid cbc0d33f-8a25-43bf-80bc-47353bcecc0d))
-    (pin "2" (uuid dee4267a-98b3-43ae-a99a-3a1cf89d3f69))
+    (pin "1" (uuid 4eecc56c-3c95-45c6-90ff-335cd9a3583b))
+    (pin "2" (uuid 6b16b1a3-7fb0-43a3-bdec-2ff6ffaed097))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C43") (unit 1)
+          (reference "C33") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -2628,7 +2628,7 @@
   (symbol (lib_id "power:GND") (at 69.85 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 836a8442-b558-4e0d-8b57-245232ad35ff)
-    (property "Reference" "#PWR023" (at 69.85 73.66 0)
+    (property "Reference" "#PWR043" (at 69.85 73.66 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 69.85 71.12 0)
@@ -2640,16 +2640,16 @@
     (property "Datasheet" "" (at 69.85 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid dc9aca6d-636b-4d1f-a864-56e685ec747b))
+    (pin "1" (uuid e6a3209b-9f25-487b-8551-b2c71f253434))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR023") (unit 1)
+          (reference "#PWR043") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR04") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2658,7 +2658,7 @@
   (symbol (lib_id "power:GND") (at 139.065 77.47 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 849d8a40-e7d2-4012-a41d-33ad6654ad6b)
-    (property "Reference" "#PWR026" (at 139.065 83.82 0)
+    (property "Reference" "#PWR051" (at 139.065 83.82 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 139.065 81.28 0)
@@ -2670,16 +2670,16 @@
     (property "Datasheet" "" (at 139.065 77.47 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 22266b9d-6aea-4575-badd-b15cfac28f93))
+    (pin "1" (uuid 60bca3cd-4bdc-4015-bbba-db5d0878b60d))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR026") (unit 1)
+          (reference "#PWR051") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR05") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2688,7 +2688,7 @@
   (symbol (lib_id "power:GND") (at 183.515 71.755 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 880d135d-acc8-47cc-933e-ee78d0628af1)
-    (property "Reference" "#PWR098" (at 183.515 78.105 0)
+    (property "Reference" "#PWR059" (at 183.515 78.105 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 183.515 75.565 0)
@@ -2700,16 +2700,16 @@
     (property "Datasheet" "" (at 183.515 71.755 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid fc765834-a0a5-4379-bf00-057286b8eb6b))
+    (pin "1" (uuid 0674a5c9-663d-4070-9c63-a00238e822c5))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR098") (unit 1)
+          (reference "#PWR059") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2718,7 +2718,7 @@
   (symbol (lib_id "Device:C_Small") (at 40.005 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 8a93f3f2-f283-469c-9e9f-8871e0a44ab2)
-    (property "Reference" "C31" (at 41.91 103.505 0)
+    (property "Reference" "C21" (at 41.91 103.505 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 41.91 106.045 0)
@@ -2745,17 +2745,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 40.005 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 86b70d9a-11c8-49f6-8d30-9ef318b144d3))
-    (pin "2" (uuid 8e8fa333-4abc-4ebe-8cd2-33f7d03d8469))
+    (pin "1" (uuid b96716ec-8132-446d-9b7a-03c5b01e63bd))
+    (pin "2" (uuid fee5a704-bff8-4cdf-a956-80b96d7237d7))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C31") (unit 1)
+          (reference "C21") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -2764,7 +2764,7 @@
   (symbol (lib_id "power:GND") (at 79.375 111.76 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 98f8c45f-d1b5-4cde-bb11-e13ba5c40786)
-    (property "Reference" "#PWR096" (at 79.375 118.11 0)
+    (property "Reference" "#PWR046" (at 79.375 118.11 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 79.375 115.57 0)
@@ -2776,16 +2776,16 @@
     (property "Datasheet" "" (at 79.375 111.76 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 7d8a02ee-6ffa-4764-8f2f-43f4f1b35c07))
+    (pin "1" (uuid 85c9d90f-229d-451c-9175-e9f39f1f0ee2))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR096") (unit 1)
+          (reference "#PWR046") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR04") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2794,7 +2794,7 @@
   (symbol (lib_id "power:PWR_FLAG") (at 40.005 27.305 270) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9b812c6d-95af-4c26-8a70-adbc7d2bbac4)
-    (property "Reference" "#FLG01" (at 41.91 27.305 0)
+    (property "Reference" "#FLG02" (at 41.91 27.305 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "PWR_FLAG" (at 43.815 27.305 0)
@@ -2806,11 +2806,11 @@
     (property "Datasheet" "~" (at 40.005 27.305 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid cdd4779e-9333-4893-91a2-6890e19c26d7))
+    (pin "1" (uuid 0bddac43-d4a9-436a-8995-4e33a84c6337))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#FLG01") (unit 1)
+          (reference "#FLG02") (unit 1)
         )
       )
     )
@@ -2819,7 +2819,7 @@
   (symbol (lib_id "power:GND") (at 121.92 70.485 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9fba92e9-1b89-47e1-bb43-bd7b280ec65d)
-    (property "Reference" "#PWR025" (at 121.92 76.835 0)
+    (property "Reference" "#PWR049" (at 121.92 76.835 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 121.92 74.295 0)
@@ -2831,16 +2831,16 @@
     (property "Datasheet" "" (at 121.92 70.485 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b3c3608d-192b-4754-b78a-d59a2768c861))
+    (pin "1" (uuid 35ec2560-90eb-443a-8eef-3a2a6b47561a))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR025") (unit 1)
+          (reference "#PWR049") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR013") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -2849,7 +2849,7 @@
   (symbol (lib_id "Device:R_Small") (at 139.065 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid aac0b9ed-25ed-4ffd-ad82-825a9ca7a1e8)
-    (property "Reference" "R24" (at 140.97 66.675 0)
+    (property "Reference" "R4" (at 140.97 66.675 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "100k" (at 140.97 69.215 0)
@@ -2876,17 +2876,17 @@
     (property "Supplier PN" "P100KHCT-ND" (at 139.065 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 08eec541-64b3-4f5a-862f-70d42e174ffb))
-    (pin "2" (uuid a8a35e95-645c-4632-b03b-ce91315972d8))
+    (pin "1" (uuid 53528b3a-e712-4d65-a425-0fd1cb55bc4b))
+    (pin "2" (uuid 83bef06e-412b-4ef1-9e55-f31d48569568))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "R24") (unit 1)
+          (reference "R4") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "R1") (unit 1)
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -2895,7 +2895,7 @@
   (symbol (lib_id "power:+12V") (at 69.215 31.115 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ab9783a1-d4ef-4444-a1fb-987c73588808)
-    (property "Reference" "#PWR017" (at 69.215 34.925 0)
+    (property "Reference" "#PWR042" (at 69.215 34.925 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+12V" (at 69.596 26.7208 0)
@@ -2907,11 +2907,11 @@
     (property "Datasheet" "" (at 69.215 31.115 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d408ff28-38cb-4f2e-ab77-b191402a46cb))
+    (pin "1" (uuid 18e131c3-d4df-4419-a403-85cea60a6c9e))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR017") (unit 1)
+          (reference "#PWR042") (unit 1)
         )
       )
     )
@@ -2920,7 +2920,7 @@
   (symbol (lib_id "Device:R_Small") (at 139.065 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid abae7777-b367-4ed1-93cf-3b651bf159c3)
-    (property "Reference" "R26" (at 140.97 106.045 0)
+    (property "Reference" "R6" (at 140.97 106.045 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "91k" (at 140.97 108.585 0)
@@ -2947,17 +2947,17 @@
     (property "Supplier PN" "P91.0KHCT-ND" (at 139.065 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 9af645b4-dc41-4f48-9bde-ae629c1e0687))
-    (pin "2" (uuid 780cae98-1432-41a5-b644-787e9cb22dc0))
+    (pin "1" (uuid 97f9313a-d7d4-40df-b1e5-dc2a7f632086))
+    (pin "2" (uuid 227feb47-5ef0-4c76-b6ea-7e872547ea9f))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "R26") (unit 1)
+          (reference "R6") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "R1") (unit 1)
+          (reference "R?") (unit 1)
         )
       )
     )
@@ -2966,7 +2966,7 @@
   (symbol (lib_id "Device:FerriteBead_Small") (at 167.005 62.865 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid aceb4ccc-e166-48a7-8877-9522f8a12cdd)
-    (property "Reference" "L3" (at 167.005 57.785 90)
+    (property "Reference" "L?" (at 167.005 57.785 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "70 Ohm" (at 167.005 59.69 90)
@@ -2993,15 +2993,15 @@
     (property "Supplier PN" "490-5224-1-ND" (at 167.005 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid febcc968-1c14-4372-9631-3ce540eecc94))
-    (pin "2" (uuid e917fa23-ae6e-4da9-8aaf-f2a574b084ea))
+    (pin "1" (uuid 2b0621b0-b110-4e30-bdcb-986ec88d0b3d))
+    (pin "2" (uuid 887fcb50-8355-4795-b5be-f4f20522a534))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-          (reference "L3") (unit 1)
+          (reference "L?") (unit 1)
         )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "L6") (unit 1)
+          (reference "FB2") (unit 1)
         )
       )
     )
@@ -3010,7 +3010,7 @@
   (symbol (lib_id "Device:C_Small") (at 69.85 64.77 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid adaa9cf8-359b-49f2-bf93-9dabacb0600a)
-    (property "Reference" "C4" (at 71.755 64.135 0)
+    (property "Reference" "C24" (at 71.755 64.135 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 71.755 66.675 0)
@@ -3037,17 +3037,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 69.85 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid dac742f9-cbf5-4c3f-90b1-e5019aa878e8))
-    (pin "2" (uuid 7021874b-2e30-4fbb-b29e-6d035dfaf8b9))
+    (pin "1" (uuid fbe477fb-50c3-430b-8696-3a7d5bd3cfb4))
+    (pin "2" (uuid 893453dc-1b01-4b02-a95e-b47a4b7d5d7f))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C4") (unit 1)
+          (reference "C24") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3056,7 +3056,7 @@
   (symbol (lib_id "Device:L_Small") (at 134.62 62.865 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b38e3e73-3889-4c60-834a-88a364b2bec0)
-    (property "Reference" "L2" (at 134.62 58.42 90)
+    (property "Reference" "L3" (at 134.62 58.42 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "10uH" (at 134.62 60.96 90)
@@ -3083,17 +3083,17 @@
     (property "Supplier PN" "587-2972-1-ND" (at 134.62 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid c4909d4a-2d90-4b6f-860d-3fc31faf3811))
-    (pin "2" (uuid cd20b8ff-3973-4fce-ba06-75fa6f6846d0))
+    (pin "1" (uuid f047df9e-cd8b-4b62-9172-a3704f42e83b))
+    (pin "2" (uuid 8a01cd2d-dfec-42b3-9995-e1b071fec637))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "L2") (unit 1)
+          (reference "L3") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "L1") (unit 1)
+          (reference "L?") (unit 1)
         )
       )
     )
@@ -3102,7 +3102,7 @@
   (symbol (lib_id "power:GND") (at 55.245 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b4842f11-180d-4976-9d6f-d926e5243f24)
-    (property "Reference" "#PWR032" (at 55.245 113.03 0)
+    (property "Reference" "#PWR041" (at 55.245 113.03 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 55.245 110.49 0)
@@ -3114,16 +3114,16 @@
     (property "Datasheet" "" (at 55.245 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d7e74192-bc89-491e-84bc-5e3069e1ce09))
+    (pin "1" (uuid 8a7f495c-c690-477f-b5b8-401a0402b51e))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR032") (unit 1)
+          (reference "#PWR041") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR07") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -3132,7 +3132,7 @@
   (symbol (lib_id "Device:C_Small") (at 174.625 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b6efd227-2a5f-4b7f-85a4-2a62927e43c9)
-    (property "Reference" "C45" (at 176.53 106.045 0)
+    (property "Reference" "C34" (at 176.53 106.045 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 176.53 108.585 0)
@@ -3159,17 +3159,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 174.625 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 4222e071-29c7-4bfd-b6b6-e3eae6970712))
-    (pin "2" (uuid 2fe5bb86-6c50-4ee3-bd0e-8a9086856c1f))
+    (pin "1" (uuid 66701cb8-c3d8-4d5b-82cc-b4558e48dfb4))
+    (pin "2" (uuid 7ff15638-69a8-4e0f-9b46-60bcd50d34c7))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C45") (unit 1)
+          (reference "C34") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3205,7 +3205,7 @@
     (property "Supplier PN" "36-5006-ND" (at 191.135 102.235 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 6c562570-5bd8-4159-89ec-f037562b255b))
+    (pin "1" (uuid c3f99fa2-f09a-43fa-a1c6-5b0ee1a21cbf))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
@@ -3218,7 +3218,7 @@
   (symbol (lib_id "Device:C_Small") (at 121.92 58.42 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid b8d3ea8b-552d-48ff-ae6e-059bbdae0bdd)
-    (property "Reference" "C5" (at 124.46 57.7913 0)
+    (property "Reference" "C27" (at 124.46 57.7913 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10nF" (at 124.46 60.3313 0)
@@ -3245,17 +3245,17 @@
     (property "Supplier PN" "1276-1009-1-ND" (at 121.92 58.42 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid e23f12ca-22af-4ea6-b681-39ec01b433e1))
-    (pin "2" (uuid 84c3e94c-e5c9-408c-a431-541ba4b1af38))
+    (pin "1" (uuid 4b953350-4b11-4858-9eba-9d497a366f96))
+    (pin "2" (uuid 959ffcbc-5772-47d1-a079-77ced62174ae))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C5") (unit 1)
+          (reference "C27") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C3") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3264,7 +3264,7 @@
   (symbol (lib_id "power:GND") (at 121.92 109.855 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b9e6eeb1-d28b-42c3-9156-02774079262a)
-    (property "Reference" "#PWR035" (at 121.92 116.205 0)
+    (property "Reference" "#PWR050" (at 121.92 116.205 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 121.92 113.665 0)
@@ -3276,16 +3276,16 @@
     (property "Datasheet" "" (at 121.92 109.855 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b1446d72-bdd7-4121-8dd1-16e2aa895562))
+    (pin "1" (uuid c20508f8-600f-4a65-86f9-d831d2cb4f7d))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR035") (unit 1)
+          (reference "#PWR050") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR013") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -3294,7 +3294,7 @@
   (symbol (lib_id "Project:RT8258") (at 97.79 62.865 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid bc462a56-1308-422f-aee3-a8799ed9ecd9)
-    (property "Reference" "U1" (at 97.79 53.975 0)
+    (property "Reference" "U4" (at 97.79 53.975 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "RT8258" (at 97.79 56.515 0)
@@ -3321,21 +3321,21 @@
     (property "Supplier PN" "1028-1044-1-ND" (at 97.79 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 93d89ef0-0853-4c4e-883d-5bbd57244232))
-    (pin "2" (uuid 35a8be52-de5f-493d-bb73-75b770c7cdc9))
-    (pin "3" (uuid 45a14eae-787f-4fd4-b26a-e8e428b7ec75))
-    (pin "4" (uuid 56883e22-e551-47e0-8ab4-8a09d87db6a2))
-    (pin "5" (uuid 5cb4a474-723c-4749-a314-2603e17a340f))
-    (pin "6" (uuid f8013c8e-482f-43f3-920d-7bfb2b110ac9))
+    (pin "1" (uuid 908ac575-2fb7-4cca-b507-c5382b065983))
+    (pin "2" (uuid 97363e1d-62cc-45db-83d4-9858eee9bbab))
+    (pin "3" (uuid 8f1b6807-dc88-4e5a-a906-4573ad924380))
+    (pin "4" (uuid f63df228-44bc-4680-9c71-fd529a2f40a5))
+    (pin "5" (uuid cf01d6f9-b3b8-4e2f-87ac-20c559a48cdc))
+    (pin "6" (uuid 16150bc8-b2ac-4a6c-81a0-34a98dc3d8a1))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "U1") (unit 1)
+          (reference "U4") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "U1") (unit 1)
+          (reference "U?") (unit 1)
         )
       )
     )
@@ -3344,7 +3344,7 @@
   (symbol (lib_id "power:+3.3V") (at 41.91 139.065 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid c0056722-4729-4530-bdaf-49cfabe13bf1)
-    (property "Reference" "#PWR081" (at 41.91 142.875 0)
+    (property "Reference" "#PWR038" (at 41.91 142.875 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+3.3V" (at 41.91 135.255 0)
@@ -3356,11 +3356,11 @@
     (property "Datasheet" "" (at 41.91 139.065 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid bed62244-d068-4390-b936-8eb7e08f63f5))
+    (pin "1" (uuid 1dbedff1-8489-4189-b446-7ff6891067c2))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR081") (unit 1)
+          (reference "#PWR038") (unit 1)
         )
       )
     )
@@ -3369,7 +3369,7 @@
   (symbol (lib_id "power:PWR_FLAG") (at 191.135 62.865 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid c22afa53-feda-43c2-911c-d9738ec5f20a)
-    (property "Reference" "#FLG04" (at 191.135 64.77 0)
+    (property "Reference" "#FLG06" (at 191.135 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "PWR_FLAG" (at 191.135 66.675 0)
@@ -3396,16 +3396,16 @@
     (property "Supplier PN" "" (at 191.135 62.865 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 91d56d32-f2e3-4fa2-b3c6-190cfe681e47))
+    (pin "1" (uuid 0a427263-aae8-4a36-b618-25645c0e3629))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#FLG04") (unit 1)
+          (reference "#FLG06") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#FLG04") (unit 1)
+          (reference "#FLG?") (unit 1)
         )
       )
     )
@@ -3414,7 +3414,7 @@
   (symbol (lib_id "power:GND") (at 183.515 111.125 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid c4a2c752-a0a8-463a-8699-a51c2c0a1127)
-    (property "Reference" "#PWR0100" (at 183.515 117.475 0)
+    (property "Reference" "#PWR060" (at 183.515 117.475 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 183.515 114.935 0)
@@ -3426,16 +3426,16 @@
     (property "Datasheet" "" (at 183.515 111.125 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 82e27a23-d497-446d-b107-8e4d3254a27a))
+    (pin "1" (uuid 1e1846e2-9c85-40c0-acd1-2a247917a2ca))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR0100") (unit 1)
+          (reference "#PWR060") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -3444,7 +3444,7 @@
   (symbol (lib_id "Diode:B230") (at 121.92 106.045 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid cba7c1bd-afc6-4729-b69c-c101d10c601a)
-    (property "Reference" "D15" (at 124.46 105.0925 90)
+    (property "Reference" "D14" (at 124.46 105.0925 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "B230A" (at 124.46 107.6325 90)
@@ -3471,17 +3471,17 @@
     (property "Supplier PN" "B230A-FDICT-ND" (at 121.92 106.045 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 1f9684b1-1d03-48c4-bfab-c9a86b55b36a))
-    (pin "2" (uuid 8a5f009b-b554-44f8-9650-b1688834cde6))
+    (pin "1" (uuid 7e58ed3c-46bf-4fa2-a3fb-9d7478c25148))
+    (pin "2" (uuid dd0ca8ae-928b-4527-a5d0-e4ff04630318))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "D15") (unit 1)
+          (reference "D14") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "D1") (unit 1)
+          (reference "D?") (unit 1)
         )
       )
     )
@@ -3490,7 +3490,7 @@
   (symbol (lib_id "Device:C_Small") (at 159.385 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid cc24a4bf-d4fc-41b9-b7f8-f231924362dd)
-    (property "Reference" "C38" (at 161.29 106.045 0)
+    (property "Reference" "C32" (at 161.29 106.045 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 161.29 108.585 0)
@@ -3517,17 +3517,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 159.385 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b5ddc139-fef6-43e2-a9e7-5f1133738f7e))
-    (pin "2" (uuid d8b97ce6-0c64-4ecf-a3a2-93e93086f929))
+    (pin "1" (uuid 36b5ac33-fd45-4823-b86f-6f9f17b89130))
+    (pin "2" (uuid 48d023d7-278e-44f4-aa3b-8bc887e6d972))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C38") (unit 1)
+          (reference "C32") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3536,7 +3536,7 @@
   (symbol (lib_id "Device:C_Small") (at 30.48 104.14 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ce79fa42-13e3-4ff2-a825-52c00970a76e)
-    (property "Reference" "C30" (at 32.385 103.505 0)
+    (property "Reference" "C19" (at 32.385 103.505 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 32.385 106.045 0)
@@ -3563,17 +3563,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 30.48 104.14 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 475f8f35-aa90-4aaf-a41d-d19ba3b48599))
-    (pin "2" (uuid f79c61a7-9716-41d0-8910-b29b330bc0eb))
+    (pin "1" (uuid 2215b420-1cec-46f0-9bb0-642a86baa27d))
+    (pin "2" (uuid 8de0a7d3-226b-4bbb-b261-2cad75c456cb))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C30") (unit 1)
+          (reference "C19") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3582,7 +3582,7 @@
   (symbol (lib_id "Diode:B230") (at 121.92 66.675 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid cee7deec-ad9c-4558-a610-066161c327b9)
-    (property "Reference" "D14" (at 124.46 65.7225 90)
+    (property "Reference" "D13" (at 124.46 65.7225 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "B230A" (at 124.46 68.2625 90)
@@ -3609,17 +3609,17 @@
     (property "Supplier PN" "B230A-FDICT-ND" (at 121.92 66.675 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid dd8b82ed-8679-4582-903a-bdc8bdf7a13f))
-    (pin "2" (uuid 13363ef1-dc32-4561-9915-5747fcecf15f))
+    (pin "1" (uuid 144b4580-c817-4e70-bd4d-c93e13d39177))
+    (pin "2" (uuid d095fb55-aabb-499b-b44a-51ff7d509396))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "D14") (unit 1)
+          (reference "D13") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "D1") (unit 1)
+          (reference "D?") (unit 1)
         )
       )
     )
@@ -3628,7 +3628,7 @@
   (symbol (lib_id "Device:FerriteBead_Small") (at 167.005 102.235 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d2b6ea3f-960e-4dfa-ae18-20182ba1e844)
-    (property "Reference" "L3" (at 167.005 97.155 90)
+    (property "Reference" "L?" (at 167.005 97.155 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "70 Ohm" (at 167.005 99.06 90)
@@ -3655,15 +3655,15 @@
     (property "Supplier PN" "490-5224-1-ND" (at 167.005 102.235 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 40df50b8-8525-444e-9acc-5fb3d05735ec))
-    (pin "2" (uuid 1919317d-f1fc-4216-b33f-504ba53b2343))
+    (pin "1" (uuid 392c522d-30d1-4348-b742-8d7ad3d3b2b0))
+    (pin "2" (uuid c80fe1bf-3f85-4844-a746-f7692289a1a8))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-          (reference "L3") (unit 1)
+          (reference "L?") (unit 1)
         )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "L7") (unit 1)
+          (reference "FB3") (unit 1)
         )
       )
     )
@@ -3672,7 +3672,7 @@
   (symbol (lib_id "power:GND") (at 69.85 106.68 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d3504ac0-e13f-43e4-a620-72d3c6c5d892)
-    (property "Reference" "#PWR033" (at 69.85 113.03 0)
+    (property "Reference" "#PWR044" (at 69.85 113.03 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 69.85 110.49 0)
@@ -3684,16 +3684,16 @@
     (property "Datasheet" "" (at 69.85 106.68 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid c5b77a5a-6cb1-4c90-a460-55e6c8d7a341))
+    (pin "1" (uuid 8af788a9-a3bd-4ed4-9e46-47e8e9c5c7ca))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR033") (unit 1)
+          (reference "#PWR044") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR04") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -3702,7 +3702,7 @@
   (symbol (lib_id "Connector:TestPoint") (at 69.215 31.115 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d38059c4-1465-47ff-adf7-1be668eb3dac)
-    (property "Reference" "TP2" (at 67.7418 32.9438 0)
+    (property "Reference" "TP1" (at 67.7418 32.9438 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "TestPoint" (at 70.6882 34.0868 0)
@@ -3729,11 +3729,11 @@
     (property "Supplier PN" "36-5006-ND" (at 69.215 31.115 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 0b9df7f8-ba12-45ca-a7fc-c5f2a959c1f2))
+    (pin "1" (uuid ff0d24f4-d5d2-44b7-855b-a51b8fa63038))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "TP2") (unit 1)
+          (reference "TP1") (unit 1)
         )
       )
     )
@@ -3742,7 +3742,7 @@
   (symbol (lib_id "Project:RT8258") (at 97.79 102.235 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid d39d832d-5cd8-46df-8b1e-d44ea38222ee)
-    (property "Reference" "U2" (at 97.79 93.345 0)
+    (property "Reference" "U5" (at 97.79 93.345 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "RT8258" (at 97.79 95.885 0)
@@ -3769,21 +3769,21 @@
     (property "Supplier PN" "1028-1044-1-ND" (at 97.79 102.235 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d7cba7f1-118b-4391-87d4-7030eabfb241))
-    (pin "2" (uuid d8b5312e-ed64-4524-9ad9-a7fc66205dd1))
-    (pin "3" (uuid ad6f4c90-e5d5-42ce-9b74-2d47cf8c3b4a))
-    (pin "4" (uuid b381a636-83c8-46f3-95b9-3bef0d65dc1a))
-    (pin "5" (uuid 67c2aa2a-b36e-42a5-bda1-3dd081796675))
-    (pin "6" (uuid d9b1d98a-c47b-4593-a8d4-5235532bc655))
+    (pin "1" (uuid 19b86466-a364-4d5d-abb4-d94ca846b33e))
+    (pin "2" (uuid bac163ee-4977-4f3a-9bc0-37c96bdff996))
+    (pin "3" (uuid 429fec0f-0bf1-4080-9132-a7372aa47697))
+    (pin "4" (uuid 5db8cb67-ad64-4e85-8290-96ec7073d57c))
+    (pin "5" (uuid fc57c885-ee1f-41a9-848a-70d133aa14f2))
+    (pin "6" (uuid 88b8b09e-a755-477f-aae7-c475b4388652))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "U2") (unit 1)
+          (reference "U5") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "U1") (unit 1)
+          (reference "U?") (unit 1)
         )
       )
     )
@@ -3792,7 +3792,7 @@
   (symbol (lib_id "power:+3.3V") (at 191.135 60.96 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid d51d24ba-2f17-49b3-97fe-2f9d627e0211)
-    (property "Reference" "#PWR028" (at 191.135 64.77 0)
+    (property "Reference" "#PWR061" (at 191.135 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "+3.3V" (at 191.135 57.15 0)
@@ -3804,16 +3804,16 @@
     (property "Datasheet" "" (at 191.135 60.96 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid e39244b1-3b89-4114-9672-233318f24d83))
+    (pin "1" (uuid 39463dfd-4dfc-46fb-a004-84048a1646f9))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR028") (unit 1)
+          (reference "#PWR061") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR012") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -3822,7 +3822,7 @@
   (symbol (lib_id "Device:C_Small") (at 40.005 64.77 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid da920d2f-e5b8-4e29-8f81-84533580a0f2)
-    (property "Reference" "C2" (at 41.91 64.135 0)
+    (property "Reference" "C20" (at 41.91 64.135 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10uF" (at 41.91 66.675 0)
@@ -3849,17 +3849,17 @@
     (property "Supplier PN" "1276-1075-1-ND" (at 40.005 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 499557cf-5ee9-48ce-bd08-cbaacbfbd408))
-    (pin "2" (uuid a4227a2a-dcb5-4057-8fa7-4c6106548324))
+    (pin "1" (uuid b0edad0f-e568-4d29-a1b4-b18b7f79738f))
+    (pin "2" (uuid d61f8f09-0599-43bb-822e-9f47ac152ce2))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C2") (unit 1)
+          (reference "C20") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C1") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -3868,7 +3868,7 @@
   (symbol (lib_id "Connector:TestPoint") (at 74.93 31.115 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid e1f60053-aab9-4ab3-a07b-8ac750da8468)
-    (property "Reference" "TP1" (at 76.4032 29.2862 0)
+    (property "Reference" "TP2" (at 76.4032 29.2862 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "TestPoint" (at 73.4568 28.1432 0)
@@ -3895,11 +3895,11 @@
     (property "Supplier PN" "36-5006-ND" (at 74.93 31.115 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 8b223fb0-c84e-410e-b528-a878800f224b))
+    (pin "1" (uuid bf5bf6c2-6027-4dda-9f13-d8dbc5b6576f))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "TP1") (unit 1)
+          (reference "TP2") (unit 1)
         )
       )
     )
@@ -3935,7 +3935,7 @@
     (property "Supplier PN" "" (at 60.96 99.695 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b5700ed7-738c-458a-97a3-cc82ad9254ce))
+    (pin "1" (uuid 2212b99d-46d1-4682-acb2-21cee44195a1))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
@@ -3944,7 +3944,7 @@
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#FLG03") (unit 1)
+          (reference "#FLG?") (unit 1)
         )
       )
     )
@@ -3953,7 +3953,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x06") (at 34.925 146.05 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid e32c1ca6-abe5-46a3-9c9a-bbf861397cef)
-    (property "Reference" "J8" (at 32.385 146.685 0)
+    (property "Reference" "J4" (at 32.385 146.685 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "DMX512" (at 32.385 149.225 0)
@@ -3980,16 +3980,16 @@
     (property "Supplier PN" "455-1792-1-ND" (at 34.925 146.05 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 0a519c98-2a54-4050-957f-861772be0c4b))
-    (pin "2" (uuid 7281f064-66d6-464e-9ef7-d44ec84e18de))
-    (pin "3" (uuid 53f9c1fe-31ef-44dc-863a-2ea93c1eb70d))
-    (pin "4" (uuid ff374191-6731-4c9d-975d-9fc987691700))
-    (pin "5" (uuid 23f5f86a-ab92-4096-a427-e8ccd90db2c1))
-    (pin "6" (uuid 96330d82-8b36-46ab-93ab-62bd1990d4f1))
+    (pin "1" (uuid 578e04e1-4127-42cb-8ab4-2e5d95c4ef8c))
+    (pin "2" (uuid 1e978c72-19cd-4783-b530-70e0b9588454))
+    (pin "3" (uuid a4580d03-4f02-4a55-93e2-ea7588642ce1))
+    (pin "4" (uuid 9d3cd30b-5ecb-44d0-bec6-768a9540010b))
+    (pin "5" (uuid 70f5f9ab-a090-4b1c-8fbb-b142cd39fca1))
+    (pin "6" (uuid 6b10ec88-b72c-40d4-a984-1fc7201732bb))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "J8") (unit 1)
+          (reference "J4") (unit 1)
         )
       )
     )
@@ -3998,7 +3998,7 @@
   (symbol (lib_id "Device:C_Small") (at 150.495 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid e8ee626d-e54f-413c-9826-583e7b6b6b82)
-    (property "Reference" "C6" (at 152.4 66.675 0)
+    (property "Reference" "C29" (at 152.4 66.675 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 152.4 69.215 0)
@@ -4025,17 +4025,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 150.495 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid c34ff3be-2170-442c-9aba-52a9819a5771))
-    (pin "2" (uuid 96f0b38e-ee7f-47cd-8ae4-2505d91631d0))
+    (pin "1" (uuid 3d4158c1-6568-4a39-bd92-d217b893eff4))
+    (pin "2" (uuid 4a354a99-eff1-4e3b-bd36-a08ad5c89532))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C6") (unit 1)
+          (reference "C29") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -4044,7 +4044,7 @@
   (symbol (lib_id "Device:C_Small") (at 183.515 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid eab04b7f-bf07-481b-89d5-c7d9b2769851)
-    (property "Reference" "C44" (at 185.42 66.675 0)
+    (property "Reference" "C35" (at 185.42 66.675 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 185.42 69.215 0)
@@ -4071,17 +4071,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 183.515 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 8c18aace-f193-4db0-8375-096bdfe672b6))
-    (pin "2" (uuid 7596c772-eb68-423f-84a9-b76ccea4dbe5))
+    (pin "1" (uuid 6286d8ee-b30f-444c-8a68-05e7bc92b5e3))
+    (pin "2" (uuid 99555770-0895-44a3-a818-4265badc4fe4))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C44") (unit 1)
+          (reference "C35") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -4090,7 +4090,7 @@
   (symbol (lib_id "Device:C_Polarized_Small") (at 55.245 64.77 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid ec27e94d-ad13-4e04-a52d-8c31e9abfdac)
-    (property "Reference" "C3" (at 58.42 63.5889 0)
+    (property "Reference" "C22" (at 58.42 63.5889 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "47uF" (at 58.42 66.1289 0)
@@ -4117,17 +4117,17 @@
     (property "Supplier PN" "399-6717-1-ND" (at 55.245 64.77 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 59d15acc-c816-4374-8859-ad0b20d270a0))
-    (pin "2" (uuid 93820e68-e519-4ed9-9b77-b2fa457cbcae))
+    (pin "1" (uuid b7a1d95c-91c9-4b4f-88d5-b98dd77ec479))
+    (pin "2" (uuid 21466fdb-55e5-45de-93a7-cd8e107538fd))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C3") (unit 1)
+          (reference "C22") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C5") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -4136,7 +4136,7 @@
   (symbol (lib_id "Device:C_Small") (at 79.375 109.22 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid eec3284d-0399-4175-8134-e7386d5d2d12)
-    (property "Reference" "C29" (at 81.7118 108.0516 0)
+    (property "Reference" "C?" (at 81.7118 108.0516 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.01uF" (at 81.7118 110.363 0)
@@ -4163,15 +4163,15 @@
     (property "Supplier PN" "1276-1132-1-ND" (at 79.375 109.22 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid e7391d44-a04e-49ed-bc30-a82371eed2eb))
-    (pin "2" (uuid dca6205d-a8ac-4a23-b36e-ff576e733118))
+    (pin "1" (uuid 68c8822a-a611-4cd6-b576-f637ff3e95db))
+    (pin "2" (uuid f5ab62d6-62ac-459d-a526-c822f2dc6f1b))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b69b5"
-          (reference "C29") (unit 1)
+          (reference "C?") (unit 1)
         )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C42") (unit 1)
+          (reference "C26") (unit 1)
         )
       )
     )
@@ -4180,7 +4180,7 @@
   (symbol (lib_id "Device:C_Small") (at 159.385 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f7aac5ee-fada-4c59-87cc-5a1627fc4bc7)
-    (property "Reference" "C37" (at 161.29 66.675 0)
+    (property "Reference" "C31" (at 161.29 66.675 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "22uF" (at 161.29 69.215 0)
@@ -4207,17 +4207,17 @@
     (property "Supplier PN" "1276-3047-1-ND" (at 159.385 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 50a2ac3c-ca5c-45e7-a1fe-0a8f3cf8c0b6))
-    (pin "2" (uuid b171cdc8-96b0-423f-b9c1-3918e1766e74))
+    (pin "1" (uuid b090c822-8cee-4c24-a60c-04cd6722f61b))
+    (pin "2" (uuid d48c56c3-7d22-4708-a1ae-6dccbb051118))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "C37") (unit 1)
+          (reference "C31") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "C2") (unit 1)
+          (reference "C?") (unit 1)
         )
       )
     )
@@ -4226,7 +4226,7 @@
   (symbol (lib_id "power:GND") (at 150.495 71.755 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f8274128-e1a1-4a67-a315-a2f64fe1d809)
-    (property "Reference" "#PWR027" (at 150.495 78.105 0)
+    (property "Reference" "#PWR053" (at 150.495 78.105 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 150.495 75.565 0)
@@ -4238,16 +4238,16 @@
     (property "Datasheet" "" (at 150.495 71.755 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid d8f18552-b2cb-44b3-981d-b0e582cd2b95))
+    (pin "1" (uuid 26409ddd-bad0-44b1-8aef-5737e1a14b73))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR027") (unit 1)
+          (reference "#PWR053") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR06") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -4256,7 +4256,7 @@
   (symbol (lib_id "power:GND") (at 97.79 109.855 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f9ad8f1d-1b82-4819-a8d0-1c0fb9350263)
-    (property "Reference" "#PWR034" (at 97.79 116.205 0)
+    (property "Reference" "#PWR048" (at 97.79 116.205 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 97.79 113.665 0)
@@ -4268,16 +4268,16 @@
     (property "Datasheet" "" (at 97.79 109.855 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 28ab845b-c73f-44b5-847a-c47d98faa8cc))
+    (pin "1" (uuid 3bdae5cf-40d2-4d8e-9342-cc920d9655d2))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR034") (unit 1)
+          (reference "#PWR048") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR01") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -4286,7 +4286,7 @@
   (symbol (lib_id "power:GND") (at 40.005 67.31 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f9cfd459-822b-431d-81ac-79ac7fd7474f)
-    (property "Reference" "#PWR021" (at 40.005 73.66 0)
+    (property "Reference" "#PWR036" (at 40.005 73.66 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "GND" (at 40.005 71.12 0)
@@ -4298,16 +4298,16 @@
     (property "Datasheet" "" (at 40.005 67.31 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid b2ec586a-25e7-486c-90fc-d8993e37ae34))
+    (pin "1" (uuid a659b1df-d717-4056-b481-ef213857a6d3))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#PWR021") (unit 1)
+          (reference "#PWR036") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#PWR08") (unit 1)
+          (reference "#PWR?") (unit 1)
         )
       )
     )
@@ -4316,7 +4316,7 @@
   (symbol (lib_id "power:PWR_FLAG") (at 60.96 60.325 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid fdd5c861-a522-4cea-aa9b-72c5a56ca422)
-    (property "Reference" "#FLG03" (at 60.96 58.42 0)
+    (property "Reference" "#FLG04" (at 60.96 58.42 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Value" "PWR_FLAG" (at 60.96 56.515 0)
@@ -4343,16 +4343,16 @@
     (property "Supplier PN" "" (at 60.96 60.325 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (pin "1" (uuid 63b70195-f774-4c31-91c5-4cf55398f6a0))
+    (pin "1" (uuid a3dbf385-c324-49cb-ab25-c8d02ef31c85))
     (instances
       (project "main-board"
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
-          (reference "#FLG03") (unit 1)
+          (reference "#FLG04") (unit 1)
         )
       )
       (project "switcher-rt8258-test"
         (path "/e1031c6b-0ca1-4aad-ab4f-7f9003f9770e"
-          (reference "#FLG03") (unit 1)
+          (reference "#FLG?") (unit 1)
         )
       )
     )
