@@ -3785,7 +3785,8 @@
       (net 33 "Net-(U3-CP2)") (pinfunction "CP2") (pintype "input") (tstamp 605d3b1a-1fdc-402c-a4c1-eed99e17d1fb))
     (pad "12" smd rect (at -0.5 -1.35 270) (size 0.35 0.6) (layers "F.Cu" "F.Paste" "F.Mask")
       (net 2 "+3.3V") (pinfunction "VIN") (pintype "power_in") (tstamp dd41284c-baf1-45e4-843f-56cdd870e198))
-    (pad "13" smd rect (at 0 0 270) (size 1.75 1.75) (layers "F.Cu" "F.Mask") (tstamp 2d7fe433-569c-4d97-8308-768a5414c39e))
+    (pad "13" smd rect (at 0 0 270) (size 1.75 1.75) (layers "F.Cu" "F.Mask")
+      (net 1 "GND") (pinfunction "EP") (pintype "passive") (tstamp 2d7fe433-569c-4d97-8308-768a5414c39e))
     (model "${KICAD6_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/QFN-12-1EP_3x3mm_P0.5mm_EP1.65x1.65mm.wrl"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
@@ -14886,6 +14887,7 @@
   (via (at 49.5 49) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 00000000-0000-0000-0000-00005facf533))
   (via (at 178.701 46.039) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 00000000-0000-0000-0000-00005fadbfd2))
   (via (at 166.878 36.703) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 00000000-0000-0000-0000-00005fadce35))
+  (via (at 44 67.25) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 02cc4cd5-02f4-4778-adeb-acd6535ff92a))
   (via (at 172.974 110.236) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 048a6aac-d62a-409b-be26-c67ff17a5366))
   (via (at 195.741 93.59599) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net 1) (tstamp 0d2be2c3-b983-4678-8172-094296a270a2))
   (via locked (at 123.25 65.95) (size 0.889) (drill 0.381) (layers "F.Cu" "B.Cu") (net 1) (tstamp 0f1fcacb-d1f7-4ec7-9fee-ddea776805f2))
@@ -41964,6 +41966,45 @@
         (xy 42.206752 67.541118)
         (xy 42.361253 67.428866)
         (xy 42.48904 67.286944)
+        (xy 42.51037 67.249999)
+        (xy 43.086496 67.249999)
+        (xy 43.106458 67.439929)
+        (xy 43.165472 67.621556)
+        (xy 43.260958 67.786942)
+        (xy 43.385079 67.924792)
+        (xy 43.388747 67.928866)
+        (xy 43.543248 68.041118)
+        (xy 43.717712 68.118794)
+        (xy 43.904513 68.1585)
+        (xy 43.904515 68.1585)
+        (xy 44.095485 68.1585)
+        (xy 44.095487 68.1585)
+        (xy 44.282288 68.118794)
+        (xy 44.456752 68.041118)
+        (xy 44.611253 67.928866)
+        (xy 44.73904 67.786944)
+        (xy 44.834527 67.621556)
+        (xy 44.893542 67.439928)
+        (xy 44.913504 67.25)
+        (xy 44.893542 67.060072)
+        (xy 44.862931 66.965862)
+        (xy 44.834527 66.878443)
+        (xy 44.739041 66.713057)
+        (xy 44.611252 66.571133)
+        (xy 44.534002 66.515008)
+        (xy 44.456752 66.458882)
+        (xy 44.282288 66.381206)
+        (xy 44.095487 66.3415)
+        (xy 43.904513 66.3415)
+        (xy 43.818565 66.359769)
+        (xy 43.717711 66.381206)
+        (xy 43.543246 66.458883)
+        (xy 43.388747 66.571133)
+        (xy 43.260958 66.713057)
+        (xy 43.165472 66.878443)
+        (xy 43.106458 67.06007)
+        (xy 43.086496 67.249999)
+        (xy 42.51037 67.249999)
         (xy 42.584527 67.121556)
         (xy 42.643542 66.939928)
         (xy 42.663504 66.75)
@@ -42979,56 +43020,6 @@
       a292c780-1b64-4cb5-8f0a-5fb476e14f4b
       de79b176-3f7a-43a6-965e-64dac93646b7
       faf1c70a-97e6-4168-8a79-4e96e5364f28
-    )
-  )
-  (group "" (id a24687c0-8afb-4299-9f34-f44787c9ecb2)
-    (members
-      00000000-0000-0000-0000-00005fa9db03
-      00000000-0000-0000-0000-00005fa9dbad
-      00000000-0000-0000-0000-00005fa9dbbe
-      00000000-0000-0000-0000-00005fa9e3b1
-      00000000-0000-0000-0000-00005faac2e3
-      00000000-0000-0000-0000-00005fad1c50
-      01916faf-31e2-4db5-8489-119f70a40725
-      143abac8-2436-4f3c-ba11-66f67ac3de23
-      163a07eb-2fd3-44bd-9fcd-92afd2cce055
-      18c4c22c-b9f2-4719-8a7d-b678a54a1847
-      1c259a67-0a4e-4ec1-804e-c1763bca6691
-      1d829a35-cf0b-435b-9a1a-a87def1130b1
-      23a3f78f-6e2a-4acf-9ccb-095ab3cbebfb
-      27780214-8a51-4e4e-91ee-38eb324f664c
-      2d73eeb6-2c25-40fa-98db-8c27ec4cef22
-      2f034e30-6195-4368-8039-aa4d418f86df
-      31f58ab3-6785-455d-9c67-9baba4b827ef
-      3bf841fa-0e0e-4e3c-8ba0-fb4fbe62e015
-      3e5fef2d-ead4-4a36-a390-d564e0165812
-      514934ca-7861-4d58-a4f2-f45d8664b9d1
-      5ab575bd-3424-4bd4-8336-17df4536739c
-      5dfe574b-e2b9-48ba-9cdc-95adf4649c0b
-      5e8c2d8b-c8d2-45d9-b4a8-1c7199386c4a
-      633e164e-c105-4009-99c4-d8fb27c799bd
-      677aab1d-200a-4b99-973d-d3553f15d9d1
-      6e7c1e74-e17a-4f57-8239-8d8b285ce762
-      89278135-2ac0-4d40-8be9-c4cbe136574a
-      952de290-64b2-4c72-8b7c-9d8ae16dffe4
-      97109fc4-8829-4baa-a1a8-7b5b5a23fd5a
-      9a55c357-a42d-4627-b126-5d4fd2d3cc54
-      a18c90b2-28f8-4ee6-bbea-8c4dc608a6df
-      a4c2f36d-e4bc-47dd-9ecd-b0e807211ea4
-      a8892302-8781-442f-9f5e-167ec20b5784
-      b1529946-81e8-4ff6-910a-c40f1c7d5492
-      beb8437a-0e53-4a35-b0b9-37af5cf88b86
-      c2b933a4-a71c-4f72-96ac-158c06321aa7
-      c7fa91b6-facf-4e01-8e49-11a8e10c8e21
-      d87cbc55-fd78-4d1c-a0a9-0d9c4407e1c6
-      de4bfb36-908a-4bad-a00f-e1c8034bf3fd
-      e079409f-dde7-4544-8903-c0ee784193d3
-      e480c26d-f491-44bd-afab-b72179113e9d
-      ecb30cc6-49f8-4f2d-b64d-84d6c82e84d0
-      f05d798e-6c09-4ccc-b5b9-8421704c54ac
-      fb2da2ef-3b81-4972-b744-492be7461782
-      fb71ed93-2d83-404c-abdd-c5e7116fb005
-      ff4b2b41-d850-4ea2-856d-a86fdf30d88c
     )
   )
   (group "" locked (id f95fa26c-4db6-4b37-a89a-d4d21c8a7201)
