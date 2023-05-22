@@ -230,3 +230,7 @@ this directory's `.gitignore` file.
 ### Weidmuller\_1825960000
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on product page <https://catalog.weidmueller.com/catalog/Start.do?ObjectID=1825960000>
+
+### AMS\_TSL2585
+* Status: Included
+* Source: Created for project using Autodesk Fusion 360
