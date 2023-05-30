@@ -51,7 +51,7 @@
       (dielectric_constraints no)
     )
     (pad_to_mask_clearance 0.05)
-    (pad_to_paste_clearance_ratio -0.05)
+    (pad_to_paste_clearance -0.05)
     (pcbplotparams
       (layerselection 0x00010fc_ffffffff)
       (plot_on_all_layers_selection 0x0000000_00000000)

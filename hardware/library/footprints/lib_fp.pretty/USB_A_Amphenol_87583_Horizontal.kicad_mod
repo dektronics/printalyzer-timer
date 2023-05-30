@@ -129,8 +129,8 @@
   (pad "2" smd rect (at -1 -6.28) (size 1.12 2.88) (layers "F.Cu" "F.Paste" "F.Mask") (tstamp a0c4ec91-4bcb-4e34-8bef-fcb684996374))
   (pad "3" smd rect (at 1 -6.28) (size 1.12 2.88) (layers "F.Cu" "F.Paste" "F.Mask") (tstamp 745403fc-9b4b-488a-ba23-a57ebabf194d))
   (pad "4" smd rect (at 3.5 -6.28) (size 1.12 2.88) (layers "F.Cu" "F.Paste" "F.Mask") (tstamp 52b28cb0-16b2-464f-aedd-8b3af953c64b))
-  (pad "5" thru_hole oval (at -6.57 -2.7) (size 1.5 3.45) (drill oval 0.8 2.75) (layers "*.Cu" "*.Mask" "F.Paste") (tstamp 63271c18-813c-463b-a8df-da29aee5e4cc))
-  (pad "5" thru_hole oval (at 6.57 -2.7) (size 1.5 3.45) (drill oval 0.8 2.75) (layers "*.Cu" "*.Mask" "F.Paste") (tstamp 525ba07e-2a00-40b0-8a26-fa66c6c73852))
+  (pad "5" thru_hole oval (at -6.57 -2.7) (size 1.5 3.45) (drill oval 0.8 2.75) (layers "*.Cu" "*.Mask") (tstamp 63271c18-813c-463b-a8df-da29aee5e4cc))
+  (pad "5" thru_hole oval (at 6.57 -2.7) (size 1.5 3.45) (drill oval 0.8 2.75) (layers "*.Cu" "*.Mask") (tstamp 525ba07e-2a00-40b0-8a26-fa66c6c73852))
   (model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Amphenol_87583-3010xx.step"
     (offset (xyz 0 6.4 0))
     (scale (xyz 1 1 1))
