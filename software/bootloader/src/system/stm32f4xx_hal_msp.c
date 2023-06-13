@@ -1,21 +1,20 @@
 /**
- ******************************************************************************
- * @file         stm32f4xx_hal_msp.c
- * @brief        This file provides code for the MSP Initialization
- *               and de-Initialization codes.
- ******************************************************************************
- * @attention
- *
- * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
- * All rights reserved.</center></h2>
- *
- * This software component is licensed by ST under BSD 3-Clause license,
- * the "License"; You may not use this file except in compliance with the
- * License. You may obtain a copy of the License at:
- *                        opensource.org/licenses/BSD-3-Clause
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file         stm32f4xx_hal_msp.c
+  * @brief        This file provides code for the MSP Initialization
+  *               and de-Initialization codes.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 
 #include "stm32f4xx_hal.h"
 
@@ -183,18 +182,18 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         __HAL_RCC_SPI2_CLK_ENABLE();
 
         __HAL_RCC_GPIOB_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
+
         /*
          * SPI2 GPIO Configuration
+         * PB13     ------> SPI2_SCK
          * PB15     ------> SPI2_MOSI
-         * PC7      ------> SPI2_SCK
          */
-        GPIO_InitStruct.Pin = LED_SDI_Pin;
+        GPIO_InitStruct.Pin = LED_CLK_Pin|LED_SDI_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
         GPIO_InitStruct.Pull = GPIO_NOPULL;
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
-        HAL_GPIO_Init(LED_SDI_GPIO_Port, &GPIO_InitStruct);
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
         GPIO_InitStruct.Pin = LED_CLK_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
@@ -231,13 +230,10 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 
         /*
          * SPI2 GPIO Configuration
+         * PB13     ------> SPI2_SCK
          * PB15     ------> SPI2_MOSI
-         * PC7      ------> SPI2_SCK
          */
-        HAL_GPIO_DeInit(LED_SDI_GPIO_Port, LED_SDI_Pin);
-
-        HAL_GPIO_DeInit(LED_CLK_GPIO_Port, LED_CLK_Pin);
-
+        HAL_GPIO_DeInit(GPIOB, LED_CLK_Pin|LED_SDI_Pin);
     }
 }
 
@@ -301,10 +297,10 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     if (htim->Instance == TIM3) {
-        __HAL_RCC_GPIOC_CLK_ENABLE();
+        __HAL_RCC_GPIOB_CLK_ENABLE();
         /*
          * TIM3 GPIO Configuration
-         * PC6     ------> TIM3_CH1
+         * PB0     ------> TIM3_CH3
          */
         GPIO_InitStruct.Pin = LED_OE_Pin;
         GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
