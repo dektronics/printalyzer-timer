@@ -148,18 +148,23 @@ void gpio_init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, USB_DRIVE_VBUS_Pin|DISP_RES_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, USB_DRIVE_VBUS_Pin|DMX512_RX_EN_Pin, GPIO_PIN_SET);
 
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOC, DISP_RES_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin, GPIO_PIN_RESET);
+
+    /* Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
+
+    /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(LED_LE_GPIO_Port, LED_LE_Pin, GPIO_PIN_RESET);
 
-    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC5 PC10 PC11 PC12 */
+    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC5 PC12 */
     GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_10|GPIO_PIN_11
-        |GPIO_PIN_12;
+        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -190,23 +195,30 @@ void gpio_init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: DISP_RES_Pin RELAY_SFLT_Pin RELAY_ENLG_Pin */
-    GPIO_InitStruct.Pin = DISP_RES_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin;
+    /* Configure GPIO pins: DISP_RES_Pin DMX512_TX_EN_Pin DMX512_RX_EN_Pin RELAY_SFLT_Pin RELAY_ENLG_Pin */
+    GPIO_InitStruct.Pin = DISP_RES_Pin|DMX512_TX_EN_Pin|DMX512_RX_EN_Pin|RELAY_SFLT_Pin
+        |RELAY_ENLG_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure unused GPIO pins: PB0 PB2 PB12 PB13 PB4 */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13
-        |GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
     /* Configure GPIO pins: SENSOR_INT_Pin KEY_INT_Pin */
     GPIO_InitStruct.Pin = SENSOR_INT_Pin|KEY_INT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Configure GPIO pin: SENSOR_VBUS_Pin */
+    GPIO_InitStruct.Pin = SENSOR_VBUS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(SENSOR_VBUS_GPIO_Port, &GPIO_InitStruct);
+
+    /* Configure unused GPIO pins: PB12 PB4 */
+    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -217,28 +229,40 @@ void gpio_init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LED_LE_GPIO_Port, &GPIO_InitStruct);
 
+    /* Configure GPIO pins: DMX512_TX_Pin DMX512_RX_Pin */
+    GPIO_InitStruct.Pin = DMX512_TX_Pin|DMX512_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
     /* Configure unused GPIO pin: PD2 */
     GPIO_InitStruct.Pin = GPIO_PIN_2;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+    /* Not currently enabling any GPIO interrupts in the bootloader */
 }
 
 void gpio_deinit(void)
 {
     /* De-initialize GPIO pins */
     HAL_GPIO_DeInit(GPIOD, GPIO_PIN_2);
+    HAL_GPIO_DeInit(GPIOC, DMX512_TX_Pin|DMX512_RX_Pin);
     HAL_GPIO_DeInit(LED_LE_GPIO_Port, LED_LE_Pin);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_12|GPIO_PIN_4);
+    HAL_GPIO_DeInit(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin);
     HAL_GPIO_DeInit(GPIOB, SENSOR_INT_Pin|KEY_INT_Pin);
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13);
-    HAL_GPIO_DeInit(GPIOC, DISP_RES_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin);
+    HAL_GPIO_DeInit(GPIOC, DISP_RES_Pin|DMX512_TX_EN_Pin|DMX512_RX_EN_Pin
+        |RELAY_SFLT_Pin|RELAY_ENLG_Pin);
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);
     HAL_GPIO_DeInit(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin);
     HAL_GPIO_DeInit(USB_VBUS_OC_GPIO_Port, USB_VBUS_OC_Pin);
     HAL_GPIO_DeInit(USB_DRIVE_VBUS_GPIO_Port, USB_DRIVE_VBUS_Pin);
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_10|GPIO_PIN_11
-        |GPIO_PIN_12);
+        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_12);
 
     /* GPIO Ports Clock Disable */
     __HAL_RCC_GPIOC_CLK_DISABLE();

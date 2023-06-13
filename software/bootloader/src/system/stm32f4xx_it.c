@@ -17,6 +17,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
+#include "board_config.h"
 
 #include <stdio.h>
 
