@@ -2,11 +2,21 @@
 # Custom Makefile targets
 #
 
-printalyzer-desc.dat: printalyzer.bin
-	../tools/checksum.pl printalyzer.bin printalyzer-desc.dat
+printalyzer-temp.elf : printalyzer.elf
+	arm-none-eabi-objcopy \
+	  --gap-fill 0xff \
+	  printalyzer.elf printalyzer-temp.elf
+
+printalyzer-temp.bin: printalyzer-temp.elf
+	arm-none-eabi-objcopy -O binary printalyzer-temp.elf "printalyzer-temp.bin"
+
+printalyzer-desc.dat: printalyzer-temp.bin
+	$(PERL) ../tools/checksum.pl printalyzer-temp.bin printalyzer-desc.dat
 
 printalyzer-out.elf: printalyzer.elf printalyzer-desc.dat
-	arm-none-eabi-objcopy --update-section .app_descriptor=printalyzer-desc.dat \
+	arm-none-eabi-objcopy \
+	  --update-section .app_descriptor=printalyzer-desc.dat \
+	  --gap-fill 0xff \
 	  printalyzer.elf printalyzer-out.elf
 
 printalyzer-out.bin: printalyzer-out.elf

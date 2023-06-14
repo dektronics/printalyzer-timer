@@ -256,6 +256,8 @@ bootloader_status_t bootloader_verify_checksum(CRC_HandleTypeDef *hcrc)
 
     if (app_descriptor->crc32 == calculated_crc) {
         return BL_OK;
+    } else {
+        printf("%08lX != %08lX\r\n", __bswap32(app_descriptor->crc32), __bswap32(calculated_crc));
     }
 
     return BL_CHKS_ERROR;

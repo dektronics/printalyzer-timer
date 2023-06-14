@@ -2,6 +2,8 @@
 # Makefile definitions used to setup initial build properties
 #
 
+PERL := perl
+
 ifeq ($(SHELL), cmd.exe)
 BUILD_DATE := $(shell python -c "from datetime import datetime; print(datetime.utcnow().strftime('%Y-%m-%d %H:%M'))")
 else
