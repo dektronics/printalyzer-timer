@@ -8,6 +8,7 @@
 #include "main_task.h"
 
 UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart6;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
@@ -23,6 +24,7 @@ TIM_HandleTypeDef htim10;
 void system_clock_config(void);
 void mpu_config();
 static void usart1_uart_init(void);
+static void usart6_uart_init(void);
 static void gpio_init(void);
 static void i2c_init(void);
 static void spi_init(void);
@@ -96,6 +98,9 @@ void mpu_config(void)
 
 void usart1_uart_init(void)
 {
+    /*
+     * USART1 is used for debug logging
+     */
     huart1.Instance = USART1;
     huart1.Init.BaudRate = 115200;
     huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -109,11 +114,27 @@ void usart1_uart_init(void)
     }
 }
 
+void usart6_uart_init(void)
+{
+    /*
+     * USART6 is used for the DMX512 port
+     */
+    huart6.Instance = USART6;
+    huart6.Init.BaudRate = 115200;
+    huart6.Init.WordLength = UART_WORDLENGTH_8B;
+    huart6.Init.StopBits = UART_STOPBITS_1;
+    huart6.Init.Parity = UART_PARITY_NONE;
+    huart6.Init.Mode = UART_MODE_TX_RX;
+    huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart6) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 void gpio_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    //TODO Rewrite this code to be organized by function, not common settings
 
     /* GPIO Ports Clock Enable */
     __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -123,18 +144,23 @@ void gpio_init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, USB_DRIVE_VBUS_Pin|DISP_RES_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, USB_DRIVE_VBUS_Pin|DMX512_RX_EN_Pin, GPIO_PIN_SET);
 
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(GPIOC, DISP_RES_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin, GPIO_PIN_RESET);
+
+    /* Configure GPIO pin Output Level */
+    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
+
+    /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(LED_LE_GPIO_Port, LED_LE_Pin, GPIO_PIN_RESET);
 
-    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC5 PC10 PC11 PC12 */
+    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC5 PC12 */
     GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_10|GPIO_PIN_11
-        |GPIO_PIN_12;
+        |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -165,23 +191,30 @@ void gpio_init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: DISP_RES_Pin RELAY_SFLT_Pin RELAY_ENLG_Pin */
-    GPIO_InitStruct.Pin = DISP_RES_Pin|RELAY_SFLT_Pin|RELAY_ENLG_Pin;
+    /* Configure GPIO pins: DISP_RES_Pin DMX512_TX_EN_Pin DMX512_RX_EN_Pin RELAY_SFLT_Pin RELAY_ENLG_Pin */
+    GPIO_InitStruct.Pin = DISP_RES_Pin|DMX512_TX_EN_Pin|DMX512_RX_EN_Pin|RELAY_SFLT_Pin
+        |RELAY_ENLG_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure unused GPIO pins: PB0 PB2 PB12 PB13 PB4 */
-    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_12|GPIO_PIN_13
-        |GPIO_PIN_4;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
     /* Configure GPIO pins: SENSOR_INT_Pin KEY_INT_Pin */
     GPIO_InitStruct.Pin = SENSOR_INT_Pin|KEY_INT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    /* Configure GPIO pin: SENSOR_VBUS_Pin */
+    GPIO_InitStruct.Pin = SENSOR_VBUS_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(SENSOR_VBUS_GPIO_Port, &GPIO_InitStruct);
+
+    /* Configure unused GPIO pins: PB12 PB4 */
+    GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_4;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
@@ -191,6 +224,14 @@ void gpio_init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LED_LE_GPIO_Port, &GPIO_InitStruct);
+
+    /* Configure GPIO pins: DMX512_TX_Pin DMX512_RX_Pin */
+    GPIO_InitStruct.Pin = DMX512_TX_Pin|DMX512_RX_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* Configure unused GPIO pin: PD2 */
     GPIO_InitStruct.Pin = GPIO_PIN_2;
@@ -343,7 +384,7 @@ void tim3_init(void)
     sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
     sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK) {
         Error_Handler();
     }
 
@@ -413,6 +454,7 @@ int main(void)
 
     /* Initialize all configured peripherals */
     usart1_uart_init();
+    usart6_uart_init();
     gpio_init();
     i2c_init();
     spi_init();

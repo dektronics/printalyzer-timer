@@ -17,6 +17,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_it.h"
+#include "board_config.h"
 
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;

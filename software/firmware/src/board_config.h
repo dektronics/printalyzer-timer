@@ -34,25 +34,27 @@
 #define DISP_RES_Pin             GPIO_PIN_4
 #define DISP_RES_GPIO_Port       GPIOC
 
-/* Pin mapping for meter sensor interrupt */
+/* Pin mapping for meter probe interface */
 #define SENSOR_INT_Pin           GPIO_PIN_1
 #define SENSOR_INT_GPIO_Port     GPIOB
 #define SENSOR_INT_EXTI_IRQn     EXTI1_IRQn
+#define SENSOR_VBUS_Pin          GPIO_PIN_2
+#define SENSOR_VBUS_GPIO_Port    GPIOB
 
 /* Pin mapping for LED driver */
+#define LED_OE_Pin               GPIO_PIN_0
+#define LED_OE_GPIO_Port         GPIOB
+#define LED_CLK_Pin              GPIO_PIN_13
+#define LED_CLK_GPIO_Port        GPIOB
 #define LED_LE_Pin               GPIO_PIN_14
 #define LED_LE_GPIO_Port         GPIOB
 #define LED_SDI_Pin              GPIO_PIN_15
 #define LED_SDI_GPIO_Port        GPIOB
-#define LED_OE_Pin               GPIO_PIN_6
-#define LED_OE_GPIO_Port         GPIOC
-#define LED_CLK_Pin              GPIO_PIN_7
-#define LED_CLK_GPIO_Port        GPIOC
 
 /* Pin mapping for relay driver */
-#define RELAY_SFLT_Pin           GPIO_PIN_8
+#define RELAY_SFLT_Pin           GPIO_PIN_10
 #define RELAY_SFLT_GPIO_Port     GPIOC
-#define RELAY_ENLG_Pin           GPIO_PIN_9
+#define RELAY_ENLG_Pin           GPIO_PIN_11
 #define RELAY_ENLG_GPIO_Port     GPIOC
 
 /* Pin mapping for rotary encoder */
@@ -65,5 +67,15 @@
 #define KEY_INT_Pin              GPIO_PIN_5
 #define KEY_INT_GPIO_Port        GPIOB
 #define KEY_INT_EXTI_IRQn        EXTI9_5_IRQn
+
+/* Pin mapping for the DMX512 UART port */
+#define DMX512_TX_Pin            GPIO_PIN_6
+#define DMX512_TX_GPIO_Port      GPIOC
+#define DMX512_RX_Pin            GPIO_PIN_7
+#define DMX512_RX_GPIO_Port      GPIOC
+#define DMX512_TX_EN_Pin         GPIO_PIN_8
+#define DMX512_TX_EN_GPIO_Port   GPIOC
+#define DMX512_RX_EN_Pin         GPIO_PIN_9
+#define DMX512_RX_EN_GPIO_Port   GPIOC
 
 #endif /* BOARD_CONFIG_H */

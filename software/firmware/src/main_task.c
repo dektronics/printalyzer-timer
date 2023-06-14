@@ -93,7 +93,7 @@ void main_task_led_init()
         .le_gpio_port = LED_LE_GPIO_Port,
         .le_gpio_pin = LED_LE_Pin,
         .oe_tim = &htim3,
-        .oe_tim_channel = TIM_CHANNEL_1,
+        .oe_tim_channel = TIM_CHANNEL_3,
     };
 
     led_init(&led_handle);
@@ -144,22 +144,23 @@ void main_task_start(void *argument)
     printf("---- %s Startup ----\r\n", app_descriptor->project_name);
     uint32_t hal_ver = HAL_GetHalVersion();
     uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
-    uint32_t hal_sysclock = HAL_RCC_GetSysClockFreq();
+    uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
+
     printf("HAL Version: %d.%d.%d%c\r\n",
         ((uint8_t)(hal_ver >> 24)) & 0x0F,
         ((uint8_t)(hal_ver >> 16)) & 0x0F,
         ((uint8_t)(hal_ver >> 8)) & 0x0F,
         hal_ver_code > 0 ? (char)hal_ver_code : ' ');
-    printf("Revision ID: %ld\r\n", HAL_GetREVID());
     printf("Device ID: 0x%lX\r\n", HAL_GetDEVID());
+    printf("Revision ID: %ld\r\n", HAL_GetREVID());
+    printf("Flash size: %dk\r\n", *flash_size);
     printf("FreeRTOS: %s\r\n", tskKERNEL_VERSION_NUMBER);
-    printf("SysClock: %ldMHz\r\n", hal_sysclock / 1000000);
+    printf("SysClock: %ldMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
 
-    uint8_t *uniqueId = (uint8_t*)0x1FFF7A10;
-    printf("Unique ID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X\r\n",
-            uniqueId[0], uniqueId[1], uniqueId[2], uniqueId[3], uniqueId[4],
-            uniqueId[5], uniqueId[6], uniqueId[7], uniqueId[8], uniqueId[9],
-            uniqueId[10], uniqueId[11]);
+    printf("Unique ID: %08lX%08lX%08lX\r\n",
+        __bswap32(HAL_GetUIDw0()),
+        __bswap32(HAL_GetUIDw1()),
+        __bswap32(HAL_GetUIDw2()));
 
     printf("App version: %s\r\n", app_descriptor->version);
     printf("Build date: %s\r\n", app_descriptor->build_date);
