@@ -7,13 +7,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -79,10 +78,10 @@
 #define USBH_MAX_NUM_SUPPORTED_CLASS    8U
 
 /*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION     0x200U
+#define USBH_MAX_SIZE_CONFIGURATION     512U
 
 /*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER            0x200U
+#define USBH_MAX_DATA_BUFFER            512U
 
 /*----------   -----------*/
 #define USBH_DEBUG_LEVEL                2U
@@ -138,7 +137,7 @@
 #if (USBH_DEBUG_LEVEL > 1U)
 
 #define  USBH_ErrLog(...) do { \
-                            printf("ERROR: ") ; \
+                            printf("ERROR: "); \
                             printf(__VA_ARGS__); \
                             printf("\n"); \
 } while (0)
@@ -148,7 +147,7 @@
 
 #if (USBH_DEBUG_LEVEL > 2U)
 #define  USBH_DbgLog(...)   do { \
-                            printf("DEBUG : ") ; \
+                            printf("DEBUG : "); \
                             printf(__VA_ARGS__); \
                             printf("\n"); \
 } while (0)
@@ -194,4 +193,3 @@
 
 #endif /* __USBH_CONF__H__ */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
