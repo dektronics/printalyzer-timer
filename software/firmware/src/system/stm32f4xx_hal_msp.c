@@ -15,10 +15,8 @@
  *
  ******************************************************************************
  */
-/* USER CODE END Header */
 
 #include "stm32f4xx_hal.h"
-
 #include "board_config.h"
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -62,8 +60,8 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
 
         /* Peripheral clock enable */
         __HAL_RCC_I2C1_CLK_ENABLE();
-    }
-    else if (hi2c->Instance == I2C2) {
+
+    } else if (hi2c->Instance == I2C2) {
         __HAL_RCC_GPIOB_CLK_ENABLE();
 
         /*
@@ -109,8 +107,8 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
          */
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_7);
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8);
-    }
-    else if (hi2c->Instance == I2C2) {
+
+    } else if (hi2c->Instance == I2C2) {
         /* Peripheral clock disable */
         __HAL_RCC_I2C2_CLK_DISABLE();
 
@@ -122,7 +120,6 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_9);
     }
-
 }
 
 /**
@@ -150,8 +147,8 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    }
-    else if (hspi->Instance == SPI2) {
+
+    } else if (hspi->Instance == SPI2) {
         /* Peripheral clock enable */
         __HAL_RCC_SPI2_CLK_ENABLE();
         __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -188,8 +185,8 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
          * PA7     ------> SPI1_MOSI
          */
         HAL_GPIO_DeInit(GPIOA, DISP_SCK_Pin|DISP_MOSI_Pin);
-    }
-    else if (hspi->Instance == SPI2) {
+
+    } else if (hspi->Instance == SPI2) {
         /* Peripheral clock disable */
         __HAL_RCC_SPI2_CLK_DISABLE();
 
@@ -211,6 +208,7 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
 void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
 {
     GPIO_InitTypeDef GPIO_InitStruct = {0};
+
     if (htim_encoder->Instance == TIM1) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM1_CLK_ENABLE();
@@ -249,8 +247,8 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
     if (htim_pwm->Instance == TIM3) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM3_CLK_ENABLE();
-    }
-    else if (htim_pwm->Instance == TIM9) {
+
+    } else if (htim_pwm->Instance == TIM9) {
         /* Peripheral clock enable */
         __HAL_RCC_TIM9_CLK_ENABLE();
     }
@@ -290,8 +288,8 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
         HAL_GPIO_Init(LED_OE_GPIO_Port, &GPIO_InitStruct);
-    }
-    else if (htim->Instance == TIM9) {
+
+    } else if (htim->Instance == TIM9) {
         __HAL_RCC_GPIOA_CLK_ENABLE();
 
         /*
@@ -349,8 +347,8 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
     if (htim_pwm->Instance == TIM3) {
         /* Peripheral clock disable */
         __HAL_RCC_TIM3_CLK_DISABLE();
-    }
-    else if (htim_pwm->Instance == TIM9) {
+
+    } else if (htim_pwm->Instance == TIM9) {
         /* Peripheral clock disable */
         __HAL_RCC_TIM9_CLK_DISABLE();
     }
@@ -410,8 +408,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF7_USART1;
         HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-    }
-    else if (huart->Instance == USART6) {
+
+    } else if (huart->Instance == USART6) {
         /* Peripheral clock enable */
         __HAL_RCC_USART6_CLK_ENABLE();
         __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -449,8 +447,8 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
          */
         HAL_GPIO_DeInit(GPIOA, GPIO_PIN_10);
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_6);
-    }
-    else if(huart->Instance == USART6) {
+
+    } else if(huart->Instance == USART6) {
         /* Peripheral clock disable */
         __HAL_RCC_USART6_CLK_DISABLE();
 
