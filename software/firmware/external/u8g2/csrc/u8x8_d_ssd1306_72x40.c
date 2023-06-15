@@ -102,7 +102,7 @@ static const uint8_t u8x8_d_ssd1306_72x40_er_init_seq[] = {
   U8X8_C(0x0a6),				/* none inverted normal display mode */
   U8X8_C(0x0a4),				/* output ram to display */
   
-  U8X8_CA(0x020, 0x000),		/* page addressing mode */
+  U8X8_CA(0x020, 0x000),		/* horizontal addressing mode */
   
   U8X8_C(0x0a1),				/* segment remap a0/a1, 0.66 OLED  */
   U8X8_C(0x0c8),				/* c0: scan dir normal, c8: reverse, 0.66 OLED  */
@@ -236,7 +236,7 @@ static const u8x8_display_info_t u8x8_ssd1306_72x40_display_info =
   /* data_setup_time_ns = */ 40,
   /* write_pulse_width_ns = */ 150,	/* SSD1306: cycle time is 300ns, so use 300/2 = 150 */
   /* tile_width = */ 9,
-  /* tile_hight = */ 5,
+  /* tile_height = */ 5,
   /* default_x_offset = */ 28,
   /* flipmode_x_offset = */ 28,
   /* pixel_width = */ 72,

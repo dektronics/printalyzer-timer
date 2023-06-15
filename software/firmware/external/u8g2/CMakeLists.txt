@@ -15,6 +15,7 @@ set(COMPONENT_SRCS "csrc/u8x8_setup.c"
                     "csrc/u8g2_polygon.c"
                     "csrc/u8x8_d_uc1604.c"
                     "csrc/u8x8_d_ssd1306_128x32.c"
+                    "csrc/u8x8_d_ssd1306_72x40.c"
                     "csrc/u8x8_d_ssd1322.c"
                     "csrc/u8x8_d_sbn1661.c"
                     "csrc/u8g2_input_value.c"
@@ -86,7 +87,15 @@ set(COMPONENT_SRCS "csrc/u8x8_setup.c"
                     "csrc/u8x8_d_uc1701_mini12864.c"
                     "csrc/u8x8_u16toa.c"
                     "csrc/u8x8_d_a2printer.c"
-                    "csrc/u8x8_d_st7565.c")
-set(COMPONENT_NAME ".")
+                    "csrc/u8x8_d_st7565.c"
+                    "csrc/u8x8_capture.c"
+                    "csrc/u8g2_button.c")
 
-register_component()
+if(COMMAND register_component)
+    set(COMPONENT_NAME ".")
+    register_component()
+else()
+    add_library(u8g2 ${COMPONENT_SRCS})
+    target_include_directories(u8g2 PUBLIC ${CMAKE_CURRENT_LIST_DIR}/csrc )
+endif()
+

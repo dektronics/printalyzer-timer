@@ -22,11 +22,46 @@ clean:
 test:	bdfconv
 	./bdfconv 
 
+issue_1811: bdfconv
+	./bdfconv -f 1 -v -m '32-127,$$980-$$9FF,$$A00-$$A7F,$$A80-$$AFF,$$B00-$$B7f,$$B80-$$BFF,$$C00-$$C7f,$$C80-$$CFF' ../bdf/unifont.bdf -n unifont_1811 -o unifont_1811.c -d ../bdf/7x13.bdf
+	convert -trim bdf.tga issue_1811.png
+
 greek: bdfconv
 	./bdfconv -f 1 -v -m '32-127,$$370-$$3ff' ../bdf/unifont.bdf -n unifont_greek -o unifont_greek.c -d ../bdf/7x13.bdf
 
+
+cyrillic: bdfconv
+	./bdfconv -f 1 -v -m '$$20-$$7E, $$410-$$44F' ../bdf/unifont.bdf -n unifont_cyrillic_44f -o unifont_cyrillic_44f.c -d ../bdf/7x13.bdf
+	convert bdf.tga unifont_cyrillic_44f.png
+	./bdfconv -f 1 -v -m '$$20-$$7E, $$400-$$4ff' ../bdf/unifont.bdf -n unifont_cyrillic_4ff -o unifont_cyrillic_4ff.c -d ../bdf/7x13.bdf
+	convert bdf.tga unifont_cyrillic_4ff.png
+
+battery19: bdfconv
+	./bdfconv -f 1 -v -m '32-127' ../bdf/battery19.bdf -n battery19 -o battery19.c -d ../bdf/7x13.bdf
+
+battery24: bdfconv
+	./bdfconv -f 1 -v -m '32-127s' ../bdf/battery24.bdf -n battery24 -o battery24.c -d ../bdf/7x13.bdf
+	convert -trim bdf.tga battery24.png
+
+hornet: bdfconv
+	./bdfconv -a -f 1 -v -m '32-127s' ./tmp/hornet.bdf -n hornet -o hornet.c -d ../bdf/7x13.bdf
+	convert -trim bdf.tga hornet.png
+
 10x20greek: bdfconv
 	./bdfconv -f 1 -v -m '32-127,$$370-$$3ff' ../bdf/10x20.bdf -n 10x20_greek -o 10x20_greek.c -d ../bdf/7x13.bdf
+
+5x7: bdfconv
+	./bdfconv -b 4 -f 1 -a -v -m '32-255' ../bdf/5x7.bdf -n 5x7lcd -o 5x7lcd.c -d ../bdf/7x13.bdf
+
+ti83: bdfconv
+	-../otf2bdf/otf2bdf  -n -p 5 -o ../bdf/ti83.bdf ../ttf/ti83.ttf
+	./bdfconv -b 4 -f 1 -a -v -m '32-65000' ../bdf/ti83.bdf -n u8g2_ti83_5x7 -o ti83.c -d ../bdf/7x13.bdf
+
+kalpurush: bdfconv
+	-../otf2bdf/otf2bdf  -g -v -p 16 -o ../bdf/kalpurush.bdf kalpurush.ttf
+	./bdfconv -f 1 -m '0-65000>32' ../bdf/kalpurush.bdf -n u8g2_kalpurush -o kalpurush.c -d ../bdf/7x13.bdf
+	convert bdf.tga -trim kalpurush.png
+
 
 polish: bdfconv
 	./bdfconv -f 1 -v -m '32-127,$$104-$$107,$$118-$$119,$$141-$$144,$$15a-$$15b,$$179-$$17c,$$d3,$$f3' ../bdf/unifont.bdf -n unifont_polish -o unifont_polish.c -d ../bdf/7x13.bdf
@@ -52,9 +87,18 @@ dseg7cr: bdfconv
 dseg14cr: bdfconv
 	./bdfconv -v -f 1 -b 2 -m '32-255' dseg14_classic_regular.bdf -o u8g2_font_dseg14_cr.c  -n u8g2_font_dseg14_cr -d ../bdf/helvR12.bdf 
 	convert bdf.tga -trim u8g2_font_dseg14_cr.png
+        
+issue1769: bdfconv
+	./bdfconv -v -f 1 -b 2 -m '32-128' 3x7_Multi_V7.bdf -o u8g2_font_3x7_multi.c  -n u8g2_font_3x7_multi -d ../bdf/helvR12.bdf 
+	convert bdf.tga -trim u8g2_font_3x7_multi.png
+
 
 emoticons21: bdfconv
 	./bdfconv -v -f 1 -m '32-64' ../emoticons/emoticons21.bdf -o emoticons21.c  -n u8g2_font_emoticons21_tn -d ../bdf/helvB18.bdf 
+
+mmmicons: bdfconv
+	./bdfconv -v -f 1 -m '32-700' mmmicons.bdf -o mmmicons.c  -n u8g2_font_mmmicons -d ../bdf/helvB18.bdf 
+	convert bdf.tga -trim mmmicons.png
 
 ded: bdfconv
 	./bdfconv -v -b 0 -f 1  ./F16_DED.bdf -o ded.c  -n ded -d ../bdf/helvB12.bdf 
@@ -130,6 +174,18 @@ old16x16: bdfconv
 	./bdfconv -y 0 -th 8 -tv 8 -v -f 2 -m '32-127' ../bdf/open_iconic_weather_8x.bdf -o u8x8_font_open_iconic_weather_8x8.c  -n u8x8_font_open_iconic_weather_8x8
 
 
+falconded: bdfconv
+	-../otf2bdf/otf2bdf  -n -p 12 -o falconded.bdf FalconDED2.ttf
+	./bdfconv -v -f 1 -b 2 -a -m '32-96' falconded.bdf -o u8g2_font_falconded_mr.c  -n u8g2_font_falconded_mr -d ../bdf/helvR12.bdf 
+	-../otf2bdf/otf2bdf  -n -p 12 -o falconded.bdf FalconDED2.ttf
+	./bdfconv -v -f 1 -b 1 -a -m '32-96' falconded.bdf -o u8g2_font_falconded_hr.c  -n u8g2_font_falconded_hr -d ../bdf/helvR12.bdf 
+
+falconded9: bdfconv
+	./bdfconv -v -f 1 -b 2 -a -m '32-99' falconded.bdf -o u8g2_font_falconded_mr.c  -n u8g2_font_falconded_mr -d ../bdf/helvR12.bdf 
+	convert bdf.tga -trim u8g2_font_falconded_mr.png
+	./bdfconv -v -f 1 -b 1 -a -m '32-99' falconded.bdf -o u8g2_font_falconded_hr.c  -n u8g2_font_falconded_hr -d ../bdf/helvR12.bdf 
+	convert bdf.tga -trim u8g2_font_falconded_hr.png
+
 
 analecta: bdfconv
 	-../otf2bdf/otf2bdf -a  -p 20 -o analecta.bdf Analecta.otf
@@ -149,8 +205,11 @@ q_pixia: bdfconv
 	./bdfconv -v -f 1 -m '32-65534' tmp.bdf -o u8g2_font_q_pixia.c  -n u8g2_font_q_pixia -d ../bdf/helvB18.bdf 
 
 inr: bdfconv
-	-../otf2bdf/otf2bdf -a -r 72 -p 33 -o tmp.bdf ../ttf/inr.otf
-	./bdfconv -v -b 2 -f 1 -m '32-128,$$400-$$52f' tmp.bdf -o u8g2_font_inr_m.c  -n u8g2_font_inr_m -d ../bdf/helvB18.bdf 
+	-../otf2bdf/otf2bdf -a -r 72 -p 86 -o tmp.bdf ../ttf/inr.otf
+	./bdfconv -v -b 2 -f 1 -m '42-57' tmp.bdf -o u8g2_font_inr64_m.c  -n u8g2_font_inr64_m -d ../bdf/helvB18.bdf 
+	-../otf2bdf/otf2bdf -a -r 72 -p 43 -o tmp.bdf ../ttf/inr.otf
+	./bdfconv -v -b 2 -f 1 -m '42-57' tmp.bdf -o u8g2_font_inr32_m.c  -n u8g2_font_inr32_m -d ../bdf/helvB18.bdf 
+#	./bdfconv -v -b 2 -f 1 -m '32-128,$$400-$$52f' tmp.bdf -o u8g2_font_inr_m.c  -n u8g2_font_inr_m -d ../bdf/helvB18.bdf 
 
 logisoso92x: bdfconv
 	-../otf2bdf/otf2bdf -a -r 72 -p 131 -o tmp.bdf ../ttf/Logisoso.ttf
@@ -232,6 +291,11 @@ lubr24: bdfconv
 lurs24: bdfconv
 	./bdfconv -f 1 -m '32-255' -p 10 luRS24.bdf -o luRS24.c -n u8g2_font_luRS24 -d ../bdf/helvB12.bdf 
 
+luBS18: bdfconv
+	./bdfconv -v -f 1 -m '32-34,36-125,176>35,8364>126' -p 10 ../bdf/luBS18.bdf -o luBS18.c -n u8g2_font_luBS18 -d ../bdf/helvB12.bdf 
+
+
+
 
 
 siji: bdfconv
@@ -249,6 +313,11 @@ wqy: bdfconv
 
 ncenR24: bdfconv
 	./bdfconv  -v -f 1 -b 0 -m '32-701>32,7838' ../bdf/ncenR24.bdf -n u8g2_font_ncenR24_te -o test.c 
+
+ncenR10: bdfconv
+	./bdfconv  -v -f 1 -m '48-57,88,89' ../bdf/ncenR10.bdf -n u8g2_font_ncenR10 -o test.c -d ../bdf/helvB12.bdf 
+	convert bdf.tga -trim ncenR10.png
+
 
 profont12v2: bdfconv
 	#./bdfconv  -v -f 1 -b 0 -m '32-701>32,7838' ../bdf/profont12v2.bdf -n u8g2_font_profont12v2_te -o test.c 
@@ -369,3 +438,83 @@ Aurebesh: bdfconv
 aurebesh_small: bdfconv
 	./bdfconv -v -f 1 -m '$$20-$$ff' aurebesh_small.bdf -o u8g2_font_aurebesh_small.c  -n u8g2_font_aurebesh_small -d ../bdf/helvB18.bdf 
 	convert bdf.tga u8g2_font_aurebesh_small.png
+
+issue_1521: bdfconv
+	./bdfconv -v -f 1 -m '$$0000-$$3B97' ../bdf/unifont.bdf -o unifont_custom.c -n unifont_custom  -d ../bdf/helvB18.bdf 
+	convert bdf.tga unifont_custom.png
+
+out: bdfconv
+	./bdfconv -v -f 1 -m '$$0000-$$3B97' out.bdf -o out.c -n out  -d ../bdf/helvR14.bdf 
+	convert bdf.tga out.png
+
+issue833: bdfconv
+	./bdfconv -v -f 1 -m '19968-40959' unifont-13.0.06.bdf -o out.c -n out  -d unifont-13.0.06.bdf 
+	convert bdf.tga out.png
+
+
+waffle: bdfconv
+	./bdfconv -v -f 1 -m '32-65535' ../bdf/waffle-10.bdf -o tmp.c  -n u8g2_font_helvB18_tn -d ../bdf/helvB18.bdf 
+	convert bdf.tga out.png
+
+CalBlk36: bdfconv
+	./bdfconv -v -f 1 -m '32-65535' ../bdf/CalBlk36.bdf -o tmp.c  -n u8g2_font_helvB18_tn -d ../bdf/helvB18.bdf 
+	convert bdf.tga out.png
+        
+CalLite24: bdfconv
+	./bdfconv -v -f 1 -m '32-65535' ../bdf/CalLite24.bdf -o tmp.c  -n u8g2_font_helvB18_tn -d ../bdf/helvB18.bdf 
+	convert bdf.tga out.png
+
+7seg_33x19: bdfconv
+	./bdfconv -v -f 1 -m '32-79' ./tmp/7_Seg_33x19.bdf -o tmp.c  -n u8g2_font_helvB18_tn -d ../bdf/helvB18.bdf 
+	convert bdf.tga out.png
+
+notos: bdfconv
+	./bdfconv -v -f 1 -m '32-65535,~9939,~10084' NotoEmoji-SemiBold-32.bdf -o u8g2_font_noto_semi_32_t.c  -n u8g2_font_noto_semi_32_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_32_t.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1ffff>$$f300,~127995' NotoEmoji-SemiBold-32.bdf -o u8g2_font_noto_semi_32_t2.c  -n u8g2_font_noto_semi_32_t2 -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_32_t2.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1' NotoEmoji-SemiBold-24.bdf -o u8g2_font_noto_semi_24_t_weather.c  -n u8g2_font_noto_semi_24_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_24_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0' NotoEmoji-SemiBold-24.bdf -o u8g2_font_noto_semi_24_t_emoji.c  -n u8g2_font_noto_semi_24_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_24_t_emoji.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1' NotoEmoji-SemiBold-32.bdf -o u8g2_font_noto_semi_32_t_weather.c  -n u8g2_font_noto_semi_32_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_32_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0' NotoEmoji-SemiBold-32.bdf -o u8g2_font_noto_semi_32_t_emoji.c  -n u8g2_font_noto_semi_32_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_32_t_emoji.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1,~127747,~127751' NotoEmoji-SemiBold-40.bdf -o u8g2_font_noto_semi_40_t_weather.c  -n u8g2_font_noto_semi_40_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_40_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0, ~128561, ~128576' NotoEmoji-SemiBold-40.bdf -o u8g2_font_noto_semi_40_t_emoji.c  -n u8g2_font_noto_semi_40_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_semi_40_t_emoji.png
+
+notob: bdfconv
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1' NotoEmoji-Bold-24.bdf -o u8g2_font_noto_bold_24_t_weather.c  -n u8g2_font_noto_bold_24_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_24_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0' NotoEmoji-Bold-24.bdf -o u8g2_font_noto_bold_24_t_emoji.c  -n u8g2_font_noto_bold_24_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_24_t_emoji.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1' NotoEmoji-Bold-32.bdf -o u8g2_font_noto_bold_32_t_weather.c  -n u8g2_font_noto_bold_32_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_32_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0' NotoEmoji-Bold-32.bdf -o u8g2_font_noto_bold_32_t_emoji.c  -n u8g2_font_noto_bold_32_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_32_t_emoji.png
+	./bdfconv -v -f 1 -m '32-127,$$1f300-$$1f32c>$$f300,$$2600-$$2604,$$2614,$$26c4,$$26c5,$$26c8,$$26f1,~127747,~127751' NotoEmoji-Bold-40.bdf -o u8g2_font_noto_bold_40_t_weather.c  -n u8g2_font_noto_bold_40_t_weather -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_40_t_weather.png
+	./bdfconv -v -f 1 -m '32-127,$$1f600-$$1f637>$$f600,$$1f641-$$1f64f>$$f641, $$1f910-$$1f917>$$f910, $$1f920-$$1f92f>$$f920, $$1f970-$$1f97a>$$f970, $$1fae0-$$1fae5>$$fae0, ~128561, ~128576, ~128588' NotoEmoji-Bold-40.bdf -o u8g2_font_noto_bold_40_t_emoji.c  -n u8g2_font_noto_bold_40_t_emoji -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_noto_bold_40_t_emoji.png
+
+
+mystery_quest: bdfconv
+	-../otf2bdf/otf2bdf -a -r 72 -p 24 -o mystery-quest.regular.bdf ../ttf/mystery-quest.regular.ttf
+	./bdfconv -v -f 1 -m '32-127' mystery-quest.regular.bdf -o u8g2_font_mystery_quest_24_t.c  -n u8g2_font_mystery_quest_24_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_mystery_quest_24_t.png
+	-../otf2bdf/otf2bdf -a -r 72 -p 28 -o mystery-quest.regular.bdf ../ttf/mystery-quest.regular.ttf
+	./bdfconv -v -f 1 -m '32-127' mystery-quest.regular.bdf -o u8g2_font_mystery_quest_28_t.c  -n u8g2_font_mystery_quest_28_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_mystery_quest_28_t.png
+	-../otf2bdf/otf2bdf -a -r 72 -p 32 -o mystery-quest.regular.bdf ../ttf/mystery-quest.regular.ttf
+	./bdfconv -v -f 1 -m '32-127' mystery-quest.regular.bdf -o u8g2_font_mystery_quest_32_t.c  -n u8g2_font_mystery_quest_32_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_mystery_quest_32_t.png
+	-../otf2bdf/otf2bdf -a -r 72 -p 36 -o mystery-quest.regular.bdf ../ttf/mystery-quest.regular.ttf
+	./bdfconv -v -f 1 -m '32-127' mystery-quest.regular.bdf -o u8g2_font_mystery_quest_36_t.c  -n u8g2_font_mystery_quest_36_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_mystery_quest_36_t.png
+	-../otf2bdf/otf2bdf -a -r 72 -p 42 -o mystery-quest.regular.bdf ../ttf/mystery-quest.regular.ttf
+	./bdfconv -v -f 1 -m '32-127' mystery-quest.regular.bdf -o u8g2_font_mystery_quest_42_t.c  -n u8g2_font_mystery_quest_42_t -d ../bdf/helvB18.bdf 
+	convert bdf.tga u8g2_font_mystery_quest_42_t.png
+

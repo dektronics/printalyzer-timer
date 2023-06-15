@@ -32,6 +32,9 @@ U8G2_..._4W_SW_SPI u8g2(U8G2_R0, clock, data, cs, dc, reset);
 All U8g2 hardware SPI constructors look like this:
 U8G2_..._4W_SW_SPI u8g2(U8G2_R0, cs, dc, reset);
 
+Q: How to use HSPI for HW SPI on ESP32?
+A: Assign  "SPI = SPIClass(HSPI);" before calling u8g2.begin() (see issue #1061)
+
 Q: For HW I2C no pin numbers are required in the constructor. But which are
 the pin numbers for wiring?
 A: See same question for SPI. For some boards, the pins are listed here:
@@ -135,11 +138,18 @@ Q: What is the meaning of the F/1/2 in the U8g2 constructor name?
 A: "F" means full buffer mode. The entire display is rendered in RAM. Use
 "sendBuffer" to transfer this RAM buffer to the display. "1"  and "2" constructors
 will store one or two pages of the display in RAM only.
-Use the firstPage/nextPage  loop to create the image for the display. 
+Use the firstPage/nextPage loop to create the image for the display. 
 There are also two different sets of examples for both modes.
 Conclusion: 
 "F" mode: Faster, but requires more RAM
-"1"/"2" modes: User lesser RAM, but slower draw speed.
+"1"/"2" modes: Use lesser RAM, but slower drawing speed.
+
+Q: Data is written only to the first 8 lines of the display. Why?
+A: U8g2 page mode constructor ("1" mode, see previous question) is used
+along with the "sendBuffer" command. This is a mistake and will not work.
+Solutions 1: Change the constructor to full buffer mode: Replace "_1_" by "_F_"
+Or solution 2: Replace "sendBuffer" with the firstPage/nextPage loop
+See also: https://github.com/olikraus/u8g2/wiki/u8g2setupcpp#constructor-name
 
 Q: What is the meaning of "SW"/"HW" in the U8g2 constructor name?
 A: "SW" means, that the protocol is emulated by software. For example 
@@ -167,6 +177,18 @@ in "u8g2.h". Uncomment this line:
 #define U8G2_16BIT
 The file "u8g2.h" is located in "/libraries/U8g2_Arduino/src/clib" inside your default
 sketch folder.
+
+Q: What will change in 16 Bit mode?
+A: U8x8 is unaffected: U8x8 will use a "tile" coordinate system (1 tile = 8x8 pixel). 
+As a result u8x8 can work with display dimensions of up to 2040x2040
+In U8g2 8 bit mode all pixel related calculations are done in 8 bit, which is faster 
+and produces smaller code on 8 bit architectures like ATMega AVR. 
+This will however restrict the display size to 255x255 (which is actually clipped at 240x240)
+In U8g2 16 bit mode the pixel related calculations are done in 16 bit. For 32 bit systems like ARM, 
+there will be not much a difference between 16 bit mode and 8 bit mode, this is also why 
+16 bit mode is now default on ARMs. The maximum display dimension is then 65000x65000, 
+however, because u8g2 just calls u8x8, the actual limit in 16 bit mode is 2040x2040 pixel.
+ 
 
 Q: U8g2 requires a lot of memory. How to reduce this?
 - Visit https://github.com/olikraus/u8g2/wiki/u8g2optimization
@@ -231,11 +253,20 @@ https://github.com/olikraus/u8g2/tree/master/tools/png2bin
 
 
 Q: How can I generate my own font?
-A: The font must be available in bdf file format. Then use bdfconv to generate
+A: The font must be available in .bdf file format. Then use bdfconv to generate
 the font data. The font data can be pasted into an existing file of your project.
 There is also a nice Windows Bitmap Font Editor "Fony" (http://hukka.ncn.fi/?fony) 
 which can export .bdf files. A copy of Fony 1.4.7 is available here: 
 https://github.com/olikraus/u8g2/tree/master/tools/font/fony
+
+Q: Where do I find bdfconv?
+A: A Windows executable is available here:
+https://github.com/olikraus/u8g2/tree/master/tools/font/bdfconv
+Use the Makefile in this directory to create a Linux binary.
+
+Q: How to convert .ttf to .bdf?
+A1: With otf2bdf: http://sofia.nmsu.edu/~mleisher/Software/otf2bdf/
+A2: With FontForge: https://learn.adafruit.com/custom-fonts-for-pyportal-circuitpython-display/conversion
 
 Q: Which commandline options are required for bdfconv?
 A: "bdfconv -f 1 -m '32-255' -n fontname -o myfont.c myfont.bdf"
@@ -245,10 +276,17 @@ A: "bdfconv -f 1 -m '32-255' -n fontname -o myfont.c myfont.bdf"
 "-o myfont.c": The font array will be stored in this file.
 "myfont.bdf": The input file with the font data (bdf format).
 
-Q: Where do I find bdfconv?
-A: A Windows executable is available here:
-https://github.com/olikraus/u8g2/tree/master/tools/font/bdfconv
-Use the Makefile in this directory to create a Linux binary.
+Q: Is there any further help for the commandline options of bdfconv.exe?
+A: There is an online tool which helps you to derive the commandline options:
+https://stncrn.github.io/u8g2-unifont-helper/
+Many thanks to "stncrn" for making this available.
+
+Q: Are there any video-tutorials for bdfconv?
+A: This is what I found on youtube: https://www.youtube.com/watch?v=Igkb7ZmO31A
+The above video uses the -M option (instead of -m) to provide a map file with the unicodes.
+
+Q: Is there any simple way to create a font with some custom chars?
+A: This online tool might be useful: http://www.kidsgo.net/u8g2/
 
 Q: How can I use multiple SPI Displays?
 A: For each additional display, separate CS (Chip select) is required.
@@ -285,4 +323,9 @@ display:
   u8x8_cad_SendCmd( u8g2.getU8x8(), <display command>);
   u8x8_cad_SendArg( u8g2.getU8x8(), <display-command-arg>);  
   u8x8_cad_EndTransfer(u8g2.getU8x8());
+
+
+Q: RAM Overflow error when linking with u8g2
+A: With gcc use compiler flags -ffunction-sections -fdata-sections and 
+linker flag -Wl,--gc-sections.
 

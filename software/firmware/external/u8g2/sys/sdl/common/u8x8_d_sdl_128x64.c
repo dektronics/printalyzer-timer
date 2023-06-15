@@ -49,7 +49,7 @@ static void u8g_sdl_set_pixel(int x, int y, int idx)
         
       assert( offset < (Uint32)(u8g_sdl_width * u8g_sdl_multiple * u8g_sdl_height * u8g_sdl_multiple * u8g_sdl_screen->format->BytesPerPixel) );
       
-      ptr = u8g_sdl_screen->pixels + offset;
+      ptr = (uint32_t *)(((uint8_t *)(u8g_sdl_screen->pixels)) + offset);
       *ptr = u8g_sdl_color[idx];
 #endif
     }
@@ -207,7 +207,7 @@ static const u8x8_display_info_t u8x8_sdl_240x160_info =
 };
 
 
-static uint8_t u8x8_d_sdl_gpio(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+static uint8_t u8x8_d_sdl_gpio(u8x8_t *u8x8, uint8_t msg, U8X8_UNUSED uint8_t arg_int, U8X8_UNUSED void *arg_ptr)
 {
 	static int debounce_cnt = 0;
 	static int curr_msg = 0;
