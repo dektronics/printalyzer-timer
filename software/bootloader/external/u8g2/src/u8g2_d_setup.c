@@ -1,4 +1,5 @@
 /* u8g2_d_setup.c */
+/* generated code, codebuild, u8g2 project */
 
 #include "u8g2.h"
 
@@ -30,3 +31,4 @@ void u8g2_Setup_ssd1322_nhd_256x64_f(u8g2_t *u8g2, const u8g2_cb_t *rotation, u8
   buf = u8g2_m_32_8_f(&tile_buf_height);
   u8g2_SetupBuffer(u8g2, buf, tile_buf_height, u8g2_ll_hvline_vertical_top_lsb, rotation);
 }
+/* end of generated code */

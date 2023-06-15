@@ -4,7 +4,7 @@
   
   Universal 8bit Graphics Library (https://github.com/olikraus/u8g2/)
 
-  Copyright (c) 2016, olikraus@gmail.com
+  Copyright (c) 2016, olikraus@gmail.  
   All rights reserved.
 
   Redistribution and use in source and binary forms, with or without modification, 
@@ -34,11 +34,11 @@
   
   
   U8glib has several layers. Each layer is implemented with a callback function. 
-  This callback function handels the messages for the layer.
+  This callback function handles the messages for the layer.
 
   The topmost level is the display layer. It includes the following messages:
   
-    U8X8_MSG_DISPLAY_SETUP_MEMORY			no communicaation with the display, setup memory ony
+    U8X8_MSG_DISPLAY_SETUP_MEMORY			no communication with the display, setup memory only
     U8X8_MSG_DISPLAY_INIT
     U8X8_MSG_DISPLAY_SET_FLIP_MODE
     U8X8_MSG_DISPLAY_SET_POWER_SAVE
@@ -89,7 +89,9 @@
 /* Global Defines */
 
 /* Undefine this to remove u8x8_SetContrast function */
+#ifndef U8X8_WITHOUT_SET_CONTRAST
 #define U8X8_WITH_SET_CONTRAST
+#endif
 
 /* Define this for an additional user pointer inside the u8x8 data struct */
 //#define U8X8_WITH_USER_PTR
@@ -100,7 +102,7 @@
 //#define U8X8_WITH_SET_FLIP_MODE
 
 /* Select 0 or 1 for the default flip mode. This is not affected by U8X8_WITH_FLIP_MODE */
-/* Note: Not all display types support a mirror functon for the frame buffer */
+/* Note: Not all display types support a mirror function for the frame buffer */
 /* 26 May 2016: Obsolete */
 //#define U8X8_DEFAULT_FLIP_MODE 0
 
@@ -186,6 +188,20 @@ uint8_t u8x8_pgm_read_esp(const uint8_t * addr);   /* u8x8_8x8.c */
 
 #ifdef ARDUINO
 #define U8X8_USE_PINS
+#endif
+
+#ifdef __RTTHREAD__
+#define U8X8_USE_PINS
+#endif
+
+#ifdef __LUATOS__
+#define U8X8_USE_PINS
+#endif
+
+#if defined(__ARM_LINUX__) || defined(unix) || defined(__unix__) || defined(__unix)
+/* https://github.com/olikraus/u8g2/pull/1666 */
+#define U8X8_USE_PINS
+#define U8X8_WITH_USER_PTR
 #endif
 
 /*==========================================*/
@@ -336,7 +352,7 @@ struct u8x8_struct
   uint16_t encoding;		/* encoding result for utf8 decoder in next_cb */
   uint8_t x_offset;	/* copied from info struct, can be modified in flip mode */
   uint8_t is_font_inverse_mode; 	/* 0: normal, 1: font glyphs are inverted */
-  uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something usefull during DISPLAY_INIT */
+  uint8_t i2c_address;	/* a valid i2c adr. Initially this is 255, but this is set to something useful during DISPLAY_INIT */
 					/* i2c_address is the address for writing data to the display */
 					/* usually, the lowest bit must be zero for a valid address */
   uint8_t i2c_started;	/* for i2c interface */
@@ -351,7 +367,7 @@ struct u8x8_struct
   void *user_ptr;
 #endif
 #ifdef U8X8_USE_PINS 
-  uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Envionment, use U8X8_PIN_xxx to access */
+  uint8_t pins[U8X8_PIN_CNT];	/* defines a pinlist: Mainly a list of pins for the Arduino Environment, use U8X8_PIN_xxx to access */
 #endif
 };
 
@@ -400,7 +416,7 @@ struct u8log_struct
   void *aux_data;		/* pointer to u8x8 or u8g2 */
   uint8_t width, height;	/* size of the terminal */
   u8log_cb cb;			/* callback redraw function */
-  uint8_t *screen_buffer;	/* size must be width*heigh bytes */
+  uint8_t *screen_buffer;	/* size must be width*height bytes */
   uint8_t is_redraw_line_for_each_char;
   int8_t line_height_offset;		/* extra offset for the line height (u8g2 only) */
   
@@ -461,7 +477,7 @@ void u8x8_d_helper_display_init(u8x8_t *u8g2);
   Name: 	U8X8_MSG_DISPLAY_SET_FLIP_MODE
   Args:	arg_int: 0: normal mode, 1: flipped HW screen (180 degree)
   Tasks:
-    Reprogramms the display controller to rotate the display by 
+    Reprograms the display controller to rotate the display by 
     180 degree (arg_int = 1) or not (arg_int = 0)
     This may change u8g2->x_offset if the display is smaller than the controller ram
     This message should only be supported if U8X8_WITH_FLIP_MODE is defined.
@@ -545,6 +561,14 @@ uint8_t u8x8_DrawTile(u8x8_t *u8x8, uint8_t x, uint8_t y, uint8_t cnt, uint8_t *
 void u8x8_SetupMemory(u8x8_t *u8x8);
 
 /*
+  Init the interface to the display, but not the display itself.
+  This might be useful, if the display is already running.
+  
+  InitInterface is called from InitDisplay, do not call both functions.
+*/
+void u8x8_InitInterface(u8x8_t *u8x8);
+
+/*
   After calling u8x8_SetupMemory()/u8x8_Setup(), init the display hardware itself.
   This will will the first time, u8x8 talks to the display.
   It will init the display, but keep display in power save mode. 
@@ -615,6 +639,7 @@ void u8x8_SendF(u8x8_t * u8x8, const char *fmt, ...);
 #define U8X8_A(a0)				(U8X8_MSG_CAD_SEND_ARG), (a0)
 #define U8X8_CA(c0,a0)			(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0)
 #define U8X8_CAA(c0,a0,a1)		(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1)
+#define U8X8_CCAA(c0,c1,a0, a1)	(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_CMD), (c1), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1)
 #define U8X8_CAAA(c0,a0,a1, a2)	(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1), (U8X8_MSG_CAD_SEND_ARG), (a2)
 #define U8X8_CAAAA(c0,a0,a1,a2,a3)		(U8X8_MSG_CAD_SEND_CMD), (c0), (U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1), (U8X8_MSG_CAD_SEND_ARG), (a2), (U8X8_MSG_CAD_SEND_ARG), (a3)
 #define U8X8_AAC(a0,a1,c0)		(U8X8_MSG_CAD_SEND_ARG), (a0), (U8X8_MSG_CAD_SEND_ARG), (a1), (U8X8_MSG_CAD_SEND_CMD), (c0)
@@ -632,6 +657,7 @@ void u8x8_SendF(u8x8_t * u8x8, const char *fmt, ...);
 void u8x8_cad_SendSequence(u8x8_t *u8x8, uint8_t const *data);
 uint8_t u8x8_cad_empty(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_110(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_gu800_cad_110(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_001(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_011(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_100(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
@@ -640,7 +666,8 @@ uint8_t u8x8_cad_ssd13xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *a
 uint8_t u8x8_cad_ssd13xx_fast_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_st75256_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 uint8_t u8x8_cad_ld7032_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
-uint8_t u8x8_cad_uc16xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_cad_uc16xx_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);  /* CAD=001 */
+uint8_t u8x8_cad_uc1638_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);  /* CAD=011 */
 
 
 /*==========================================*/
@@ -787,6 +814,11 @@ uint8_t u8x8_GetBitmapPixel(u8x8_t *u8x8, uint16_t x, uint16_t y);
 void u8x8_SaveBitmapTGA(u8x8_t *u8x8, const char *filename);
 void u8x8_SetupBitmap(u8x8_t *u8x8, uint16_t pixel_width, uint16_t pixel_height);
 uint8_t u8x8_ConnectBitmapToU8x8(u8x8_t *u8x8);
+
+/*==========================================*/
+/* u8x8_d_framebuffer.c */
+void u8x8_SetupLinuxFb(u8x8_t *u8x8, int fbfd);
+void u8x8_LinuxFbSetActiveColor(uint32_t color);
 
 /*==========================================*/
 /* u8x8_d_utf8.c */

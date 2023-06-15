@@ -62,7 +62,7 @@
 
 /*
   The following macro enables 16 Bit mode. 
-  Without defining this macro all calulations are done with 8 Bit (1 Byte) variables.
+  Without defining this macro all calculations are done with 8 Bit (1 Byte) variables.
   Especially on AVR architecture, this will save some space. 
   If this macro is defined, then U8g2 will switch to 16 Bit mode.
   Use 16 Bit mode for any display with more than 240 pixel in one 
@@ -70,6 +70,13 @@
 */
 #define U8G2_16BIT
 
+
+/* always enable U8G2_16BIT on 32bit environments, see issue https://github.com/olikraus/u8g2/issues/1222 */
+#ifndef U8G2_16BIT
+#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__xtensa__) || defined(xtensa) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM) || defined(__LUATOS__)
+#define U8G2_16BIT
+#endif
+#endif
 
 /*
   The following macro switches the library into dynamic display buffer allocation mode.
@@ -79,7 +86,6 @@
  */
 //#define U8G2_USE_DYNAMIC_ALLOC
 
-
 /* U8g2 feature selection, see also https://github.com/olikraus/u8g2/wiki/u8g2optimization */
 
 /*
@@ -87,7 +93,9 @@
   It will consume about 40 bytes more in flash memory of the AVR.
   HVLine procedures are also used by the text drawing functions.
 */
+#ifndef U8G2_WITHOUT_HVLINE_SPEED_OPTIMIZATION
 #define U8G2_WITH_HVLINE_SPEED_OPTIMIZATION
+#endif
 
 /*
   The following macro activates the early intersection check with the current visible area.
@@ -96,7 +104,9 @@
   With a full framebuffer in RAM and if most graphical elements are drawn within the visible area, then this
   macro can be commented to reduce code size.
 */
+#ifndef U8G2_WITHOUT_INTERSECTION
 #define U8G2_WITH_INTERSECTION
+#endif
 
 
 /*
@@ -106,7 +116,9 @@
   Setting a clip window will restrict all drawing to this window.
   Clip window support requires about 200 bytes flash memory on AVR systems
 */
+#ifndef U8G2_WITHOUT_CLIP_WINDOW_SUPPORT
 #define U8G2_WITH_CLIP_WINDOW_SUPPORT
+#endif
 
 /*
   The following macro enables all four drawing directions for glyphs and strings.
@@ -114,7 +126,9 @@
   
   Jan 2020: Disabling this macro will save up to 600 bytes on AVR 
 */
+#ifndef U8G2_WITHOUT_FONT_ROTATION
 #define U8G2_WITH_FONT_ROTATION
+#endif
 
 /*
   U8glib V2 contains support for unicode plane 0 (Basic Multilingual Plane, BMP).
@@ -140,9 +154,26 @@
       - C-Code Strings are assumbed to be ISO 8859-1/CP1252 encoded
       - Only character values 0 to 255 are supported in the font file.
 */
+#ifndef U8G2_WITHOUT_UNICODE
 #define U8G2_WITH_UNICODE
+#endif
 
 
+/*
+  See issue https://github.com/olikraus/u8g2/issues/1561
+  The old behaviour of the StrWidth and UTF8Width functions returned an unbalanced string width, where
+  a small space was added to the left but not to the right of the string in some cases.
+  The new "balanced" procedure will assume the same gap on the left and the right side of the string
+  
+  Example: The string width of "C" with font u8g2_font_helvR08_tr was returned as 7.
+  A frame of width 9 would place the C a little bit more to the right (width of that "C" are 6 pixel).
+  If U8G2_BALANCED_STR_WIDTH_CALCULATION is defined, the width of "C" is returned as 8.
+  
+  Not defining U8G2_BALANCED_STR_WIDTH_CALCULATION would fall back to the old behavior.
+*/
+#ifndef U8G2_NO_BALANCED_STR_WIDTH_CALCULATION 
+#define U8G2_BALANCED_STR_WIDTH_CALCULATION
+#endif
 
 
 /*==========================================*/
@@ -159,7 +190,7 @@
 
 /* the macro U8G2_USE_LARGE_FONTS enables large fonts (>32K) */
 /* it can be enabled for those uC supporting larger arrays */
-#if defined(unix) || defined(__arm__) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM)
+#if defined(unix) || defined(__unix__) || defined(__arm__) || defined(__arc__) || defined(ESP8266) || defined(ESP_PLATFORM) || defined(__LUATOS__)
 #ifndef U8G2_USE_LARGE_FONTS
 #define U8G2_USE_LARGE_FONTS
 #endif 
@@ -307,9 +338,9 @@ struct u8g2_struct
   u8g2_uint_t width;
   u8g2_uint_t height;
   
-  /* ths is the clip box for the user to check if a specific box has an intersection */
+  /* this is the clip box for the user to check if a specific box has an intersection */
   /* use u8g2_IsIntersection from u8g2_intersection.c to test against this intersection */
-  /* actually, this window describes the positon of the current page */
+  /* actually, this window describes the position of the current page */
   u8g2_uint_t user_x0;	/* left corner of the buffer */
   u8g2_uint_t user_x1;	/* right corner of the buffer (excluded) */
   u8g2_uint_t user_y0;	/* upper edge of the buffer */
@@ -371,6 +402,7 @@ struct u8g2_struct
 #define u8g2_SetupDisplay(u8g2, display_cb, cad_cb, byte_cb, gpio_and_delay_cb) \
   u8x8_Setup(u8g2_GetU8x8(u8g2), (display_cb), (cad_cb), (byte_cb), (gpio_and_delay_cb))
 
+#define u8g2_InitInterface(u8g2) u8x8_InitInterface(u8g2_GetU8x8(u8g2))
 #define u8g2_InitDisplay(u8g2) u8x8_InitDisplay(u8g2_GetU8x8(u8g2))
 #define u8g2_SetPowerSave(u8g2, is_enable) u8x8_SetPowerSave(u8g2_GetU8x8(u8g2), (is_enable))
 #define u8g2_SetFlipMode(u8g2, mode) u8x8_SetFlipMode(u8g2_GetU8x8(u8g2), (mode))
@@ -382,8 +414,8 @@ void u8g2_ClearDisplay(u8g2_t *u8g2);
 #define u8g2_GetDisplayWidth(u8g2) ((u8g2)->width)
 #define u8g2_GetDrawColor(u8g2) ((u8g2)->draw_color)
 
-#define u8g2_SetI2CAddress(u8g2, address) ((u8g2_GetU8x8(u8g2))->i2c_address = (address))
 #define u8g2_GetI2CAddress(u8g2)   u8x8_GetI2CAddress(u8g2_GetU8x8(u8g2))
+#define u8g2_SetI2CAddress(u8g2, address) ((u8g2_GetU8x8(u8g2))->i2c_address = (address))
 
 #ifdef U8X8_USE_PINS 
 #define u8g2_SetMenuSelectPin(u8g2, val) u8x8_SetMenuSelectPin(u8g2_GetU8x8(u8g2), (val)) 
@@ -404,15 +436,17 @@ extern const u8g2_cb_t u8g2_cb_r1;
 extern const u8g2_cb_t u8g2_cb_r2;
 extern const u8g2_cb_t u8g2_cb_r3;
 extern const u8g2_cb_t u8g2_cb_mirror;
+extern const u8g2_cb_t u8g2_cb_mirror_vertical;
 
 #define U8G2_R0	(&u8g2_cb_r0)
 #define U8G2_R1	(&u8g2_cb_r1)
 #define U8G2_R2	(&u8g2_cb_r2)
 #define U8G2_R3	(&u8g2_cb_r3)
 #define U8G2_MIRROR	(&u8g2_cb_mirror)
+#define U8G2_MIRROR_VERTICAL	(&u8g2_cb_mirror_vertical)
 /*
-  u8g2:			A new, not yet initialized u8g2 memory areay
-  buf:			Memory are of size tile_buf_height*<width of the display in pixel>
+  u8g2:			A new, not yet initialized u8g2 memory area
+  buf:			Memory area of size tile_buf_height*<width of the display in pixel>
   tile_buf_height:	Number of full lines
   ll_hvline_cb:		one of:
     u8g2_ll_hvline_vertical_top_lsb
@@ -446,6 +480,9 @@ uint8_t *u8g2_m_255_2_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_9_5_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_9_5_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_9_5_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_5_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_5_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_5_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_4_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_4_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_4_f(uint8_t *page_cnt);
@@ -455,15 +492,24 @@ uint8_t *u8g2_m_8_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_12_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_12_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_12_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_10_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_10_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_10_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_20_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_20_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_20_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_20_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_8_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_8_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_6_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_6_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_6_f(uint8_t *page_cnt);
@@ -473,6 +519,9 @@ uint8_t *u8g2_m_6_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_12_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_12_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_12_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_16_12_f(uint8_t *page_cnt);
@@ -482,6 +531,15 @@ uint8_t *u8g2_m_32_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_8_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_8_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_5_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_5_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_16_5_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_18_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_18_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_18_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_24_4_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_24_4_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_24_4_f(uint8_t *page_cnt);
@@ -491,9 +549,6 @@ uint8_t *u8g2_m_50_30_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_13_8_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_13_8_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_13_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_f(uint8_t *page_cnt);
@@ -515,12 +570,18 @@ uint8_t *u8g2_m_30_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_12_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_12_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_24_12_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_13_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_13_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_13_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_f(uint8_t *page_cnt);
@@ -536,21 +597,30 @@ uint8_t *u8g2_m_17_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_20_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_20_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_48_20_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_12_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_20_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_13_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_13_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_13_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_24_12_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_24_12_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_24_12_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_10_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_10_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_10_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_19_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_19_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_19_4_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_17_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_17_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_17_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_26_5_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_26_5_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_26_5_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_9_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_9_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_22_9_f(uint8_t *page_cnt);
@@ -560,6 +630,9 @@ uint8_t *u8g2_m_25_25_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_37_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_37_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_37_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_25_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_25_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_40_25_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_1_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_1_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_8_1_f(uint8_t *page_cnt);
@@ -569,6 +642,12 @@ uint8_t *u8g2_m_4_1_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_2_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_2_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_2_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_7_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_7_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_7_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_f(uint8_t *page_cnt);
@@ -591,6 +670,11 @@ void u8g2_SetBufferCurrTileRow(u8g2_t *u8g2, uint8_t row) U8G2_NOINLINE;
 
 void u8g2_FirstPage(u8g2_t *u8g2);
 uint8_t u8g2_NextPage(u8g2_t *u8g2);
+
+// Add ability to set buffer pointer
+#ifdef __ARM_LINUX__
+#define U8G2_USE_DYNAMIC_ALLOC
+#endif
 
 #ifdef U8G2_USE_DYNAMIC_ALLOC
 #define u8g2_SetBufferPtr(u8g2, buf) ((u8g2)->tile_buf_ptr = (buf));
@@ -621,7 +705,7 @@ void u8g2_WriteBufferXBM2(u8g2_t *u8g2, void (*out)(const char *s));
   len		length of the line in pixel, len must not be 0
   dir		0: horizontal line (left to right)
 		1: vertical line (top to bottom)
-  asumption: 
+  assumption: 
     all clipping done
 */
 
@@ -685,6 +769,36 @@ void u8g2_DrawFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u
 void u8g2_DrawRBox(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
 void u8g2_DrawRFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, u8g2_uint_t r);
 
+/*==========================================*/
+/* u8g2_button.c */
+
+/* border width */
+#define U8G2_BTN_BW_POS 0
+#define U8G2_BTN_BW_MASK 7
+#define U8G2_BTN_BW0 0x00
+#define U8G2_BTN_BW1 0x01
+#define U8G2_BTN_BW2 0x02
+#define U8G2_BTN_BW3 0x03
+
+/* enable shadow and define gap to button */
+#define U8G2_BTN_SHADOW_POS 3
+#define U8G2_BTN_SHADOW_MASK 0x18
+#define U8G2_BTN_SHADOW0 0x08
+#define U8G2_BTN_SHADOW1 0x10
+#define U8G2_BTN_SHADOW2 0x18
+
+/* text is displayed inverted */
+#define U8G2_BTN_INV 0x20
+
+/* horizontal center */
+#define U8G2_BTN_HCENTER 0x40
+
+/* second one pixel frame */
+#define U8G2_BTN_XFRAME 0x80
+
+void u8g2_DrawButtonFrame(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t flags, u8g2_uint_t text_width, u8g2_uint_t padding_h, u8g2_uint_t padding_v);
+void u8g2_DrawButtonUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t flags, u8g2_uint_t width, u8g2_uint_t padding_h, u8g2_uint_t padding_v, const char *text);
+
 
 /*==========================================*/
 /* u8g2_polygon.c */
@@ -721,11 +835,14 @@ void u8g2_SetFontMode(u8g2_t *u8g2, uint8_t is_transparent);
 uint8_t u8g2_IsGlyph(u8g2_t *u8g2, uint16_t requested_encoding);
 int8_t u8g2_GetGlyphWidth(u8g2_t *u8g2, uint16_t requested_encoding);
 u8g2_uint_t u8g2_DrawGlyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding);
+u8g2_uint_t u8g2_DrawGlyphX2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding);
 int8_t u8g2_GetStrX(u8g2_t *u8g2, const char *s);	/* for u8g compatibility */
 
 void u8g2_SetFontDirection(u8g2_t *u8g2, uint8_t dir);
 u8g2_uint_t u8g2_DrawStr(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
+u8g2_uint_t u8g2_DrawStrX2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
 u8g2_uint_t u8g2_DrawUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
+u8g2_uint_t u8g2_DrawUTF8X2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
 u8g2_uint_t u8g2_DrawExtendedUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t to_left, u8g2_kerning_t *kerning, const char *str);
 u8g2_uint_t u8g2_DrawExtUTF8(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t to_left, const uint16_t *kerning_table, const char *str);
 
@@ -740,6 +857,8 @@ uint8_t u8g2_IsAllValidUTF8(u8g2_t *u8g2, const char *str);	// checks whether al
 
 u8g2_uint_t u8g2_GetStrWidth(u8g2_t *u8g2, const char *s);
 u8g2_uint_t u8g2_GetUTF8Width(u8g2_t *u8g2, const char *str);
+/*u8g2_uint_t u8g2_GetExactStrWidth(u8g2_t *u8g2, const char *s);*/ /*obsolete, see also https://github.com/olikraus/u8g2/issues/1561 */
+
 
 void u8g2_SetFontPosBaseline(u8g2_t *u8g2);
 void u8g2_SetFontPosBottom(u8g2_t *u8g2);
@@ -786,6 +905,9 @@ void u8g2_SetupBuffer_TGA_LCD(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 /* u8x8_d_bitmap.c */
 void u8g2_SetupBitmap(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, uint16_t pixel_width, uint16_t pixel_height);
 
+/*==========================================*/
+/* u8x8_d_framebuffer.c */
+void u8g2_SetupLinuxFb(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, const char *fb_device);
 
 /*==========================================*/
 /* u8x8_d_utf8.c */
@@ -806,6 +928,12 @@ void u8g2_SetupBuffer_Utf8(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 /* start font list */
 extern const uint8_t u8g2_font_pressstart2p_8f[] U8G2_FONT_SECTION("u8g2_font_pressstart2p_8f");
 /* end font list */
+
+/*==========================================*/
+/* u8g font mapping, might be incomplete.... */
+
+
+
 
 /*==========================================*/
 /* C++ compatible */
