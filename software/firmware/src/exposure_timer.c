@@ -4,7 +4,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <esp_log.h>
+
+#define LOG_TAG "exposure_timer"
+#include <elog.h>
 
 #include "exposure_timer.h"
 #include "illum_controller.h"
@@ -12,8 +14,6 @@
 #include "relay.h"
 #include "settings.h"
 #include "util.h"
-
-static const char *TAG = "exposure_timer";
 
 static TIM_HandleTypeDef *timer_htim = 0;
 static exposure_timer_config_t timer_config = {0};
@@ -44,7 +44,7 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
         return;
     }
     if (!profile || !enlarger_profile_is_valid(profile)) {
-        ESP_LOGI(TAG, "Setting defaults based on missing or invalid enlarger profile");
+        log_i("Setting defaults based on missing or invalid enlarger profile");
         config->exposure_time = exposure_time;
         config->relay_on_delay = 0;
         config->relay_off_delay = 0;
@@ -55,9 +55,9 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
     // Not yet sure what should be done in this case, but any user alerts
     // should probably happen before we even get to this code.
     uint32_t min_exposure_time = enlarger_profile_min_exposure(profile);
-    ESP_LOGD(TAG, "Minimum allowable exposure time: %ldms", min_exposure_time);
+    log_d("Minimum allowable exposure time: %ldms", min_exposure_time);
     if (exposure_time < round_to_10(min_exposure_time)) {
-        ESP_LOGE(TAG, "Cannot accurately time short exposure: %ldms < %ldms",
+        log_e("Cannot accurately time short exposure: %ldms < %ldms",
             exposure_time, min_exposure_time);
     }
 
@@ -68,11 +68,11 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
     config->exposure_end_delay = round_to_10(profile->fall_time - profile->fall_time_equiv);
 
     // Log all the relevant time properties
-    ESP_LOGD(TAG, "Set for desired time of %ldms", exposure_time);
-    ESP_LOGD(TAG, "Adjusted exposure time: %ldms", config->relay_on_delay + config->exposure_time);
-    ESP_LOGD(TAG, "On delay: %dms", config->relay_on_delay);
-    ESP_LOGD(TAG, "Off delay: %dms", config->relay_off_delay);
-    ESP_LOGD(TAG, "End delay: %dms", config->exposure_end_delay);
+    log_d("Set for desired time of %ldms", exposure_time);
+    log_d("Adjusted exposure time: %ldms", config->relay_on_delay + config->exposure_time);
+    log_d("On delay: %dms", config->relay_on_delay);
+    log_d("Off delay: %dms", config->relay_off_delay);
+    log_d("End delay: %dms", config->exposure_end_delay);
 }
 
 void exposure_timer_set_config(const exposure_timer_config_t *config)
@@ -87,16 +87,16 @@ void exposure_timer_set_config(const exposure_timer_config_t *config)
 HAL_StatusTypeDef exposure_timer_run()
 {
     if (!timer_htim || timer_config.exposure_time == 0) {
-        ESP_LOGE(TAG, "Exposure timer not configured");
+        log_e("Exposure timer not configured");
         return HAL_ERROR;
     }
 
     if (timer_config.exposure_time > 0x100000UL) {
-        ESP_LOGE(TAG, "Exposure time too long: %ld > %ld", timer_config.exposure_time, 0x100000UL);
+        log_e("Exposure time too long: %ld > %ld", timer_config.exposure_time, 0x100000UL);
         return HAL_ERROR;
     }
     if (timer_config.relay_off_delay >= timer_config.exposure_time) {
-        ESP_LOGE(TAG, "Relay off delay cannot be longer than the exposure time: %d >= %ld",
+        log_e("Relay off delay cannot be longer than the exposure time: %d >= %ld",
             timer_config.relay_off_delay, timer_config.exposure_time);
         return HAL_ERROR;
     }
@@ -155,7 +155,7 @@ HAL_StatusTypeDef exposure_timer_run()
         illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
         osDelay(SAFELIGHT_OFF_DELAY);
 
-        ESP_LOGI(TAG, "Starting exposure timer");
+        log_i("Starting exposure timer");
 
         HAL_TIM_Base_Start_IT(timer_htim);
 
@@ -167,7 +167,7 @@ HAL_StatusTypeDef exposure_timer_run()
 
             if (timer_config.timer_callback) {
                 if (!timer_config.timer_callback(state, timer, timer_config.user_data)) {
-                    ESP_LOGI(TAG, "Timer cancel requested");
+                    log_i("Timer cancel requested");
                     taskENTER_CRITICAL();
                     timer_cancel_request = true;
                     taskEXIT_CRITICAL();
@@ -175,20 +175,20 @@ HAL_StatusTypeDef exposure_timer_run()
             }
 
             if (state == EXPOSURE_TIMER_STATE_START) {
-                ESP_LOGI(TAG, "Exposure timer started");
+                log_i("Exposure timer started");
             } else if (state == EXPOSURE_TIMER_STATE_END) {
-                ESP_LOGI(TAG, "Exposure timer ended");
+                log_i("Exposure timer ended");
             } else if (state == EXPOSURE_TIMER_STATE_DONE) {
-                ESP_LOGI(TAG, "Exposure timer process complete");
+                log_i("Exposure timer process complete");
                 break;
             }
         }
 
-        ESP_LOGI(TAG, "Exposure timer complete");
+        log_i("Exposure timer complete");
 
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-        ESP_LOGD(TAG, "Actual relay on/off time: %lums",
+        log_d("Actual relay on/off time: %lums",
             (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);
 
         // Handling the completion beep outside the ISR for simplicity.

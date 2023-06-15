@@ -2,16 +2,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <esp_log.h>
 #include <ff.h>
+
+#define LOG_TAG "file_picker"
+#include <elog.h>
 
 #include "display.h"
 #include "util.h"
 #include "main_menu.h"
 #include "utarray.h"
 #include "bsdlib.h"
-
-static const char *TAG = "file_picker";
 
 typedef struct {
     BYTE fattrib;
@@ -44,7 +44,7 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
     uint8_t option_index = 0;
     char *p;
     char *q;
-    ESP_LOGI(TAG, "Open file picker");
+    log_i("Open file picker");
 
     strncpy(path_buf, "0:/", 4);
     path_len = strlen(path_buf);
@@ -56,7 +56,7 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
         if (result == MENU_OK) {
             name_len = strlen(selection.altname);
             if (path_len + name_len + 1 > sizeof(path_buf) - 1 || option_index > sizeof(option_list) - 1) {
-                ESP_LOGW(TAG, "Path too long");
+                log_w("Path too long");
                 continue;
             }
             if (path_buf[path_len - 1] != '/') {
@@ -115,7 +115,7 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
     size_t list_size = 0;
     size_t offset = 0;
 
-    ESP_LOGI(TAG, "Preparing picker");
+    log_i("Preparing picker");
 
     res = f_opendir(&dir, path);
     if (res == FR_OK) {
@@ -160,7 +160,7 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
 
     list_buf = pvPortMalloc(list_size * (DISPLAY_MENU_ROW_LENGTH + 1));
     if (!list_buf) {
-        ESP_LOGE(TAG, "Unable to allocate list buffer");
+        log_e("Unable to allocate list buffer");
         utarray_free(file_entry_list);
         return menu_result;
     }
@@ -175,7 +175,7 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
         list_buf[offset - 1] = '\0';
     }
 
-    ESP_LOGI(TAG, "Showing picker");
+    log_i("Showing picker");
     option = display_selection_list(title, option, list_buf);
     if (option == 0) {
         menu_result = MENU_CANCEL;

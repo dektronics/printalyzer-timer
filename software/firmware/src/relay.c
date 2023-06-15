@@ -1,18 +1,18 @@
 #include "relay.h"
 
 #include <string.h>
-#include <esp_log.h>
+
+#define LOG_TAG "relay"
+#include <elog.h>
 
 static relay_handle_t relay_handle = {0};
 
-static const char *TAG = "relay";
-
 HAL_StatusTypeDef relay_init(const relay_handle_t *handle)
 {
-    ESP_LOGD(TAG, "relay_init");
+    log_d("relay_init");
 
     if (!handle) {
-        ESP_LOGE(TAG, "Relay handle not initialized");
+        log_e("Relay handle not initialized");
         return HAL_ERROR;
     }
 

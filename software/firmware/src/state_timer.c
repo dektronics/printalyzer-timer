@@ -7,7 +7,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "state_timer"
+#include <elog.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -15,8 +17,6 @@
 #include "illum_controller.h"
 #include "exposure_timer.h"
 #include "settings.h"
-
-static const char *TAG = "state_timer";
 
 static bool state_timer_process(state_t *state_base, state_controller_t *controller);
 static state_t state_timer_data = {
@@ -64,7 +64,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
         float dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
         adjusted_exposure_time -= dodge_time;
         if (adjusted_exposure_time < 0) { adjusted_exposure_time = 0; }
-        ESP_LOGI(TAG, "Exposure time reduced by %.2fs due to dodge", dodge_time);
+        log_i("Exposure time reduced by %.2fs due to dodge", dodge_time);
     }
 
     uint32_t exposure_time_ms = rounded_exposure_time_ms(adjusted_exposure_time);
@@ -91,22 +91,22 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     exposure_timer_set_config(&timer_config);
 
-    ESP_LOGI(TAG, "Starting exposure timer for %ldms", exposure_time_ms);
+    log_i("Starting exposure timer for %ldms", exposure_time_ms);
 
     display_draw_exposure_timer(&elements, 0);
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
-        ESP_LOGE(TAG, "Exposure timer canceled");
+        log_e("Exposure timer canceled");
         result = false;
     } else if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "Exposure timer error");
+        log_e("Exposure timer error");
         result = false;
     } else {
         result = true;
     }
 
-    ESP_LOGI(TAG, "Exposure timer complete");
+    log_i("Exposure timer complete");
 
     return result;
 }
@@ -126,7 +126,7 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            ESP_LOGI(TAG, "Canceling exposure timer at %ldms", time_ms);
+            log_i("Canceling exposure timer at %ldms", time_ms);
             return false;
         }
     }
@@ -196,10 +196,10 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-                ESP_LOGI(TAG, "Starting dodge/burn exposure");
+                log_i("Starting dodge/burn exposure");
                 break;
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                ESP_LOGI(TAG, "Canceling dodge/burn exposure");
+                log_i("Canceling dodge/burn exposure");
                 return false;
             }
         }
@@ -226,7 +226,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     exposure_timer_set_config(&timer_config);
 
-    ESP_LOGI(TAG, "Starting burn/dodge exposure timer for %ldms", exposure_time_ms);
+    log_i("Starting burn/dodge exposure timer for %ldms", exposure_time_ms);
 
     // Redraw the display elements in exposure timer mode
     elements.contrast_grade = CONTRAST_GRADE_MAX;
@@ -235,16 +235,16 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
-        ESP_LOGE(TAG, "Exposure timer canceled");
+        log_e("Exposure timer canceled");
         result = false;
     } else if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "Exposure timer error");
+        log_e("Exposure timer error");
         result = false;
     } else {
         result = true;
     }
 
-    ESP_LOGI(TAG, "Exposure timer complete");
+    log_i("Exposure timer complete");
 
     return result;
 }
@@ -262,7 +262,7 @@ bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            ESP_LOGI(TAG, "Canceling burn/dodge exposure timer at %ldms", time_ms);
+            log_i("Canceling burn/dodge exposure timer at %ldms", time_ms);
             return false;
         }
     }

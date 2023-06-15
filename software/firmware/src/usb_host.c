@@ -9,13 +9,12 @@
 #include <usbh_serial_slcom.h>
 #include <ff.h>
 
-#include <esp_log.h>
+#define LOG_TAG "usb_host"
+#include <elog.h>
 
 #include "keypad.h"
 #include "fatfs.h"
 #include "util.h"
-
-static const char *TAG = "usb_host";
 
 #define REPORT_KEY_NUM_LOCK 0x01
 #define REPORT_KEY_CAPS_LOCK 0x02
@@ -80,59 +79,59 @@ static void usb_serial_receive_callback(USBH_HandleTypeDef *phost, uint8_t *data
 
 USBH_StatusTypeDef usb_host_init(void)
 {
-    ESP_LOGD(TAG, "usb_host_init");
+    log_d("usb_host_init");
 
     usb_serial_mutex = osMutexNew(&usb_serial_mutex_attributes);
     if (!usb_serial_mutex) {
-        ESP_LOGE(TAG, "osMutexNew error");
+        log_e("osMutexNew error");
         return USBH_FAIL;
     }
 
     usb_serial_transmit_semaphore = osSemaphoreNew(1, 0, &usb_serial_transmit_semaphore_attributes);
     if (!usb_serial_mutex) {
-        ESP_LOGE(TAG, "osSemaphoreNew error");
+        log_e("osSemaphoreNew error");
         return USBH_FAIL;
     }
 
     usb_serial_receive_semaphore = osSemaphoreNew(1, 0, &usb_serial_receive_semaphore_attributes);
     if (!usb_serial_mutex) {
-        ESP_LOGE(TAG, "osSemaphoreNew error");
+        log_e("osSemaphoreNew error");
         return USBH_FAIL;
     }
 
     if (USBH_Init(&hUsbHostFS, usb_host_userprocess, HOST_FS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_Init fail");
+        log_e("USBH_Init fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_CDC_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass CDC fail");
+        log_e("USBH_RegisterClass CDC fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass MSC fail");
+        log_e("USBH_RegisterClass MSC fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_HID_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass HID fail");
+        log_e("USBH_RegisterClass HID fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_FTDI_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_FTDI fail");
+        log_e("USBH_RegisterClass VENDOR_SERIAL_FTDI fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_PLCOM_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_PLCOM fail");
+        log_e("USBH_RegisterClass VENDOR_SERIAL_PLCOM fail");
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_SLCOM_CLASS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_RegisterClass VENDOR_SERIAL_SLCOM fail");
+        log_e("USBH_RegisterClass VENDOR_SERIAL_SLCOM fail");
         return USBH_FAIL;
     }
     if (USBH_Start(&hUsbHostFS) != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_Start fail");
+        log_e("USBH_Start fail");
         return USBH_FAIL;
     }
-    ESP_LOGD(TAG, "usb_host_init complete");
+    log_d("usb_host_init complete");
     return USBH_OK;
 }
 
@@ -142,10 +141,10 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
 
     switch(id) {
     case HOST_USER_SELECT_CONFIGURATION:
-        ESP_LOGI(TAG, "usb_host_userprocess: CONFIGURATION");
+        log_i("usb_host_userprocess: CONFIGURATION");
         break;
     case HOST_USER_DISCONNECTION:
-        ESP_LOGI(TAG, "usb_host_userprocess: DISCONNECTION");
+        log_i("usb_host_userprocess: DISCONNECTION");
         app_state = APPLICATION_DISCONNECT;
         if (active_class == USB_MSC_CLASS) {
             usb_msc_disconnect();
@@ -158,7 +157,7 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
         }
         break;
     case HOST_USER_CLASS_ACTIVE:
-        ESP_LOGI(TAG, "usb_host_userprocess: ACTIVE");
+        log_i("usb_host_userprocess: ACTIVE");
         app_state = APPLICATION_READY;
         if (active_class == USB_MSC_CLASS) {
             usb_msc_active();
@@ -187,17 +186,17 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
         }
         break;
     case HOST_USER_CLASS_SELECTED:
-        ESP_LOGI(TAG, "usb_host_userprocess: SELECTED");
+        log_i("usb_host_userprocess: SELECTED");
         break;
     case HOST_USER_CONNECTION:
-        ESP_LOGI(TAG, "usb_host_userprocess: CONNECTION");
+        log_i("usb_host_userprocess: CONNECTION");
         app_state = APPLICATION_START;
         break;
     case HOST_USER_UNRECOVERED_ERROR:
-        ESP_LOGI(TAG, "usb_host_userprocess: UNRECOVERED_ERROR");
+        log_i("usb_host_userprocess: UNRECOVERED_ERROR");
         break;
     default:
-        ESP_LOGI(TAG, "usb_host_userprocess: %d", id);
+        log_i("usb_host_userprocess: %d", id);
         break;
     }
 }
@@ -234,11 +233,11 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
         key = USBH_HID_GetASCIICode(keyboard_info);
 
         if (key >= 32 && key <= 126) {
-            ESP_LOGD(TAG, "Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
+            log_d("Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
                 key, keyboard_info->keys[0], keyboard_info->keys[1], keyboard_info->keys[2],
                 keyboard_info->keys[3], keyboard_info->keys[4], keyboard_info->keys[5]);
         } else {
-            ESP_LOGD(TAG, "Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
+            log_d("Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
                 key, keyboard_info->keys[0], keyboard_info->keys[1], keyboard_info->keys[2],
                 keyboard_info->keys[3], keyboard_info->keys[4], keyboard_info->keys[5]);
         }
@@ -291,7 +290,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 
 void usb_msc_active()
 {
-    ESP_LOGD(TAG, "usb_msc_active");
+    log_d("usb_msc_active");
 
     if (fatfs_mount() != HAL_OK) {
         return;
@@ -303,7 +302,7 @@ void usb_msc_active()
     char str[12];
     res = f_getlabel("0:", str, 0);
     if (res == FR_OK) {
-        ESP_LOGI(TAG, "Drive label: \"%s\"", str);
+        log_i("Drive label: \"%s\"", str);
     }
 
     FATFS *fs;
@@ -312,13 +311,13 @@ void usb_msc_active()
     if (res == FR_OK) {
         total_sectors = (fs->n_fatent - 2) * fs->csize;
         free_sectors = free_clusters * fs->csize;
-        ESP_LOGI(TAG, "Drive has %ld KB total space, %ld KB available", total_sectors / 2, free_sectors / 2);
+        log_i("Drive has %ld KB total space, %ld KB available", total_sectors / 2, free_sectors / 2);
     }
 }
 
 void usb_msc_disconnect()
 {
-    ESP_LOGD(TAG, "usb_msc_disconnect");
+    log_d("usb_msc_disconnect");
     fatfs_unmount();
     usb_msc_mounted = false;
 }
@@ -330,13 +329,13 @@ bool usb_msc_is_mounted()
 
 void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
 {
-    ESP_LOGD(TAG, "usb_serial_ftdi_active");
+    log_d("usb_serial_ftdi_active");
 
     USBH_StatusTypeDef status;
 
     status = usb_serial_ftdi_set_line_coding(phost, &usb_serial_line_coding);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "usb_serial_ftdi_set_line_coding failed: %d", status);
+        log_e("usb_serial_ftdi_set_line_coding failed: %d", status);
         return;
     }
 
@@ -344,7 +343,7 @@ void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
         status = USBH_FTDI_SetFlowControl(phost, FTDI_SIO_DISABLE_FLOW_CTRL);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_FTDI_SetFlowControl failed: %d", status);
+        log_e("USBH_FTDI_SetFlowControl failed: %d", status);
         return;
     }
 
@@ -352,7 +351,7 @@ void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
         status = USBH_FTDI_SetDtr(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_FTDI_SetDtr failed: %d", status);
+        log_e("USBH_FTDI_SetDtr failed: %d", status);
         return;
     }
 
@@ -360,11 +359,11 @@ void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
         status = USBH_FTDI_SetRts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_FTDI_SetRts failed: %d", status);
+        log_e("USBH_FTDI_SetRts failed: %d", status);
         return;
     }
 
-    ESP_LOGD(TAG, "FTDI: active");
+    log_d("FTDI: active");
 }
 
 uint8_t usb_serial_ftdi_convert_data(const usb_serial_line_coding_t *line_coding)
@@ -436,7 +435,7 @@ USBH_StatusTypeDef usb_serial_ftdi_set_line_coding(USBH_HandleTypeDef *phost, co
         status = USBH_FTDI_SetBaudRate(phost, line_coding->baud_rate);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_FTDI_SetBaudRate failed: %d", status);
+        log_e("USBH_FTDI_SetBaudRate failed: %d", status);
         return status;
     }
 
@@ -445,7 +444,7 @@ USBH_StatusTypeDef usb_serial_ftdi_set_line_coding(USBH_HandleTypeDef *phost, co
         status = USBH_FTDI_SetData(phost, data_val);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_FTDI_SetData failed: %d", status);
+        log_e("USBH_FTDI_SetData failed: %d", status);
         return status;
     }
 
@@ -454,13 +453,13 @@ USBH_StatusTypeDef usb_serial_ftdi_set_line_coding(USBH_HandleTypeDef *phost, co
 
 void usb_serial_plcom_active(USBH_HandleTypeDef *phost)
 {
-    ESP_LOGD(TAG, "usb_serial_plcom_active");
+    log_d("usb_serial_plcom_active");
 
     USBH_StatusTypeDef status;
 
     status = usb_serial_plcom_set_line_coding(phost, &usb_serial_line_coding);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "usb_serial_plcom_set_line_coding failed: %d", status);
+        log_e("usb_serial_plcom_set_line_coding failed: %d", status);
         return;
     }
 
@@ -468,7 +467,7 @@ void usb_serial_plcom_active(USBH_HandleTypeDef *phost)
         status = USBH_PLCOM_SetRtsCts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_PLCOM_SetRtsCts failed: %d", status);
+        log_e("USBH_PLCOM_SetRtsCts failed: %d", status);
         return;
     }
 
@@ -476,7 +475,7 @@ void usb_serial_plcom_active(USBH_HandleTypeDef *phost)
         status = USBH_PLCOM_SetDtr(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_PLCOM_SetDtr failed: %d", status);
+        log_e("USBH_PLCOM_SetDtr failed: %d", status);
         return;
     }
 
@@ -484,11 +483,11 @@ void usb_serial_plcom_active(USBH_HandleTypeDef *phost)
         status = USBH_PLCOM_SetRts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_PLCOM_SetRts failed: %d", status);
+        log_e("USBH_PLCOM_SetRts failed: %d", status);
         return;
     }
 
-    ESP_LOGD(TAG, "PLCOM: active");
+    log_d("PLCOM: active");
 }
 
 void usb_serial_plcom_convert_line_coding(CDC_LineCodingTypeDef *cdc_linecoding, const usb_serial_line_coding_t *line_coding)
@@ -565,7 +564,7 @@ USBH_StatusTypeDef usb_serial_plcom_set_line_coding(USBH_HandleTypeDef *phost, c
 
 void usb_serial_slcom_active(USBH_HandleTypeDef *phost)
 {
-    ESP_LOGD(TAG, "usb_serial_slcom_active");
+    log_d("usb_serial_slcom_active");
 
     USBH_StatusTypeDef status;
 
@@ -573,13 +572,13 @@ void usb_serial_slcom_active(USBH_HandleTypeDef *phost)
         status = USBH_SLCOM_Open(phost);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_Open failed: %d", status);
+        log_e("USBH_SLCOM_Open failed: %d", status);
         return;
     }
 
     status = usb_serial_slcom_set_line_coding(phost, &usb_serial_line_coding);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "usb_serial_slcom_set_line_coding failed: %d", status);
+        log_e("usb_serial_slcom_set_line_coding failed: %d", status);
         return;
     }
 
@@ -587,7 +586,7 @@ void usb_serial_slcom_active(USBH_HandleTypeDef *phost)
         status = USBH_SLCOM_SetRtsCts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_SetRtsCts failed: %d", status);
+        log_e("USBH_SLCOM_SetRtsCts failed: %d", status);
         return;
     }
 
@@ -595,7 +594,7 @@ void usb_serial_slcom_active(USBH_HandleTypeDef *phost)
         status = USBH_SLCOM_SetDtr(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_SetDtr failed: %d", status);
+        log_e("USBH_SLCOM_SetDtr failed: %d", status);
         return;
     }
 
@@ -603,11 +602,11 @@ void usb_serial_slcom_active(USBH_HandleTypeDef *phost)
         status = USBH_SLCOM_SetRts(phost, false);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_SetRts failed: %d", status);
+        log_e("USBH_SLCOM_SetRts failed: %d", status);
         return;
     }
 
-    ESP_LOGD(TAG, "SLCOM: active");
+    log_d("SLCOM: active");
 }
 
 uint16_t usb_serial_slcom_convert_line_control(const usb_serial_line_coding_t *line_coding)
@@ -679,7 +678,7 @@ USBH_StatusTypeDef usb_serial_slcom_set_line_coding(USBH_HandleTypeDef *phost, c
         status = USBH_SLCOM_SetBaudRate(phost, line_coding->baud_rate);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_SetBaudRate failed: %d", status);
+        log_e("USBH_SLCOM_SetBaudRate failed: %d", status);
         return status;
     }
 
@@ -688,7 +687,7 @@ USBH_StatusTypeDef usb_serial_slcom_set_line_coding(USBH_HandleTypeDef *phost, c
         status = USBH_SLCOM_SetLineControl(phost, linecontrol);
     } while (status == USBH_BUSY);
     if (status != USBH_OK) {
-        ESP_LOGE(TAG, "USBH_SLCOM_SetLineControl failed: %d", status);
+        log_e("USBH_SLCOM_SetLineControl failed: %d", status);
         return status;
     }
 
@@ -735,7 +734,7 @@ USBH_StatusTypeDef usb_serial_set_line_coding(const usb_serial_line_coding_t *li
     case 115200:
         break;
     default:
-        ESP_LOGW(TAG, "Invalid baud rate: %lu", line_coding->baud_rate);
+        log_w("Invalid baud rate: %lu", line_coding->baud_rate);
         return USBH_NOT_SUPPORTED;
     }
 
@@ -746,7 +745,7 @@ USBH_StatusTypeDef usb_serial_set_line_coding(const usb_serial_line_coding_t *li
     case USB_SERIAL_DATA_BITS_8:
         break;
     default:
-        ESP_LOGW(TAG, "Invalid data bits: %d", line_coding->data_bits);
+        log_w("Invalid data bits: %d", line_coding->data_bits);
         return USBH_NOT_SUPPORTED;
     }
 
@@ -756,7 +755,7 @@ USBH_StatusTypeDef usb_serial_set_line_coding(const usb_serial_line_coding_t *li
     case USB_SERIAL_STOP_BITS_2:
         break;
     default:
-        ESP_LOGW(TAG, "Invalid stop bits: %d", line_coding->stop_bits);
+        log_w("Invalid stop bits: %d", line_coding->stop_bits);
         return USBH_NOT_SUPPORTED;
     }
 
@@ -768,7 +767,7 @@ USBH_StatusTypeDef usb_serial_set_line_coding(const usb_serial_line_coding_t *li
     case USB_SERIAL_PARITY_SPACE:
         break;
     default:
-        ESP_LOGW(TAG, "Invalid parity: %d", line_coding->parity);
+        log_w("Invalid parity: %d", line_coding->parity);
         return USBH_NOT_SUPPORTED;
     }
 
@@ -1000,7 +999,7 @@ void USBH_PLCOM_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t
 
 void USBH_PLCOM_LineCodingChanged(USBH_HandleTypeDef *phost)
 {
-    ESP_LOGI(TAG, "USBH_PLCOM_LineCodingChanged");
+    log_i("USBH_PLCOM_LineCodingChanged");
 }
 
 void USBH_SLCOM_TransmitCallback(USBH_HandleTypeDef *phost)

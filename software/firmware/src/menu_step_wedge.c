@@ -3,15 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "menu_step_wedge"
+#include <elog.h>
 
 #include "settings.h"
 #include "step_wedge.h"
 #include "util.h"
 #include "usb_host.h"
 #include "densitometer.h"
-
-static const char *TAG = "menu_step_wedge";
 
 static int calibration_status(const step_wedge_t *wedge);
 static int menu_step_wedge_list_selection();
@@ -28,11 +28,11 @@ menu_result_t menu_step_wedge()
 
     /* Load step wedge configuration */
     if (!settings_get_step_wedge(&wedge)) {
-        ESP_LOGI(TAG, "No saved step wedge, loading default");
+        log_i("No saved step wedge, loading default");
         wedge = step_wedge_create_from_stock(DEFAULT_STOCK_WEDGE_INDEX);
         wedge_changed = true;
         if (!wedge) {
-            ESP_LOGE(TAG, "Unable to load default wedge");
+            log_e("Unable to load default wedge");
             return MENU_OK;
         }
     }
@@ -88,7 +88,7 @@ menu_result_t menu_step_wedge()
                 menu_result = MENU_TIMEOUT;
             }
             if (value_sel != wedge->step_count) {
-                ESP_LOGI(TAG, "Copying for step count change: %d != %lu", value_sel, wedge->step_count);
+                log_i("Copying for step count change: %d != %lu", value_sel, wedge->step_count);
                 step_wedge_t *updated_wedge = step_wedge_copy(wedge, value_sel);
                 if (updated_wedge) {
                     step_wedge_free(wedge);
@@ -123,11 +123,11 @@ menu_result_t menu_step_wedge()
         } else if (option == 6) {
             if (step_wedge_is_valid(wedge)) {
                 if (settings_set_step_wedge(wedge)) {
-                    ESP_LOGI(TAG, "Step wedge settings saved");
+                    log_i("Step wedge settings saved");
                     break;
                 }
             } else {
-                ESP_LOGI(TAG, "Step wedge properties not valid");
+                log_i("Step wedge properties not valid");
                 uint8_t msg_option = display_message(
                         "Step Wedge Invalid",
                         NULL,
@@ -141,7 +141,7 @@ menu_result_t menu_step_wedge()
         } else if (option == 7) {
             int index = menu_step_wedge_list_selection();
             if (index >= 0 && index < step_wedge_stock_count()) {
-                ESP_LOGI(TAG, "Replacing with stock wedge: %d", index);
+                log_i("Replacing with stock wedge: %d", index);
                 step_wedge_t *updated_wedge = step_wedge_create_from_stock(index);
                 if (updated_wedge) {
                     step_wedge_free(wedge);
@@ -168,11 +168,11 @@ menu_result_t menu_step_wedge()
                 if (sub_result == MENU_SAVE) {
                     if (step_wedge_is_valid(wedge)) {
                         if (settings_set_step_wedge(wedge)) {
-                            ESP_LOGI(TAG, "Step wedge settings saved");
+                            log_i("Step wedge settings saved");
                             break;
                         }
                     } else {
-                        ESP_LOGI(TAG, "Step wedge properties not valid");
+                        log_i("Step wedge properties not valid");
                         uint8_t msg_option = display_message(
                                 "Step Wedge Invalid",
                                 NULL,

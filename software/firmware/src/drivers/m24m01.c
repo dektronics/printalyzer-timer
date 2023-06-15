@@ -1,13 +1,12 @@
 #include "m24m01.h"
 
-#include <esp_log.h>
-
 #include <strings.h>
+
+#define LOG_TAG "m24m01"
+#include <elog.h>
 
 #include "i2c_util.h"
 #include "util.h"
-
-static const char *TAG = "m24m01";
 
 /* I2C device base address */
 static const uint8_t M24M01_ADDRESS = 0x50 << 1;
@@ -19,10 +18,10 @@ HAL_StatusTypeDef m24m01_read_byte(I2C_HandleTypeDef *hi2c, uint32_t address, ui
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    ESP_LOGD(TAG, "m24m01_read_byte: address=0x%05lX", address);
+    log_d("m24m01_read_byte: address=0x%05lX", address);
 
     if (address > 0x1FFFF) {
-        ESP_LOGE(TAG, "Cannot read from invalid address");
+        log_e("Cannot read from invalid address");
         return HAL_ERROR;
     }
 
@@ -31,7 +30,7 @@ HAL_StatusTypeDef m24m01_read_byte(I2C_HandleTypeDef *hi2c, uint32_t address, ui
 
     ret = HAL_I2C_Mem_Read(hi2c, device_addr, mem_addr, I2C_MEMADD_SIZE_16BIT, data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "HAL_I2C_Mem_Read error: %d", ret);
+        log_e("HAL_I2C_Mem_Read error: %d", ret);
     }
 
     return ret;
@@ -41,10 +40,10 @@ HAL_StatusTypeDef m24m01_read_buffer(I2C_HandleTypeDef *hi2c, uint32_t address, 
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    ESP_LOGD(TAG, "m24m01_read_buffer: address=0x%05lX, size=%d", address, data_len);
+    log_d("m24m01_read_buffer: address=0x%05lX, size=%d", address, data_len);
 
     if (address > 0x1FFFF) {
-        ESP_LOGE(TAG, "Cannot read from invalid address");
+        log_e("Cannot read from invalid address");
         return HAL_ERROR;
     }
 
@@ -53,7 +52,7 @@ HAL_StatusTypeDef m24m01_read_buffer(I2C_HandleTypeDef *hi2c, uint32_t address, 
 
     ret = HAL_I2C_Mem_Read(hi2c, device_addr, mem_addr, I2C_MEMADD_SIZE_16BIT, data, data_len, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "HAL_I2C_Mem_Read error: %d", ret);
+        log_e("HAL_I2C_Mem_Read error: %d", ret);
     }
 
     return ret;
@@ -63,10 +62,10 @@ HAL_StatusTypeDef m24m01_write_byte(I2C_HandleTypeDef *hi2c, uint32_t address, u
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    ESP_LOGD(TAG, "m24m01_write_byte: address=0x%05lX", address);
+    log_d("m24m01_write_byte: address=0x%05lX", address);
 
     if (address > 0x1FFFF) {
-        ESP_LOGE(TAG, "Cannot write to invalid address");
+        log_e("Cannot write to invalid address");
         return HAL_ERROR;
     }
 
@@ -75,7 +74,7 @@ HAL_StatusTypeDef m24m01_write_byte(I2C_HandleTypeDef *hi2c, uint32_t address, u
 
     ret = HAL_I2C_Mem_Write(hi2c, device_addr, mem_addr, I2C_MEMADD_SIZE_16BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "HAL_I2C_Mem_Write error: %d", ret);
+        log_e("HAL_I2C_Mem_Write error: %d", ret);
     }
 
     while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK);
@@ -87,15 +86,15 @@ HAL_StatusTypeDef m24m01_write_buffer(I2C_HandleTypeDef *hi2c, uint32_t address,
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    ESP_LOGD(TAG, "m24m01_write_buffer: address=0x%05lX, len=%d", address, data_len);
+    log_d("m24m01_write_buffer: address=0x%05lX, len=%d", address, data_len);
 
     if (!data || data_len == 0) {
-        ESP_LOGE(TAG, "Data is null or empty");
+        log_e("Data is null or empty");
         return HAL_ERROR;
     }
 
     if (data_len > 0x1FFFF - address) {
-        ESP_LOGE(TAG, "Buffer exceeds memory boundary: 0x%05lX+%d > 0x%05lX",
+        log_e("Buffer exceeds memory boundary: 0x%05lX+%d > 0x%05lX",
             address, data_len, 0x1FFFF - address);
         return HAL_ERROR;
     }
@@ -115,10 +114,10 @@ HAL_StatusTypeDef m24m01_write_page(I2C_HandleTypeDef *hi2c, uint32_t address, c
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    ESP_LOGD(TAG, "m24m01_write_page: address=0x%05lX, len=%d", address, data_len);
+    log_d("m24m01_write_page: address=0x%05lX, len=%d", address, data_len);
 
     if (address > 0x1FFFF) {
-        ESP_LOGE(TAG, "Cannot write to invalid address");
+        log_e("Cannot write to invalid address");
         return HAL_ERROR;
     }
 
@@ -126,13 +125,13 @@ HAL_StatusTypeDef m24m01_write_page(I2C_HandleTypeDef *hi2c, uint32_t address, c
     uint16_t mem_addr = MEMORY_ADDRESS(address);
 
     if (!data || data_len == 0) {
-        ESP_LOGE(TAG, "Data is null or empty");
+        log_e("Data is null or empty");
         return HAL_ERROR;
     }
 
     uint8_t page_offset = (uint8_t)(mem_addr & 0x00FF);
     if (data_len > 0x100 - page_offset) {
-        ESP_LOGE(TAG, "Buffer exceeds page boundary: 0x%05lX+%d > 0x%05lX",
+        log_e("Buffer exceeds page boundary: 0x%05lX+%d > 0x%05lX",
             address, data_len, ((address & 0x1FF00) + 0xFF));
         return HAL_ERROR;
     }
@@ -140,7 +139,7 @@ HAL_StatusTypeDef m24m01_write_page(I2C_HandleTypeDef *hi2c, uint32_t address, c
     ret = HAL_I2C_Mem_Write(hi2c, device_addr, mem_addr, I2C_MEMADD_SIZE_16BIT,
         (uint8_t *)data, data_len, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "HAL_I2C_Mem_Write error: %d", ret);
+        log_e("HAL_I2C_Mem_Write error: %d", ret);
     }
 
     while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK);

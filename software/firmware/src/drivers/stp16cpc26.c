@@ -1,8 +1,7 @@
 #include "stp16cpc26.h"
 
-#include <esp_log.h>
-
-static const char *TAG = "stp16cpc26";
+#define LOG_TAG "stp16cpc26"
+#include <elog.h>
 
 HAL_StatusTypeDef stp16cpc26_set_leds(stp16cpc26_handle_t *handle, uint16_t setting)
 {
@@ -10,7 +9,7 @@ HAL_StatusTypeDef stp16cpc26_set_leds(stp16cpc26_handle_t *handle, uint16_t sett
 
     ret = HAL_SPI_Transmit(handle->hspi, (uint8_t *)(&setting), 2, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "HAL_SPI_Transmit error: %d", ret);
+        log_e("HAL_SPI_Transmit error: %d", ret);
         return ret;
     }
 

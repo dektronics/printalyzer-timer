@@ -12,12 +12,11 @@
 
 #include <usbh_hid_keybd.h>
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
-#include <esp_log.h>
+#define LOG_TAG "keypad"
+#define LOG_LVL ELOG_LVL_INFO
+#include <elog.h>
 
 #include "tca8418.h"
-
-static const char *TAG = "keypad";
 
 #define KEYPAD_INDEX_MAX       14
 #define KEYPAD_REPEAT_DELAY_MS 600
@@ -84,14 +83,14 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     HAL_StatusTypeDef ret = HAL_OK;
 
     if (keypad_initialized) {
-        ESP_LOGE(TAG, "Keypad controller already initialized");
+        log_e("Keypad controller already initialized");
         return HAL_OK;
     }
     if (!hi2c) {
         return HAL_ERROR;
     }
 
-    ESP_LOGI(TAG, "Initializing keypad controller");
+    log_i("Initializing keypad controller");
 
     keypad_i2c = hi2c;
 
@@ -159,12 +158,12 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     } while (0);
 
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "Keypad setup error: %d", ret);
+        log_e("Keypad setup error: %d", ret);
         return ret;
     }
 
     keypad_initialized = true;
-    ESP_LOGI(TAG, "Keypad controller initialized");
+    log_i("Keypad controller initialized");
 
     return HAL_OK;
 }
@@ -233,7 +232,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
         if (ret != HAL_OK) {
             break;
         }
-        ESP_LOGD(TAG, "INT_STAT: %02X (GPI=%d, K=%d)", int_status,
+        log_d("INT_STAT: %02X (GPI=%d, K=%d)", int_status,
                 (int_status & TCA8418_INT_STAT_GPI_INT) != 0,
                 (int_status & TCA8418_INT_STAT_K_INT) != 0);
 
@@ -244,7 +243,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
         if (ret != HAL_OK) {
             break;
         }
-        ESP_LOGD(TAG, "Key event count: %d", count);
+        log_d("Key event count: %d", count);
 
         bool key_error = false;
         bool cb_error = false;
@@ -284,7 +283,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
         if (ret != HAL_OK) {
             break;
         }
-        ESP_LOGD(TAG, "GPIO_INT_STAT: %02X %02X %02X", int_pins.rows, int_pins.cols_l, int_pins.cols_h);
+        log_d("GPIO_INT_STAT: %02X %02X %02X", int_pins.rows, int_pins.cols_l, int_pins.cols_h);
 
         // Reset the INT_STAT interrupt flag which was causing the interrupt
         // by writing a 1 to the specific bit.
@@ -369,7 +368,7 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
         .repeated = false,
         .keypad_state = button_state
     };
-    ESP_LOGD(TAG, "Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
+    log_d("Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
 
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }
@@ -400,7 +399,7 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
         .repeated = true,
         .keypad_state = button_state
     };
-    ESP_LOGD(TAG, "Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
+    log_d("Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
 
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
 }

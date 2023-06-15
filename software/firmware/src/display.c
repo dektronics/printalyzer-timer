@@ -5,8 +5,10 @@
 #include <cmsis_os.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <esp_log.h>
 #include <ff.h>
+
+#define LOG_TAG "display"
+#include <elog.h>
 
 #include "u8g2_stm32_hal.h"
 #include "u8g2.h"
@@ -17,8 +19,6 @@
 
 #define MENU_TIMEOUT_MS 30000
 #define MENU_KEY_POLL_MS 100
-
-static const char *TAG = "display";
 
 static u8g2_t u8g2;
 
@@ -48,7 +48,7 @@ static uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
 {
-    ESP_LOGD(TAG, "display_init");
+    log_d("display_init");
 
     // Initialize the STM32 display HAL, which includes library display
     // parameter and callback initialization.
@@ -61,7 +61,7 @@ HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
 
     display_mutex = osMutexNew(&display_mutex_attributes);
     if (!display_mutex) {
-        ESP_LOGE(TAG, "xSemaphoreCreateMutex error");
+        log_e("xSemaphoreCreateMutex error");
     }
 
     return HAL_OK;
@@ -137,7 +137,7 @@ static void display_save_screenshot_callback(const char *s)
     if (screenshot_fp) {
         FRESULT res = f_puts(s, screenshot_fp);
         if (res < 0) {
-            ESP_LOGE(TAG, "Error writing screenshot data to file: %d", res);
+            log_e("Error writing screenshot data to file: %d", res);
             screenshot_fp = NULL;
         }
     }
@@ -159,7 +159,7 @@ void display_save_screenshot()
 
         res = f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
         if (res != FR_OK) {
-            ESP_LOGE(TAG, "Error opening screenshot file: %d", res);
+            log_e("Error opening screenshot file: %d", res);
             break;
         }
         file_open = true;
@@ -168,7 +168,7 @@ void display_save_screenshot()
         u8g2_WriteBufferXBM(&u8g2, display_save_screenshot_callback);
         screenshot_fp = NULL;
 
-        ESP_LOGD(TAG, "Screenshot written to file: %s", filename);
+        log_d("Screenshot written to file: %s", filename);
         image_index++;
     } while (0);
 

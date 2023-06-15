@@ -10,7 +10,8 @@
 #include <stdbool.h>
 #include <math.h>
 
-#include <esp_log.h>
+#define LOG_TAG "menu_enlarger"
+#include <elog.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -24,8 +25,6 @@
 #define REFERENCE_READING_ITERATIONS 100
 #define PROFILE_ITERATIONS 5
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)
-
-static const char *TAG = "menu_enlarger";
 
 /*
  * The enlarger calibration process works by measuring the light output
@@ -84,7 +83,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
     enlarger_profile_t *profile_list;
     profile_list = pvPortMalloc(sizeof(enlarger_profile_t) * MAX_ENLARGER_PROFILES);
     if (!profile_list) {
-        ESP_LOGE(TAG, "Unable to allocate memory for profile list");
+        log_e("Unable to allocate memory for profile list");
         return MENU_OK;
     }
 
@@ -106,7 +105,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                     profile_count = i + 1;
                 }
             }
-            ESP_LOGI(TAG, "Loaded %d profiles, default is %d", profile_count, profile_default_index);
+            log_i("Loaded %d profiles, default is %d", profile_count, profile_default_index);
             reload_profiles = false;
         }
 
@@ -150,11 +149,11 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
             if (add_option == 1) {
                 enlarger_profile_t working_profile;
                 memset(&working_profile, 0, sizeof(enlarger_profile_t));
-                ESP_LOGI(TAG, "Add new profile at index: %d", profile_count);
+                log_i("Add new profile at index: %d", profile_count);
                 if (menu_enlarger_calibration(&working_profile) == MENU_OK
                     && enlarger_profile_is_valid(&working_profile)) {
                     if (settings_set_enlarger_profile(&working_profile, profile_count)) {
-                        ESP_LOGI(TAG, "New profile added at index: %d", profile_count);
+                        log_i("New profile added at index: %d", profile_count);
                         memcpy(&profile_list[profile_count], &working_profile, sizeof(enlarger_profile_t));
                         profile_count++;
                     }
@@ -167,7 +166,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
                     if (settings_set_enlarger_profile(&working_profile, profile_count)) {
-                        ESP_LOGI(TAG, "New profile manually added at index: %d", profile_count);
+                        log_i("New profile manually added at index: %d", profile_count);
                         memcpy(&profile_list[profile_count], &working_profile, sizeof(enlarger_profile_t));
                         profile_count++;
                     }
@@ -183,7 +182,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
                     if (settings_set_enlarger_profile(&working_profile, option - 1)) {
-                        ESP_LOGI(TAG, "Profile saved at index: %d", option - 1);
+                        log_i("Profile saved at index: %d", option - 1);
                         memcpy(&profile_list[option - 1], &working_profile, sizeof(enlarger_profile_t));
                     }
                 } else if (menu_result == MENU_DELETE) {
@@ -192,7 +191,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                     reload_profiles = true;
                 }
             } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
-                ESP_LOGI(TAG, "Set default profile at index: %d", option - 1);
+                log_i("Set default profile at index: %d", option - 1);
                 settings_set_default_enlarger_profile_index(option - 1);
                 profile_default_index = option - 1;
             }
@@ -397,7 +396,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 }
             }
         } else if (option == 9) {
-            ESP_LOGD(TAG, "Run calibration from profile editor");
+            log_d("Run calibration from profile editor");
             uint8_t sub_option = display_message(
                 "Run Calibration?\n",
                 NULL,
@@ -426,11 +425,11 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
                 continue;
             }
         } else if (option == 10) {
-            ESP_LOGD(TAG, "Save changes from profile editor");
+            log_d("Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
         } else if (option == 11) {
-            ESP_LOGD(TAG, "Delete profile from profile editor");
+            log_d("Delete profile from profile editor");
             if (menu_enlarger_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
                 break;
@@ -514,7 +513,7 @@ menu_result_t menu_enlarger_calibration(enlarger_profile_t *result_profile)
 calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profile)
 {
     calibration_result_t calibration_result;
-    ESP_LOGI(TAG, "Starting enlarger calibration process");
+    log_i("Starting enlarger calibration process");
 
     display_static_list("Enlarger Calibration", "\n\nInitializing...");
 
@@ -524,7 +523,7 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
 
     calibration_result = calibration_initialize_sensor();
     if (calibration_result != CALIBRATION_OK) {
-        ESP_LOGE(TAG, "Could not initialize sensor");
+        log_e("Could not initialize sensor");
         return calibration_result;
     }
 
@@ -540,7 +539,7 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
     reading_stats_t enlarger_color_stats;
     calibration_result = calibration_collect_reference_stats(&enlarger_on_stats, &enlarger_off_stats, &enlarger_color_stats);
     if (calibration_result != CALIBRATION_OK) {
-        ESP_LOGE(TAG, "Could not collect reference stats");
+        log_e("Could not collect reference stats");
         tcs3472_disable(&hi2c2);
         if (relay_enlarger_is_enabled()) {
             relay_enlarger_enable(false);
@@ -549,22 +548,22 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
     }
 
     // Log statistics used for reference points
-    ESP_LOGI(TAG, "Enlarger on");
-    ESP_LOGI(TAG, "Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
+    log_i("Enlarger on");
+    log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_on_stats.mean, enlarger_on_stats.min, enlarger_on_stats.max,
         enlarger_on_stats.stddev);
-    ESP_LOGI(TAG, "Enlarger off");
-    ESP_LOGI(TAG, "Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
+    log_i("Enlarger off");
+    log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_off_stats.mean, enlarger_off_stats.min, enlarger_off_stats.max,
         enlarger_off_stats.stddev);
-    ESP_LOGI(TAG, "Enlarger color temperature");
-    ESP_LOGI(TAG, "Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
+    log_i("Enlarger color temperature");
+    log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_color_stats.mean, enlarger_color_stats.min, enlarger_color_stats.max,
         enlarger_color_stats.stddev);
 
     calibration_result = calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats);
     if (calibration_result != CALIBRATION_OK) {
-        ESP_LOGW(TAG, "Reference stats are not usable for calibration");
+        log_w("Reference stats are not usable for calibration");
         tcs3472_disable(&hi2c2);
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
         return calibration_result;
@@ -586,11 +585,11 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
     memset(&profile_sum, 0, sizeof(enlarger_profile_t));
 
     for (int i = 0; i < PROFILE_ITERATIONS; i++) {
-        ESP_LOGI(TAG, "Profile run %d...", i + 1);
+        log_i("Profile run %d...", i + 1);
 
         calibration_result = calibration_build_profile(&profile_inc[i], &enlarger_on_stats, &enlarger_off_stats);
         if (calibration_result != CALIBRATION_OK) {
-            ESP_LOGE(TAG, "Could not build profile");
+            log_e("Could not build profile");
             tcs3472_disable(&hi2c2);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
@@ -608,7 +607,7 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
         profile_sum.fall_time += profile_inc[i].fall_time;
         profile_sum.fall_time_equiv += profile_inc[i].fall_time_equiv;
     }
-    ESP_LOGI(TAG, "Profile runs complete");
+    log_i("Profile runs complete");
 
     // Average across all the runs
     profile.turn_on_delay = roundf((float)profile_sum.turn_on_delay / PROFILE_ITERATIONS);
@@ -622,11 +621,11 @@ calibration_result_t enlarger_calibration_start(enlarger_profile_t *result_profi
     tcs3472_disable(&hi2c2);
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-    ESP_LOGI(TAG, "Relay on delay: %ldms", profile.turn_on_delay);
-    ESP_LOGI(TAG, "Rise time: %ldms (full_equiv=%ldms)", profile.rise_time, profile.rise_time_equiv);
-    ESP_LOGI(TAG, "Relay off delay: %ldms", profile.turn_off_delay);
-    ESP_LOGI(TAG, "Fall time: %ldms (full_equiv=%ldms)", profile.fall_time, profile.fall_time_equiv);
-    ESP_LOGI(TAG, "Color temperature: %ldK", profile.color_temperature);
+    log_i("Relay on delay: %ldms", profile.turn_on_delay);
+    log_i("Rise time: %ldms (full_equiv=%ldms)", profile.rise_time, profile.rise_time_equiv);
+    log_i("Relay off delay: %ldms", profile.turn_off_delay);
+    log_i("Fall time: %ldms (full_equiv=%ldms)", profile.fall_time, profile.fall_time_equiv);
+    log_i("Color temperature: %ldK", profile.color_temperature);
 
     if (result_profile) {
         result_profile->turn_on_delay = profile.turn_on_delay;
@@ -712,28 +711,28 @@ calibration_result_t calibration_initialize_sensor()
 {
     HAL_StatusTypeDef ret = HAL_OK;
     do {
-        ESP_LOGI(TAG, "Initializing sensor");
+        log_i("Initializing sensor");
         ret = tcs3472_init(&hi2c2);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error initializing TCS3472: %d", ret);
+            log_e("Error initializing TCS3472: %d", ret);
             break;
         }
 
         ret = tcs3472_enable(&hi2c2);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error enabling TCS3472: %d", ret);
+            log_e("Error enabling TCS3472: %d", ret);
             break;
         }
 
         ret = tcs3472_set_gain(&hi2c2, TCS3472_AGAIN_60X);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error setting TCS3472 gain: %d", ret);
+            log_e("Error setting TCS3472 gain: %d", ret);
             break;
         }
 
         ret = tcs3472_set_time(&hi2c2, TCS3472_ATIME_4_8MS);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error setting TCS3472 time: %d", ret);
+            log_e("Error setting TCS3472 time: %d", ret);
             break;
         }
 
@@ -741,12 +740,12 @@ calibration_result_t calibration_initialize_sensor()
         do {
             ret = tcs3472_get_status_valid(&hi2c2, &valid);
             if (ret != HAL_OK) {
-                ESP_LOGE(TAG, "Error getting TCS3472 status: %d", ret);
+                log_e("Error getting TCS3472 status: %d", ret);
                 break;
             }
         } while (!valid);
 
-        ESP_LOGI(TAG, "Sensor initialized");
+        log_i("Sensor initialized");
     } while(0);
 
     if (ret != HAL_OK) {
@@ -764,22 +763,22 @@ calibration_result_t calibration_collect_reference_stats(reading_stats_t *stats_
 
     if (!stats_on || !stats_off) { return false; }
 
-    ESP_LOGI(TAG, "Turning enlarger on for baseline reading");
+    log_i("Turning enlarger on for baseline reading");
     relay_enlarger_enable(true);
 
-    ESP_LOGI(TAG, "Waiting for light to stabilize");
+    log_i("Waiting for light to stabilize");
     if (!delay_with_cancel(5000)) {
         return CALIBRATION_CANCEL;
     }
 
-    ESP_LOGI(TAG, "Finding appropriate gain setting");
+    log_i("Finding appropriate gain setting");
     bool gain_selected = false;
     for (tcs3472_again_t gain = TCS3472_AGAIN_60X; gain >= TCS3472_AGAIN_1X; --gain) {
         tcs3472_channel_data_t channel_data;
 
         ret = tcs3472_set_gain(&hi2c2, gain);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error setting TCS3472 gain: %d (gain=%d)", ret, gain);
+            log_e("Error setting TCS3472 gain: %d (gain=%d)", ret, gain);
             return CALIBRATION_SENSOR_ERROR;
         }
 
@@ -787,31 +786,31 @@ calibration_result_t calibration_collect_reference_stats(reading_stats_t *stats_
 
         ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             return CALIBRATION_SENSOR_ERROR;
         }
 
         if (channel_data.clear == 0) {
-            ESP_LOGW(TAG, "No reading on clear channel");
+            log_w("No reading on clear channel");
             return CALIBRATION_ZERO_READING;
         }
         if (tcs3472_calculate_color_temp(&channel_data) > 0) {
-            ESP_LOGI(TAG, "Selected gain: %s", tcs3472_gain_str(gain));
+            log_i("Selected gain: %s", tcs3472_gain_str(gain));
             gain_selected = true;
             break;
         }
     }
     if (!gain_selected) {
-        ESP_LOGW(TAG, "Could not find a gain setting with a valid unsaturated reading");
+        log_w("Could not find a gain setting with a valid unsaturated reading");
         return CALIBRATION_SENSOR_SATURATED;
     }
 
-    ESP_LOGI(TAG, "Collecting data with enlarger on");
+    log_i("Collecting data with enlarger on");
     for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
         tcs3472_channel_data_t channel_data;
         ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             return CALIBRATION_SENSOR_ERROR;
         }
         readings[i] = channel_data.clear;
@@ -821,30 +820,30 @@ calibration_result_t calibration_collect_reference_stats(reading_stats_t *stats_
 
     relay_enlarger_enable(false);
 
-    ESP_LOGI(TAG, "Computing baseline enlarger reading statistics");
+    log_i("Computing baseline enlarger reading statistics");
     calculate_reading_stats(stats_on, readings, REFERENCE_READING_ITERATIONS);
     if (stats_color) {
         calculate_reading_stats(stats_color, color_readings, REFERENCE_READING_ITERATIONS);
     }
 
-    ESP_LOGI(TAG, "Waiting for light to stabilize");
+    log_i("Waiting for light to stabilize");
     if (!delay_with_cancel(2000)) {
         return false;
     }
 
-    ESP_LOGI(TAG, "Collecting data with enlarger off");
+    log_i("Collecting data with enlarger off");
     for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
         uint16_t channel_data;
         ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             return false;
         }
         readings[i] = channel_data;
         osDelay(pdMS_TO_TICKS(5));
     }
 
-    ESP_LOGI(TAG, "Computing baseline darkness reading statistics");
+    log_i("Computing baseline darkness reading statistics");
     calculate_reading_stats(stats_off, readings, REFERENCE_READING_ITERATIONS);
 
     return CALIBRATION_OK;
@@ -855,17 +854,17 @@ calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats
     if (!stats_on || !stats_off) { return CALIBRATION_FAIL; }
 
     if (stats_on->min <= stats_off->max) {
-        ESP_LOGW(TAG, "On and off ranges overlap");
+        log_w("On and off ranges overlap");
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
     if ((stats_on->min - stats_off->max) < 10) {
-        ESP_LOGW(TAG, "Insufficient separation between on and off ranges");
+        log_w("Insufficient separation between on and off ranges");
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
     if ((stats_on->mean - stats_off->mean) < 20) {
-        ESP_LOGW(TAG, "Insufficient separation between on and off mean values");
+        log_w("Insufficient separation between on and off mean values");
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
@@ -891,7 +890,7 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
 
     uint16_t channel_data = 0;
 
-    ESP_LOGI(TAG, "Collecting profile data...");
+    log_i("Collecting profile data...");
 
     TaskHandle_t current_task_handle = xTaskGetCurrentTaskHandle();
     UBaseType_t current_task_priority = uxTaskPriorityGet(current_task_handle);
@@ -909,7 +908,7 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
     do {
         ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             vTaskPrioritySet(current_task_handle, current_task_priority);
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -925,7 +924,7 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
     do {
         ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             vTaskPrioritySet(current_task_handle, current_task_priority);
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -954,7 +953,7 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
     do {
         ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             vTaskPrioritySet(current_task_handle, current_task_priority);
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -970,7 +969,7 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
     do {
         ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
         if (ret != HAL_OK) {
-            ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+            log_e("Error getting TCS3472 channel data: %d", ret);
             vTaskPrioritySet(current_task_handle, current_task_priority);
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -1005,10 +1004,10 @@ calibration_result_t calibration_build_profile(enlarger_profile_t *profile, cons
     float fall_scale_factor = (float)integrated_fall / (stats_on->mean * fall_counts);
     profile->fall_time_equiv = roundf(profile->fall_time * fall_scale_factor);
 
-    ESP_LOGI(TAG, "Relay on delay: %ldms", profile->turn_on_delay);
-    ESP_LOGI(TAG, "Rise time: %ldms (full_equiv=%ldms)", profile->rise_time, profile->rise_time_equiv);
-    ESP_LOGI(TAG, "Relay off delay: %ldms", profile->turn_off_delay);
-    ESP_LOGI(TAG, "Fall time: %ldms (full_equiv=%ldms)", profile->fall_time, profile->fall_time_equiv);
+    log_i("Relay on delay: %ldms", profile->turn_on_delay);
+    log_i("Rise time: %ldms (full_equiv=%ldms)", profile->rise_time, profile->rise_time_equiv);
+    log_i("Relay off delay: %ldms", profile->turn_off_delay);
+    log_i("Fall time: %ldms (full_equiv=%ldms)", profile->fall_time, profile->fall_time_equiv);
 
     return CALIBRATION_OK;
 }
@@ -1054,7 +1053,7 @@ bool delay_with_cancel(uint32_t time_ms)
     do {
         if (keypad_wait_for_event(&keypad_event, 10) == HAL_OK) {
             if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                ESP_LOGW(TAG, "Canceling enlarger calibration");
+                log_w("Canceling enlarger calibration");
                 return false;
             }
         }

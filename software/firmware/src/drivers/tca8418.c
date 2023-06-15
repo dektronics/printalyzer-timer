@@ -1,12 +1,11 @@
 #include "tca8418.h"
 
-#include <esp_log.h>
-
 #include <strings.h>
 
-#include "i2c_util.h"
+#define LOG_TAG "tca8418"
+#include <elog.h>
 
-static const char *TAG = "tca8418";
+#include "i2c_util.h"
 
 /* I2C device address */
 static const uint8_t TCA8418_ADDRESS = 0x34 << 1;
@@ -102,19 +101,19 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
     if (ret != HAL_OK) {
         return ret;
     }
-    ESP_LOGI(TAG, "CONFIG: %02X", data);
+    log_i("CONFIG: %02X", data);
 
     ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, &data);
     if (ret != HAL_OK) {
         return ret;
     }
-    ESP_LOGI(TAG, "INT_STAT: %02X", data);
+    log_i("INT_STAT: %02X", data);
 
     ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, &data);
     if (ret != HAL_OK) {
         return ret;
     }
-    ESP_LOGI(TAG, "KEY_LCK_EC: %02X", data);
+    log_i("KEY_LCK_EC: %02X", data);
 
     return HAL_OK;
 }

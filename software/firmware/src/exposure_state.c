@@ -4,13 +4,12 @@
 #include <string.h>
 #include <math.h>
 
-#include <esp_log.h>
+#define LOG_TAG "exposure_state"
+#include <elog.h>
 
 #include "settings.h"
 #include "util.h"
 #include "paper_profile.h"
-
-static const char *TAG = "exposure_state";
 
 /**
  * Maximum number of light readings used to calculate exposure
@@ -85,7 +84,7 @@ exposure_state_t *exposure_state_create()
 {
     exposure_state_t *state = pvPortMalloc(sizeof(exposure_state_t));
     if (!state) {
-        ESP_LOGE(TAG, "Unable to allocate exposure state");
+        log_e("Unable to allocate exposure state");
         return NULL;
     }
     memset(state, 0, sizeof(exposure_state_t));
@@ -96,9 +95,9 @@ exposure_state_t *exposure_state_create()
     state->paper_profile_index = settings_get_default_paper_profile_index();
     if (!settings_get_paper_profile(&state->paper_profile, state->paper_profile_index)) {
         exposure_clear_active_paper_profile(state);
-        ESP_LOGI(TAG, "Set default paper profile");
+        log_i("Set default paper profile");
     } else {
-        ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", state->paper_profile_index + 1, state->paper_profile.name);
+        log_i("Loaded paper profile: [%d] => \"%s\"", state->paper_profile_index + 1, state->paper_profile.name);
     }
     exposure_recalculate_tone_graph_marks(state);
 
@@ -271,7 +270,7 @@ bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index)
     if (!state) { return false; }
     if (index < 16) {
         if (settings_get_paper_profile(&state->paper_profile, index)) {
-            ESP_LOGI(TAG, "Loaded paper profile: [%d] => \"%s\"", index + 1, state->paper_profile.name);
+            log_i("Loaded paper profile: [%d] => \"%s\"", index + 1, state->paper_profile.name);
             state->paper_profile_index = index;
             exposure_recalculate_tone_graph_marks(state);
             exposure_recalculate_base_time(state);
@@ -792,7 +791,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
 {
     /* Make sure there is a valid profile */
     if (!paper_profile_is_valid(&state->paper_profile)) {
-        ESP_LOGW(TAG, "Cannot recalculate tone graph for invalid profile");
+        log_w("Cannot recalculate tone graph for invalid profile");
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
             tone_graph_marks[i] = NAN;
         }
@@ -813,7 +812,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
          * We have all the relevant fields, with valid relationships, to
          * interpolate the full tone curve.
          */
-        ESP_LOGD(TAG, "Tone graph using full T+M+S+Dnet interpolation");
+        log_d("Tone graph using full T+M+S+Dnet interpolation");
 
         float d_ht = 0.04F;
         float d_hm = 0.60F;
@@ -833,7 +832,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
          * We just have the minimum number of relevant fields, so do a linear
          * graph of the ISO Range.
          */
-        ESP_LOGD(TAG, "Tone graph using simple T+M ISO(R) line");
+        log_d("Tone graph using simple T+M ISO(R) line");
 
         uint32_t iso_r = hs_lev100 - ht_lev100;
 
@@ -845,7 +844,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
             mark_value += mark_increment;
         }
     } else {
-        ESP_LOGW(TAG, "Insufficient profile data to calculate tone graph");
+        log_w("Insufficient profile data to calculate tone graph");
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
             tone_graph_marks[i] = NAN;
         }
@@ -884,7 +883,7 @@ void exposure_recalculate_base_time(exposure_state_t *state)
 
     /* Set the new base time, if changed */
     if (fabs(state->base_time - target_time) >= 0.01F) {
-        ESP_LOGD(TAG, "Updating base time from meter reading: %.2f -> %.2f", state->base_time, target_time);
+        log_d("Updating base time from meter reading: %.2f -> %.2f", state->base_time, target_time);
         state->base_time = target_time;
     }
 }

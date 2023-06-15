@@ -1,7 +1,9 @@
 #include "buzzer.h"
 
 #include <string.h>
-#include <esp_log.h>
+
+#define LOG_TAG "buzzer"
+#include <elog.h>
 
 #include "pam8904e.h"
 
@@ -9,14 +11,12 @@ static pam8904e_handle_t buzzer_handle = {0};
 static buzzer_volume_t buzzer_volume = 0;
 static pam8904e_freq_t buzzer_frequency = 0;
 
-static const char *TAG = "buzzer";
-
 HAL_StatusTypeDef buzzer_init(const pam8904e_handle_t *handle)
 {
-    ESP_LOGD(TAG, "buzzer_init");
+    log_d("buzzer_init");
 
     if (!handle) {
-        ESP_LOGE(TAG, "Buzzer handle not initialized");
+        log_e("Buzzer handle not initialized");
         return HAL_ERROR;
     }
 

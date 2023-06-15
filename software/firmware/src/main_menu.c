@@ -2,7 +2,9 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
-#include <esp_log.h>
+
+#define LOG_TAG "main_menu"
+#include <elog.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -20,13 +22,11 @@
 #include "menu_import_export.h"
 #include "menu_diagnostics.h"
 
-static const char *TAG = "main_menu";
-
 static menu_result_t menu_about();
 
 menu_result_t main_menu_start(state_controller_t *controller)
 {
-    ESP_LOGI(TAG, "Main menu");
+    log_i("Main menu");
 
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;

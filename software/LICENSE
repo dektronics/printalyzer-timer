@@ -41,15 +41,14 @@
 
 ******************************************************************************
 
- Logging library (from ESP-IDF)
+ EasyLogger
 
- Path:     firmware/external/esp_log
- Upstream: https://github.com/espressif/esp-idf
-           components/log
- License:  Apache License 2.0
+ Path:     firmware/external/easylogger
+ Upstream: https://github.com/armink/EasyLogger
+ License:  MIT
 
- This is a logging library from Espressif's ESP-IDF components, modified as
- necessary for platform porting and project integration purposes.
+ Library files have been reorganized into a standalone directory structure
+ and certain files have been modified for project integration purposes.
 
 ******************************************************************************
 

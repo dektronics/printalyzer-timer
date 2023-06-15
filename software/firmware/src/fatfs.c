@@ -7,9 +7,8 @@
 #include <ff_gen_drv.h>
 #include <usbh_diskio.h>
 
-#include <esp_log.h>
-
-static const char *TAG = "fatfs";
+#define LOG_TAG "fatfs"
+#include <elog.h>
 
 static char usbh_path[4]; /* USBH logical drive path */
 static FATFS usbh_fatfs;  /* File system object for USBH logical drive */
@@ -41,7 +40,7 @@ HAL_StatusTypeDef fatfs_mount()
 
     FRESULT res = f_mount(&usbh_fatfs, (TCHAR const*)usbh_path, 0);
     if (res != FR_OK) {
-        ESP_LOGE(TAG, "f_mount error: %d", res);
+        log_e("f_mount error: %d", res);
         return HAL_ERROR;
     }
     fatfs_mounted = true;

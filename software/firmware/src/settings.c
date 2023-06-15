@@ -2,12 +2,12 @@
 
 #include <string.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "settings"
+#include <elog.h>
 
 #include "buzzer.h"
 #include "m24m01.h"
-
-static const char *TAG = "settings";
 
 #define LATEST_CONFIG_VERSION           1
 #define DEFAULT_EXPOSURE_TIME           15000
@@ -163,7 +163,7 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
     eeprom_i2c = hi2c;
 
     do {
-        ESP_LOGI(TAG, "settings_init");
+        log_i("settings_init");
 
         // Read the base page
         uint8_t data[PAGE_SIZE];
@@ -171,7 +171,7 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
         if (ret != HAL_OK) { break; }
 
         if (memcmp(data, "PRINTALYZER\0", 12) != 0) {
-            ESP_LOGI(TAG, "Initializing base page");
+            log_i("Initializing base page");
             memset(data, 0, sizeof(data));
             memcpy(data, "PRINTALYZER\0", 12);
             ret = m24m01_write_page(eeprom_i2c, PAGE_BASE, data, sizeof(data));
@@ -180,13 +180,13 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
             ret = settings_init_default_config();
             if (ret != HAL_OK) { break; }
         } else {
-            ESP_LOGI(TAG, "Loading config page");
+            log_i("Loading config page");
             ret = m24m01_read_buffer(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
             if (ret != HAL_OK) { break; }
 
             uint32_t config_version = copy_to_u32(data + CONFIG_VERSION);
             if (config_version == 0 || config_version > LATEST_CONFIG_VERSION) {
-                ESP_LOGW(TAG, "Invalid config version %ld", config_version);
+                log_w("Invalid config version %ld", config_version);
                 ret = settings_init_default_config();
                 if (ret != HAL_OK) { break; }
                 break;
@@ -203,7 +203,7 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
 HAL_StatusTypeDef settings_init_default_config()
 {
     uint8_t data[256];
-    ESP_LOGI(TAG, "Initializing config page");
+    log_i("Initializing config page");
     memset(data, 0, sizeof(data));
     copy_from_u32(data + CONFIG_VERSION,                LATEST_CONFIG_VERSION);
     copy_from_u32(data + CONFIG_EXPOSURE_TIME,          DEFAULT_EXPOSURE_TIME);
@@ -328,7 +328,7 @@ HAL_StatusTypeDef settings_clear(I2C_HandleTypeDef *hi2c)
     memset(data, 0xFF, sizeof(data));
 
     do {
-        ESP_LOGI(TAG, "settings_clear");
+        log_i("settings_clear");
 
         ret = m24m01_write_page(hi2c, PAGE_BASE, data, sizeof(data));
         if (ret != HAL_OK) { break; }
@@ -536,7 +536,7 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
 {
     if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
 
-    ESP_LOGI(TAG, "Load enlarger profile: %d", index);
+    log_i("Load enlarger profile: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[PAGE_SIZE];
@@ -550,12 +550,12 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
 
         uint32_t profile_version = copy_to_u32(data + ENLARGER_PROFILE_VERSION);
         if (profile_version == UINT32_MAX) {
-            ESP_LOGD(TAG, "Profile index is empty");
+            log_d("Profile index is empty");
             ret = HAL_ERROR;
             break;
         }
         if (profile_version == 0 || profile_version > LATEST_ENLARGER_PROFILE_VERSION) {
-            ESP_LOGW(TAG, "Invalid profile version %ld", profile_version);
+            log_w("Invalid profile version %ld", profile_version);
             ret = HAL_ERROR;
             break;
         }
@@ -587,7 +587,7 @@ bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t in
 {
     if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
 
-    ESP_LOGI(TAG, "Save enlarger profile: %d", index);
+    log_i("Save enlarger profile: %d", index);
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0, sizeof(data));
@@ -639,7 +639,7 @@ void settings_clear_enlarger_profile(uint8_t index)
 
     memset(data, 0xFF, sizeof(data));
 
-    ESP_LOGI(TAG, "Clear enlarger profile: %d", index);
+    log_i("Clear enlarger profile: %d", index);
 
     m24m01_write_page(eeprom_i2c,
         PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
@@ -650,7 +650,7 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
 {
     if (!profile || index >= MAX_PAPER_PROFILES) { return false; }
 
-    ESP_LOGI(TAG, "Load paper profile: %d", index);
+    log_i("Load paper profile: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[PAGE_SIZE];
@@ -664,12 +664,12 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
 
         uint32_t profile_version = copy_to_u32(data + PAPER_PROFILE_VERSION);
         if (profile_version == UINT32_MAX) {
-            ESP_LOGD(TAG, "Profile index is empty");
+            log_d("Profile index is empty");
             ret = HAL_ERROR;
             break;
         }
         if (profile_version == 0 || profile_version > LATEST_PAPER_PROFILE_VERSION) {
-            ESP_LOGW(TAG, "Invalid profile version %ld", profile_version);
+            log_w("Invalid profile version %ld", profile_version);
             ret = HAL_ERROR;
             break;
         }
@@ -734,7 +734,7 @@ bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
 {
     if (!profile || index >= MAX_PAPER_PROFILES) { return false; }
 
-    ESP_LOGI(TAG, "Save paper profile: %d", index);
+    log_i("Save paper profile: %d", index);
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0, sizeof(data));
@@ -809,7 +809,7 @@ void settings_clear_paper_profile(uint8_t index)
 
     memset(data, 0xFF, sizeof(data));
 
-    ESP_LOGI(TAG, "Clear paper profile: %d", index);
+    log_i("Clear paper profile: %d", index);
 
     m24m01_write_page(eeprom_i2c,
         PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
@@ -820,7 +820,7 @@ bool settings_get_step_wedge(step_wedge_t **wedge)
 {
     if (!wedge) { return false; }
 
-    ESP_LOGI(TAG, "Load step wedge");
+    log_i("Load step wedge");
 
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[PAGE_SIZE];
@@ -832,12 +832,12 @@ bool settings_get_step_wedge(step_wedge_t **wedge)
 
         uint32_t wedge_version = copy_to_u32(data + STEP_WEDGE_VERSION);
         if (wedge_version == UINT32_MAX) {
-            ESP_LOGD(TAG, "Step wedge is empty");
+            log_d("Step wedge is empty");
             ret = HAL_ERROR;
             break;
         }
         if (wedge_version == 0 || wedge_version > LATEST_STEP_WEDGE_VERSION) {
-            ESP_LOGW(TAG, "Invalid step wedge version %ld", wedge_version);
+            log_w("Invalid step wedge version %ld", wedge_version);
             ret = HAL_ERROR;
             break;
         }
@@ -853,13 +853,13 @@ void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data)
 {
     uint32_t step_count = copy_to_u32(data + STEP_WEDGE_STEP_COUNT);
     if (step_count < MIN_STEP_WEDGE_STEP_COUNT || step_count > MAX_STEP_WEDGE_STEP_COUNT) {
-        ESP_LOGW(TAG, "Invalid step count: %lu", step_count);
+        log_w("Invalid step count: %lu", step_count);
         return;
     }
 
     *wedge = step_wedge_create(step_count);
     if (!(*wedge)) {
-        ESP_LOGW(TAG, "Unable to create step wedge");
+        log_w("Unable to create step wedge");
         return;
     }
 
@@ -888,7 +888,7 @@ bool settings_set_step_wedge(const step_wedge_t *wedge)
 {
     if (!wedge) { return false; }
 
-    ESP_LOGI(TAG, "Save step wedge");
+    log_i("Save step wedge");
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0, sizeof(data));

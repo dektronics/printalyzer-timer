@@ -3,11 +3,11 @@
 #include "stm32f4xx_hal.h"
 
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "tcs3472"
+#include <elog.h>
 
 #include "i2c_util.h"
-
-static const char *TAG = "tcs3472";
 
 /*
  * Formulas related to lux and color temperature calculations are from
@@ -72,17 +72,17 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
     HAL_StatusTypeDef ret;
     uint8_t data;
 
-    ESP_LOGI(TAG, "Initializing TCS3472");
+    log_i("Initializing TCS3472");
 
     ret = i2c_read_register(hi2c, TCS3472_ADDRESS, TCS3472_CMD | TCS3472_ID, &data);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    ESP_LOGI(TAG, "Device ID: %02X", data);
+    log_i("Device ID: %02X", data);
 
     if (data != 0x44 && data != 0x4D) {
-        ESP_LOGE(TAG, "Invalid Device ID");
+        log_e("Invalid Device ID");
         return HAL_ERROR;
     }
 
@@ -91,7 +91,7 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
         return ret;
     }
 
-    ESP_LOGI(TAG, "Status: %02X", data);
+    log_i("Status: %02X", data);
 
     /* Power on the sensor */
     ret = tcs3472_enable(hi2c);
@@ -118,7 +118,7 @@ HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
         return ret;
     }
 
-    ESP_LOGI(TAG, "TCS3472 Initialized");
+    log_i("TCS3472 Initialized");
 
     return HAL_OK;
 }
@@ -153,7 +153,7 @@ HAL_StatusTypeDef tcs3472_get_time(I2C_HandleTypeDef *hi2c, tcs3472_atime_t *ati
 
     ret = i2c_read_register(hi2c, TCS3472_ADDRESS, TCS3472_CMD | TCS3472_ATIME, &data);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "i2c_read_register error: %d", ret);
+        log_e("i2c_read_register error: %d", ret);
         return ret;
     }
 
@@ -185,7 +185,7 @@ HAL_StatusTypeDef tcs3472_get_gain(I2C_HandleTypeDef *hi2c, tcs3472_again_t *gai
 
     ret = i2c_read_register(hi2c, TCS3472_ADDRESS, TCS3472_CMD | TCS3472_CONTROL, &data);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "i2c_read_register error: %d", ret);
+        log_e("i2c_read_register error: %d", ret);
         return ret;
     }
 
@@ -207,7 +207,7 @@ HAL_StatusTypeDef tcs3472_get_status_valid(I2C_HandleTypeDef *hi2c, bool *valid)
 
     ret = i2c_read_register(hi2c, TCS3472_ADDRESS, TCS3472_CMD | TCS3472_STATUS, &data);
     if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "i2c_read_register error: %d", ret);
+        log_e("i2c_read_register error: %d", ret);
         return ret;
     }
 

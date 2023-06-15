@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "densitometer"
+#include <elog.h>
 
 #include "usb_host.h"
-
-static const char *TAG = "densitometer";
 
 static void densitometer_clear_reading(densitometer_reading_t *reading);
 static densitometer_result_t densitometer_parse_reading(densitometer_reading_t *reading, const char *line);
@@ -280,9 +280,9 @@ void densitometer_log_reading(const densitometer_reading_t *reading)
             mode_ch = 'U';
             break;
         }
-        ESP_LOGI(TAG, "mode=%c, vis=%0.02f, red=%0.02f, green=%0.02f, blue=%0.02f",
+        log_i("mode=%c, vis=%0.02f, red=%0.02f, green=%0.02f, blue=%0.02f",
             mode_ch, reading->visual, reading->red, reading->green, reading->blue);
     } else {
-        ESP_LOGI(TAG, "Reading invalid");
+        log_i("Reading invalid");
     }
 }

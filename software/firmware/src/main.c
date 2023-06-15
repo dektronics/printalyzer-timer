@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <cmsis_os.h>
 
+#define LOG_TAG "main"
+#include <elog.h>
+
 #include "fatfs.h"
 #include "board_config.h"
 #include "main_task.h"
@@ -32,6 +35,8 @@ static void tim1_init(void);
 static void tim3_init(void);
 static void tim9_init(void);
 static void tim10_init(void);
+
+static void logger_init(void);
 
 void Error_Handler(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -438,6 +443,24 @@ void tim10_init(void)
     }
 }
 
+void logger_init(void)
+{
+    /* Initialize EasyLogger */
+    elog_init();
+
+    /* Set log format */
+    elog_set_fmt(ELOG_LVL_ASSERT, ELOG_FMT_ALL);
+    elog_set_fmt(ELOG_LVL_ERROR, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME | ELOG_FMT_T_INFO);
+    elog_set_fmt(ELOG_LVL_WARN, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME | ELOG_FMT_T_INFO);
+    elog_set_fmt(ELOG_LVL_INFO, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME | ELOG_FMT_T_INFO);
+    elog_set_fmt(ELOG_LVL_DEBUG, ELOG_FMT_LVL | ELOG_FMT_TAG | ELOG_FMT_TIME | ELOG_FMT_T_INFO);
+    elog_set_fmt(ELOG_LVL_VERBOSE, ELOG_FMT_ALL & ~(ELOG_FMT_FUNC | ELOG_FMT_T_INFO | ELOG_FMT_P_INFO));
+    elog_set_text_color_enabled(true);
+
+    /* Start EasyLogger */
+    elog_start();
+}
+
 int main(void)
 {
     /*
@@ -468,6 +491,9 @@ int main(void)
 
     /* Initialize the FreeRTOS scheduler */
     osKernelInitialize();
+
+    /* Initialize the logger */
+    logger_init();
 
     /* Create the default task */
     main_task_init();

@@ -7,9 +7,10 @@
 #include <math.h>
 #include <errno.h>
 #include <ctype.h>
-
-#include <esp_log.h>
 #include <ff.h>
+
+#define LOG_TAG "menu_import_export"
+#include <elog.h>
 
 #include "display.h"
 #include "settings.h"
@@ -18,8 +19,6 @@
 #include "util.h"
 #include "file_picker.h"
 #include "app_descriptor.h"
-
-static const char *TAG = "menu_import_export";
 
 /*
  * Fixed filename for configuration import/export.
@@ -73,7 +72,7 @@ static bool scrub_export_filename(char *filename);
 
 menu_result_t menu_import_export(state_controller_t *controller)
 {
-    ESP_LOGI(TAG, "Import/Export menu");
+    log_i("Import/Export menu");
 
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
@@ -187,32 +186,32 @@ bool import_config_file(const char *filename, bool *reload_paper)
 
         res = f_open(&fp, filename, FA_READ | FA_OPEN_EXISTING);
         if (res != FR_OK) {
-            ESP_LOGE(TAG, "Error opening config file: %d", res);
+            log_e("Error opening config file: %d", res);
             break;
         }
         file_open = true;
 
         if (f_size(&fp) > MAX_CONF_FILE_SIZE) {
-            ESP_LOGE(TAG, "File is too large: %lu > %d", f_size(&fp), MAX_CONF_FILE_SIZE);
+            log_e("File is too large: %lu > %d", f_size(&fp), MAX_CONF_FILE_SIZE);
             break;
         }
 
-        ESP_LOGI(TAG, "Config file opened: %s", filename);
+        log_i("Config file opened: %s", filename);
 
         /* Allocate buffer for file */
         file_buf = pvPortMalloc(f_size(&fp));
         if (!file_buf) {
-            ESP_LOGE(TAG, "Unable to allocate buffer for file: %lu", f_size(&fp));
+            log_e("Unable to allocate buffer for file: %lu", f_size(&fp));
             break;
         }
 
         /* Read file into buffer */
         if (f_read(&fp, file_buf, f_size(&fp), &bytes_read) != FR_OK) {
-            ESP_LOGE(TAG, "Error reading file");
+            log_e("Error reading file");
             break;
         }
         if (bytes_read != f_size(&fp)) {
-            ESP_LOGE(TAG, "Short read: %d != %lu", bytes_read, f_size(&fp));
+            log_e("Short read: %d != %lu", bytes_read, f_size(&fp));
             break;
         }
 
@@ -220,15 +219,15 @@ bool import_config_file(const char *filename, bool *reload_paper)
         f_close(&fp);
         file_open = false;
 
-        ESP_LOGI(TAG, "Config file loaded into buffer");
+        log_i("Config file loaded into buffer");
 
         /* Validate the JSON */
         if (JSON_Validate(file_buf, bytes_read) != JSONSuccess) {
-            ESP_LOGW(TAG, "JSON invalid");
+            log_w("JSON invalid");
             break;
         }
 
-        ESP_LOGI(TAG, "Config file validated as JSON");
+        log_i("Config file validated as JSON");
 
         /* Traverse the top level to see what sections are in the file */
         start = 0;
@@ -256,12 +255,12 @@ bool import_config_file(const char *filename, bool *reload_paper)
         }
 
         if (!has_valid_header) {
-            ESP_LOGW(TAG, "File does not contain valid header");
+            log_w("File does not contain valid header");
             break;
         }
-        ESP_LOGI(TAG, "Found valid header");
+        log_i("Found valid header");
 
-        ESP_LOGI(TAG, "Found sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
+        log_i("Found sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
             has_settings, has_enlargers, has_papers, has_step_wedge);
 
         /* Show user prompt of sections to import */
@@ -275,7 +274,7 @@ bool import_config_file(const char *filename, bool *reload_paper)
             break;
         }
 
-        ESP_LOGI(TAG, "Selected sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
+        log_i("Selected sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
             has_settings, has_enlargers, has_papers, has_step_wedge);
 
         /* Traverse the top level and import any selected sections */
@@ -483,7 +482,7 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_profile_
     /* Validate the section version up front */
     version = parse_section_version(buf, len);
     if (version != CONFIG_EXPORT_VERSION) {
-        ESP_LOGW(TAG, "Settings section has invalid version: %d", version);
+        log_w("Settings section has invalid version: %d", version);
         return false;
     }
 
@@ -596,17 +595,17 @@ int import_section_enlargers(const char *buf, size_t len)
                      */
                     if (settings_get_enlarger_profile(&existing_profile, count)
                         && enlarger_profile_compare(&existing_profile, &profile)) {
-                        ESP_LOGI(TAG, "Skipping unchanged profile at index: %d", count);
+                        log_i("Skipping unchanged profile at index: %d", count);
                         count++;
                     } else if (settings_set_enlarger_profile(&profile, count)) {
-                        ESP_LOGI(TAG, "Updated profile at index: %d", count);
+                        log_i("Updated profile at index: %d", count);
                         count++;
                     }
                 } else {
-                    ESP_LOGW(TAG, "Parsed profile is not valid");
+                    log_w("Parsed profile is not valid");
                 }
             } else {
-                ESP_LOGW(TAG, "Enlarger element has invalid version: %d", version);
+                log_w("Enlarger element has invalid version: %d", version);
             }
         }
 
@@ -686,17 +685,17 @@ int import_section_papers(const char *buf, size_t len)
                      */
                     if (settings_get_paper_profile(&existing_profile, count)
                         && paper_profile_compare(&existing_profile, &profile)) {
-                        ESP_LOGI(TAG, "Skipping unchanged profile at index: %d", count);
+                        log_i("Skipping unchanged profile at index: %d", count);
                         count++;
                     } else if (settings_set_paper_profile(&profile, count)) {
-                        ESP_LOGI(TAG, "Updated profile at index: %d", count);
+                        log_i("Updated profile at index: %d", count);
                         count++;
                     }
                 } else {
-                    ESP_LOGW(TAG, "Parsed profile is not valid");
+                    log_w("Parsed profile is not valid");
                 }
             } else {
-                ESP_LOGW(TAG, "Paper element has invalid version: %d", version);
+                log_w("Paper element has invalid version: %d", version);
             }
         }
 
@@ -815,7 +814,7 @@ bool import_section_step_wedge(const char *buf, size_t len)
     /* Validate the section version up front */
     version = parse_section_version(buf, len);
     if (version != STEP_WEDGE_EXPORT_VERSION) {
-        ESP_LOGW(TAG, "Step wedge section has invalid version: %d", version);
+        log_w("Step wedge section has invalid version: %d", version);
         return false;
     }
 
@@ -845,13 +844,13 @@ bool import_section_step_wedge(const char *buf, size_t len)
 
     if (step_count < MIN_STEP_WEDGE_STEP_COUNT || step_count > MAX_STEP_WEDGE_STEP_COUNT
         || !is_valid_number(base_density) || !is_valid_number(density_increment)) {
-        ESP_LOGW(TAG, "Step wedge section has invalid properties");
+        log_w("Step wedge section has invalid properties");
         return false;
     }
 
     wedge = step_wedge_create(step_count);
     if (!wedge) {
-        ESP_LOGW(TAG, "Unable to allocate step wedge");
+        log_w("Unable to allocate step wedge");
         return false;
     }
 
@@ -889,13 +888,13 @@ bool import_section_step_wedge(const char *buf, size_t len)
             save_wedge = true;
         }
     } else {
-        ESP_LOGW(TAG, "Step wedge data is invalid");
+        log_w("Step wedge data is invalid");
     }
 
     if (save_wedge) {
         settings_set_step_wedge(wedge);
     } else {
-        ESP_LOGI(TAG, "Not saving step wedge");
+        log_i("Not saving step wedge");
     }
 
     step_wedge_free(wedge);
@@ -1027,7 +1026,7 @@ bool export_config_file(const char *filename)
 
         res = f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
         if (res != FR_OK) {
-            ESP_LOGE(TAG, "Error opening config file: %d", res);
+            log_e("Error opening config file: %d", res);
             break;
         }
         file_open = true;
@@ -1045,7 +1044,7 @@ bool export_config_file(const char *filename)
         f_printf(&fp, "\n");
         f_printf(&fp, "}");
 
-        ESP_LOGD(TAG, "Config written to file: %s", filename);
+        log_d("Config written to file: %s", filename);
         success = true;
     } while (0);
 

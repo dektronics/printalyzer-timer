@@ -8,7 +8,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "state_controller"
+#include <elog.h>
 
 #include "keypad.h"
 #include "display.h"
@@ -27,8 +29,6 @@
 #include "state_timer.h"
 #include "state_test_strip.h"
 #include "state_adjustment.h"
-
-static const char *TAG = "state_controller";
 
 struct __state_controller_t {
     state_identifier_t current_state;
@@ -88,7 +88,7 @@ void state_controller_loop()
         if (state_controller.next_state != state_controller.current_state
             || state_controller.next_state_param != state_controller.current_state_param) {
             // Transition to the new state
-            ESP_LOGI(TAG, "State transition: %d[%lu] -> %d[%lu]",
+            log_i("State transition: %d[%lu] -> %d[%lu]",
                 state_controller.current_state, state_controller.current_state_param,
                 state_controller.next_state, state_controller.next_state_param);
             state_identifier_t prev_state = state_controller.current_state;
@@ -122,7 +122,7 @@ void state_controller_loop()
         // Handle behaviors resulting from inactivity timeouts
         TickType_t max_focus_ticks = pdMS_TO_TICKS(settings_get_enlarger_focus_timeout());
         if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - state_controller.focus_start_ticks) >= max_focus_ticks) {
-            ESP_LOGI(TAG, "Focus mode disabled due to timeout");
+            log_i("Focus mode disabled due to timeout");
             relay_enlarger_enable(false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller.focus_start_ticks = 0;

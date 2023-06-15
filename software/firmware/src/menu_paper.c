@@ -7,7 +7,8 @@
 #include <math.h>
 #include <arm_math.h>
 
-#include <esp_log.h>
+#define LOG_TAG "menu_paper"
+#include <elog.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -19,8 +20,6 @@
 #include "step_wedge.h"
 #include "menu_step_wedge.h"
 #include "exposure_state.h"
-
-static const char *TAG = "menu_paper";
 
 typedef struct {
     step_wedge_t *wedge;
@@ -46,7 +45,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
     paper_profile_t *profile_list;
     profile_list = pvPortMalloc(sizeof(paper_profile_t) * MAX_PAPER_PROFILES);
     if (!profile_list) {
-        ESP_LOGE(TAG, "Unable to allocate memory for profile list");
+        log_e("Unable to allocate memory for profile list");
         return MENU_OK;
     }
 
@@ -69,7 +68,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                     profile_count = i + 1;
                 }
             }
-            ESP_LOGI(TAG, "Loaded %d profiles, default is %d", profile_count, profile_default_index);
+            log_i("Loaded %d profiles, default is %d", profile_count, profile_default_index);
             reload_profiles = false;
         }
 
@@ -128,7 +127,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
                     if (settings_set_paper_profile(&working_profile, profile_count)) {
-                        ESP_LOGI(TAG, "New profile manually added at index: %d", profile_count);
+                        log_i("New profile manually added at index: %d", profile_count);
                         memcpy(&profile_list[profile_count], &working_profile, sizeof(paper_profile_t));
                         profile_count++;
                     }
@@ -144,7 +143,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
                     if (settings_set_paper_profile(&working_profile, option - 1)) {
-                        ESP_LOGI(TAG, "Profile saved at index: %d", option - 1);
+                        log_i("Profile saved at index: %d", option - 1);
                         memcpy(&profile_list[option - 1], &working_profile, sizeof(paper_profile_t));
                     }
                 } else if (menu_result == MENU_DELETE) {
@@ -153,7 +152,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                     reload_profiles = true;
                 }
             } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
-                ESP_LOGI(TAG, "Set default profile at index: %d", option - 1);
+                log_i("Set default profile at index: %d", option - 1);
                 settings_set_default_paper_profile_index(option - 1);
                 profile_default_index = option - 1;
                 default_profile_changed = true;
@@ -343,11 +342,11 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 11) {
-            ESP_LOGD(TAG, "Save changes from profile editor");
+            log_d("Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
         } else if (option == 12) {
-            ESP_LOGD(TAG, "Delete profile from profile editor");
+            log_d("Delete profile from profile editor");
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
                 break;
@@ -532,14 +531,14 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 }
             }
         } else if (option == 5) {
-            ESP_LOGI(TAG, "Accept: Grade %s, ht_lev100=%lu, hm_lev100=%lu, hs_lev100=%lu",
+            log_i("Accept: Grade %s, ht_lev100=%lu, hm_lev100=%lu, hs_lev100=%lu",
                 contrast_grade_str(grade),
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
             if (!paper_profile_grade_is_valid(&working_grade)) {
-                ESP_LOGI(TAG, "Clearing grade data because invalid values were accepted");
+                log_i("Clearing grade data because invalid values were accepted");
                 memset(&working_grade, 0, sizeof(paper_profile_grade_t));
             } else {
-                ESP_LOGI(TAG, "Accepting valid values");
+                log_i("Accepting valid values");
             }
             memcpy(&profile->grade[grade], &working_grade, sizeof(paper_profile_grade_t));
             profile->max_net_density = working_max_net_density;
@@ -573,10 +572,10 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
 
     /* Load step wedge configuration */
     if (!settings_get_step_wedge(&wedge)) {
-        ESP_LOGI(TAG, "No saved step wedge, loading default");
+        log_i("No saved step wedge, loading default");
         wedge = step_wedge_create_from_stock(DEFAULT_STOCK_WEDGE_INDEX);
         if (!wedge) {
-            ESP_LOGE(TAG, "Unable to load default wedge");
+            log_e("Unable to load default wedge");
             return MENU_OK;
         }
     }
@@ -749,7 +748,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
             }
         } else if (option == 5 + wedge->step_count) {
             menu_result_t val_result;
-            ESP_LOGI(TAG, "Calculate profile");
+            log_i("Calculate profile");
 
             /* Collect the calibration parameters */
             wedge_calibration_params_t params = {
@@ -763,22 +762,22 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
             /* Validate the parameters */
             val_result = menu_paper_profile_calibrate_grade_validate(&params);
             if (val_result == MENU_CANCEL) {
-                ESP_LOGI(TAG, "Validation failed");
+                log_i("Validation failed");
                 continue;
             } else if (val_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
                 break;
             }
-            ESP_LOGI(TAG, "Calibration parameters validated");
+            log_i("Calibration parameters validated");
 
             /* Calculate the profile */
             val_result = menu_paper_profile_calibrate_grade_calculate(title, &params, paper_grade);
             if (val_result == MENU_OK || val_result == MENU_SAVE) {
-                ESP_LOGI(TAG, "Calculation accepted");
+                log_i("Calculation accepted");
                 menu_result = MENU_SAVE;
                 break;
             } else if (val_result == MENU_CANCEL) {
-                ESP_LOGI(TAG, "Calculation failed");
+                log_i("Calculation failed");
                 continue;
             } else if (val_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
@@ -962,7 +961,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
             num_patches++;
         }
     }
-    ESP_LOGI(TAG, "Found %d patches with valid measurements", num_patches);
+    log_i("Found %d patches with valid measurements", num_patches);
 
     /* X-axis is the calculated PEV values for the step wedge exposure */
     float32_t *x_pev_f32 = NULL;
@@ -1007,7 +1006,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
             if (is_valid_number(params->patch_density[i])) {
                 x_pev_f32[p] = roundf((float)params->calibration_pev - (params->wedge->step_density[i] * 100.0F));
 #if 0
-                ESP_LOGI(TAG, "[i=%lu,p=%lu] %0.02f = %lu - (%0.02f * 100)",
+                log_i("[i=%lu,p=%lu] %0.02f = %lu - (%0.02f * 100)",
                     i, p,
                     x_pev_f32[p], params->calibration_pev, params->wedge->step_density[i]);
 #endif
@@ -1023,11 +1022,11 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
 
         num_output = abs(lroundf(x_pev_f32[num_patches - 1]) - lroundf(x_pev_f32[0]));
         if (num_output > 500) {
-            ESP_LOGW(TAG, "Interpolation range unusually large: %d", num_output);
+            log_w("Interpolation range unusually large: %d", num_output);
             break;
         }
         float min_xq = MIN(x_pev_f32[0], x_pev_f32[num_patches - 1]);
-        ESP_LOGI(TAG, "Interpolating curve from PEV=%ld to %ld (%d steps)",
+        log_i("Interpolating curve from PEV=%ld to %ld (%d steps)",
             lroundf(x_pev_f32[0]), lroundf(x_pev_f32[num_patches - 1]), num_output);
 
         /* Allocate the arrays needed for interpolation results */
@@ -1079,10 +1078,10 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         iso_r = abs(lroundf(Hs_lev100 - Ht_lev100));
 
         /* Log the results */
-        ESP_LOGI(TAG, "Ht: PEV=%ld, D=%0.02f (%0.02f)", Ht_lev100, Ht_y, Ht_D);
-        ESP_LOGI(TAG, "Hm: PEV=%ld, D=%0.02f (%0.02f)", Hm_lev100, Hm_y, Hm_D);
-        ESP_LOGI(TAG, "Hs: PEV=%ld, D=%0.02f (%0.02f)", Hs_lev100, Hs_y, Hs_D);
-        ESP_LOGI(TAG, "ISO(R) = %ld", iso_r);
+        log_i("Ht: PEV=%ld, D=%0.02f (%0.02f)", Ht_lev100, Ht_y, Ht_D);
+        log_i("Hm: PEV=%ld, D=%0.02f (%0.02f)", Hm_lev100, Hm_y, Hm_D);
+        log_i("Hs: PEV=%ld, D=%0.02f (%0.02f)", Hs_lev100, Hs_y, Hs_D);
+        log_i("ISO(R) = %ld", iso_r);
 
         /*
          * Sanity check the numbers and abort if wildly out of range.
@@ -1106,7 +1105,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         xq_pev_f32 = NULL;
         yq_density_f32 = NULL;
 
-        ESP_LOGI(TAG, "Preparing results display graph");
+        log_i("Preparing results display graph");
 
         /* Reallocate the result arrays for the display graph */
         size_t num_graph = 127;
@@ -1151,7 +1150,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
             graph_points[i] = lroundf(42.0F * ((yq_density_f32[i] - yq_density_min) / (yq_density_max - yq_density_min))) + 4;
         }
 
-        ESP_LOGI(TAG, "Showing results display graph");
+        log_i("Showing results display graph");
 
         /* Format the message text */
         if (Ht_lev100 > 0 && Hm_lev100 > 0 && Hs_lev100 > 0) {
@@ -1200,20 +1199,20 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
 
     if (msg_option == 1) {
         if (Ht_lev100 > 0 && Hm_lev100 > 0 && Hs_lev100 > 0) {
-            ESP_LOGI(TAG, "Updating all grade values");
+            log_i("Updating all grade values");
             paper_grade->ht_lev100 = Ht_lev100;
             paper_grade->hm_lev100 = Hm_lev100;
             paper_grade->hs_lev100 = Hs_lev100;
         } else {
-            ESP_LOGI(TAG, "Updating only ISO(R) due to low PEV numbers");
+            log_i("Updating only ISO(R) due to low PEV numbers");
             paper_grade->hs_lev100 = paper_grade->ht_lev100 + iso_r;
         }
-        ESP_LOGI(TAG, "Calibration parameters updated");
+        log_i("Calibration parameters updated");
         return MENU_OK;
     } else if (msg_option == UINT8_MAX) {
         return MENU_TIMEOUT;
     } else {
-        ESP_LOGI(TAG, "Calibration parameters rejected");
+        log_i("Calibration parameters rejected");
         return MENU_CANCEL;
     }
 }

@@ -8,7 +8,8 @@
 #include <string.h>
 #include <math.h>
 
-#include <esp_log.h>
+#define LOG_TAG "menu_diagnostics"
+#include <elog.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -30,8 +31,6 @@ static menu_result_t diagnostics_relay();
 static menu_result_t diagnostics_meter_probe();
 static menu_result_t diagnostics_densitometer();
 static menu_result_t diagnostics_screenshot_mode();
-
-static const char *TAG = "menu_diagnostics";
 
 menu_result_t menu_diagnostics()
 {
@@ -461,14 +460,14 @@ menu_result_t diagnostics_meter_probe()
             if (ret == HAL_OK) {
                 sensor_error = false;
             } else {
-                ESP_LOGE(TAG, "Error initializing TCS3472: %d", ret);
+                log_e("Error initializing TCS3472: %d", ret);
                 sensor_error = true;
             }
 
             if (!sensor_error) {
                 ret = tcs3472_enable(&hi2c2);
                 if (ret != HAL_OK) {
-                    ESP_LOGE(TAG, "Error enabling TCS3472: %d", ret);
+                    log_e("Error enabling TCS3472: %d", ret);
                     sensor_error = true;
                 }
             }
@@ -479,7 +478,7 @@ menu_result_t diagnostics_meter_probe()
             memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
             ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
             if (ret != HAL_OK) {
-                ESP_LOGE(TAG, "Error getting TCS3472 channel data: %d", ret);
+                log_e("Error getting TCS3472 channel data: %d", ret);
                 sensor_error = true;
             }
         }
@@ -520,10 +519,10 @@ menu_result_t diagnostics_meter_probe()
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
-                    ESP_LOGI(TAG, "Meter probe focus mode enabled");
+                    log_i("Meter probe focus mode enabled");
                     relay_enlarger_enable(true);
                 } else {
-                    ESP_LOGI(TAG, "Meter probe focus mode disabled");
+                    log_i("Meter probe focus mode disabled");
                     relay_enlarger_enable(false);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {

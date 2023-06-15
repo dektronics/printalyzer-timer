@@ -6,8 +6,6 @@
 #include <string.h>
 #include <math.h>
 
-#include <esp_log.h>
-
 #include "display.h"
 #include "led.h"
 #include "settings.h"

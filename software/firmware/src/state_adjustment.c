@@ -8,14 +8,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <math.h>
-#include <esp_log.h>
+
+#define LOG_TAG "state_adjustment"
+#include <elog.h>
 
 #include "exposure_state.h"
 #include "display.h"
 #include "keypad.h"
 #include "util.h"
-
-static const char *TAG = "state_adjustment";
 
 typedef struct {
     state_t base;
@@ -66,7 +66,7 @@ void state_edit_adjustment_entry(state_t *state_base, state_controller_t *contro
 {
     state_edit_adjustment_t *state = (state_edit_adjustment_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
-    ESP_LOGI(TAG, "Edit Exposure Adjustment");
+    log_i("Edit Exposure Adjustment");
 
     state->stop_inc_den = exposure_adj_increment_get_denominator(exposure_state);
 
@@ -275,12 +275,12 @@ void state_list_adjustments_entry(state_t *state_base, state_controller_t *contr
     state_list_adjustments_t *state = (state_list_adjustments_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    ESP_LOGI(TAG, "List Exposure Adjustments");
+    log_i("List Exposure Adjustments");
 
     // Logging printout of adjustment list
     for (int i = 0; i < exposure_burn_dodge_count(exposure_state); i++) {
         const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, i);
-        ESP_LOGI(TAG, "[%d] %d/%d [%s]", i + 1,
+        log_i("[%d] %d/%d [%s]", i + 1,
             entry->numerator, entry->denominator,
             contrast_grade_str(entry->contrast_grade));
     }

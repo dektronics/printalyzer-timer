@@ -5,7 +5,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <esp_log.h>
+
+#define LOG_TAG "state_test_strip"
+#include <elog.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -14,8 +16,6 @@
 #include "illum_controller.h"
 #include "exposure_timer.h"
 #include "settings.h"
-
-static const char *TAG = "state_test_strip";
 
 typedef struct {
     state_t base;
@@ -183,7 +183,7 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-            ESP_LOGI(TAG, "Canceling test strip timer at %ldms", time_ms);
+            log_i("Canceling test strip timer at %ldms", time_ms);
             return false;
         }
     }
@@ -219,12 +219,12 @@ bool state_test_strip_countdown(const enlarger_profile_t *enlarger_profile, uint
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {
-        ESP_LOGE(TAG, "Exposure timer canceled");
+        log_e("Exposure timer canceled");
     } else if (ret != HAL_OK) {
-        ESP_LOGE(TAG, "Exposure timer error");
+        log_e("Exposure timer error");
     }
 
-    ESP_LOGI(TAG, "Exposure timer complete");
+    log_i("Exposure timer complete");
 
     return ret == HAL_OK;
 }

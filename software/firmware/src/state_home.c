@@ -2,10 +2,12 @@
 
 #include <FreeRTOS.h>
 #include <cmsis_os.h>
-#include <esp_log.h>
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+
+#define LOG_TAG "state_home"
+#include <elog.h>
 
 #include "keypad.h"
 #include "display.h"
@@ -16,8 +18,6 @@
 #include "buzzer.h"
 #include "settings.h"
 #include "util.h"
-
-static const char *TAG = "state_home";
 
 typedef struct {
     state_t base;
@@ -230,12 +230,12 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
-                    ESP_LOGI(TAG, "Focus mode enabled");
+                    log_i("Focus mode enabled");
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                     relay_enlarger_enable(true);
                     state_controller_start_focus_timeout(controller);
                 } else {
-                    ESP_LOGI(TAG, "Focus mode disabled");
+                    log_i("Focus mode disabled");
                     relay_enlarger_enable(false);
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                     state_controller_stop_focus_timeout(controller);
@@ -361,7 +361,7 @@ void state_home_select_paper_profile(state_controller_t *controller)
     paper_profile_t *profile_list;
     profile_list = pvPortMalloc(sizeof(paper_profile_t) * MAX_PAPER_PROFILES);
     if (!profile_list) {
-        ESP_LOGE(TAG, "Unable to allocate memory for profile list");
+        log_e("Unable to allocate memory for profile list");
         return;
     }
 
@@ -380,9 +380,9 @@ void state_home_select_paper_profile(state_controller_t *controller)
             profile_count = i + 1;
         }
     }
-    ESP_LOGI(TAG, "Loaded %d profiles, selected is %d", profile_count, profile_index);
+    log_i("Loaded %d profiles, selected is %d", profile_count, profile_index);
     if (profile_count == 0) {
-        ESP_LOGW(TAG, "No profiles available");
+        log_w("No profiles available");
         return;
     }
 
@@ -454,7 +454,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     if (result == METER_READING_OK) {
         //TODO If CCT is far from the enlarger profile, warn about filters/safelights/etc
         updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
-        ESP_LOGI(TAG, "Measured PEV=%lu, CCT=%luK", exposure_get_calibration_pev(exposure_state), cct);
+        log_i("Measured PEV=%lu, CCT=%luK", exposure_get_calibration_pev(exposure_state), cct);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
         state_home_reading_warning_beep();
@@ -521,7 +521,7 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
         && next_state != STATE_EDIT_ADJUSTMENT
         && next_state != STATE_LIST_ADJUSTMENTS) {
         if (relay_enlarger_is_enabled()) {
-            ESP_LOGI(TAG, "Focus mode disabled due to state change");
+            log_i("Focus mode disabled due to state change");
             relay_enlarger_enable(false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller_stop_focus_timeout(controller);

@@ -9,9 +9,10 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <esp_log.h>
-#include <exposure_timer.h>
+#define LOG_TAG "main_task"
+#include <elog.h>
 
+#include "exposure_timer.h"
 #include "usb_host.h"
 #include "display.h"
 #include "led.h"
@@ -57,8 +58,6 @@ const osThreadAttr_t gpio_queue_task_attributes = {
     .priority = (osPriority_t) osPriorityNormal,
     .stack_size = 2048
 };
-
-static const char *TAG = "main_task";
 
 void main_task_init(void)
 {
@@ -217,7 +216,7 @@ void main_task_start(void *argument)
 
     /* Initialize the USB host framework */
     if (usb_host_init() != USBH_OK) {
-        ESP_LOGE(TAG, "Unable to initialize USB host\r\n");
+        log_e("Unable to initialize USB host\r\n");
     }
 
     /* Startup beep */
@@ -228,7 +227,7 @@ void main_task_start(void *argument)
     buzzer_stop();
     buzzer_set_volume(BUZZER_VOLUME_OFF);
 
-    ESP_LOGI(TAG, "Startup complete");
+    log_i("Startup complete");
     osDelayUntil(logo_ticks + 750);
 
     /* Initialize state controller */
@@ -245,12 +244,12 @@ void gpio_queue_task(void *argument)
         if(osMessageQueueGet(gpio_event_queue, &gpio_pin, NULL, portMAX_DELAY) == osOK) {
             if (gpio_pin == USB_VBUS_OC_Pin) {
                 /* USB VBUS OverCurrent */
-                ESP_LOGD(TAG, "USB VBUS OverCurrent interrupt");
+                log_d("USB VBUS OverCurrent interrupt");
             } else if (gpio_pin == SENSOR_INT_Pin) {
                 /* Sensor interrupt */
                 GPIO_PinState state = HAL_GPIO_ReadPin(SENSOR_INT_GPIO_Port, SENSOR_INT_Pin);
                 if (state == GPIO_PIN_RESET) {
-                    ESP_LOGD(TAG, "Sensor interrupt");
+                    log_d("Sensor interrupt");
                 }
             } else if(gpio_pin == KEY_INT_Pin) {
                 /* Keypad controller interrupt */
@@ -270,7 +269,7 @@ void gpio_queue_task(void *argument)
                 };
                 keypad_inject_event(&keypad_event);
             } else {
-                ESP_LOGI(TAG, "GPIO[%d] interrupt", gpio_pin);
+                log_i("GPIO[%d] interrupt", gpio_pin);
             }
         }
     }
