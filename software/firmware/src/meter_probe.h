@@ -7,7 +7,8 @@
  * sensor or meter types are used in the future.
  *
  * The button on the meter probe is handled through the keypad
- * interface, so it is not handled here.
+ * interface, however it may not function unless the meter probe
+ * has been powered up by the initialize function here.
  */
 
 #include <stdint.h>
@@ -23,10 +24,26 @@ typedef enum {
 /**
  * Initialize the meter probe so that it is ready for measurements.
  *
- * This function will block while waiting for the meter sensor
- * to become ready.
+ * This function will apply power to the meter probe port, read the
+ * device identification and calibration information, and verify that
+ * a supported meter probe is connected.
  */
 meter_probe_result_t meter_probe_initialize();
+
+/**
+ * Shutdown the meter probe.
+ *
+ * This function will remove power from the meter probe.
+ */
+void meter_probe_shutdown();
+
+/**
+ * Enable the meter probe sensor so that it is ready for measurements.
+ *
+ * This function will block while waiting for the sensor
+ * to become ready.
+ */
+meter_probe_result_t meter_probe_sensor_enable();
 
 /**
  * Take a stable measurement, returning Lux and CCT values.
@@ -43,8 +60,8 @@ meter_probe_result_t meter_probe_initialize();
 meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct);
 
 /**
- * Shutdown the meter probe sensor after a reading cycle.
+ * Disable the meter probe sensor after a reading cycle.
  */
-void meter_probe_shutdown();
+void meter_probe_sensor_disable();
 
 #endif /* METER_PROBE_H */

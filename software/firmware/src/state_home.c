@@ -436,7 +436,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
         osDelay(SAFELIGHT_OFF_DELAY / 2);
 
-        result = meter_probe_initialize();
+        result = meter_probe_sensor_enable();
         if (result != METER_READING_OK) {
             break;
         }
@@ -447,7 +447,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         }
     } while (0);
 
-    meter_probe_shutdown();
+    meter_probe_sensor_disable();
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 

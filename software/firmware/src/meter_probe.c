@@ -2,23 +2,101 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <cmsis_os.h>
 
 #include <math.h>
 
 #define LOG_TAG "meter_probe"
 #include <elog.h>
 
+#include "board_config.h"
 #include "tcs3472.h"
+#include "m24c02.h"
+#include "tsl2585.h"
 #include "settings.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
 static bool meter_probe_initialized = false;
+static bool meter_probe_sensor_enabled = false;
 
 meter_probe_result_t meter_probe_initialize()
 {
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t id_data[16];
+
+    if (meter_probe_initialized) {
+        return METER_READING_FAIL;
+    }
+
+    log_i("Initializing meter probe");
+
+    /* Apply power to the meter probe port */
+    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
+
+    /* Brief delay to ensure power has stabilized */
+    osDelay(1);
+
+    do {
+        /* Read the identification area of the meter probe memory */
+        ret = m24c02_read_id_page(&hi2c2, id_data);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        log_d("Memory ID: 0x%02X%02X%02X", id_data[0], id_data[1], id_data[2]);
+
+        /* Verify the memory device identification code */
+        if (id_data[0] != 0x20 && id_data[1] != 0xE0 && id_data[2] != 0x08) {
+            log_w("Unexpected memory type");
+            ret = HAL_ERROR;
+            break;
+        }
+
+        /*
+         * TODO: Read probe type info out of the rest of the ID page
+         * Can't do this until the ID data format is standardized,
+         * and a way to program it is implemented.
+         */
+
+        /* Do a basic initialization of the sensor */
+        ret = tsl2585_init(&hi2c2);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        meter_probe_initialized = true;
+    } while (0);
+
+    if (!meter_probe_initialized) {
+        log_w("Meter probe initialization failed");
+        meter_probe_shutdown();
+    }
+
+    return ret;
+}
+
+void meter_probe_shutdown()
+{
+    /* Remove power from the meter probe port */
+    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
+    meter_probe_initialized = false;
+    meter_probe_sensor_enabled = false;
+}
+
+meter_probe_result_t meter_probe_sensor_enable()
+{
     meter_probe_result_t result = METER_READING_OK;
     HAL_StatusTypeDef ret = HAL_OK;
+
+    if (!meter_probe_initialized) {
+        return METER_READING_FAIL;
+    }
+
+    if (meter_probe_sensor_enabled) {
+        return METER_READING_FAIL;
+    }
+
     do {
         log_i("Initializing sensor");
         ret = tcs3472_init(&hi2c2);
@@ -70,9 +148,9 @@ meter_probe_result_t meter_probe_initialize()
 
     if (result != METER_READING_OK) {
         tcs3472_disable(&hi2c2);
-        meter_probe_initialized = false;
+        meter_probe_sensor_enabled = false;
     } else {
-        meter_probe_initialized = true;
+        meter_probe_sensor_enabled = true;
     }
 
     return result;
@@ -80,7 +158,7 @@ meter_probe_result_t meter_probe_initialize()
 
 meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct)
 {
-    if (!meter_probe_initialized) {
+    if (!meter_probe_sensor_enabled) {
         return METER_READING_FAIL;
     }
 
@@ -141,8 +219,8 @@ meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct)
     return result;
 }
 
-void meter_probe_shutdown()
+void meter_probe_sensor_disable()
 {
     tcs3472_disable(&hi2c2);
-    meter_probe_initialized = false;
+    meter_probe_sensor_enabled = false;
 }

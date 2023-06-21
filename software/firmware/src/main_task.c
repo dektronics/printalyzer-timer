@@ -24,6 +24,7 @@
 #include "illum_controller.h"
 #include "settings.h"
 #include "app_descriptor.h"
+#include "meter_probe.h"
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
@@ -218,6 +219,9 @@ void main_task_start(void *argument)
     if (usb_host_init() != USBH_OK) {
         log_e("Unable to initialize USB host\r\n");
     }
+
+    /* Power up the meter probe */
+    meter_probe_initialize();
 
     /* Startup beep */
     buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
