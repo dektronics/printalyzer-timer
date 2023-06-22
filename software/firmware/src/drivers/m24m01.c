@@ -5,7 +5,6 @@
 #define LOG_TAG "m24m01"
 #include <elog.h>
 
-#include "i2c_util.h"
 #include "util.h"
 
 /* I2C device base address */

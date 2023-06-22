@@ -7,8 +7,6 @@
 #define LOG_TAG "tcs3472"
 #include <elog.h>
 
-#include "i2c_util.h"
-
 /*
  * Formulas related to lux and color temperature calculations are from
  * AMS datasheet DN40.
@@ -66,6 +64,16 @@ static const uint8_t TCS3472_ADDRESS = 0x29 << 1; // Use 8-bit address
 
 static tcs3472_again_t tcs3472_gain = TCS3472_AGAIN_1X;
 static tcs3472_atime_t tcs3472_integration = TCS3472_ATIME_2_4MS;
+
+static HAL_StatusTypeDef i2c_read_register(I2C_HandleTypeDef *hi2c, uint16_t device_id, uint8_t reg, uint8_t *data)
+{
+    return HAL_I2C_Mem_Read(hi2c, device_id, reg, I2C_MEMADD_SIZE_8BIT, data, 1, HAL_MAX_DELAY);
+}
+
+static HAL_StatusTypeDef i2c_write_register(I2C_HandleTypeDef *hi2c, uint16_t device_id, uint8_t reg, uint8_t data)
+{
+    return HAL_I2C_Mem_Write(hi2c, device_id, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+}
 
 HAL_StatusTypeDef tcs3472_init(I2C_HandleTypeDef *hi2c)
 {
