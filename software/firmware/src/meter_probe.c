@@ -84,6 +84,11 @@ void meter_probe_shutdown()
     meter_probe_sensor_enabled = false;
 }
 
+bool meter_probe_is_initialized()
+{
+    return meter_probe_initialized;
+}
+
 meter_probe_result_t meter_probe_sensor_enable()
 {
     meter_probe_result_t result = METER_READING_OK;

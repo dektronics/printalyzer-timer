@@ -12,6 +12,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
     METER_READING_OK = 0,
@@ -36,6 +37,11 @@ meter_probe_result_t meter_probe_initialize();
  * This function will remove power from the meter probe.
  */
 void meter_probe_shutdown();
+
+/**
+ * Gets whether the meter probe has been initialized
+ */
+bool meter_probe_is_initialized();
 
 /**
  * Enable the meter probe sensor so that it is ready for measurements.

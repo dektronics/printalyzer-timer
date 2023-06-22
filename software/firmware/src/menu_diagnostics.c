@@ -16,7 +16,9 @@
 #include "led.h"
 #include "buzzer.h"
 #include "relay.h"
+#include "meter_probe.h"
 #include "tcs3472.h"
+#include "tsl2585.h"
 #include "settings.h"
 #include "illum_controller.h"
 #include "densitometer.h"
@@ -439,6 +441,7 @@ menu_result_t diagnostics_relay()
     return MENU_OK;
 }
 
+#if 0
 menu_result_t diagnostics_meter_probe()
 {
     HAL_StatusTypeDef ret = HAL_OK;
@@ -658,6 +661,138 @@ menu_result_t diagnostics_meter_probe()
 
     return MENU_OK;
 }
+#endif
+
+menu_result_t diagnostics_meter_probe()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    char buf[512];
+    bool sensor_initialized = false;
+    bool sensor_error = false;
+    bool enlarger_enabled = relay_enlarger_is_enabled();
+    uint16_t als_data0 = 0;
+    uint8_t asat = 0;
+    uint8_t scale = 0;
+    uint8_t position = 0;
+
+    if (!meter_probe_is_initialized()) {
+        menu_result_t menu_result = MENU_OK;
+        uint8_t option = display_message(
+            "Meter Probe",
+            NULL,
+            "\n**** Not Detected ****", " OK ");
+        if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+        return menu_result;
+    }
+
+    for (;;) {
+        if (!sensor_initialized) {
+            ret = tsl2585_init(&hi2c2);
+            if (ret == HAL_OK) {
+                sensor_error = false;
+            } else {
+                log_e("Error initializing TSL2585: %d", ret);
+                sensor_error = true;
+            }
+
+            if (!sensor_error) {
+                do {
+                    ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_enable(&hi2c2);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    sensor_initialized = true;
+                } while (0);
+
+                if (ret != HAL_OK) {
+                    log_e("Error enabling TSL2585: %d", ret);
+                    sensor_error = true;
+                }
+            }
+        }
+
+        if (sensor_initialized && !sensor_error) {
+            do {
+                uint8_t status = 0;
+                ret = tsl2585_get_als_status(&hi2c2, &status);
+                if (ret != HAL_OK) {
+                    log_e("Error getting TSL2585 ALS status: %d", ret);
+                    sensor_error = true;
+                    break;
+                }
+
+                als_data0 = 0;
+                asat = 0;
+                scale = 0;
+                position = 0;
+                ret = tsl2585_get_als_data0(&hi2c2, &als_data0);
+                if (ret != HAL_OK) {
+                    log_e("Error getting TSL2585 ALS data: %d", ret);
+                    sensor_error = true;
+                    break;
+                }
+
+                asat = (status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0;
+                tsl2585_get_als_scale(&hi2c2, &scale);
+                tsl2585_get_als_msb_position(&hi2c2, &position);
+
+                if (status & TSL2585_ALS_DATA0_SCALED_STATUS) {
+                    // no scaling
+                } else {
+                    //TODO 2^(ALS_SCALED)
+                }
+            } while (0);
+        }
+
+        if (sensor_initialized && !sensor_error) {
+            sprintf(buf,
+                "TSL2585\n"
+                "Data: %d\n"
+                "[%d, %d, %d]",
+                als_data0,
+                asat, scale, position);
+        } else {
+            sprintf(buf, "\n\n**** Sensor Unavailable ****");
+        }
+        display_static_list("Meter Probe Test", buf);
+
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+                if (sensor_initialized && sensor_error) {
+                    sensor_initialized = false;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                if (!relay_enlarger_is_enabled()) {
+                    log_i("Meter probe focus mode enabled");
+                    relay_enlarger_enable(true);
+                } else {
+                    log_i("Meter probe focus mode disabled");
+                    relay_enlarger_enable(false);
+                }
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
+                break;
+            }
+        }
+    }
+
+    tsl2585_disable(&hi2c2);
+    relay_enlarger_enable(enlarger_enabled);
+
+    return MENU_OK;
+}
+
 
 menu_result_t diagnostics_densitometer()
 {
