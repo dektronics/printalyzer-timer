@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
+#include <machine/endian.h>
 
 #define LOG_TAG "main_task"
 #include <elog.h>

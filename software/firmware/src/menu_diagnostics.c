@@ -670,10 +670,15 @@ menu_result_t diagnostics_meter_probe()
     bool sensor_initialized = false;
     bool sensor_error = false;
     bool enlarger_enabled = relay_enlarger_is_enabled();
+    tsl2585_gain_t gain = 0;
+    uint16_t sample_time = 0;
+    uint16_t num_samples = 0;
     uint16_t als_data0 = 0;
+    uint32_t als_result = 0;
     uint8_t asat = 0;
     uint8_t scale = 0;
     uint8_t position = 0;
+    uint8_t need_scale = 0;
 
     if (!meter_probe_is_initialized()) {
         menu_result_t menu_result = MENU_OK;
@@ -705,6 +710,21 @@ menu_result_t diagnostics_meter_probe()
                     }
 
                     ret = tsl2585_enable(&hi2c2);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &gain);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_sample_time(&hi2c2, &sample_time);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_als_num_samples(&hi2c2, &num_samples);
                     if (ret != HAL_OK) {
                         break;
                     }
@@ -745,20 +765,27 @@ menu_result_t diagnostics_meter_probe()
                 tsl2585_get_als_msb_position(&hi2c2, &position);
 
                 if (status & TSL2585_ALS_DATA0_SCALED_STATUS) {
-                    // no scaling
+                    // No scaling
+                    need_scale = 0;
+                    als_result = als_data0;
                 } else {
-                    //TODO 2^(ALS_SCALED)
+                    // 2^(ALS_SCALED)
+                    need_scale = 1;
+                    als_result = als_data0 * (scale * scale);
                 }
             } while (0);
         }
 
         if (sensor_initialized && !sensor_error) {
+            float atime = ((num_samples + 1) * (sample_time + 1) * 1.388889F) / 1000.0F;
+
             sprintf(buf,
-                "TSL2585\n"
-                "Data: %d\n"
-                "[%d, %d, %d]",
-                als_data0,
-                asat, scale, position);
+                "TSL2585 (%s, %.2fms)\n"
+                "Data: %ld\n"
+                "[%d, %d, %d, %d]",
+                tsl2585_gain_str(gain), atime,
+                als_result,
+                asat, need_scale, scale, position);
         } else {
             sprintf(buf, "\n\n**** Sensor Unavailable ****");
         }
@@ -777,6 +804,38 @@ menu_result_t diagnostics_meter_probe()
                 } else {
                     log_i("Meter probe focus mode disabled");
                     relay_enlarger_enable(false);
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+                if (sensor_initialized && !sensor_error) {
+                    if (gain > TSL2585_GAIN_0_5X) {
+                        if (tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, gain - 1) == HAL_OK) {
+                            gain--;
+                        }
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+                if (sensor_initialized && !sensor_error) {
+                    if (gain < TSL2585_GAIN_4096X) {
+                        if (tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, gain + 1) == HAL_OK) {
+                            gain++;
+                        }
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+                if (sensor_initialized && !sensor_error) {
+                    if (num_samples > 10) {
+                        if (tsl2585_set_als_num_samples(&hi2c2, num_samples - 10) == HAL_OK) {
+                            num_samples -= 10;
+                        }
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+                if (sensor_initialized && !sensor_error) {
+                    if (num_samples < (2047 - 10)) {
+                        if (tsl2585_set_als_num_samples(&hi2c2, num_samples + 10) == HAL_OK) {
+                            num_samples += 10;
+                        }
+                    }
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
