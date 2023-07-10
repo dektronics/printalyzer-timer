@@ -679,6 +679,8 @@ menu_result_t diagnostics_meter_probe()
     uint8_t scale = 0;
     uint8_t position = 0;
     uint8_t need_scale = 0;
+    uint8_t calib_iter = 0;
+    bool agc_enabled = false;
 
     if (!meter_probe_is_initialized()) {
         menu_result_t menu_result = MENU_OK;
@@ -729,6 +731,16 @@ menu_result_t diagnostics_meter_probe()
                         break;
                     }
 
+                    ret = tsl2585_get_calibration_nth_iteration(&hi2c2, &calib_iter);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_agc_calibration(&hi2c2, &agc_enabled);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
                     sensor_initialized = true;
                 } while (0);
 
@@ -773,6 +785,28 @@ menu_result_t diagnostics_meter_probe()
                     need_scale = 1;
                     als_result = als_data0 * (scale * scale);
                 }
+
+                if (agc_enabled) {
+                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &gain);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_sample_time(&hi2c2, &sample_time);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_als_num_samples(&hi2c2, &num_samples);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+
+                    ret = tsl2585_get_agc_calibration(&hi2c2, &agc_enabled);
+                    if (ret != HAL_OK) {
+                        break;
+                    }
+                }
             } while (0);
         }
 
@@ -782,10 +816,12 @@ menu_result_t diagnostics_meter_probe()
             sprintf(buf,
                 "TSL2585 (%s, %.2fms)\n"
                 "Data: %ld\n"
-                "[%d, %d, %d, %d]",
+                "[%d, %d, %d, %d, %d, %s]",
                 tsl2585_gain_str(gain), atime,
                 als_result,
-                asat, need_scale, scale, position);
+                asat, need_scale, scale, position,
+                calib_iter,
+                agc_enabled ? "AGC" : "---");
         } else {
             sprintf(buf, "\n\n**** Sensor Unavailable ****");
         }
@@ -834,6 +870,18 @@ menu_result_t diagnostics_meter_probe()
                     if (num_samples < (2047 - 10)) {
                         if (tsl2585_set_als_num_samples(&hi2c2, num_samples + 10) == HAL_OK) {
                             num_samples += 10;
+                        }
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+                if (sensor_initialized && !sensor_error) {
+                    if (tsl2585_set_agc_calibration(&hi2c2, !agc_enabled) == HAL_OK) {
+                        agc_enabled = !agc_enabled;
+
+                        if(agc_enabled) {
+                            if (tsl2585_set_calibration_nth_iteration(&hi2c2, 1) == HAL_OK) {
+                                calib_iter = 1;
+                            }
                         }
                     }
                 }

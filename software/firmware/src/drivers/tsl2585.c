@@ -146,6 +146,12 @@ static const uint8_t TSL2585_ADDRESS = 0x39 << 1; // Use 8-bit address
 #define TSL2585_FIFO_STATUS1     0xFE /*!< FIFO status information 1 */
 #define TSL2585_FIFO_DATA        0xFF /*!< FIFO readout */
 
+/* MOD_CALIB_CFG2 register values */
+#define TSL2585_MOD_CALIB_NTH_ITERATION_RC_ENABLE 0x80
+#define TSL2585_MOD_CALIB_NTH_ITERATION_AZ_ENABLE 0x40
+#define TSL2585_MOD_CALIB_NTH_ITERATION_AGC_ENABLE 0x20
+#define TSL2585_MOD_CALIB_RESIDUAL_ENABLE_AUTO_CALIB_ON_GAIN_CHANGE 0x10
+
 HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
 {
     HAL_StatusTypeDef ret;
@@ -314,7 +320,7 @@ HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulato
         return HAL_ERROR;
     }
 
-    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    ret = HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -326,6 +332,56 @@ HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulato
     }
 
     ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_get_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t *iteration)
+{
+    HAL_StatusTypeDef ret = HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS,
+        TSL2585_MOD_CALIB_CFG0, I2C_MEMADD_SIZE_8BIT,
+        iteration, 1, HAL_MAX_DELAY);
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_set_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t iteration)
+{
+    HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS,
+        TSL2585_MOD_CALIB_CFG0, I2C_MEMADD_SIZE_8BIT,
+        &iteration, 1, HAL_MAX_DELAY);
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_get_agc_calibration(I2C_HandleTypeDef *hi2c, bool *enabled)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_MOD_CALIB_CFG2, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (enabled) {
+        *enabled = (data & TSL2585_MOD_CALIB_NTH_ITERATION_AGC_ENABLE) != 0;
+    }
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef tsl2585_set_agc_calibration(I2C_HandleTypeDef *hi2c, bool enabled)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_MOD_CALIB_CFG2, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    data = (data & ~TSL2585_MOD_CALIB_NTH_ITERATION_AGC_ENABLE) | (enabled ? TSL2585_MOD_CALIB_NTH_ITERATION_AGC_ENABLE : 0);
+
+    ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, TSL2585_MOD_CALIB_CFG2, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
 
     return ret;
 }
