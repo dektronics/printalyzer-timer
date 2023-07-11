@@ -9,9 +9,11 @@
 #include "fatfs.h"
 #include "board_config.h"
 #include "main_task.h"
+#include "dmx.h"
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart6;
+DMA_HandleTypeDef hdma_usart6_tx;
 
 I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
@@ -21,6 +23,7 @@ SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 
@@ -29,10 +32,12 @@ void mpu_config();
 static void usart1_uart_init(void);
 static void usart6_uart_init(void);
 static void gpio_init(void);
+static void dma_init(void);
 static void i2c_init(void);
 static void spi_init(void);
 static void tim1_init(void);
 static void tim3_init(void);
+static void tim4_init(void);
 static void tim9_init(void);
 static void tim10_init(void);
 
@@ -245,6 +250,17 @@ void gpio_init(void)
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
 
+void dma_init(void)
+{
+    /* DMA controller clock enable */
+    __HAL_RCC_DMA2_CLK_ENABLE();
+
+    /* DMA interrupt init */
+    /* DMA2_Stream6_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+}
+
 void i2c_init(void)
 {
     /*
@@ -396,6 +412,43 @@ void tim3_init(void)
     HAL_TIM_MspPostInit(&htim3);
 }
 
+void tim4_init(void)
+{
+    /*
+     * TIM4 is used to generate an interrupt for controlling DMX512
+     * signal timing.
+     * Each tick of this timer should be 1 microsecond.
+     */
+    TIM_MasterConfigTypeDef sMasterConfig = {0};
+    TIM_OC_InitTypeDef sConfigOC = {0};
+
+    htim4.Instance = TIM4;
+    htim4.Init.Prescaler = 95;
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim4.Init.Period = 99;
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+
+    if (HAL_TIM_OC_Init(&htim4) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK) {
+        Error_Handler();
+    }
+
+    sConfigOC.OCMode = TIM_OCMODE_TIMING;
+    sConfigOC.Pulse = 0;
+    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+
+    if (HAL_TIM_OC_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 void tim9_init(void)
 {
     /*
@@ -477,12 +530,14 @@ int main(void)
 
     /* Initialize all configured peripherals */
     usart1_uart_init();
+    dma_init();
     usart6_uart_init();
     gpio_init();
     i2c_init();
     spi_init();
     tim1_init();
     tim3_init();
+    tim4_init();
     tim9_init();
     tim10_init();
 
@@ -548,6 +603,21 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         enc_last_dir = enc_dir;
     }
 }
+
+void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM4) {
+        dmx_timer_notify();
+    }
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART6) {
+        dmx_uart_tx_cplt();
+    }
+}
+
 
 void Error_Handler(void)
 {

@@ -19,6 +19,9 @@
 #include "stm32f4xx_hal.h"
 #include "board_config.h"
 
+extern DMA_HandleTypeDef hdma_usart6_tx;
+extern void Error_Handler(void);
+
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /**
@@ -255,6 +258,24 @@ void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
 }
 
 /**
+ * @brief TIM_OC MSP Initialization
+ * This function configures the hardware resources used in this example
+ * @param htim_oc: TIM_OC handle pointer
+ * @retval None
+ */
+void HAL_TIM_OC_MspInit(TIM_HandleTypeDef* htim_oc)
+{
+    if (htim_oc->Instance == TIM4) {
+        /* Peripheral clock enable */
+        __HAL_RCC_TIM4_CLK_ENABLE();
+
+        /* TIM4 interrupt Init */
+        HAL_NVIC_SetPriority(TIM4_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(TIM4_IRQn);
+    }
+}
+
+/**
  * @brief TIM_Base MSP Initialization
  * This function configures the hardware resources used in this example
  * @param htim_base: TIM_Base handle pointer
@@ -355,6 +376,23 @@ void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
 }
 
 /**
+ * @brief TIM_OC MSP De-Initialization
+ * This function freeze the hardware resources used in this example
+ * @param htim_oc: TIM_OC handle pointer
+ * @retval None
+ */
+void HAL_TIM_OC_MspDeInit(TIM_HandleTypeDef* htim_oc)
+{
+    if (htim_oc->Instance == TIM4) {
+        /* Peripheral clock disable */
+        __HAL_RCC_TIM4_CLK_DISABLE();
+
+        /* TIM4 interrupt DeInit */
+        HAL_NVIC_DisableIRQ(TIM4_IRQn);
+    }
+}
+
+/**
  * @brief TIM_Base MSP De-Initialization
  * This function freeze the hardware resources used in this example
  * @param htim_base: TIM_Base handle pointer
@@ -425,6 +463,28 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
         HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+        /* USART6 DMA Init */
+        /* USART6_TX Init */
+        hdma_usart6_tx.Instance = DMA2_Stream6;
+        hdma_usart6_tx.Init.Channel = DMA_CHANNEL_5;
+        hdma_usart6_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+        hdma_usart6_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+        hdma_usart6_tx.Init.MemInc = DMA_MINC_ENABLE;
+        hdma_usart6_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+        hdma_usart6_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+        hdma_usart6_tx.Init.Mode = DMA_NORMAL;
+        hdma_usart6_tx.Init.Priority = DMA_PRIORITY_LOW;
+        hdma_usart6_tx.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+        if (HAL_DMA_Init(&hdma_usart6_tx) != HAL_OK) {
+            Error_Handler();
+        }
+
+        __HAL_LINKDMA(huart,hdmatx,hdma_usart6_tx);
+
+        /* USART6 interrupt Init */
+        HAL_NVIC_SetPriority(USART6_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(USART6_IRQn);
     }
 }
 
@@ -458,5 +518,11 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
          * PC7     ------> USART6_RX
          */
         HAL_GPIO_DeInit(GPIOC, DMX512_TX_Pin|DMX512_RX_Pin);
+
+        /* USART6 DMA DeInit */
+        HAL_DMA_DeInit(huart->hdmatx);
+
+        /* USART6 interrupt DeInit */
+        HAL_NVIC_DisableIRQ(USART6_IRQn);
     }
 }

@@ -21,8 +21,11 @@
 
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
+extern UART_HandleTypeDef huart6;
+extern DMA_HandleTypeDef hdma_usart6_tx;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -137,9 +140,33 @@ void TIM1_CC_IRQHandler(void)
 }
 
 /**
+ * @brief This function handles TIM4 global interrupt.
+ */
+void TIM4_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim4);
+}
+
+/**
  * @brief This function handles USB On The Go FS global interrupt.
  */
 void OTG_FS_IRQHandler(void)
 {
     HAL_HCD_IRQHandler(&hhcd_USB_OTG_FS);
+}
+
+/**
+ * @brief This function handles DMA2 stream6 global interrupt.
+ */
+void DMA2_Stream6_IRQHandler(void)
+{
+    HAL_DMA_IRQHandler(&hdma_usart6_tx);
+}
+
+/**
+ * @brief This function handles USART6 global interrupt.
+ */
+void USART6_IRQHandler(void)
+{
+    HAL_UART_IRQHandler(&huart6);
 }
