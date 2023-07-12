@@ -26,6 +26,7 @@
 #include "settings.h"
 #include "app_descriptor.h"
 #include "meter_probe.h"
+#include "dmx.h"
 
 osThreadId_t main_task_handle;
 osThreadId_t gpio_queue_task_handle;
@@ -197,6 +198,9 @@ void main_task_start(void *argument)
 
     /* Relay driver */
     main_task_relay_init();
+
+    /* DMX controller */
+    dmx_init();
 
     /* Countdown timer init */
     main_task_exposure_timer_init();

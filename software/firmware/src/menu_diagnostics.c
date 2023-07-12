@@ -23,6 +23,7 @@
 #include "illum_controller.h"
 #include "densitometer.h"
 #include "usb_host.h"
+#include "dmx.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
@@ -30,6 +31,7 @@ static menu_result_t diagnostics_keypad();
 static menu_result_t diagnostics_led();
 static menu_result_t diagnostics_buzzer();
 static menu_result_t diagnostics_relay();
+static menu_result_t diagnostics_dmx512();
 static menu_result_t diagnostics_meter_probe();
 static menu_result_t diagnostics_densitometer();
 static menu_result_t diagnostics_screenshot_mode();
@@ -46,6 +48,7 @@ menu_result_t menu_diagnostics()
                 "LED Test\n"
                 "Buzzer Test\n"
                 "Relay Test\n"
+                "DMX512 Control Test\n"
                 "Meter Probe Test\n"
                 "Densitometer Test\n"
                 "Screenshot Mode");
@@ -59,10 +62,12 @@ menu_result_t menu_diagnostics()
         } else if (option == 4) {
             menu_result = diagnostics_relay();
         } else if (option == 5) {
-            menu_result = diagnostics_meter_probe();
+            menu_result = diagnostics_dmx512();
         } else if (option == 6) {
-            menu_result = diagnostics_densitometer();
+            menu_result = diagnostics_meter_probe();
         } else if (option == 7) {
+            menu_result = diagnostics_densitometer();
+        } else if (option == 8) {
             menu_result = diagnostics_screenshot_mode();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
@@ -437,6 +442,64 @@ menu_result_t diagnostics_relay()
 
     relay_enlarger_enable(current_enlarger);
     relay_safelight_enable(current_safelight);
+
+    return MENU_OK;
+}
+
+menu_result_t diagnostics_dmx512()
+{
+    char buf[256];
+    bool dmx_started = false;
+
+    /* Enable DMX output on entry */
+    if (dmx_enable() != osOK) {
+        return MENU_OK;
+    }
+
+    for (;;) {
+        sprintf(buf,
+            "Port State [%s]\n",
+            dmx_started ? "Enabled" : "Sending");
+        display_static_list("DMX512 Control Test", buf);
+
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
+                if (dmx_started) {
+                    if (dmx_stop() == osOK) {
+                        dmx_started = false;
+                    }
+                } else {
+                    if (dmx_start() == osOK) {
+                        dmx_started = true;
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+                uint8_t frame[] = { 0x0F, 0x0F, 0x0F, 0x0F };
+                dmx_set_frame(0, frame, sizeof(frame));
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+                uint8_t frame[] = { 0x00, 0x00, 0x00, 0x00 };
+                dmx_set_frame(0, frame, sizeof(frame));
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+                uint8_t frame[] = { 0x0F, 0x00, 0x0F, 0x00 };
+                dmx_set_frame(0, frame, sizeof(frame));
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+                uint8_t frame[] = { 0x00, 0x0F, 0x00, 0x0F };
+                dmx_set_frame(0, frame, sizeof(frame));
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
+                break;
+            }
+        }
+    }
+
+    /* Disable DMX output on exit */
+    if (dmx_started) {
+        dmx_stop();
+    }
+    dmx_disable();
 
     return MENU_OK;
 }

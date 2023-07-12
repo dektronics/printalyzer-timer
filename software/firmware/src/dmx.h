@@ -2,11 +2,18 @@
 #define DMX_H
 
 #include "stm32f4xx_hal.h"
+#include <cmsis_os.h>
 
-void dmx_init();
-void dmx_start();
-void dmx_stop();
-void dmx_send();
+/**
+ * Initialize the DMX controller port and task
+ */
+HAL_StatusTypeDef dmx_init();
+
+osStatus_t dmx_enable();
+osStatus_t dmx_disable();
+osStatus_t dmx_start();
+osStatus_t dmx_stop();
+osStatus_t dmx_set_frame(uint8_t offset, const uint8_t *frame, size_t len);
 
 /**
  * Call this function from the timer ISR
