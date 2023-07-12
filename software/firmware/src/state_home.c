@@ -18,7 +18,6 @@
 #include "buzzer.h"
 #include "settings.h"
 #include "util.h"
-#include "dmx.h" //XXX
 
 typedef struct {
     state_t base;
@@ -226,12 +225,9 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
         } else {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-//                if (mode != EXPOSURE_MODE_DENSITOMETER) {
-//                    state_controller_set_next_state(controller, STATE_TIMER, 0);
-//                }
-                //XXX ---- TEST HOOK ----
-                dmx_send();
-                //XXX ---- TEST HOOK ----
+                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                    state_controller_set_next_state(controller, STATE_TIMER, 0);
+                }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
                     log_i("Focus mode enabled");
