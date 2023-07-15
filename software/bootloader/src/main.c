@@ -1,5 +1,6 @@
 #include <stm32f4xx_hal.h>
 
+#include <machine/endian.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>

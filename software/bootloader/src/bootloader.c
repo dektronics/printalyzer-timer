@@ -1,5 +1,6 @@
 #include "bootloader.h"
 
+#include <machine/endian.h>
 #include <stdio.h>
 
 #include "app_descriptor.h"
