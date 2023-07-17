@@ -24,6 +24,7 @@
 
 typedef enum {
     USB_SERIAL_DRIVER_NONE = 0,
+    USB_SERIAL_DRIVER_CDC,
     USB_SERIAL_DRIVER_FTDI,
     USB_SERIAL_DRIVER_PLCOM,
     USB_SERIAL_DRIVER_SLCOM
@@ -31,6 +32,7 @@ typedef enum {
 
 USBH_HandleTypeDef hUsbHostFS;
 static usb_app_state_t app_state = APPLICATION_IDLE;
+static uint8_t last_active_class = 0;
 static bool usb_msc_mounted = false;
 static uint8_t usb_hid_keyboard_report_state = 0x00;
 static HID_KEYBD_Info_TypeDef usb_hid_keyboard_last_event = {0};
@@ -61,6 +63,9 @@ static size_t usb_serial_recv_buf_len = 0;
 static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id);
 static void usb_msc_active();
 static void usb_msc_disconnect();
+
+static void usb_serial_cdc_active(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef usb_serial_cdc_set_line_coding(USBH_HandleTypeDef *phost, const usb_serial_line_coding_t *line_coding);
 
 static void usb_serial_ftdi_active(USBH_HandleTypeDef *phost);
 static uint8_t usb_serial_ftdi_convert_data(const usb_serial_line_coding_t *line_coding);
@@ -146,33 +151,38 @@ static void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
     case HOST_USER_DISCONNECTION:
         log_i("usb_host_userprocess: DISCONNECTION");
         app_state = APPLICATION_DISCONNECT;
-        if (active_class == USB_MSC_CLASS) {
+        if (last_active_class == USB_MSC_CLASS) {
             usb_msc_disconnect();
-        } else if (active_class == 0xFFU) { /* VENDOR class */
+        } else if (last_active_class == 0xFFU /* VENDOR class */ || last_active_class == USB_CDC_CLASS) {
             osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
             usb_serial_active_driver = USB_SERIAL_DRIVER_NONE;
             memset(usb_serial_recv_buf, 0, sizeof(usb_serial_recv_buf));
             usb_serial_recv_buf_len = 0;
             osMutexRelease(usb_serial_mutex);
         }
+        last_active_class = 0;
         break;
     case HOST_USER_CLASS_ACTIVE:
         log_i("usb_host_userprocess: ACTIVE");
         app_state = APPLICATION_READY;
+        last_active_class = active_class;
         if (active_class == USB_MSC_CLASS) {
             usb_msc_active();
         } else if (active_class == USB_HID_CLASS && USBH_HID_GetDeviceType(phost) == HID_KEYBOARD) {
             usb_hid_keyboard_report_state = 0x00;
             memset(&usb_hid_keyboard_last_event, 0, sizeof(HID_KEYBD_Info_TypeDef));
             usb_hid_keyboard_last_event_time = 0;
-        } else if (active_class == 0xFFU) { /* VENDOR class */
+        } else if (active_class == 0xFFU /* VENDOR class */ || active_class == USB_CDC_CLASS) {
             osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
 
             /* Clear out the receive buffer */
             memset(usb_serial_recv_buf, 0, sizeof(usb_serial_recv_buf));
             usb_serial_recv_buf_len = 0;
 
-            if (USBH_FTDI_IsDeviceType(phost)) {
+            if (active_class == USB_CDC_CLASS) {
+                usb_serial_active_driver = USB_SERIAL_DRIVER_CDC;
+                usb_serial_cdc_active(phost);
+            } else if (USBH_FTDI_IsDeviceType(phost)) {
                 usb_serial_active_driver = USB_SERIAL_DRIVER_FTDI;
                 usb_serial_ftdi_active(phost);
             } else if (USBH_PLCOM_IsDeviceType(phost)) {
@@ -325,6 +335,42 @@ void usb_msc_disconnect()
 bool usb_msc_is_mounted()
 {
     return usb_msc_mounted;
+}
+
+void usb_serial_cdc_active(USBH_HandleTypeDef *phost)
+{
+    log_d("usb_serial_cdc_active");
+
+    USBH_StatusTypeDef status;
+
+    status = usb_serial_cdc_set_line_coding(phost, &usb_serial_line_coding);
+    if (status != USBH_OK) {
+        log_e("usb_serial_cdc_set_line_coding failed: %d", status);
+        return;
+    }
+
+    do {
+        status = USBH_CDC_SetControlLineState(phost, CDC_ACTIVATE_SIGNAL_DTR | CDC_ACTIVATE_CARRIER_SIGNAL_RTS);
+    } while (status == USBH_BUSY);
+    if (status != USBH_OK) {
+        log_e("USBH_CDC_SetControlLineState failed: %d", status);
+        return;
+    }
+
+    log_d("CDC: active");
+}
+
+USBH_StatusTypeDef usb_serial_cdc_set_line_coding(USBH_HandleTypeDef *phost, const usb_serial_line_coding_t *line_coding)
+{
+    USBH_StatusTypeDef status;
+    CDC_LineCodingTypeDef cdc_linecoding;
+
+    usb_serial_plcom_convert_line_coding(&cdc_linecoding, line_coding);
+    do {
+        status = USBH_CDC_SetLineCoding(phost, &cdc_linecoding);
+    } while (status == USBH_BUSY);
+
+    return status;
 }
 
 void usb_serial_ftdi_active(USBH_HandleTypeDef *phost)
@@ -828,6 +874,9 @@ USBH_StatusTypeDef usb_serial_transmit(const uint8_t *buf, size_t length)
 
     do {
         switch (usb_serial_active_driver) {
+        case USB_SERIAL_DRIVER_CDC:
+            status = USBH_CDC_Transmit(&hUsbHostFS, (uint8_t *)buf, length);
+            break;
         case USB_SERIAL_DRIVER_FTDI:
             status = USBH_FTDI_Transmit(&hUsbHostFS, buf, length);
             break;
@@ -975,6 +1024,26 @@ void usb_serial_receive_callback(USBH_HandleTypeDef *phost, uint8_t *data, size_
     osMutexRelease(usb_serial_mutex);
 
     osSemaphoreRelease(usb_serial_receive_semaphore);
+}
+
+void USBH_CDC_TransmitCallback(USBH_HandleTypeDef *phost)
+{
+    usb_serial_transmit_callback(phost);
+}
+
+void USBH_CDC_ReceiveCallback(USBH_HandleTypeDef *phost, uint8_t *data, size_t length)
+{
+    usb_serial_receive_callback(phost, data, length);
+}
+
+void USBH_CDC_LineCodingChanged(USBH_HandleTypeDef *phost)
+{
+    log_i("USBH_CDC_LineCodingChanged");
+}
+
+void USBH_CDC_ControlLineStateChanged(USBH_HandleTypeDef *phost)
+{
+    log_i("USBH_CDC_ControlLineStateChanged");
 }
 
 void USBH_FTDI_TransmitCallback(USBH_HandleTypeDef *phost)
