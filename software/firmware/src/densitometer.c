@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <ctype.h>
 
 #define LOG_TAG "densitometer"
 #include <elog.h>
@@ -12,6 +13,8 @@ static void densitometer_clear_reading(densitometer_reading_t *reading);
 static densitometer_result_t densitometer_parse_reading(densitometer_reading_t *reading, const char *line);
 static densitometer_result_t densitometer_parse_reading_heiland(densitometer_reading_t *reading, const char *line, size_t len);
 static densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *reading, const char *line, size_t len);
+static densitometer_result_t densitometer_parse_reading_tobias(densitometer_reading_t *reading, const char *line, size_t len);
+static densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t *reading, const char *line, size_t len);
 
 void densitometer_clear_reading(densitometer_reading_t *reading)
 {
@@ -53,8 +56,11 @@ densitometer_result_t densitometer_parse_reading(densitometer_reading_t *reading
             || (line[1] >= '0' && line[1] <= '9'))) {
         return densitometer_parse_reading_xrite(reading, line, len);
     }
+    else if ((len >= 11 && strncmp(line, "Den", 3) == 0) || (len >= 12 && strncmp(line, " Den", 4) == 0)) {
+        return densitometer_parse_reading_tobias(reading, line, len);
+    }
     else {
-        return DENSITOMETER_RESULT_UNKNOWN;
+        return densitometer_parse_reading_fallback(reading, line, len);
     }
 }
 
@@ -106,7 +112,7 @@ densitometer_result_t densitometer_parse_reading_heiland(densitometer_reading_t 
     }
 
     /* Clean up zero values */
-    if (fabs(val) < 0.001) {
+    if (fabs(val) < 0.001F) {
         val = 0.0F;
     }
 
@@ -166,7 +172,7 @@ densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *r
         }
 
         /* Clean up zero values */
-        if (fabs(val) < 0.001) {
+        if (fabs(val) < 0.001F) {
             val = 0.0F;
         }
 
@@ -243,6 +249,126 @@ densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *r
     } else {
         return DENSITOMETER_RESULT_INVALID;
     }
+}
+
+densitometer_result_t densitometer_parse_reading_tobias(densitometer_reading_t *reading, const char *line, size_t len)
+{
+    /*
+     * Tobias TBX Data Format
+     *
+     * <sp>DenXY +#.##, 0.00, 0.00, 0.00, 0.00<cr><lf>
+     *
+     * X - Channel:
+     *   A - White (Visual)
+     *   B - Red
+     *   C - Green
+     *   D - Blue
+     *
+     * Y - Format:
+     *   A - Normal   <X>A <ReadD>, 0.00, 0.00, 0.00, 0.00
+     *   R - Relative <X>R <RelD>, <RefD>, <ReadD>, 0.00, 0.00
+     *
+     * Examples:
+     * " DenAA +1.47, 0.00, 0.00, 0.00, 0.00<cr><lf>"
+     * " DenAR +0.31, +1.44, +1.75, 0.00, 0.00<cr><lf>"
+     */
+
+    const char *p = line;
+    char channel = ' ';
+    float val = NAN;
+
+    /* Swallow the leading space */
+    if (*p == ' ') { p++; }
+
+    /* Validate the prefix */
+    if (strncmp(p, "Den", 3) != 0) {
+        return DENSITOMETER_RESULT_INVALID;
+    }
+    p += 3;
+
+    /* Collect the channel and format */
+    channel = *p;
+    /* Ignoring format and only collecting the relative value */
+    p += 2;
+
+    /* Parse the next number */
+    val = strtof(p, NULL);
+
+    /* Validate the number */
+    if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
+        return DENSITOMETER_RESULT_INVALID;
+    }
+
+    /* Clean up zero values */
+    if (fabs(val) < 0.001F) {
+        val = 0.0F;
+    }
+
+    densitometer_clear_reading(reading);
+    reading->mode = DENSITOMETER_MODE_UNKNOWN;
+    switch (channel) {
+    case 'B':
+        reading->red = val;
+        break;
+    case 'C':
+        reading->green = val;
+        break;
+    case 'D':
+        reading->blue = val;
+        break;
+    case 'A':
+    default:
+        reading->visual = val;
+        break;
+    }
+
+    return DENSITOMETER_RESULT_OK;
+}
+
+densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t *reading, const char *line, size_t len)
+{
+    /*
+     * Fallback parser
+     *
+     * This parser simply looks for the first number in the result, attempts
+     * to interpret it, and returns it if it looks like it could be a density
+     * reading.
+     */
+
+    const char *p = line;
+
+    /* Advance until the first digit, sign, or decimal point */
+    while (*p != '\0') {
+        if (isdigit((unsigned char)(*p)) || *p == '-' || *p == '+' || *p == '.') {
+            break;
+        }
+        p++;
+    }
+
+    /* Parse the current position as a number */
+    float val = strtof(p, NULL);
+
+    /* Validate the number */
+    if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
+        return DENSITOMETER_RESULT_INVALID;
+    }
+
+    /* Permissively range check the number */
+    if (fabs(val) > 6.0F) {
+        return DENSITOMETER_RESULT_INVALID;
+    }
+
+    /* Clean up zero values */
+    if (fabs(val) < 0.001F) {
+        val = 0.0F;
+    }
+
+    /* Return as a visual channel reading */
+    densitometer_clear_reading(reading);
+    reading->mode = DENSITOMETER_MODE_UNKNOWN;
+    reading->visual = val;
+
+    return DENSITOMETER_RESULT_OK;
 }
 
 densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading, uint32_t ms_to_wait)
