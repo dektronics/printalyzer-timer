@@ -2,12 +2,9 @@
 #define KEYPAD_H
 
 #include <stm32f4xx_hal.h>
+#include <cmsis_os.h>
 #include <stdint.h>
 #include <stdbool.h>
-
-typedef struct __keypad_handle_t {
-    I2C_HandleTypeDef *hi2c;
-} keypad_handle_t;
 
 /**
  * Mapping of key codes
@@ -51,7 +48,7 @@ typedef void (*keypad_blackout_callback_t)(bool enabled, void *user_data);
  *
  * This must be called prior to starting the keypad task.
  */
-void keypad_init(const keypad_handle_t *handle);
+void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 
 /**
  * Start the keypad task.

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <math.h>
+#include <cmsis_os.h>
 
 #define LOG_TAG "settings"
 #include <elog.h>
@@ -30,6 +31,7 @@
 
 /* Handle to I2C peripheral used by the EEPROM */
 static I2C_HandleTypeDef *eeprom_i2c = NULL;
+static osMutexId_t eeprom_i2c_mutex = NULL;
 
 /* Persistent user settings backed by EEPROM values */
 static uint32_t setting_default_exposure_time = DEFAULT_EXPOSURE_TIME;
@@ -152,19 +154,21 @@ static uint32_t copy_to_u32(const uint8_t *buf);
 static void copy_from_f32(uint8_t *buf, float val);
 static float copy_to_f32(const uint8_t *buf);
 
-HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
+HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    if (!hi2c) {
+    if (!hi2c || !i2c_mutex) {
         return HAL_ERROR;
     }
 
     eeprom_i2c = hi2c;
+    eeprom_i2c_mutex = i2c_mutex;
 
+    log_i("settings_init");
+
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     do {
-        log_i("settings_init");
-
         // Read the base page
         uint8_t data[PAGE_SIZE];
         ret = m24m01_read_buffer(eeprom_i2c, PAGE_BASE, data, sizeof(data));
@@ -194,8 +198,8 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c)
                 settings_init_parse_config_page(data);
             }
         }
-
     } while (0);
+    osMutexRelease(eeprom_i2c_mutex);
 
     return ret;
 }
@@ -543,9 +547,11 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
     memset(data, 0, sizeof(data));
 
     do {
+        osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
         ret = m24m01_read_buffer(eeprom_i2c,
             PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
             data, sizeof(data));
+        osMutexRelease(eeprom_i2c_mutex);
         if (ret != HAL_OK) { break; }
 
         uint32_t profile_version = copy_to_u32(data + ENLARGER_PROFILE_VERSION);
@@ -594,9 +600,11 @@ bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t in
 
     settings_enlarger_profile_populate_page(profile, data);
 
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c,
         PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+    osMutexRelease(eeprom_i2c_mutex);
     return (ret == HAL_OK);
 }
 
@@ -641,9 +649,11 @@ void settings_clear_enlarger_profile(uint8_t index)
 
     log_i("Clear enlarger profile: %d", index);
 
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     m24m01_write_page(eeprom_i2c,
         PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+    osMutexRelease(eeprom_i2c_mutex);
 }
 
 bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
@@ -657,9 +667,11 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
     memset(data, 0, sizeof(data));
 
     do {
+        osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
         ret = m24m01_read_buffer(eeprom_i2c,
             PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
             data, sizeof(data));
+        osMutexRelease(eeprom_i2c_mutex);
         if (ret != HAL_OK) { break; }
 
         uint32_t profile_version = copy_to_u32(data + PAPER_PROFILE_VERSION);
@@ -741,9 +753,11 @@ bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
 
     settings_paper_profile_populate_page(profile, data);
 
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c,
         PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+    osMutexRelease(eeprom_i2c_mutex);
     return (ret == HAL_OK);
 }
 
@@ -811,9 +825,11 @@ void settings_clear_paper_profile(uint8_t index)
 
     log_i("Clear paper profile: %d", index);
 
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     m24m01_write_page(eeprom_i2c,
         PAGE_PAPER_PROFILE_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
+    osMutexRelease(eeprom_i2c_mutex);
 }
 
 bool settings_get_step_wedge(step_wedge_t **wedge)
@@ -827,7 +843,9 @@ bool settings_get_step_wedge(step_wedge_t **wedge)
     memset(data, 0, sizeof(data));
 
     do {
+        osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
         ret = m24m01_read_buffer(eeprom_i2c, PAGE_STEP_WEDGE_BASE, data, sizeof(data));
+        osMutexRelease(eeprom_i2c_mutex);
         if (ret != HAL_OK) { break; }
 
         uint32_t wedge_version = copy_to_u32(data + STEP_WEDGE_VERSION);
@@ -895,7 +913,9 @@ bool settings_set_step_wedge(const step_wedge_t *wedge)
 
     settings_step_wedge_populate_page(wedge, data);
 
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c, PAGE_STEP_WEDGE_BASE, data, sizeof(data));
+    osMutexRelease(eeprom_i2c_mutex);
     return (ret == HAL_OK);
 }
 
@@ -918,14 +938,20 @@ bool write_u32(uint32_t address, uint32_t val)
 {
     uint8_t data[4];
     copy_from_u32(data, val);
-    return m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+    bool result = m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+    osMutexRelease(eeprom_i2c_mutex);
+    return result;
 }
 
 bool write_f32(uint32_t address, float val)
 {
     uint8_t data[4];
     copy_from_f32(data, val);
-    return m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+    bool result = m24m01_write_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+    osMutexRelease(eeprom_i2c_mutex);
+    return result;
 }
 
 void copy_from_u32(uint8_t *buf, uint32_t val)

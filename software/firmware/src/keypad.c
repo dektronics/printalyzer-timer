@@ -32,6 +32,7 @@ typedef struct {
 
 /* Handle to I2C peripheral used by the keypad controller */
 static I2C_HandleTypeDef *keypad_i2c = NULL;
+static osMutexId_t keypad_i2c_mutex = NULL;
 
 /* Queue for raw keypad events, which come from the controller or timers */
 static osMessageQueueId_t keypad_raw_event_queue = NULL;
@@ -71,9 +72,9 @@ static void keypad_button_repeat_timer_callback(TimerHandle_t xTimer);
 static uint8_t keypad_keycode_to_index(keypad_key_t keycode);
 static bool keypad_keycode_can_repeat(keypad_key_t keycode);
 
-void keypad_init(const keypad_handle_t *handle)
+void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
 {
-    if (!handle) {
+    if (!hi2c || !i2c_mutex) {
         return;
     }
 
@@ -81,7 +82,8 @@ void keypad_init(const keypad_handle_t *handle)
         return;
     }
 
-    keypad_i2c = handle->hi2c;
+    keypad_i2c = hi2c;
+    keypad_i2c_mutex = i2c_mutex;
 }
 
 void task_keypad_run(void *argument)
@@ -89,7 +91,7 @@ void task_keypad_run(void *argument)
     osSemaphoreId_t task_start_semaphore = argument;
     log_d("keypad_task start");
 
-    if (!keypad_i2c) {
+    if (!keypad_i2c || !keypad_i2c_mutex) {
         log_e("Keypad hardware config is not set");
         return;
     }
@@ -145,6 +147,7 @@ HAL_StatusTypeDef keypad_controller_init()
 
     log_i("Initializing keypad controller");
 
+    osMutexAcquire(keypad_i2c_mutex, portMAX_DELAY);
     do {
         if ((ret = tca8418_init(keypad_i2c)) != HAL_OK) {
             break;
@@ -183,6 +186,7 @@ HAL_StatusTypeDef keypad_controller_init()
             break;
         }
     } while (0);
+    osMutexRelease(keypad_i2c_mutex);
 
     if (ret != HAL_OK) {
         log_e("Keypad setup error: %d", ret);
@@ -272,6 +276,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
         return ret;
     }
 
+    osMutexAcquire(keypad_i2c_mutex, portMAX_DELAY);
     do {
         uint8_t int_status;
 
@@ -350,6 +355,8 @@ HAL_StatusTypeDef keypad_int_event_handler()
             break;
         }
     } while (0);
+    osMutexRelease(keypad_i2c_mutex);
+
     return ret;
 }
 

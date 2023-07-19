@@ -6,6 +6,7 @@
 #define SETTINGS_H
 
 #include <stm32f4xx_hal.h>
+#include <cmsis_os.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "buzzer.h"
@@ -36,9 +37,10 @@ typedef enum {
 /**
  * Initialize the settings store and load any persisted values.
  *
- * @param Pointer to a handle for the I2C peripheral used by the EEPROM
+ * @param hi2c Handle for the I2C peripheral used by the EEPROM
+ * @param i2c_mutex Mutex used to guard access to the I2C peripheral
  */
-HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 
 /**
  * Clear the settings store to factory blank

@@ -101,10 +101,23 @@ static task_params_t task_list[] = {
     }
 };
 
+static osMutexId_t i2c1_mutex;
+static const osMutexAttr_t i2c1_mutex_attributes = {
+    .name = "i2c1_mutex",
+    .attr_bits = osMutexRecursive
+};
+
 static bool main_task_running = false;
 
 osStatus_t main_task_init()
 {
+    /* Create the mutex used to protect the I2C1 peripheral */
+    i2c1_mutex = osMutexNew(&i2c1_mutex_attributes);
+    if (!i2c1_mutex) {
+        log_e("i2c1_mutex create error");
+        return osErrorNoMemory;
+    }
+
     /* Create the semaphore used to synchronize task startup */
     task_start_semaphore = osSemaphoreNew(1, 0, &task_start_semaphore_attributes);
     if (!task_start_semaphore) {
@@ -144,7 +157,7 @@ void main_task_run(void *argument)
      */
 
     /* Initialize the system settings */
-    settings_init(&hi2c1);
+    settings_init(&hi2c1, i2c1_mutex);
 
     /* Initialize the illumination controller */
     illum_controller_init();
@@ -344,10 +357,7 @@ void main_task_exposure_timer_init()
 
 void main_task_keypad_init()
 {
-    static keypad_handle_t keypad_handle = {
-        .hi2c = &hi2c1
-    };
-    keypad_init(&keypad_handle);
+    keypad_init(&hi2c1, i2c1_mutex);
 }
 
 void main_task_enable_interrupts()
