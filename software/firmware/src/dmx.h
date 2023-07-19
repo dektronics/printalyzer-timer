@@ -7,7 +7,7 @@
 /**
  * Initialize the DMX controller port and task
  */
-HAL_StatusTypeDef dmx_init();
+void task_dmx_run(void *argument);
 
 osStatus_t dmx_enable();
 osStatus_t dmx_disable();

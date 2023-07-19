@@ -9,6 +9,7 @@
 #include "fatfs.h"
 #include "board_config.h"
 #include "main_task.h"
+#include "gpio_task.h"
 #include "dmx.h"
 
 UART_HandleTypeDef huart1;
@@ -579,7 +580,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    main_task_notify_gpio_int(GPIO_Pin);
+    gpio_task_notify_gpio_int(GPIO_Pin);
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
@@ -593,9 +594,9 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
         uint32_t enc_dir = __HAL_TIM_IS_TIM_COUNTING_DOWN(&htim1);
         if (enc_tick - enc_last_tick < 100 && enc_last_dir == enc_dir) {
             if (enc_dir) {
-                main_task_notify_gpio_int(ENC_CH1_Pin);
+                gpio_task_notify_gpio_int(ENC_CH1_Pin);
             } else {
-                main_task_notify_gpio_int(ENC_CH2_Pin);
+                gpio_task_notify_gpio_int(ENC_CH2_Pin);
             }
             enc_last_dir = UINT32_MAX;
         }

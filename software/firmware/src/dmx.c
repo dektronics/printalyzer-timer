@@ -19,6 +19,12 @@
  */
 #define DMX_FRAME_PERIOD_MS 25
 
+/**
+ * Because the DMX controller depends so tightly on the interaction
+ * of specific peripherals, and switching them between alternate
+ * functions, ownership of those peripherals is tightly coupled
+ * to this module.
+ */
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart6;
 
@@ -49,14 +55,6 @@ typedef struct {
     osStatus_t *result;
 } dmx_control_command_t;
 
-/* Task to handle the sending of DMX512 frames */
-static osThreadId_t dmx_task_handle;
-const osThreadAttr_t dmx_task_attributes = {
-    .name = "dmx_task",
-    .priority = (osPriority_t) osPriorityAboveNormal,
-    .stack_size = 2048
-};
-
 /* Queue for DMX task control commands */
 static osMessageQueueId_t dmx_control_queue = NULL;
 static const osMessageQueueAttr_t dmx_control_queue_attrs = {
@@ -81,7 +79,7 @@ static dmx_frame_state_t frame_state = DMX_FRAME_IDLE;
 static uint8_t dmx_pending_frame[513] = {0};
 static uint8_t dmx_frame[513] = {0};
 
-static void dmx_task(void *argument);
+static void dmx_task_loop();
 static osStatus_t dmx_control_enable();
 static osStatus_t dmx_control_disable();
 static osStatus_t dmx_control_start();
@@ -89,12 +87,10 @@ static osStatus_t dmx_control_stop();
 static osStatus_t dmx_control_set_frame();
 static void dmx_send_frame();
 
-HAL_StatusTypeDef dmx_init()
+void task_dmx_run(void *argument)
 {
-    if (dmx_initialized) {
-        log_e("DMX512 controller already initialized");
-        return HAL_OK;
-    }
+    osSemaphoreId_t task_start_semaphore = argument;
+    log_d("dmx_task start");
 
     log_i("Initializing DMX512 controller");
 
@@ -121,35 +117,36 @@ HAL_StatusTypeDef dmx_init()
     dmx_control_queue = osMessageQueueNew(20, sizeof(dmx_control_command_t), &dmx_control_queue_attrs);
     if (!dmx_control_queue) {
         log_e("Unable to create control queue");
-        return HAL_ERROR;
+        return;
     }
 
     /* Create the semaphore used to synchronize DMX task control */
     dmx_control_semaphore = osSemaphoreNew(1, 0, &dmx_control_semaphore_attrs);
     if (!dmx_control_semaphore) {
         log_e("Unable to create control semaphore");
-        return HAL_ERROR;
+        return;
     }
 
     /* Create the semaphore used to synchronize DMX frame sending */
     dmx_frame_semaphore = osSemaphoreNew(1, 0, &dmx_frame_semaphore_attrs);
     if (!dmx_frame_semaphore) {
         log_e("Unable to create frame semaphore");
-        return HAL_ERROR;
-    }
-
-    /* Create the task to schedule DMX frame sending */
-    dmx_task_handle = osThreadNew(dmx_task, NULL, &dmx_task_attributes);
-    if (!dmx_task_handle) {
-        return HAL_ERROR;
+        return;
     }
 
     dmx_initialized = true;
 
-    return HAL_OK;
+    /* Release the startup semaphore */
+    if (osSemaphoreRelease(task_start_semaphore) != osOK) {
+        log_e("Unable to release task_start_semaphore");
+        return;
+    }
+
+    /* Start the DMX task loop */
+    dmx_task_loop();
 }
 
-void dmx_task(void *argument)
+void dmx_task_loop()
 {
     dmx_control_command_t control_command;
     osStatus_t ret;

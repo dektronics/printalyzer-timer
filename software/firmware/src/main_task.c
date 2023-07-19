@@ -17,6 +17,7 @@
 #include "usb_host.h"
 #include "display.h"
 #include "led.h"
+#include "gpio_task.h"
 #include "keypad.h"
 #include "buzzer.h"
 #include "relay.h"
@@ -27,14 +28,6 @@
 #include "app_descriptor.h"
 #include "meter_probe.h"
 #include "dmx.h"
-
-osThreadId_t main_task_handle;
-osThreadId_t gpio_queue_task_handle;
-
-static osMessageQueueId_t gpio_event_queue = NULL;
-static const osMessageQueueAttr_t gpio_event_queue_attributes = {
-  .name = "gpio_event_queue"
-};
 
 /* Peripheral handles initialized before this task is started */
 extern UART_HandleTypeDef huart1;
@@ -47,24 +40,237 @@ extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
 extern TIM_HandleTypeDef htim10;
 
-static void main_task_start(void *argument);
-static void gpio_queue_task(void *argument);
+static void main_task_run(void *argument);
+static void main_task_startup_log();
+static void main_task_display_init();
+static void main_task_led_init();
+static void main_task_buzzer_init();
+static void main_task_relay_init();
+static void main_task_exposure_timer_init();
+static void main_task_keypad_init();
+static void main_task_enable_interrupts();
 
-const osThreadAttr_t main_task_attributes = {
-    .name = "main_task",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 2048 * 4
+typedef struct {
+    const osThreadFunc_t task_func;
+    const osThreadAttr_t task_attrs;
+    osThreadId_t task_handle;
+} task_params_t;
+
+static osSemaphoreId_t task_start_semaphore = NULL;
+static const osSemaphoreAttr_t task_start_semaphore_attributes = {
+    .name = "task_start_semaphore"
 };
 
-const osThreadAttr_t gpio_queue_task_attributes = {
-    .name = "gpio_queue_task",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 2048
+#define TASK_MAIN_STACK_SIZE   (8192U)
+#define TASK_GPIO_STACK_SIZE   (2048U)
+#define TASK_KEYPAD_STACK_SIZE (2048U)
+#define TASK_DMX_STACK_SIZE    (2048U)
+
+static task_params_t task_list[] = {
+    {
+        .task_func = main_task_run,
+        .task_attrs = {
+            .name = "main",
+            .stack_size = TASK_MAIN_STACK_SIZE,
+            .priority = osPriorityNormal
+        }
+    },
+    {
+        .task_func = gpio_task_run,
+        .task_attrs = {
+            .name = "gpio",
+            .stack_size = TASK_GPIO_STACK_SIZE,
+            .priority = osPriorityNormal
+        }
+    },
+    {
+        .task_func = task_keypad_run,
+        .task_attrs = {
+            .name = "keypad",
+            .stack_size = TASK_KEYPAD_STACK_SIZE,
+            .priority = osPriorityNormal
+        }
+    },
+    {
+        .task_func = task_dmx_run,
+        .task_attrs = {
+            .name = "dmx",
+            .stack_size = TASK_DMX_STACK_SIZE,
+            .priority = osPriorityAboveNormal
+        }
+    }
 };
 
-void main_task_init(void)
+static bool main_task_running = false;
+
+osStatus_t main_task_init()
 {
-    main_task_handle = osThreadNew(main_task_start, NULL, &main_task_attributes);
+    /* Create the semaphore used to synchronize task startup */
+    task_start_semaphore = osSemaphoreNew(1, 0, &task_start_semaphore_attributes);
+    if (!task_start_semaphore) {
+        log_e("task_start_semaphore create error");
+        return osErrorNoMemory;
+    }
+
+    /* Create the main task */
+    task_list[0].task_handle = osThreadNew(task_list[0].task_func, NULL, &task_list[0].task_attrs);
+    if (!task_list[0].task_handle) {
+        log_e("main_task create error");
+        return osErrorNoMemory;
+    }
+    return osOK;
+}
+
+bool task_main_is_running()
+{
+    return main_task_running;
+}
+
+void main_task_run(void *argument)
+{
+    UNUSED(argument);
+    const uint8_t task_count = sizeof(task_list) / sizeof(task_params_t);
+    uint32_t logo_ticks = 0;
+
+    log_d("main_task start");
+
+    /* Print various startup log messages */
+    main_task_startup_log();
+
+    /*
+     * All hardware that does not have dedicated management tasks,
+     * or which has initialization functions that need to be called
+     * prior to task startup, is handled here.
+     */
+
+    /* Initialize the system settings */
+    settings_init(&hi2c1);
+
+    /* Initialize the illumination controller */
+    illum_controller_init();
+
+    /* Initialize the display */
+    main_task_display_init();
+    display_draw_logo();
+    logo_ticks = osKernelGetTickCount();
+
+    /* Initialize the LED driver */
+    main_task_led_init();
+
+    /* Rotary encoder */
+    HAL_TIM_Encoder_Start_IT(&htim1, TIM_CHANNEL_ALL);
+
+    /* Piezo buzzer */
+    main_task_buzzer_init();
+
+    /* Relay driver */
+    main_task_relay_init();
+
+    /* Countdown timer init */
+    main_task_exposure_timer_init();
+
+    /* Keypad hardware configuration */
+    main_task_keypad_init();
+
+    /*
+     * Hardware that does depend on dedicated management tasks
+     * is initialized here as part of the startup of those tasks.
+     */
+
+    /* Loop through the remaining tasks and create them */
+    log_d("Starting tasks...");
+    for (uint8_t i = 1; i < task_count; i++) {
+        log_d("Task: %s", task_list[i].task_attrs.name);
+
+        /* Create the next task */
+        task_list[i].task_handle = osThreadNew(task_list[i].task_func, task_start_semaphore, &task_list[i].task_attrs);
+        if (!task_list[i].task_handle) {
+            log_e("%s create error", task_list[i].task_attrs.name);
+            continue;
+        }
+
+        /* Wait for the semaphore set once the task initializes */
+        if (osSemaphoreAcquire(task_start_semaphore, portMAX_DELAY) != osOK) {
+            log_e("Unable to acquire task_start_semaphore");
+            return;
+        }
+    }
+    log_d("Task start loop complete");
+
+    /* Keypad controller post-init */
+    keypad_set_blackout_callback(illum_controller_keypad_blackout_callback, NULL);
+
+    /* Enable interrupts */
+    main_task_enable_interrupts();
+
+    /* Set the startup safelight state */
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
+    /*
+     * Initialize the USB host framework.
+     * This framework does have a dedicated management task, but it is
+     * not handled as part of the application code.
+     */
+    if (usb_host_init() != USBH_OK) {
+        log_e("Unable to initialize USB host\r\n");
+    }
+
+    /* Power up the meter probe */
+    meter_probe_initialize();
+
+    /* Startup beep */
+    buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
+    buzzer_set_volume(settings_get_buzzer_volume());
+    buzzer_start();
+    osDelay(100);
+    buzzer_stop();
+    buzzer_set_volume(BUZZER_VOLUME_OFF);
+
+    log_i("Startup complete");
+    osDelayUntil(logo_ticks + 750);
+
+    /* Initialize state controller */
+    state_controller_init();
+
+    main_task_running = true;
+
+    /* Main state controller loop, which should never exit */
+    log_i("Starting controller loop");
+    state_controller_loop();
+}
+
+void main_task_startup_log()
+{
+    const app_descriptor_t *app_descriptor = app_descriptor_get();
+
+    printf("---- %s Startup ----\r\n", app_descriptor->project_name);
+    uint32_t hal_ver = HAL_GetHalVersion();
+    uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
+    uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
+
+    printf("HAL Version: %d.%d.%d%c\r\n",
+        ((uint8_t)(hal_ver >> 24)) & 0x0F,
+        ((uint8_t)(hal_ver >> 16)) & 0x0F,
+        ((uint8_t)(hal_ver >> 8)) & 0x0F,
+        hal_ver_code > 0 ? (char)hal_ver_code : ' ');
+    printf("Device ID: 0x%lX\r\n", HAL_GetDEVID());
+    printf("Revision ID: %ld\r\n", HAL_GetREVID());
+    printf("Flash size: %dk\r\n", *flash_size);
+    printf("FreeRTOS: %s\r\n", tskKERNEL_VERSION_NUMBER);
+    printf("SysClock: %ldMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
+
+    printf("Unique ID: %08lX%08lX%08lX\r\n",
+        __bswap32(HAL_GetUIDw0()),
+        __bswap32(HAL_GetUIDw1()),
+        __bswap32(HAL_GetUIDw2()));
+
+    printf("App version: %s\r\n", app_descriptor->version);
+    printf("Build date: %s\r\n", app_descriptor->build_date);
+    printf("Build describe: %s\r\n", app_descriptor->build_describe);
+    printf("Build checksum: %08lX\r\n", __bswap32(app_descriptor->crc32));
+
+    printf("-----------------------\r\n");
+    fflush(stdout);
 }
 
 void main_task_display_init()
@@ -136,157 +342,31 @@ void main_task_exposure_timer_init()
     exposure_timer_init(&htim10);
 }
 
-void main_task_start(void *argument)
+void main_task_keypad_init()
 {
-    const app_descriptor_t *app_descriptor = app_descriptor_get();
-    uint32_t logo_ticks = 0;
-    UNUSED(argument);
+    static keypad_handle_t keypad_handle = {
+        .hi2c = &hi2c1
+    };
+    keypad_init(&keypad_handle);
+}
 
-    /* Print various startup log messages */
-    printf("---- %s Startup ----\r\n", app_descriptor->project_name);
-    uint32_t hal_ver = HAL_GetHalVersion();
-    uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
-    uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
-
-    printf("HAL Version: %d.%d.%d%c\r\n",
-        ((uint8_t)(hal_ver >> 24)) & 0x0F,
-        ((uint8_t)(hal_ver >> 16)) & 0x0F,
-        ((uint8_t)(hal_ver >> 8)) & 0x0F,
-        hal_ver_code > 0 ? (char)hal_ver_code : ' ');
-    printf("Device ID: 0x%lX\r\n", HAL_GetDEVID());
-    printf("Revision ID: %ld\r\n", HAL_GetREVID());
-    printf("Flash size: %dk\r\n", *flash_size);
-    printf("FreeRTOS: %s\r\n", tskKERNEL_VERSION_NUMBER);
-    printf("SysClock: %ldMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
-
-    printf("Unique ID: %08lX%08lX%08lX\r\n",
-        __bswap32(HAL_GetUIDw0()),
-        __bswap32(HAL_GetUIDw1()),
-        __bswap32(HAL_GetUIDw2()));
-
-    printf("App version: %s\r\n", app_descriptor->version);
-    printf("Build date: %s\r\n", app_descriptor->build_date);
-    printf("Build describe: %s\r\n", app_descriptor->build_describe);
-    printf("Build checksum: %08lX\r\n", __bswap32(app_descriptor->crc32));
-
-    printf("-----------------------\r\n");
-    fflush(stdout);
-
-    /* Initialize the system settings */
-    settings_init(&hi2c1);
-
-    /* Initialize the illumination controller */
-    illum_controller_init();
-
-    /* Initialize the display */
-    main_task_display_init();
-    display_draw_logo();
-    logo_ticks = osKernelGetTickCount();
-
-    /* Initialize the LED driver */
-    main_task_led_init();
-
-    /* Rotary encoder */
-    HAL_TIM_Encoder_Start_IT(&htim1, TIM_CHANNEL_ALL);
-
-    /* Keypad controller */
-    keypad_init(&hi2c1);
-    keypad_set_blackout_callback(illum_controller_keypad_blackout_callback, NULL);
-
-    /* Piezo buzzer */
-    main_task_buzzer_init();
-
-    /* Relay driver */
-    main_task_relay_init();
-
-    /* DMX controller */
-    dmx_init();
-
-    /* Countdown timer init */
-    main_task_exposure_timer_init();
-
-    /* GPIO queue task */
-    gpio_event_queue = osMessageQueueNew(16, sizeof(uint16_t), &gpio_event_queue_attributes);
-    gpio_queue_task_handle = osThreadNew(gpio_queue_task, NULL, &gpio_queue_task_attributes);
-
-    /* Enable interrupts */
+void main_task_enable_interrupts()
+{
+    /*
+     * This enables all the GPIO-related interrupts, which can cause issues
+     * if they fire before everything else is initialized.
+     *
+     * Timer, UART, and DMA interrupts are still enabled earlier in the
+     * startup process, since the processes that lead them them being fired
+     * should depend on code that will not run until initialization is
+     * complete.
+     */
     HAL_NVIC_SetPriority(EXTI1_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI1_IRQn);
     HAL_NVIC_SetPriority(EXTI2_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI2_IRQn);
     HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-
-    /* Set the startup safelight state */
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-
-    /* Initialize the USB host framework */
-    if (usb_host_init() != USBH_OK) {
-        log_e("Unable to initialize USB host\r\n");
-    }
-
-    /* Power up the meter probe */
-    meter_probe_initialize();
-
-    /* Startup beep */
-    buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
-    buzzer_set_volume(settings_get_buzzer_volume());
-    buzzer_start();
-    osDelay(100);
-    buzzer_stop();
-    buzzer_set_volume(BUZZER_VOLUME_OFF);
-
-    log_i("Startup complete");
-    osDelayUntil(logo_ticks + 750);
-
-    /* Initialize state controller */
-    state_controller_init();
-
-    /* Main state controller loop, which should never exit */
-    state_controller_loop();
-}
-
-void gpio_queue_task(void *argument)
-{
-    uint16_t gpio_pin;
-    for (;;) {
-        if(osMessageQueueGet(gpio_event_queue, &gpio_pin, NULL, portMAX_DELAY) == osOK) {
-            if (gpio_pin == USB_VBUS_OC_Pin) {
-                /* USB VBUS OverCurrent */
-                log_d("USB VBUS OverCurrent interrupt");
-            } else if (gpio_pin == SENSOR_INT_Pin) {
-                /* Sensor interrupt */
-                GPIO_PinState state = HAL_GPIO_ReadPin(SENSOR_INT_GPIO_Port, SENSOR_INT_Pin);
-                if (state == GPIO_PIN_RESET) {
-                    log_d("Sensor interrupt");
-                }
-            } else if(gpio_pin == KEY_INT_Pin) {
-                /* Keypad controller interrupt */
-                keypad_int_event_handler();
-            } else if (gpio_pin == ENC_CH1_Pin) {
-                /* Encoder counter interrupt, counter-clockwise rotation */
-                keypad_event_t keypad_event = {
-                    .key = KEYPAD_ENCODER_CCW,
-                    .pressed = true
-                };
-                keypad_inject_event(&keypad_event);
-            } else if (gpio_pin == ENC_CH2_Pin) {
-                /* Encoder counter interrupt, clockwise rotation */
-                keypad_event_t keypad_event = {
-                    .key = KEYPAD_ENCODER_CW,
-                    .pressed = true
-                };
-                keypad_inject_event(&keypad_event);
-            } else {
-                log_i("GPIO[%d] interrupt", gpio_pin);
-            }
-        }
-    }
-}
-
-void main_task_notify_gpio_int(uint16_t gpio_pin)
-{
-    osMessageQueuePut(gpio_event_queue, &gpio_pin, 0, 0);
 }
 
 void main_task_notify_countdown_timer()

@@ -31,26 +31,18 @@ typedef struct {
 } keypad_raw_event_t;
 
 /* Handle to I2C peripheral used by the keypad controller */
-static I2C_HandleTypeDef *keypad_i2c;
-
-/* Task to handle raw keypad events */
-static osThreadId_t keypad_task_handle;
-const osThreadAttr_t keypad_task_attributes = {
-    .name = "keypad_task",
-    .priority = (osPriority_t) osPriorityNormal,
-    .stack_size = 2048
-};
+static I2C_HandleTypeDef *keypad_i2c = NULL;
 
 /* Queue for raw keypad events, which come from the controller or timers */
 static osMessageQueueId_t keypad_raw_event_queue = NULL;
 static const osMessageQueueAttr_t keypad_raw_event_queue_attributes = {
-  .name = "keypad_raw_event_queue"
+    .name = "keypad_raw_event_queue"
 };
 
 /* Queue for emitted keypad events, which are handled by the application */
 static osMessageQueueId_t keypad_event_queue = NULL;
 static const osMessageQueueAttr_t keypad_event_queue_attributes = {
-  .name = "keypad_event_queue"
+    .name = "keypad_event_queue"
 };
 
 /* Currently known state of all keypad buttons */
@@ -68,56 +60,91 @@ static keypad_blackout_callback_t blackout_callback = NULL;
 /* User data for the blackout callback */
 static void *blackout_callback_user_data = NULL;
 
-/* Flag to prevent duplicate initialization */
+/* Flag to track initialization state */
 static bool keypad_initialized = false;
 
-static void keypad_task(void *argument);
+static HAL_StatusTypeDef keypad_controller_init();
+static void keypad_task_loop();
 static void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks);
 static void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks);
 static void keypad_button_repeat_timer_callback(TimerHandle_t xTimer);
 static uint8_t keypad_keycode_to_index(keypad_key_t keycode);
 static bool keypad_keycode_can_repeat(keypad_key_t keycode);
 
-HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
+void keypad_init(const keypad_handle_t *handle)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
+    if (!handle) {
+        return;
+    }
 
     if (keypad_initialized) {
-        log_e("Keypad controller already initialized");
-        return HAL_OK;
-    }
-    if (!hi2c) {
-        return HAL_ERROR;
+        return;
     }
 
-    log_i("Initializing keypad controller");
+    keypad_i2c = handle->hi2c;
+}
 
-    keypad_i2c = hi2c;
+void task_keypad_run(void *argument)
+{
+    osSemaphoreId_t task_start_semaphore = argument;
+    log_d("keypad_task start");
 
-    // Create the queues for key events
+    if (!keypad_i2c) {
+        log_e("Keypad hardware config is not set");
+        return;
+    }
+
+    /* Create the queues for key events */
     keypad_raw_event_queue = osMessageQueueNew(20, sizeof(keypad_raw_event_t), &keypad_raw_event_queue_attributes);
     if (!keypad_raw_event_queue) {
-        return HAL_ERROR;
+        log_e("Unable to create raw event queue");
+        return;
     }
 
     keypad_event_queue = osMessageQueueNew(20, sizeof(keypad_event_t), &keypad_event_queue_attributes);
     if (!keypad_event_queue) {
-        return HAL_ERROR;
+        log_e("Unable to create event queue");
+        return;
     }
 
-    // Clear the button state
+    /* Clear the button state */
     button_state = 0;
 
-    // Create the timer to handle key repeat events
+    /* Create the timer to handle key repeat events */
     button_repeat_timer = xTimerCreate(
-        "keypad_repeat", 1, pdFALSE, ( void * ) 0,
+        "keypad_repeat", 1, pdFALSE, (void *)0,
         keypad_button_repeat_timer_callback);
+    if (!button_repeat_timer) {
+        log_e("Unable to create repeat timer");
+        return;
+    }
     button_repeat_timer_reload = pdFALSE;
 
-    // Create the task to process keypad events
-    keypad_task_handle = osThreadNew(keypad_task, NULL, &keypad_task_attributes);
+    /* Initialize the keypad controller */
+    if (keypad_controller_init() != HAL_OK) {
+        log_e("Unable to initialize the keypad controller");
+        return;
+    }
 
-    // Initialize the keypad controller
+    /* Set the initialized flag */
+    keypad_initialized = true;
+
+    /* Release the startup semaphore */
+    if (osSemaphoreRelease(task_start_semaphore) != osOK) {
+        log_e("Unable to release task_start_semaphore");
+        return;
+    }
+
+    /* Start the main task loop */
+    keypad_task_loop();
+}
+
+HAL_StatusTypeDef keypad_controller_init()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    log_i("Initializing keypad controller");
+
     do {
         if ((ret = tca8418_init(keypad_i2c)) != HAL_OK) {
             break;
@@ -126,32 +153,32 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
         const tca8418_pins_t pins_zero = { 0x00, 0x00, 0x00 };
         const tca8418_pins_t pins_int = { 0x0F, 0xFF, 0x03 };
 
-        // Enable pull-ups on all GPIO pins
+        /* Enable pull-ups on all GPIO pins */
         if ((ret = tca8418_gpio_pullup_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
             break;
         }
 
-        // Set pins to GPIO mode
+        /* Set pins to GPIO mode */
         if ((ret = tca8418_kp_gpio_select(keypad_i2c, &pins_zero)) != HAL_OK) {
             break;
         }
 
-        // Set the event FIFO (disabled for now)
+        /* Set the event FIFO (disabled for now) */
         if ((ret = tca8418_gpi_event_mode(keypad_i2c, &pins_int)) != HAL_OK) {
             break;
         }
 
-        // Set GPIO direction to input
+        /* Set GPIO direction to input */
         if ((ret = tca8418_gpio_data_direction(keypad_i2c, &pins_zero)) != HAL_OK) {
             break;
         }
 
-        // Enable GPIO interrupts
+        /* Enable GPIO interrupts */
         if ((ret = tca8418_gpio_interrupt_enable(keypad_i2c, &pins_int)) != HAL_OK) {
             break;
         }
 
-        // Set the configuration register to enable GPIO interrupts
+        /* Set the configuration register to enable GPIO interrupts */
         if ((ret = tca8148_set_config(keypad_i2c, TCA8418_CFG_KE_IEN)) != HAL_OK) {
             break;
         }
@@ -162,10 +189,33 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
         return ret;
     }
 
-    keypad_initialized = true;
     log_i("Keypad controller initialized");
 
     return HAL_OK;
+}
+
+void keypad_task_loop()
+{
+    bool blackout_state = false;
+    keypad_raw_event_t raw_event;
+    for (;;) {
+        if(osMessageQueueGet(keypad_raw_event_queue, &raw_event, NULL, portMAX_DELAY) == osOK) {
+            if (raw_event.keycode == KEYPAD_BLACKOUT) {
+                if (blackout_state != raw_event.pressed) {
+                    if (blackout_callback) {
+                        blackout_callback(raw_event.pressed, blackout_callback_user_data);
+                    }
+                    blackout_state = raw_event.pressed;
+                }
+            }
+
+            if (!raw_event.repeated) {
+                keypad_handle_key_event(raw_event.keycode, raw_event.pressed, raw_event.ticks);
+            } else {
+                keypad_handle_key_repeat(raw_event.keycode, raw_event.ticks);
+            }
+        }
+    }
 }
 
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data)
@@ -225,19 +275,23 @@ HAL_StatusTypeDef keypad_int_event_handler()
     do {
         uint8_t int_status;
 
-        // Read the INT_STAT (0x02) register to determine what asserted the
-        // INT line. If GPI_INT or K_INT is set, then  a key event has
-        // occurred, and the event is stored in the FIFO.
+        /*
+         * Read the INT_STAT (0x02) register to determine what asserted the
+         * INT line. If GPI_INT or K_INT is set, then  a key event has
+         * occurred, and the event is stored in the FIFO.
+         */
         ret = tca8148_get_interrupt_status(keypad_i2c, &int_status);
         if (ret != HAL_OK) {
             break;
         }
         log_d("INT_STAT: %02X (GPI=%d, K=%d)", int_status,
-                (int_status & TCA8418_INT_STAT_GPI_INT) != 0,
-                (int_status & TCA8418_INT_STAT_K_INT) != 0);
+            (int_status & TCA8418_INT_STAT_GPI_INT) != 0,
+            (int_status & TCA8418_INT_STAT_K_INT) != 0);
 
-        // Read the KEY_LCK_EC (0x03) register, bits [3:0] to see how many
-        // events are stored in FIFO.
+        /*
+         * Read the KEY_LCK_EC (0x03) register, bits [3:0] to see how many
+         * events are stored in FIFO.
+         */
         uint8_t count;
         ret = tca8148_get_key_event_count(keypad_i2c, &count);
         if (ret != HAL_OK) {
@@ -257,12 +311,14 @@ HAL_StatusTypeDef keypad_int_event_handler()
             }
 
             if (keycode == 0 && pressed == 0) {
-                // Last key has been read, break the loop
+                /* Last key has been read, break the loop */
                 break;
             }
 
-            // Send the raw event to the queue used by the keypad
-            // event processing task
+            /*
+             * Send the raw event to the queue used by the keypad
+             * event processing task
+             */
             keypad_raw_event_t raw_event = {
                 .keycode = keycode,
                 .pressed = pressed,
@@ -277,7 +333,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
             break;
         }
 
-        // Read the GPIO INT STAT registers
+        /* Read the GPIO INT STAT registers */
         tca8418_pins_t int_pins;
         ret = tca8148_get_gpio_interrupt_status(keypad_i2c, &int_pins);
         if (ret != HAL_OK) {
@@ -285,8 +341,10 @@ HAL_StatusTypeDef keypad_int_event_handler()
         }
         log_d("GPIO_INT_STAT: %02X %02X %02X", int_pins.rows, int_pins.cols_l, int_pins.cols_h);
 
-        // Reset the INT_STAT interrupt flag which was causing the interrupt
-        // by writing a 1 to the specific bit.
+        /*
+         * Reset the INT_STAT interrupt flag which was causing the interrupt
+         * by writing a 1 to the specific bit.
+         */
         ret = tca8148_set_interrupt_status(keypad_i2c, int_status);
         if (ret != HAL_OK) {
             break;
@@ -295,33 +353,9 @@ HAL_StatusTypeDef keypad_int_event_handler()
     return ret;
 }
 
-void keypad_task(void *argument)
-{
-    bool blackout_state = false;
-    keypad_raw_event_t raw_event;
-    for (;;) {
-        if(osMessageQueueGet(keypad_raw_event_queue, &raw_event, NULL, portMAX_DELAY) == osOK) {
-            if (raw_event.keycode == KEYPAD_BLACKOUT) {
-                if (blackout_state != raw_event.pressed) {
-                    if (blackout_callback) {
-                        blackout_callback(raw_event.pressed, blackout_callback_user_data);
-                    }
-                    blackout_state = raw_event.pressed;
-                }
-            }
-
-            if (!raw_event.repeated) {
-                keypad_handle_key_event(raw_event.keycode, raw_event.pressed, raw_event.ticks);
-            } else {
-                keypad_handle_key_repeat(raw_event.keycode, raw_event.ticks);
-            }
-        }
-    }
-}
-
 void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
 {
-    // Update the button state information
+    /* Update the button state information */
     TickType_t tick_duration = 0;
     uint8_t index = keypad_keycode_to_index(keycode);
     if (index < KEYPAD_INDEX_MAX) {
@@ -333,16 +367,15 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
         }
     }
 
-    // Limit the max duration we can report
+    /* Limit the max duration we can report */
     if (tick_duration > UINT16_MAX) {
         tick_duration = UINT16_MAX;
     }
 
-    // Handle keys that can repeat
+    /* Handle keys that can repeat */
     if (keypad_keycode_can_repeat(keycode)) {
         if (pressed) {
-            // Pressing a repeatable key should reset and restart the
-            // repeat timer.
+            /* Pressing a repeatable key should reset and restart the repeat timer. */
             if (xTimerIsTimerActive(button_repeat_timer) == pdTRUE) {
                 xTimerStop(button_repeat_timer, portMAX_DELAY);
             }
@@ -354,14 +387,14 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
             vTimerSetTimerID(button_repeat_timer, (void *)keycode_id);
             xTimerStart(button_repeat_timer, portMAX_DELAY);
         } else {
-            // Releasing a repeatable key should stop the repeat timer
+            /* Releasing a repeatable key should stop the repeat timer */
             if (xTimerIsTimerActive(button_repeat_timer) == pdTRUE) {
                 xTimerStop(button_repeat_timer, portMAX_DELAY);
             }
         }
     }
 
-    // Generate the keypad event
+    /* Generate the keypad event */
     keypad_event_t keypad_event = {
         .key = keycode,
         .pressed = pressed,
@@ -375,8 +408,10 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
 
 void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
 {
-    // Make sure the repeated key is still pressed, and shortcut out if
-    // it is not.
+    /*
+     * Make sure the repeated key is still pressed, and shortcut out if
+     * it is not.
+     */
     int index = keypad_keycode_to_index(keycode);
     if (index < KEYPAD_INDEX_MAX && !(button_state & (1 << index))) {
         xTimerStop(button_repeat_timer, portMAX_DELAY);
@@ -384,7 +419,7 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
     }
 
     if (button_repeat_timer_reload == pdFALSE) {
-        // The initial period elapsed, so reconfigure for key repeat
+        /* The initial period elapsed, so reconfigure for key repeat */
         xTimerStop(button_repeat_timer, portMAX_DELAY);
         xTimerChangePeriod(button_repeat_timer, pdMS_TO_TICKS(1000) / KEYPAD_REPEAT_RATE_S, portMAX_DELAY);
         vTimerSetReloadMode(button_repeat_timer, pdTRUE);
@@ -392,7 +427,7 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
         xTimerStart(button_repeat_timer, portMAX_DELAY);
     }
 
-    // Generate the keypad event
+    /* Generate the keypad event */
     keypad_event_t keypad_event = {
         .key = keycode,
         .pressed = true,

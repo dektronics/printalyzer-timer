@@ -1,14 +1,23 @@
 #ifndef MAIN_TASK_H
 #define MAIN_TASK_H
 
+#include <stdbool.h>
 #include <stdint.h>
+#include <cmsis_os.h>
 
 /**
- * Initialize the main FreeRTOS task
+ * Initialize the main FreeRTOS task.
+ *
+ * This task will run when the scheduler is started, and will start all
+ * of the other tasks.
  */
-void main_task_init(void);
+osStatus_t main_task_init(void);
 
-void main_task_notify_gpio_int(uint16_t gpio_pin);
+/**
+ * Gets whether the main task has completed initialization.
+ */
+bool main_task_is_running();
+
 void main_task_notify_countdown_timer();
 
 #endif /* MAIN_TASK_H */

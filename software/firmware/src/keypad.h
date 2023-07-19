@@ -5,6 +5,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef struct __keypad_handle_t {
+    I2C_HandleTypeDef *hi2c;
+} keypad_handle_t;
+
 /**
  * Mapping of key codes
  *
@@ -42,7 +46,23 @@ typedef struct {
 
 typedef void (*keypad_blackout_callback_t)(bool enabled, void *user_data);
 
-HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c);
+/**
+ * Initialize keypad hardware configuration.
+ *
+ * This must be called prior to starting the keypad task.
+ */
+void keypad_init(const keypad_handle_t *handle);
+
+/**
+ * Start the keypad task.
+ *
+ * @param argument The osSemaphoreId_t used to synchronize task startup.
+ */
+void task_keypad_run(void *argument);
+
+/**
+ * Set the function to be called when the blackout switch is toggled.
+ */
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data);
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);
