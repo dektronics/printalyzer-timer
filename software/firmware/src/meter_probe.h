@@ -13,6 +13,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <cmsis_os.h>
 
 typedef enum {
     METER_READING_OK = 0,
@@ -23,25 +24,57 @@ typedef enum {
 } meter_probe_result_t;
 
 /**
- * Initialize the meter probe so that it is ready for measurements.
+ * Start the meter probe task.
  *
- * This function will apply power to the meter probe port, read the
- * device identification and calibration information, and verify that
- * a supported meter probe is connected.
+ * This function simply initializes all of the task state variables
+ * and starts the task event loop. It does not perform any meter probe
+ * power up or initialization.
+ *
+ * @param argument The osSemaphoreId_t used to synchronize task startup.
  */
-meter_probe_result_t meter_probe_initialize();
+void task_meter_probe_run(void *argument);
 
 /**
- * Shutdown the meter probe.
- *
- * This function will remove power from the meter probe.
+ * Gets whether the meter probe has been started
  */
-void meter_probe_shutdown();
+bool meter_probe_is_started();
 
 /**
- * Gets whether the meter probe has been initialized
+ * Power up the meter probe and get it ready for use.
+ *
+ * This function will apply power to the meter probe port, and perform
+ * various initialization functions to ensure that the meter probe is
+ * connected and ready for use. It will not start the sensor's integration
+ * cycle.
+ *
+ * @return
  */
-bool meter_probe_is_initialized();
+osStatus_t meter_probe_start();
+
+/**
+ * Power down the meter probe.
+ */
+osStatus_t meter_probe_stop();
+
+/**
+ * Enable the meter probe sensor
+ */
+osStatus_t meter_probe_sensor_enable();
+
+/**
+ * Disable the meter probe sensor
+ */
+osStatus_t meter_probe_sensor_disable();
+
+/**
+ * Meter probe interrupt handler
+ *
+ * This function should only be called from within the ISR for the
+ * meter probe's interrupt pin.
+ */
+void meter_probe_int_handler();
+
+//XXX -----------------------------------------------------------------------
 
 /**
  * Enable the meter probe sensor so that it is ready for measurements.
@@ -49,7 +82,7 @@ bool meter_probe_is_initialized();
  * This function will block while waiting for the sensor
  * to become ready.
  */
-meter_probe_result_t meter_probe_sensor_enable();
+meter_probe_result_t meter_probe_sensor_enable_old();
 
 /**
  * Take a stable measurement, returning Lux and CCT values.
@@ -63,11 +96,11 @@ meter_probe_result_t meter_probe_sensor_enable();
  * is the main requirement, and the longest usable sensor integration
  * time is likely to be used, this may take several seconds.
  */
-meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct);
+meter_probe_result_t meter_probe_measure_old(float *lux, uint32_t *cct);
 
 /**
  * Disable the meter probe sensor after a reading cycle.
  */
-void meter_probe_sensor_disable();
+void meter_probe_sensor_disable_old();
 
 #endif /* METER_PROBE_H */

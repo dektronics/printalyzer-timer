@@ -745,7 +745,9 @@ menu_result_t diagnostics_meter_probe()
     uint8_t calib_iter = 0;
     bool agc_enabled = false;
 
-    if (!meter_probe_is_initialized()) {
+    meter_probe_start();
+
+    if (!meter_probe_is_started()) {
         menu_result_t menu_result = MENU_OK;
         uint8_t option = display_message(
             "Meter Probe",
@@ -958,6 +960,7 @@ menu_result_t diagnostics_meter_probe()
     }
 
     tsl2585_disable(&hi2c2);
+    meter_probe_stop();
     relay_enlarger_enable(enlarger_enabled);
 
     return MENU_OK;

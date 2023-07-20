@@ -43,12 +43,6 @@ void gpio_task_run(void *argument)
             if (gpio_pin == USB_VBUS_OC_Pin) {
                 /* USB VBUS OverCurrent */
                 log_d("USB VBUS OverCurrent interrupt");
-            } else if (gpio_pin == SENSOR_INT_Pin) {
-                /* Sensor interrupt */
-                GPIO_PinState state = HAL_GPIO_ReadPin(SENSOR_INT_GPIO_Port, SENSOR_INT_Pin);
-                if (state == GPIO_PIN_RESET) {
-                    log_d("Sensor interrupt");
-                }
             } else if(gpio_pin == KEY_INT_Pin) {
                 /* Keypad controller interrupt */
                 keypad_int_event_handler();

@@ -23,6 +23,7 @@
 #include "exposure_timer.h"
 #include "enlarger_profile.h"
 #include "illum_controller.h"
+#include "meter_probe.h"
 #include "util.h"
 #include "settings.h"
 #include "state_home.h"
@@ -126,6 +127,8 @@ void state_controller_loop()
             relay_enlarger_enable(false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller.focus_start_ticks = 0;
+            meter_probe_sensor_disable();
+            meter_probe_stop();
         }
 
         // Check if we will do a state transition on the next loop

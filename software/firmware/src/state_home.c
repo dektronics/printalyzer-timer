@@ -234,11 +234,16 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                     relay_enlarger_enable(true);
                     state_controller_start_focus_timeout(controller);
+                    if (meter_probe_start() == osOK) {
+                        meter_probe_sensor_enable();
+                    }
                 } else {
                     log_i("Focus mode disabled");
                     relay_enlarger_enable(false);
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                     state_controller_stop_focus_timeout(controller);
+                    meter_probe_sensor_disable();
+                    meter_probe_stop();
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (mode != EXPOSURE_MODE_DENSITOMETER) {
@@ -436,18 +441,18 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
         osDelay(SAFELIGHT_OFF_DELAY / 2);
 
-        result = meter_probe_sensor_enable();
+        result = meter_probe_sensor_enable_old();
         if (result != METER_READING_OK) {
             break;
         }
 
-        result = meter_probe_measure(&lux, &cct);
+        result = meter_probe_measure_old(&lux, &cct);
         if (result != METER_READING_OK) {
             break;
         }
     } while (0);
 
-    meter_probe_sensor_disable();
+    meter_probe_sensor_disable_old();
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 

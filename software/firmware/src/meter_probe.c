@@ -14,22 +14,182 @@
 #include "m24c02.h"
 #include "tsl2585.h"
 #include "settings.h"
+#include "util.h"
 
+/**
+ * Meter probe control event types.
+ */
+typedef enum {
+    METER_PROBE_CONTROL_STOP = 0,
+    METER_PROBE_CONTROL_START,
+    METER_PROBE_CONTROL_SENSOR_ENABLE,
+    METER_PROBE_CONTROL_SENSOR_DISABLE,
+    METER_PROBE_CONTROL_SENSOR_SET_CONFIG,
+    METER_PROBE_CONTROL_INTERRUPT
+} meter_probe_control_event_type_t;
+
+typedef struct {
+    //tsl2591_gain_t gain;
+    //tsl2591_time_t time;
+} sensor_control_config_params_t;
+
+typedef struct {
+    uint32_t ticks;
+    //uint32_t light_ticks;
+    //uint32_t reading_count;
+} sensor_control_interrupt_params_t;
+
+/**
+ * Meter probe control event data.
+ */
+typedef struct {
+    meter_probe_control_event_type_t event_type;
+    osStatus_t *result;
+    union {
+        sensor_control_config_params_t config;
+        sensor_control_interrupt_params_t interrupt;
+    };
+} meter_probe_control_event_t;
+
+/* Global I2C handle for the meter probe */
 extern I2C_HandleTypeDef hi2c2;
 
 static bool meter_probe_initialized = false;
+static bool meter_probe_started = false;
 static bool meter_probe_sensor_enabled = false;
 
-meter_probe_result_t meter_probe_initialize()
+/* Queue for meter probe control events */
+static osMessageQueueId_t meter_probe_control_queue = NULL;
+static const osMessageQueueAttr_t meter_probe_control_queue_attrs = {
+    .name = "meter_probe_control_queue"
+};
+
+#if 0
+/* Queue to hold the latest sensor reading */
+static osMessageQueueId_t sensor_reading_queue = NULL;
+static const osMessageQueueAttr_t sensor_reading_queue_attrs = {
+    .name = "sensor_reading_queue"
+};
+#endif
+
+/* Semaphore to synchronize sensor control calls */
+static osSemaphoreId_t meter_probe_control_semaphore = NULL;
+static const osSemaphoreAttr_t meter_probe_control_semaphore_attrs = {
+    .name = "meter_probe_control_semaphore"
+};
+
+/* Meter probe control implementation functions */
+static osStatus_t meter_probe_control_start();
+static osStatus_t meter_probe_control_stop();
+static osStatus_t meter_probe_control_sensor_enable();
+static osStatus_t meter_probe_control_sensor_disable();
+static osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_params_t *params);
+static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
+
+void task_meter_probe_run(void *argument)
+{
+    osSemaphoreId_t task_start_semaphore = argument;
+    meter_probe_control_event_t control_event;
+
+    log_d("meter_probe_task start");
+
+    /* Create the queue for meter probe control events */
+    meter_probe_control_queue = osMessageQueueNew(20, sizeof(meter_probe_control_event_t), &meter_probe_control_queue_attrs);
+    if (!meter_probe_control_queue) {
+        log_e("Unable to create control queue");
+        return;
+    }
+
+#if 0
+    /* Create the one-element queue to hold the latest sensor reading */
+    sensor_reading_queue = osMessageQueueNew(1, sizeof(sensor_reading_t), &sensor_reading_queue_attrs);
+    if (!sensor_reading_queue) {
+        log_e("Unable to create reading queue");
+        return;
+    }
+#endif
+
+    /* Create the semaphore used to synchronize sensor control */
+    meter_probe_control_semaphore = osSemaphoreNew(1, 0, &meter_probe_control_semaphore_attrs);
+    if (!meter_probe_control_semaphore) {
+        log_e("meter_probe_control_semaphore create error");
+        return;
+    }
+
+    meter_probe_initialized = true;
+
+    /* Release the startup semaphore */
+    if (osSemaphoreRelease(task_start_semaphore) != osOK) {
+        log_e("Unable to release task_start_semaphore");
+        return;
+    }
+
+    /* Start the main control event loop */
+    for (;;) {
+        if(osMessageQueueGet(meter_probe_control_queue, &control_event, NULL, portMAX_DELAY) == osOK) {
+            osStatus_t ret = osOK;
+            switch (control_event.event_type) {
+            case METER_PROBE_CONTROL_STOP:
+                ret = meter_probe_control_stop();
+                break;
+            case METER_PROBE_CONTROL_START:
+                ret = meter_probe_control_start();
+                break;
+            case METER_PROBE_CONTROL_SENSOR_ENABLE:
+                ret = meter_probe_control_sensor_enable();
+                break;
+            case METER_PROBE_CONTROL_SENSOR_DISABLE:
+                ret = meter_probe_control_sensor_disable();
+                break;
+            case METER_PROBE_CONTROL_SENSOR_SET_CONFIG:
+                ret = meter_probe_control_sensor_set_config(&control_event.config);
+                break;
+            case METER_PROBE_CONTROL_INTERRUPT:
+                ret = meter_probe_control_interrupt(&control_event.interrupt);
+                break;
+            default:
+                break;
+            }
+
+            /* Handle all external commands by propagating their completion */
+            if (control_event.event_type != METER_PROBE_CONTROL_INTERRUPT) {
+                if (control_event.result) {
+                    *(control_event.result) = ret;
+                }
+                if (osSemaphoreRelease(meter_probe_control_semaphore) != osOK) {
+                    log_e("Unable to release meter_probe_control_semaphore");
+                }
+            }
+        }
+    }
+
+}
+
+bool meter_probe_is_started()
+{
+    return meter_probe_started;
+}
+
+osStatus_t meter_probe_start()
+{
+    if (!meter_probe_initialized || meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_START,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_start()
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t id_data[16];
 
-    if (meter_probe_initialized) {
-        return METER_READING_FAIL;
-    }
-
-    log_i("Initializing meter probe");
+    log_d("meter_probe_control_start");
 
     /* Apply power to the meter probe port */
     HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
@@ -59,37 +219,164 @@ meter_probe_result_t meter_probe_initialize()
          * and a way to program it is implemented.
          */
 
-        /* Do a basic initialization of the sensor */
+        /*
+         * Do a basic initialization of the sensor, which verifies that
+         * the sensor is functional and responding to commands.
+         * This routine should complete with the sensor in a disabled
+         * state.
+         */
         ret = tsl2585_init(&hi2c2);
         if (ret != HAL_OK) {
             break;
         }
 
-        meter_probe_initialized = true;
+        meter_probe_started = true;
     } while (0);
 
-    if (!meter_probe_initialized) {
+    if (!meter_probe_started) {
         log_w("Meter probe initialization failed");
-        meter_probe_shutdown();
+        meter_probe_control_stop();
     }
 
-    return ret;
+    return hal_to_os_status(ret);
 }
 
-void meter_probe_shutdown()
+osStatus_t meter_probe_stop()
 {
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_STOP,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_stop()
+{
+    log_d("meter_probe_control_stop");
+
     /* Remove power from the meter probe port */
     HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
-    meter_probe_initialized = false;
+
+    /* Reset state variables */
+    meter_probe_started = false;
     meter_probe_sensor_enabled = false;
+
+    return osOK;
 }
 
-bool meter_probe_is_initialized()
+osStatus_t meter_probe_sensor_enable()
 {
-    return meter_probe_initialized;
+    if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_ENABLE,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
 }
 
-meter_probe_result_t meter_probe_sensor_enable()
+osStatus_t meter_probe_control_sensor_enable()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    log_d("meter_probe_control_sensor_enable");
+    //TODO
+
+    do {
+        /* Put the sensor into a known initial state */
+        ret = tsl2585_enable(&hi2c2);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        //TODO Set the sensor's initial configuration
+
+#if 0
+        /* Clear out any old sensor readings */
+        osMessageQueueReset(sensor_reading_queue);
+#endif
+
+        //TODO Enable sensor interrupts
+
+        meter_probe_sensor_enabled = true;
+    } while (0);
+
+    return hal_to_os_status(ret);
+}
+
+osStatus_t meter_probe_sensor_disable()
+{
+    if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_DISABLE,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_disable()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    log_d("meter_probe_control_sensor_disable");
+
+    do {
+        ret = tsl2585_disable(&hi2c2);
+        if (ret != HAL_OK) { break; }
+        meter_probe_sensor_enabled = false;
+    } while (0);
+
+    return hal_to_os_status(ret);
+}
+
+osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_params_t *params)
+{
+    log_d("meter_probe_control_sensor_set_config");
+    //TODO
+    return osOK;
+}
+
+void meter_probe_int_handler()
+{
+    if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return; }
+
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_INTERRUPT,
+        .interrupt = {
+            .ticks = osKernelGetTickCount()
+        }
+    };
+
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, 0);
+}
+
+osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params)
+{
+    log_d("meter_probe_control_interrupt");
+
+    if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) {
+        log_d("Unexpected meter probe interrupt");
+    }
+    //TODO
+
+    return osOK;
+}
+
+//XXX -----------------------------------------------------------------------
+
+meter_probe_result_t meter_probe_sensor_enable_old()
 {
     meter_probe_result_t result = METER_READING_OK;
     HAL_StatusTypeDef ret = HAL_OK;
@@ -161,7 +448,7 @@ meter_probe_result_t meter_probe_sensor_enable()
     return result;
 }
 
-meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct)
+meter_probe_result_t meter_probe_measure_old(float *lux, uint32_t *cct)
 {
     if (!meter_probe_sensor_enabled) {
         return METER_READING_FAIL;
@@ -224,7 +511,7 @@ meter_probe_result_t meter_probe_measure(float *lux, uint32_t *cct)
     return result;
 }
 
-void meter_probe_sensor_disable()
+void meter_probe_sensor_disable_old()
 {
     tcs3472_disable(&hi2c2);
     meter_probe_sensor_enabled = false;

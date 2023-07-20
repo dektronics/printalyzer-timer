@@ -10,6 +10,7 @@
 #include "board_config.h"
 #include "main_task.h"
 #include "gpio_task.h"
+#include "meter_probe.h"
 #include "dmx.h"
 
 UART_HandleTypeDef huart1;
@@ -580,7 +581,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-    gpio_task_notify_gpio_int(GPIO_Pin);
+    if (GPIO_Pin == SENSOR_INT_Pin) {
+        meter_probe_int_handler();
+    } else {
+        gpio_task_notify_gpio_int(GPIO_Pin);
+    }
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)

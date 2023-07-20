@@ -61,10 +61,11 @@ static const osSemaphoreAttr_t task_start_semaphore_attributes = {
     .name = "task_start_semaphore"
 };
 
-#define TASK_MAIN_STACK_SIZE   (8192U)
-#define TASK_GPIO_STACK_SIZE   (2048U)
-#define TASK_KEYPAD_STACK_SIZE (2048U)
-#define TASK_DMX_STACK_SIZE    (2048U)
+#define TASK_MAIN_STACK_SIZE        (8192U)
+#define TASK_GPIO_STACK_SIZE        (2048U)
+#define TASK_KEYPAD_STACK_SIZE      (2048U)
+#define TASK_DMX_STACK_SIZE         (2048U)
+#define TASK_METER_PROBE_STACK_SIZE (2048U)
 
 static task_params_t task_list[] = {
     {
@@ -97,6 +98,14 @@ static task_params_t task_list[] = {
             .name = "dmx",
             .stack_size = TASK_DMX_STACK_SIZE,
             .priority = osPriorityAboveNormal
+        }
+    },
+    {
+        .task_func = task_meter_probe_run,
+        .task_attrs = {
+            .name = "meter_probe",
+            .stack_size = TASK_METER_PROBE_STACK_SIZE,
+            .priority = osPriorityNormal
         }
     }
 };
@@ -227,9 +236,6 @@ void main_task_run(void *argument)
     if (usb_host_init() != USBH_OK) {
         log_e("Unable to initialize USB host\r\n");
     }
-
-    /* Power up the meter probe */
-    meter_probe_initialize();
 
     /* Startup beep */
     buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);

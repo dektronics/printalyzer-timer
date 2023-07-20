@@ -6,7 +6,9 @@
 #define UTIL_H
 
 #include <FreeRTOS.h>
+#include <cmsis_os.h>
 #include <stdint.h>
+#include "stm32f4xx_hal.h"
 
 #include "display.h"
 #include "exposure_state.h"
@@ -114,5 +116,8 @@ float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, fl
  * Check if the provided floating point number is valid.
  */
 bool is_valid_number(float num);
+
+osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status);
+HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status);
 
 #endif /* UTIL_H */
