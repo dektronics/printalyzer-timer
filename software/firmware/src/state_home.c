@@ -340,7 +340,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state->cancel_repeat = 0;
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
-                && relay_enlarger_is_enabled()) {
+                && relay_enlarger_is_enabled() && meter_probe_is_started()) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
