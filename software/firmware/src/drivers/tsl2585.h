@@ -46,7 +46,27 @@ typedef enum {
 #define TSL2585_ENABLE_AEN  0x02 /*!< ALS Enable */
 #define TSL2585_ENABLE_PON  0x01 /*!< Power on */
 
+/* INTENAB register values */
+#define TSL2585_INTENAB_MIEN 0x80 /*!< Modulator Interrupt Enable*/
+#define TSL2585_INTENAB_AIEN 0x08 /*!< ALS Interrupt Enable */
+#define TSL2585_INTENAB_FIEN 0x04 /*!< FIFO Interrupt Enable */
+#define TSL2585_INTENAB_SIEN 0x01 /*!< System Interrupt Enable */
+
 /* STATUS register values */
+#define TSL2585_STATUS_MINT 0x80 /*!< Modulator Interrupt (STATUS2 for details) */
+#define TSL2585_STATUS_AINT 0x08 /*!< ALS Interrupt (STATUS3 for details) */
+#define TSL2585_STATUS_FINT 0x04 /*!< FIFO Interrupt */
+#define TSL2585_STATUS_SINT 0x01 /*!< System Interrupt (STATUS5 for details) */
+
+/* STATUS2 register values */
+#define TSL2585_STATUS2_ALS_DATA_VALID         0x40 /*!< ALS Data Valid */
+#define TSL2585_STATUS2_ALS_DIGITAL_SATURATION 0x10 /*!< ALS Digital Saturation */
+#define TSL2585_STATUS2_FD_DIGITAL_SATURATION  0x08 /*!< Flicker Detect Digital Saturation */
+#define TSL2585_STATUS2_MOD_ANALOG_SATURATION2 0x04 /*!< ALS Analog Saturation of modulator 2 */
+#define TSL2585_STATUS2_MOD_ANALOG_SATURATION1 0x02 /*!< ALS Analog Saturation of modulator 1 */
+#define TSL2585_STATUS2_MOD_ANALOG_SATURATION0 0x01 /*!< ALS Analog Saturation of modulator 0 */
+
+/* ALS_STATUS register values */
 #define TSL2585_MEAS_SEQR_STEP 0xC0 /*< Mask for bits that contains the sequencer step where ALS data was measured */
 #define TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS 0x20 /*< Indicates analog saturation of ALS data0 in data registers ALS_ADATA0 */
 #define TSL2585_ALS_DATA1_ANALOG_SATURATION_STATUS 0x10 /*< Indicates analog saturation of ALS data1 in data registers ALS_ADATA1 */
@@ -61,7 +81,17 @@ HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
 HAL_StatusTypeDef tsl2585_enable(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c);
 
+HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
+
 HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mods);
+
+HAL_StatusTypeDef tsl2585_get_status(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_set_status(I2C_HandleTypeDef *hi2c, uint8_t status);
+
+HAL_StatusTypeDef tsl2585_get_status2(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status3(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status4(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status5(I2C_HandleTypeDef *hi2c, uint8_t *status);
 
 HAL_StatusTypeDef tsl2585_get_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t *gain);
 HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t gain);
@@ -71,6 +101,24 @@ HAL_StatusTypeDef tsl2585_set_calibration_nth_iteration(I2C_HandleTypeDef *hi2c,
 
 HAL_StatusTypeDef tsl2585_get_agc_calibration(I2C_HandleTypeDef *hi2c, bool *enabled);
 HAL_StatusTypeDef tsl2585_set_agc_calibration(I2C_HandleTypeDef *hi2c, bool enabled);
+
+/**
+ * Get the number of samples in an AGC measurement cycle.
+ *
+ * The total measurement time is based on a combination of the sample time
+ * and the number of samples:
+ * i.e. AGC ATIME = (AGC_NR_SAMPLES + 1) * (SAMPLE_TIME + 1) * 1.388889μs
+ *
+ * @param value An 11-bit value that determines the number of samples (0-2047)
+ */
+HAL_StatusTypeDef tsl2585_get_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t *value);
+
+/**
+ * Set the number of samples in an AGC measurement cycle.
+ *
+ * @param value An 11-bit value that determines the number of samples (0-2047)
+ */
+HAL_StatusTypeDef tsl2585_set_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t value);
 
 /**
  * Get the sample time.
@@ -107,6 +155,25 @@ HAL_StatusTypeDef tsl2585_get_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t 
  */
 HAL_StatusTypeDef tsl2585_set_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t value);
 
+/**
+ * Get the ALS interrupt persistence value.
+ *
+ * This defines the number of consecutive occurrences that the ALS measurement
+ * data must remain outside of the specified threshold range before an
+ * interrupt is generated. The meaning of specific values is described in the
+ * datasheet, however a value of 0 will interrupt on every ALS cycle.
+ *
+ * @param value A 4-bit value from 0x0 to 0xF
+ */
+HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t *value);
+
+/**
+ * Set the ALS interrupt persistence value.
+ *
+ * @param value A 4-bit value from 0x0 to 0xF
+ */
+HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t value);
+
 HAL_StatusTypeDef tsl2585_get_als_status(I2C_HandleTypeDef *hi2c, uint8_t *status);
 HAL_StatusTypeDef tsl2585_get_als_scale(I2C_HandleTypeDef *hi2c, uint8_t *scale);
 HAL_StatusTypeDef tsl2585_get_als_msb_position(I2C_HandleTypeDef *hi2c, uint8_t *position);
@@ -116,5 +183,7 @@ HAL_StatusTypeDef tsl2585_get_als_data1(I2C_HandleTypeDef *hi2c, uint16_t *data)
 HAL_StatusTypeDef tsl2585_get_als_data2(I2C_HandleTypeDef *hi2c, uint16_t *data);
 
 const char* tsl2585_gain_str(tsl2585_gain_t gain);
+float tsl2585_gain_value(tsl2585_gain_t gain);
+float tsl2585_integration_time_ms(uint16_t sample_time, uint16_t num_samples);
 
 #endif /* TSL2585_H */

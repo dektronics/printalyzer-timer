@@ -5,6 +5,8 @@
 #define LOG_TAG "tsl2585"
 #include <elog.h>
 
+#include <math.h>
+
 /* I2C device address */
 static const uint8_t TSL2585_ADDRESS = 0x39 << 1; // Use 8-bit address
 
@@ -198,8 +200,6 @@ HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
         return ret;
     }
 
-    //TODO: Set initial configuration
-
     /* Power off the sensor */
     ret = tsl2585_disable(hi2c);
     if (ret != HAL_OK) {
@@ -209,7 +209,6 @@ HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
     log_i("TSL2585 Initialized");
 
     return HAL_OK;
-
 }
 
 HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value)
@@ -231,6 +230,15 @@ HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c)
     return tsl2585_set_enable(hi2c, 0x00);
 }
 
+HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t value)
+{
+    uint8_t data = value & 0x8D; /* Mask bits 7,3,2,0 */
+    HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS,
+        TSL2585_INTENAB, I2C_MEMADD_SIZE_8BIT,
+        &data, 1, HAL_MAX_DELAY);
+    return ret;
+}
+
 HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mods)
 {
     /* Mask bits [2:0] and invert since asserting disables the modulators */
@@ -240,6 +248,36 @@ HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_mod
         TSL2585_MOD_CHANNEL_CTRL, I2C_MEMADD_SIZE_8BIT,
         &data, 1, HAL_MAX_DELAY);
     return ret;
+}
+
+HAL_StatusTypeDef tsl2585_get_status(I2C_HandleTypeDef *hi2c, uint8_t *status)
+{
+    return HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_set_status(I2C_HandleTypeDef *hi2c, uint8_t status)
+{
+    return HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, TSL2585_STATUS, I2C_MEMADD_SIZE_8BIT, &status, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_get_status2(I2C_HandleTypeDef *hi2c, uint8_t *status)
+{
+    return HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS2, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_get_status3(I2C_HandleTypeDef *hi2c, uint8_t *status)
+{
+    return HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS3, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_get_status4(I2C_HandleTypeDef *hi2c, uint8_t *status)
+{
+    return HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS4, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_get_status5(I2C_HandleTypeDef *hi2c, uint8_t *status)
+{
+    return HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS5, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
 }
 
 bool tsl2686_get_gain_register(tsl2585_modulator_t mod, tsl2585_step_t step, uint8_t *reg, bool *upper)
@@ -386,6 +424,42 @@ HAL_StatusTypeDef tsl2585_set_agc_calibration(I2C_HandleTypeDef *hi2c, bool enab
     return ret;
 }
 
+HAL_StatusTypeDef tsl2585_get_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t *value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t buf[2];
+
+    ret = HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS,
+        TSL2585_AGC_NR_SAMPLES_L, I2C_MEMADD_SIZE_8BIT,
+        buf, sizeof(buf), HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (value) {
+        *value = (uint16_t)buf[0] | (uint16_t)(((buf[1] & 0x07) << 8));
+    }
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef tsl2585_set_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t buf[2];
+
+    if (value > 0x7FF) {
+        return HAL_ERROR;
+    }
+
+    buf[0] = (uint8_t)(value & 0x0FF);
+    buf[1] = (uint8_t)((value & 0x700) >> 8);
+
+    ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, TSL2585_AGC_NR_SAMPLES_L, I2C_MEMADD_SIZE_8BIT, buf, sizeof(buf), HAL_MAX_DELAY);
+
+    return ret;
+}
+
 HAL_StatusTypeDef tsl2585_get_sample_time(I2C_HandleTypeDef *hi2c, uint16_t *value)
 {
     HAL_StatusTypeDef ret;
@@ -454,6 +528,40 @@ HAL_StatusTypeDef tsl2585_set_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t 
     buf[1] = (uint8_t)((value & 0x700) >> 8);
 
     ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, TSL2585_ALS_NR_SAMPLES0, I2C_MEMADD_SIZE_8BIT, buf, sizeof(buf), HAL_MAX_DELAY);
+
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t *value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_CFG5, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (value) {
+        *value = data & 0x0F;
+    }
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_CFG5, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    data = (data & 0xF0) | (value & 0x0F);
+
+    ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS, TSL2585_CFG5, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
 
     return ret;
 }
@@ -588,4 +696,45 @@ const char* tsl2585_gain_str(tsl2585_gain_t gain)
     default:
         return "?";
     }
+}
+
+float tsl2585_gain_value(tsl2585_gain_t gain)
+{
+    switch(gain) {
+    case TSL2585_GAIN_0_5X:
+        return 0.5F;
+    case TSL2585_GAIN_1X:
+        return 1.0F;
+    case TSL2585_GAIN_2X:
+        return 2.0F;
+    case TSL2585_GAIN_4X:
+        return 4.0F;
+    case TSL2585_GAIN_8X:
+        return 8.0F;
+    case TSL2585_GAIN_16X:
+        return 16.0F;
+    case TSL2585_GAIN_32X:
+        return 32.0F;
+    case TSL2585_GAIN_64X:
+        return 64.0F;
+    case TSL2585_GAIN_128X:
+        return 128.0F;
+    case TSL2585_GAIN_256X:
+        return 256.0F;
+    case TSL2585_GAIN_512X:
+        return 512.0F;
+    case TSL2585_GAIN_1024X:
+        return 1024.0F;
+    case TSL2585_GAIN_2048X:
+        return 2048.0F;
+    case TSL2585_GAIN_4096X:
+        return 4096.0F;
+    default:
+        return NAN;
+    }
+}
+
+float tsl2585_integration_time_ms(uint16_t sample_time, uint16_t num_samples)
+{
+    return ((num_samples + 1) * (sample_time + 1) * 1.388889F) / 1000.0F;
 }

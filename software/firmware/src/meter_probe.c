@@ -2,6 +2,7 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <queue.h>
 #include <cmsis_os.h>
 
 #include <math.h>
@@ -10,7 +11,6 @@
 #include <elog.h>
 
 #include "board_config.h"
-#include "tcs3472.h"
 #include "m24c02.h"
 #include "tsl2585.h"
 #include "settings.h"
@@ -25,18 +25,19 @@ typedef enum {
     METER_PROBE_CONTROL_SENSOR_ENABLE,
     METER_PROBE_CONTROL_SENSOR_DISABLE,
     METER_PROBE_CONTROL_SENSOR_SET_CONFIG,
+    METER_PROBE_CONTROL_SENSOR_ENABLE_AGC,
+    METER_PROBE_CONTROL_SENSOR_DISABLE_AGC,
     METER_PROBE_CONTROL_INTERRUPT
 } meter_probe_control_event_type_t;
 
 typedef struct {
-    //tsl2591_gain_t gain;
-    //tsl2591_time_t time;
+    tsl2585_gain_t gain;
+    uint16_t sample_time;
+    uint16_t sample_count;
 } sensor_control_config_params_t;
 
 typedef struct {
     uint32_t ticks;
-    //uint32_t light_ticks;
-    //uint32_t reading_count;
 } sensor_control_interrupt_params_t;
 
 /**
@@ -51,6 +52,19 @@ typedef struct {
     };
 } meter_probe_control_event_t;
 
+/**
+ * Configuration state for the TSL2585 light sensor
+ */
+typedef struct {
+    tsl2585_gain_t gain;
+    uint16_t sample_time;
+    uint16_t sample_count;
+    uint8_t calibration_iteration;
+    bool agc_enabled;
+    bool config_pending;
+    bool agc_pending;
+} tsl2585_config_t;
+
 /* Global I2C handle for the meter probe */
 extern I2C_HandleTypeDef hi2c2;
 
@@ -58,19 +72,19 @@ static bool meter_probe_initialized = false;
 static bool meter_probe_started = false;
 static bool meter_probe_sensor_enabled = false;
 
+static tsl2585_config_t sensor_config = {0};
+
 /* Queue for meter probe control events */
 static osMessageQueueId_t meter_probe_control_queue = NULL;
 static const osMessageQueueAttr_t meter_probe_control_queue_attrs = {
     .name = "meter_probe_control_queue"
 };
 
-#if 0
 /* Queue to hold the latest sensor reading */
 static osMessageQueueId_t sensor_reading_queue = NULL;
 static const osMessageQueueAttr_t sensor_reading_queue_attrs = {
     .name = "sensor_reading_queue"
 };
-#endif
 
 /* Semaphore to synchronize sensor control calls */
 static osSemaphoreId_t meter_probe_control_semaphore = NULL;
@@ -84,7 +98,11 @@ static osStatus_t meter_probe_control_stop();
 static osStatus_t meter_probe_control_sensor_enable();
 static osStatus_t meter_probe_control_sensor_disable();
 static osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_params_t *params);
+static osStatus_t meter_probe_control_sensor_enable_agc();
+static osStatus_t meter_probe_control_sensor_disable_agc();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
+
+static HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading);
 
 void task_meter_probe_run(void *argument)
 {
@@ -100,14 +118,12 @@ void task_meter_probe_run(void *argument)
         return;
     }
 
-#if 0
     /* Create the one-element queue to hold the latest sensor reading */
-    sensor_reading_queue = osMessageQueueNew(1, sizeof(sensor_reading_t), &sensor_reading_queue_attrs);
+    sensor_reading_queue = osMessageQueueNew(1, sizeof(meter_probe_sensor_reading_t), &sensor_reading_queue_attrs);
     if (!sensor_reading_queue) {
         log_e("Unable to create reading queue");
         return;
     }
-#endif
 
     /* Create the semaphore used to synchronize sensor control */
     meter_probe_control_semaphore = osSemaphoreNew(1, 0, &meter_probe_control_semaphore_attrs);
@@ -143,6 +159,12 @@ void task_meter_probe_run(void *argument)
                 break;
             case METER_PROBE_CONTROL_SENSOR_SET_CONFIG:
                 ret = meter_probe_control_sensor_set_config(&control_event.config);
+                break;
+            case METER_PROBE_CONTROL_SENSOR_ENABLE_AGC:
+                ret = meter_probe_control_sensor_enable_agc();
+                break;
+            case METER_PROBE_CONTROL_SENSOR_DISABLE_AGC:
+                ret = meter_probe_control_sensor_disable_agc();
                 break;
             case METER_PROBE_CONTROL_INTERRUPT:
                 ret = meter_probe_control_interrupt(&control_event.interrupt);
@@ -288,23 +310,90 @@ osStatus_t meter_probe_control_sensor_enable()
     HAL_StatusTypeDef ret = HAL_OK;
 
     log_d("meter_probe_control_sensor_enable");
-    //TODO
 
     do {
+        /* Query the initial state of the sensor */
+        if (!sensor_config.config_pending) {
+            ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &sensor_config.gain);
+            if (ret != HAL_OK) {
+                break;
+            }
+
+            ret = tsl2585_get_sample_time(&hi2c2, &sensor_config.sample_time);
+            if (ret != HAL_OK) {
+                break;
+            }
+
+            ret = tsl2585_get_als_num_samples(&hi2c2, &sensor_config.sample_count);
+            if (ret != HAL_OK) {
+                break;
+            }
+        }
+
+        if (!sensor_config.agc_pending) {
+            ret = tsl2585_get_calibration_nth_iteration(&hi2c2, &sensor_config.calibration_iteration);
+            if (ret != HAL_OK) {
+                break;
+            }
+
+            ret = tsl2585_get_agc_calibration(&hi2c2, &sensor_config.agc_enabled);
+            if (ret != HAL_OK) {
+                break;
+            }
+        }
+
         /* Put the sensor into a known initial state */
+        ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        if (sensor_config.config_pending) {
+            ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_config.gain);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_set_sample_time(&hi2c2, sensor_config.sample_time);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_set_als_num_samples(&hi2c2, sensor_config.sample_count);
+            if (ret != HAL_OK) { break; }
+
+            sensor_config.config_pending = false;
+        }
+
+        if (sensor_config.agc_pending) {
+            ret = tsl2585_set_calibration_nth_iteration(&hi2c2, sensor_config.calibration_iteration);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_set_agc_calibration(&hi2c2, sensor_config.agc_enabled);
+            if (ret != HAL_OK) { break; }
+
+            sensor_config.agc_pending = false;
+        }
+
+        const float atime = tsl2585_integration_time_ms(sensor_config.sample_time, sensor_config.sample_count);
+        log_d("TSL2585 Initial State: Gain=%s, ATIME=%.2fms", tsl2585_gain_str(sensor_config.gain), atime);
+
+        /* Enable the sensor (ALS Enable and Power ON) */
         ret = tsl2585_enable(&hi2c2);
         if (ret != HAL_OK) {
             break;
         }
 
-        //TODO Set the sensor's initial configuration
-
-#if 0
         /* Clear out any old sensor readings */
         osMessageQueueReset(sensor_reading_queue);
-#endif
 
-        //TODO Enable sensor interrupts
+        /* Configure to interrupt on every ALS cycle */
+        ret = tsl2585_set_als_interrupt_persistence(&hi2c2, 0);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        /* Enable sensor interrupts */
+        ret = tsl2585_set_interrupt_enable(&hi2c2, TSL2585_INTENAB_AIEN);
+        if (ret != HAL_OK) {
+            break;
+        }
 
         meter_probe_sensor_enabled = true;
     } while (0);
@@ -341,11 +430,140 @@ osStatus_t meter_probe_control_sensor_disable()
     return hal_to_os_status(ret);
 }
 
+osStatus_t meter_probe_sensor_set_config(tsl2585_gain_t gain, uint16_t sample_time, uint16_t sample_count)
+{
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_SET_CONFIG,
+        .result = &result,
+        .config = {
+            .gain = gain,
+            .sample_time = sample_time,
+            .sample_count = sample_count
+        }
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
 osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_params_t *params)
 {
-    log_d("meter_probe_control_sensor_set_config");
-    //TODO
-    return osOK;
+    HAL_StatusTypeDef ret = HAL_OK;
+    log_d("meter_probe_control_sensor_set_config: %d, %d, %d", params->gain, params->sample_time, params->sample_count);
+
+    if (meter_probe_sensor_enabled) {
+        ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, params->gain);
+        if (ret == HAL_OK) {
+            sensor_config.gain = params->gain;
+        }
+
+        ret = tsl2585_set_sample_time(&hi2c2, params->sample_time);
+        if (ret == HAL_OK) {
+            sensor_config.sample_time = params->sample_time;
+        }
+
+        ret = tsl2585_set_als_num_samples(&hi2c2, params->sample_count);
+        if (ret == HAL_OK) {
+            sensor_config.sample_count = params->sample_count;
+        }
+
+        //sensor_discard_next_reading = true;
+        osMessageQueueReset(sensor_reading_queue);
+    } else {
+        sensor_config.gain = params->gain;
+        sensor_config.sample_time = params->sample_time;
+        sensor_config.sample_count = params->sample_count;
+        sensor_config.config_pending = true;
+    }
+
+    return hal_to_os_status(ret);
+}
+
+osStatus_t meter_probe_sensor_enable_agc()
+{
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_ENABLE_AGC,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_enable_agc()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    log_d("meter_probe_control_sensor_enable_agc");
+
+    if (meter_probe_sensor_enabled) {
+        ret = tsl2585_set_calibration_nth_iteration(&hi2c2, 1);
+        if (ret == HAL_OK) {
+            sensor_config.calibration_iteration = 1;
+        }
+
+        ret = tsl2585_set_agc_calibration(&hi2c2, true);
+        if (ret == HAL_OK) {
+            sensor_config.agc_enabled = true;
+        }
+    } else {
+        sensor_config.agc_enabled = true;
+        sensor_config.calibration_iteration = 1;
+        sensor_config.agc_pending = true;
+    }
+
+    return hal_to_os_status(ret);
+}
+
+osStatus_t meter_probe_sensor_disable_agc()
+{
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_DISABLE_AGC,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_disable_agc()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    log_d("meter_probe_control_sensor_disable_agc");
+
+    if (meter_probe_sensor_enabled) {
+        ret = tsl2585_set_agc_calibration(&hi2c2, false);
+        if (ret == HAL_OK) {
+            sensor_config.agc_enabled = false;
+        }
+    } else {
+        sensor_config.agc_enabled = false;
+        sensor_config.calibration_iteration = 0;
+        sensor_config.agc_pending = true;
+    }
+
+    return hal_to_os_status(ret);
+}
+
+osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout)
+{
+    if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return osErrorResource; }
+
+    if (!reading) {
+        return osErrorParameter;
+    }
+
+    return osMessageQueueGet(sensor_reading_queue, reading, NULL, timeout);
 }
 
 void meter_probe_int_handler()
@@ -364,155 +582,108 @@ void meter_probe_int_handler()
 
 osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params)
 {
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t status = 0;
+    meter_probe_sensor_reading_t reading = {0};
+    bool has_reading = false;
+
     log_d("meter_probe_control_interrupt");
 
     if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) {
         log_d("Unexpected meter probe interrupt");
     }
-    //TODO
-
-    return osOK;
-}
-
-//XXX -----------------------------------------------------------------------
-
-meter_probe_result_t meter_probe_sensor_enable_old()
-{
-    meter_probe_result_t result = METER_READING_OK;
-    HAL_StatusTypeDef ret = HAL_OK;
-
-    if (!meter_probe_initialized) {
-        return METER_READING_FAIL;
-    }
-
-    if (meter_probe_sensor_enabled) {
-        return METER_READING_FAIL;
-    }
 
     do {
-        log_i("Initializing sensor");
-        ret = tcs3472_init(&hi2c2);
-        if (ret != HAL_OK) {
-            log_e("Error initializing TCS3472: %d", ret);
-            result = METER_READING_FAIL;
-            break;
-        }
+        /* Get the interrupt status */
+        ret = tsl2585_get_status(&hi2c2, &status);
+        if (ret != HAL_OK) { break; }
 
-        ret = tcs3472_enable(&hi2c2);
-        if (ret != HAL_OK) {
-            log_e("Error enabling TCS3472: %d", ret);
-            result = METER_READING_FAIL;
-            break;
-        }
+#if 0
+        log_d("MINT=%d, AINT=%d, FINT=%d, SINT=%d",
+            (status & TSL2585_STATUS_MINT) != 0,
+            (status & TSL2585_STATUS_AINT) != 0,
+            (status & TSL2585_STATUS_FINT) != 0,
+            (status & TSL2585_STATUS_SINT) != 0);
+#endif
 
-        ret = tcs3472_set_gain(&hi2c2, TCS3472_AGAIN_60X);
-        if (ret != HAL_OK) {
-            log_e("Error setting TCS3472 gain: %d", ret);
-            result = METER_READING_FAIL;
-            break;
-        }
+        if ((status & TSL2585_STATUS_AINT) != 0) {
+            uint8_t status2 = 0;
+            ret = tsl2585_get_status2(&hi2c2, &status2);
+            if (ret != HAL_OK) { break; }
 
-        ret = tcs3472_set_time(&hi2c2, TCS3472_ATIME_614MS);
-        if (ret != HAL_OK) {
-            log_e("Error setting TCS3472 time: %d", ret);
-            result = METER_READING_FAIL;
-            break;
-        }
+#if 0
+            log_d("STATUS2=0x%02X", status2);
+#endif
 
-        bool valid = false;
-        TickType_t start_ticks = xTaskGetTickCount();
-        do {
-            ret = tcs3472_get_status_valid(&hi2c2, &valid);
-            if (ret != HAL_OK) {
-                log_e("Error getting TCS3472 status: %d", ret);
-                result = METER_READING_FAIL;
-                break;
+            if ((status2 & TSL2585_STATUS2_ALS_DATA_VALID) != 0) {
+                /* Get the sensor reading */
+                meter_probe_sensor_read_als(&reading);
+
+                /* If AGC is enabled, then update the configured gain value */
+                if (sensor_config.agc_enabled) {
+                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &sensor_config.gain);
+                    if (ret != HAL_OK) { break; }
+                }
+
+                /* Fill out other reading fields */
+                reading.gain = sensor_config.gain;
+                reading.sample_time = sensor_config.sample_time;
+                reading.sample_count = sensor_config.sample_count;
+
+                has_reading = true;
             }
-            if ((xTaskGetTickCount() - start_ticks) / pdMS_TO_TICKS(2000)) {
-                log_w("Timeout waiting for sensor valid status");
-                result = METER_READING_TIMEOUT;
-                break;
-            }
-        } while (!valid);
+        }
 
-        log_i("Sensor initialized");
+        /* Clear the interrupt status */
+        ret = tsl2585_set_status(&hi2c2, status);
+        if (ret != HAL_OK) { break; }
     } while (0);
 
-    if (result != METER_READING_OK) {
-        tcs3472_disable(&hi2c2);
-        meter_probe_sensor_enabled = false;
-    } else {
-        meter_probe_sensor_enabled = true;
+    if (has_reading) {
+        QueueHandle_t queue = (QueueHandle_t)sensor_reading_queue;
+        xQueueOverwrite(queue, &reading);
     }
 
-    return result;
+    return hal_to_os_status(ret);
 }
 
-meter_probe_result_t meter_probe_measure_old(float *lux, uint32_t *cct)
+HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading)
 {
-    if (!meter_probe_sensor_enabled) {
-        return METER_READING_FAIL;
-    }
-
-    meter_probe_result_t result = METER_READING_OK;
     HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t als_status = 0;
+    uint16_t als_data0 = 0;
+    uint32_t raw_result = 0;
+    uint8_t asat = 0;
+    uint8_t scale = 0;
+
     do {
-        tcs3472_channel_data_t ch_data;
-        ret = tcs3472_get_full_channel_data(&hi2c2, &ch_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            return METER_READING_FAIL;
+        ret = tsl2585_get_als_status(&hi2c2, &als_status);
+        if (ret != HAL_OK) { break; }
+
+        asat = (als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0;
+
+        ret = tsl2585_get_als_data0(&hi2c2, &als_data0);
+        if (ret != HAL_OK) { break; }
+
+        ret = tsl2585_get_als_scale(&hi2c2, &scale);
+        if (ret != HAL_OK) { break; }
+
+        if (als_status & TSL2585_ALS_DATA0_SCALED_STATUS) {
+            /* No scaling needed */
+            raw_result = als_data0;
+        } else {
+            /* Need to scale value: 2^(ALS_SCALED) */
+            raw_result = als_data0 * (scale * scale);
         }
 
-        if (tcs3472_is_sensor_saturated(&ch_data)) {
-            log_w("Sensor is in saturation");
-            //TODO implement an auto-gain algorithm
-            result = METER_READING_HIGH;
-            break;
+        if (asat) {
+            log_d("TSL2585: [saturated]");
+        } else {
+            log_d("TSL2585: %d", raw_result);
         }
 
-        if (ch_data.clear < 10) {
-            log_w("Sensor reading is too low");
-            result = METER_READING_LOW;
-            break;
-        }
-
-        //TODO take more than one reading to ensure the data is stable
-
-        float reading_lux = tcs3472_calculate_lux(&ch_data, settings_get_tcs3472_ga_factor());
-        if (!isnormal(reading_lux) || reading_lux < 0.0001F) {
-            log_w("Could not calculate lux from sensor reading");
-            result = METER_READING_FAIL;
-            break;
-        } else if (reading_lux < 0.01F) {
-            log_w("Lux calculation result is too low");
-            result = METER_READING_LOW;
-            break;
-        }
-
-        uint16_t reading_cct = tcs3472_calculate_color_temp(&ch_data);
-        if (reading_cct == 0) {
-            log_w("Could not calculate CCT from sensor reading");
-            result = METER_READING_FAIL;
-            break;
-        }
-
-        log_i("Sensor reading: lux=%f, CCT=%dK", reading_lux, reading_cct);
-
-        if (lux) {
-            *lux = reading_lux;
-        }
-        if (cct) {
-            *cct = reading_cct;
-        }
-
+        reading->raw_result = raw_result;
     } while (0);
 
-    return result;
-}
-
-void meter_probe_sensor_disable_old()
-{
-    tcs3472_disable(&hi2c2);
-    meter_probe_sensor_enabled = false;
+    return ret;
 }

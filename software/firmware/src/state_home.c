@@ -235,6 +235,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     relay_enlarger_enable(true);
                     state_controller_start_focus_timeout(controller);
                     if (meter_probe_start() == osOK) {
+                        meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 500);
                         meter_probe_sensor_enable();
                     }
                 } else {
@@ -441,18 +442,10 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
         osDelay(SAFELIGHT_OFF_DELAY / 2);
 
-        result = meter_probe_sensor_enable_old();
-        if (result != METER_READING_OK) {
-            break;
-        }
+        //TODO Add code for new meter probe interface
+        result = METER_READING_FAIL;
 
-        result = meter_probe_measure_old(&lux, &cct);
-        if (result != METER_READING_OK) {
-            break;
-        }
     } while (0);
-
-    meter_probe_sensor_disable_old();
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 

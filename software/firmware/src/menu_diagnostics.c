@@ -733,21 +733,17 @@ menu_result_t diagnostics_meter_probe()
     bool sensor_initialized = false;
     bool sensor_error = false;
     bool enlarger_enabled = relay_enlarger_is_enabled();
+    bool config_changed = false;
+    bool agc_changed = false;
     tsl2585_gain_t gain = 0;
     uint16_t sample_time = 0;
-    uint16_t num_samples = 0;
-    uint16_t als_data0 = 0;
-    uint32_t als_result = 0;
-    uint8_t asat = 0;
-    uint8_t scale = 0;
-    uint8_t position = 0;
-    uint8_t need_scale = 0;
-    uint8_t calib_iter = 0;
+    uint16_t sample_count = 0;
     bool agc_enabled = false;
+    meter_probe_sensor_reading_t reading = {0};
+    keypad_event_t keypad_event;
+    bool key_changed = false;
 
-    meter_probe_start();
-
-    if (!meter_probe_is_started()) {
+    if (meter_probe_start() != osOK) {
         menu_result_t menu_result = MENU_OK;
         uint8_t option = display_message(
             "Meter Probe",
@@ -759,146 +755,25 @@ menu_result_t diagnostics_meter_probe()
         return menu_result;
     }
 
+    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 100) == osOK) {
+        gain = TSL2585_GAIN_256X;
+        sample_time = 716;
+        sample_count = 100;
+    }
+
     for (;;) {
         if (!sensor_initialized) {
-            ret = tsl2585_init(&hi2c2);
-            if (ret == HAL_OK) {
-                sensor_error = false;
+            if (meter_probe_sensor_enable() == osOK) {
+                sensor_initialized = true;
             } else {
                 log_e("Error initializing TSL2585: %d", ret);
                 sensor_error = true;
             }
-
-            if (!sensor_error) {
-                do {
-                    ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_enable(&hi2c2);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &gain);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_sample_time(&hi2c2, &sample_time);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_als_num_samples(&hi2c2, &num_samples);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_calibration_nth_iteration(&hi2c2, &calib_iter);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_agc_calibration(&hi2c2, &agc_enabled);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    sensor_initialized = true;
-                } while (0);
-
-                if (ret != HAL_OK) {
-                    log_e("Error enabling TSL2585: %d", ret);
-                    sensor_error = true;
-                }
-            }
         }
 
-        if (sensor_initialized && !sensor_error) {
-            do {
-                uint8_t status = 0;
-                ret = tsl2585_get_als_status(&hi2c2, &status);
-                if (ret != HAL_OK) {
-                    log_e("Error getting TSL2585 ALS status: %d", ret);
-                    sensor_error = true;
-                    break;
-                }
-
-                als_data0 = 0;
-                asat = 0;
-                scale = 0;
-                position = 0;
-                ret = tsl2585_get_als_data0(&hi2c2, &als_data0);
-                if (ret != HAL_OK) {
-                    log_e("Error getting TSL2585 ALS data: %d", ret);
-                    sensor_error = true;
-                    break;
-                }
-
-                asat = (status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0;
-                tsl2585_get_als_scale(&hi2c2, &scale);
-                tsl2585_get_als_msb_position(&hi2c2, &position);
-
-                if (status & TSL2585_ALS_DATA0_SCALED_STATUS) {
-                    // No scaling
-                    need_scale = 0;
-                    als_result = als_data0;
-                } else {
-                    // 2^(ALS_SCALED)
-                    need_scale = 1;
-                    als_result = als_data0 * (scale * scale);
-                }
-
-                if (agc_enabled) {
-                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &gain);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_sample_time(&hi2c2, &sample_time);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_als_num_samples(&hi2c2, &num_samples);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-
-                    ret = tsl2585_get_agc_calibration(&hi2c2, &agc_enabled);
-                    if (ret != HAL_OK) {
-                        break;
-                    }
-                }
-            } while (0);
-        }
-
-        if (sensor_initialized && !sensor_error) {
-            float atime = ((num_samples + 1) * (sample_time + 1) * 1.388889F) / 1000.0F;
-
-            sprintf(buf,
-                "TSL2585 (%s, %.2fms)\n"
-                "Data: %ld\n"
-                "[%d, %d, %d, %d, %d, %s]",
-                tsl2585_gain_str(gain), atime,
-                als_result,
-                asat, need_scale, scale, position,
-                calib_iter,
-                agc_enabled ? "AGC" : "---");
-        } else {
-            sprintf(buf, "\n\n**** Sensor Unavailable ****");
-        }
-        display_static_list("Meter Probe Test", buf);
-
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                if (sensor_initialized && sensor_error) {
-                    sensor_initialized = false;
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+        if (key_changed) {
+            key_changed = false;
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!relay_enlarger_is_enabled()) {
                     log_i("Meter probe focus mode enabled");
                     relay_enlarger_enable(true);
@@ -909,46 +784,35 @@ menu_result_t diagnostics_meter_probe()
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 if (sensor_initialized && !sensor_error) {
                     if (gain > TSL2585_GAIN_0_5X) {
-                        if (tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, gain - 1) == HAL_OK) {
-                            gain--;
-                        }
+                        gain--;
+                        config_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (sensor_initialized && !sensor_error) {
                     if (gain < TSL2585_GAIN_4096X) {
-                        if (tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, gain + 1) == HAL_OK) {
-                            gain++;
-                        }
+                        gain++;
+                        config_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
-                    if (num_samples > 10) {
-                        if (tsl2585_set_als_num_samples(&hi2c2, num_samples - 10) == HAL_OK) {
-                            num_samples -= 10;
-                        }
+                    if (sample_count > 10) {
+                        sample_count -= 10;
+                        config_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
-                    if (num_samples < (2047 - 10)) {
-                        if (tsl2585_set_als_num_samples(&hi2c2, num_samples + 10) == HAL_OK) {
-                            num_samples += 10;
-                        }
+                    if (sample_count < (2047 - 10)) {
+                        sample_count += 10;
+                        config_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
                 if (sensor_initialized && !sensor_error) {
-                    if (tsl2585_set_agc_calibration(&hi2c2, !agc_enabled) == HAL_OK) {
-                        agc_enabled = !agc_enabled;
-
-                        if(agc_enabled) {
-                            if (tsl2585_set_calibration_nth_iteration(&hi2c2, 1) == HAL_OK) {
-                                calib_iter = 1;
-                            }
-                        }
-                    }
+                    agc_enabled = !agc_enabled;
+                    agc_changed = true;
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
@@ -957,15 +821,56 @@ menu_result_t diagnostics_meter_probe()
                 break;
             }
         }
+
+        if (config_changed) {
+            if (meter_probe_sensor_set_config(gain, sample_time, sample_count) == osOK) {
+                config_changed = false;
+            }
+        }
+        if (agc_changed) {
+            if (agc_enabled) {
+                if (meter_probe_sensor_enable_agc() == osOK) {
+                    agc_changed = false;
+                }
+            } else {
+                if (meter_probe_sensor_disable_agc() == osOK) {
+                    agc_changed = false;
+                }
+            }
+        }
+
+        if (meter_probe_sensor_get_next_reading(&reading, 1000) == osOK) {
+            const float atime = tsl2585_integration_time_ms(reading.sample_time, reading.sample_count);
+            const float gain_val = tsl2585_gain_value(reading.gain);
+
+            float basic_result = reading.raw_result / (atime * gain_val);
+
+            sprintf(buf,
+                "TSL2585 (%s, %.2fms)\n"
+                "Data: %ld\n"
+                "Basic: %f\n"
+                "[%s]",
+                tsl2585_gain_str(reading.gain), atime,
+                reading.raw_result, basic_result,
+                agc_enabled ? "AGC" : "---");
+            display_static_list("Meter Probe Test", buf);
+
+            gain = reading.gain;
+            sample_time = reading.sample_time;
+            sample_count = reading.sample_count;
+        }
+
+        if (keypad_wait_for_event(&keypad_event, 100) == HAL_OK) {
+            key_changed = true;
+        }
     }
 
-    tsl2585_disable(&hi2c2);
+    meter_probe_sensor_disable();
     meter_probe_stop();
     relay_enlarger_enable(enlarger_enabled);
 
     return MENU_OK;
 }
-
 
 menu_result_t diagnostics_densitometer()
 {

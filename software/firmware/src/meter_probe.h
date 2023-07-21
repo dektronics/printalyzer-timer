@@ -15,6 +15,8 @@
 #include <stdbool.h>
 #include <cmsis_os.h>
 
+#include "tsl2585.h"
+
 typedef enum {
     METER_READING_OK = 0,
     METER_READING_LOW,
@@ -22,6 +24,14 @@ typedef enum {
     METER_READING_TIMEOUT,
     METER_READING_FAIL
 } meter_probe_result_t;
+
+typedef struct {
+    uint32_t raw_result;   /*!< Raw sensor reading */
+    tsl2585_gain_t gain;   /*!< Sensor ADC gain */
+    uint16_t sample_time;  /*!< Sensor integration sample time */
+    uint16_t sample_count; /*!< Sensor integration sample count */
+    uint32_t ticks;        /*!< Tick time when the integration cycle finished */
+} meter_probe_sensor_reading_t;
 
 /**
  * Start the meter probe task.
@@ -67,40 +77,47 @@ osStatus_t meter_probe_sensor_enable();
 osStatus_t meter_probe_sensor_disable();
 
 /**
+ * Set the meter probe sensor's gain and integration time
+ *
+ * These settings are specific to the TSL2585 sensor in the current
+ * meter probe.
+ * The sample time and count are combined to form the integration time,
+ * according to the following formula:
+ * TIME(μs) = (sample_count + 1) * (sample_time + 1) * 1.388889μs
+ *
+ * @param gain Sensor ADC gain
+ * @param sample_time Duration of each sample in an integration cycle
+ * @param sample_count Number of samples in an integration cycle
+ */
+osStatus_t meter_probe_sensor_set_config(tsl2585_gain_t gain, uint16_t sample_time, uint16_t sample_count);
+
+/**
+ * Enable the meter probe sensor's AGC function
+ */
+osStatus_t meter_probe_sensor_enable_agc();
+
+/**
+ * Disable the meter probe sensor's AGC function
+ */
+osStatus_t meter_probe_sensor_disable_agc();
+
+/**
+ * Get the next reading from the meter probe sensor.
+ * If no reading is currently available, then this function will block
+ * until the completion of the next sensor integration cycle.
+ *
+ * @param reading Sensor reading data
+ * @param timeout Amount of time to wait for a reading to become available
+ * @return osOK on success, osErrorTimeout on timeout
+ */
+osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout);
+
+/**
  * Meter probe interrupt handler
  *
  * This function should only be called from within the ISR for the
  * meter probe's interrupt pin.
  */
 void meter_probe_int_handler();
-
-//XXX -----------------------------------------------------------------------
-
-/**
- * Enable the meter probe sensor so that it is ready for measurements.
- *
- * This function will block while waiting for the sensor
- * to become ready.
- */
-meter_probe_result_t meter_probe_sensor_enable_old();
-
-/**
- * Take a stable measurement, returning Lux and CCT values.
- *
- * Since accuracy under low-light conditions is the main requirement
- * for this function's implementation, the longest usable sensor
- * integration time will be used.
- *
- * This function will block while doing auto-ranging and waiting
- * for a stable reading. Since accuracy under low-light conditions
- * is the main requirement, and the longest usable sensor integration
- * time is likely to be used, this may take several seconds.
- */
-meter_probe_result_t meter_probe_measure_old(float *lux, uint32_t *cct);
-
-/**
- * Disable the meter probe sensor after a reading cycle.
- */
-void meter_probe_sensor_disable_old();
 
 #endif /* METER_PROBE_H */
