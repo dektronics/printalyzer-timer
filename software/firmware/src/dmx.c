@@ -48,14 +48,14 @@ typedef enum {
     DMX_CONTROL_START,
     DMX_CONTROL_STOP,
     DMX_CONTROL_SET_FRAME
-} dmx_control_command_type_t;
+} dmx_control_event_type_t;
 
 typedef struct {
-    dmx_control_command_type_t command_type;
+    dmx_control_event_type_t event_type;
     osStatus_t *result;
-} dmx_control_command_t;
+} dmx_control_event_t;
 
-/* Queue for DMX task control commands */
+/* Queue for DMX task control events */
 static osMessageQueueId_t dmx_control_queue = NULL;
 static const osMessageQueueAttr_t dmx_control_queue_attrs = {
     .name = "dmx_control_queue"
@@ -113,8 +113,8 @@ void task_dmx_run(void *argument)
     task_state = DMX_TASK_IDLE;
     frame_state = DMX_FRAME_IDLE;
 
-    /* Create the queue for DMX task control commands */
-    dmx_control_queue = osMessageQueueNew(20, sizeof(dmx_control_command_t), &dmx_control_queue_attrs);
+    /* Create the queue for DMX task control events */
+    dmx_control_queue = osMessageQueueNew(20, sizeof(dmx_control_event_t), &dmx_control_queue_attrs);
     if (!dmx_control_queue) {
         log_e("Unable to create control queue");
         return;
@@ -148,7 +148,7 @@ void task_dmx_run(void *argument)
 
 void dmx_task_loop()
 {
-    dmx_control_command_t control_command;
+    dmx_control_event_t control_event;
     osStatus_t ret;
 
     log_d("dmx_task start");
@@ -166,15 +166,15 @@ void dmx_task_loop()
             osDelayUntil(ticks_start + DMX_FRAME_PERIOD_MS);
 
             //FIXME allow processing of multiple commands that arrived during frame send
-            ret = osMessageQueueGet(dmx_control_queue, &control_command, NULL, 0);
+            ret = osMessageQueueGet(dmx_control_queue, &control_event, NULL, 0);
 
         } else {
-            ret = osMessageQueueGet(dmx_control_queue, &control_command, NULL, portMAX_DELAY);
+            ret = osMessageQueueGet(dmx_control_queue, &control_event, NULL, portMAX_DELAY);
         }
         if (ret != osOK) { continue; }
 
         /* Process the next command */
-        switch (control_command.command_type) {
+        switch (control_event.event_type) {
         case DMX_CONTROL_ENABLE:
             ret = dmx_control_enable();
             break;
@@ -194,8 +194,8 @@ void dmx_task_loop()
             break;
         }
 
-        if (control_command.result) {
-            *(control_command.result) = ret;
+        if (control_event.result) {
+            *(control_event.result) = ret;
         }
         if (osSemaphoreRelease(dmx_control_semaphore) != osOK) {
             log_e("Unable to release dmx_control_semaphore");
@@ -208,12 +208,12 @@ osStatus_t dmx_enable()
     if (!dmx_initialized) { return osErrorResource; }
 
     osStatus_t result = osOK;
-    dmx_control_command_t control_command = {
-        .command_type = DMX_CONTROL_ENABLE,
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_ENABLE,
         .result = &result
     };
 
-    osMessageQueuePut(dmx_control_queue, &control_command, 0, portMAX_DELAY);
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
     return result;
 }
@@ -246,12 +246,12 @@ osStatus_t dmx_disable()
     if (!dmx_initialized) { return osErrorResource; }
 
     osStatus_t result = osOK;
-    dmx_control_command_t control_command = {
-        .command_type = DMX_CONTROL_DISABLE,
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_DISABLE,
         .result = &result
     };
 
-    osMessageQueuePut(dmx_control_queue, &control_command, 0, portMAX_DELAY);
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
     return result;
 }
@@ -281,12 +281,12 @@ osStatus_t dmx_start()
     if (!dmx_initialized) { return osErrorResource; }
 
     osStatus_t result = osOK;
-    dmx_control_command_t control_command = {
-        .command_type = DMX_CONTROL_START,
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_START,
         .result = &result
     };
 
-    osMessageQueuePut(dmx_control_queue, &control_command, 0, portMAX_DELAY);
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
     return result;
 }
@@ -312,12 +312,12 @@ osStatus_t dmx_stop()
     if (!dmx_initialized) { return osErrorResource; }
 
     osStatus_t result = osOK;
-    dmx_control_command_t control_command = {
-        .command_type = DMX_CONTROL_STOP,
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_STOP,
         .result = &result
     };
 
-    osMessageQueuePut(dmx_control_queue, &control_command, 0, portMAX_DELAY);
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
     return result;
 }
@@ -347,14 +347,14 @@ osStatus_t dmx_set_frame(uint8_t offset, const uint8_t *frame, size_t len)
     }
 
     osStatus_t result = osOK;
-    dmx_control_command_t control_command = {
-        .command_type = DMX_CONTROL_SET_FRAME,
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_SET_FRAME,
         .result = &result
     };
 
     memcpy(dmx_pending_frame + offset + 1, frame, len);
 
-    osMessageQueuePut(dmx_control_queue, &control_command, 0, portMAX_DELAY);
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
     return result;
 }
