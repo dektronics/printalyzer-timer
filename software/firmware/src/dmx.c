@@ -29,12 +29,6 @@ extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart6;
 
 typedef enum {
-    DMX_TASK_IDLE = 0,
-    DMX_TASK_ENABLED,
-    DMX_TASK_SENDING
-} dmx_task_state_t;
-
-typedef enum {
     DMX_FRAME_IDLE = 0,
     DMX_FRAME_MARK_BEFORE_BREAK,
     DMX_FRAME_BREAK,
@@ -74,7 +68,7 @@ static const osSemaphoreAttr_t dmx_frame_semaphore_attrs = {
 };
 
 static bool dmx_initialized = false;
-static dmx_task_state_t task_state = DMX_TASK_IDLE;
+static dmx_port_state_t port_state = DMX_PORT_DISABLED;
 static dmx_frame_state_t frame_state = DMX_FRAME_IDLE;
 static uint8_t dmx_pending_frame[513] = {0};
 static uint8_t dmx_frame[513] = {0};
@@ -110,7 +104,7 @@ void task_dmx_run(void *argument)
     HAL_GPIO_WritePin(DMX512_TX_GPIO_Port, DMX512_TX_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(DMX512_RX_GPIO_Port, DMX512_RX_Pin, GPIO_PIN_RESET);
 
-    task_state = DMX_TASK_IDLE;
+    port_state = DMX_PORT_DISABLED;
     frame_state = DMX_FRAME_IDLE;
 
     /* Create the queue for DMX task control events */
@@ -154,7 +148,7 @@ void dmx_task_loop()
     log_d("dmx_task start");
 
     for (;;) {
-        if (task_state == DMX_TASK_SENDING) {
+        if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
             uint32_t ticks_start = osKernelGetTickCount();
             /* Send the next frame */
             dmx_send_frame();
@@ -203,6 +197,11 @@ void dmx_task_loop()
     }
 }
 
+dmx_port_state_t dmx_get_port_state()
+{
+    return port_state;
+}
+
 osStatus_t dmx_enable()
 {
     if (!dmx_initialized) { return osErrorResource; }
@@ -222,7 +221,7 @@ osStatus_t dmx_control_enable()
 {
     log_d("dmx_control_enable");
 
-    if (frame_state != DMX_FRAME_IDLE || task_state != DMX_TASK_IDLE) {
+    if (frame_state != DMX_FRAME_IDLE || port_state != DMX_PORT_DISABLED) {
         log_w("Invalid state");
         return osErrorResource;
     }
@@ -234,7 +233,7 @@ osStatus_t dmx_control_enable()
     HAL_GPIO_WritePin(DMX512_TX_EN_GPIO_Port, DMX512_TX_EN_Pin, GPIO_PIN_SET);
 
     frame_state = DMX_FRAME_MARK_BEFORE_BREAK;
-    task_state = DMX_TASK_ENABLED;
+    port_state = DMX_PORT_ENABLED_IDLE;
 
     log_i("DMX512 output enabled");
 
@@ -260,7 +259,7 @@ osStatus_t dmx_control_disable()
 {
     log_d("dmx_control_disable");
 
-    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || task_state != DMX_TASK_ENABLED) {
+    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || port_state != DMX_PORT_ENABLED_IDLE) {
         log_w("Invalid state");
         return osErrorResource;
     }
@@ -269,7 +268,7 @@ osStatus_t dmx_control_disable()
     HAL_GPIO_WritePin(DMX512_TX_EN_GPIO_Port, DMX512_TX_EN_Pin, GPIO_PIN_RESET);
 
     frame_state = DMX_FRAME_IDLE;
-    task_state = DMX_TASK_IDLE;
+    port_state = DMX_PORT_DISABLED;
 
     log_i("DMX512 output disabled");
 
@@ -295,12 +294,12 @@ osStatus_t dmx_control_start()
 {
     log_d("dmx_control_start");
 
-    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || task_state != DMX_TASK_ENABLED) {
+    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || port_state != DMX_PORT_ENABLED_IDLE) {
         log_w("Invalid state");
         return osErrorResource;
     }
 
-    task_state = DMX_TASK_SENDING;
+    port_state = DMX_PORT_ENABLED_TRANSMITTING;
 
     log_i("DMX512 frame output started");
 
@@ -326,12 +325,12 @@ osStatus_t dmx_control_stop()
 {
     log_d("dmx_control_stop");
 
-    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || task_state != DMX_TASK_SENDING) {
+    if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || port_state != DMX_PORT_ENABLED_TRANSMITTING) {
         log_w("Invalid state");
         return osErrorResource;
     }
 
-    task_state = DMX_TASK_ENABLED;
+    port_state = DMX_PORT_ENABLED_IDLE;
 
     log_i("DMX512 frame output stopped");
 

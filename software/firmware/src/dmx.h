@@ -4,10 +4,18 @@
 #include "stm32f4xx_hal.h"
 #include <cmsis_os.h>
 
+typedef enum {
+    DMX_PORT_DISABLED = 0,        /*!< Port is not enabled */
+    DMX_PORT_ENABLED_IDLE,        /*!< Port line drivers are enabled, but nothing is being sent */
+    DMX_PORT_ENABLED_TRANSMITTING /*!< Port is enabled and sending DMX frames */
+} dmx_port_state_t;
+
 /**
  * Initialize the DMX controller port and task
  */
 void task_dmx_run(void *argument);
+
+dmx_port_state_t dmx_get_port_state();
 
 osStatus_t dmx_enable();
 osStatus_t dmx_disable();

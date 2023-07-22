@@ -450,11 +450,11 @@ menu_result_t diagnostics_dmx512()
 {
     char state_buf[32];
     char buf[256];
-    bool dmx_started = false;
     uint16_t frame_offset = 0;
     uint8_t frame_val[6] = {0};
     uint8_t marker = 0;
     bool marker_all = false;
+    dmx_port_state_t port_state = DMX_PORT_DISABLED;
 
     /* Enable DMX output on entry */
     if (dmx_enable() != osOK) {
@@ -462,11 +462,21 @@ menu_result_t diagnostics_dmx512()
     }
 
     for (;;) {
-        //FIXME Come up with consistent state terminology
-        if (dmx_started) {
-            sprintf(state_buf, "          [Sending]");
-        } else {
-            sprintf(state_buf, "          [Enabled]");
+        port_state = dmx_get_port_state();
+
+        switch(port_state) {
+        case DMX_PORT_DISABLED:
+            sprintf(state_buf, "         [Disabled]");
+            break;
+        case DMX_PORT_ENABLED_IDLE:
+            sprintf(state_buf, "   [Enabled (Idle)]");
+            break;
+        case DMX_PORT_ENABLED_TRANSMITTING:
+            sprintf(state_buf, "     [Transmitting]");
+            break;
+        default:
+            sprintf(state_buf, "                [?]");
+            break;
         }
 
         sprintf(buf,
@@ -492,13 +502,23 @@ menu_result_t diagnostics_dmx512()
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                if (dmx_started) {
-                    if (dmx_stop() == osOK) {
-                        dmx_started = false;
+                if (port_state == DMX_PORT_DISABLED) {
+                    if (dmx_enable() == osOK) {
+                        dmx_start();
                     }
-                } else {
-                    if (dmx_start() == osOK) {
-                        dmx_started = true;
+                } else if (port_state == DMX_PORT_ENABLED_IDLE) {
+                    dmx_start();
+                } else if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
+                    dmx_stop();
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                if (port_state == DMX_PORT_DISABLED) {
+                    dmx_enable();
+                } else if (port_state == DMX_PORT_ENABLED_IDLE) {
+                    dmx_disable();
+                } else if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
+                    if (dmx_stop() == osOK) {
+                        dmx_disable();
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
@@ -577,10 +597,13 @@ menu_result_t diagnostics_dmx512()
     }
 
     /* Disable DMX output on exit */
-    if (dmx_started) {
+    port_state = dmx_get_port_state();
+    if (port_state == DMX_PORT_ENABLED_IDLE) {
+        dmx_disable();
+    } else if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
         dmx_stop();
+        dmx_disable();
     }
-    dmx_disable();
 
     return MENU_OK;
 }
