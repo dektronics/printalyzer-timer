@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <cmsis_os.h>
 
+#ifdef USE_SEGGER_RTT
+#include "SEGGER_RTT.h"
+#endif
+
 #define LOG_TAG "main"
 #include <elog.h>
 
@@ -529,6 +533,10 @@ int main(void)
 
     /* Initialize the MPU */
     mpu_config();
+
+#ifdef USE_SEGGER_RTT
+    SEGGER_RTT_ConfigUpBuffer(0, NULL, NULL, 0, SEGGER_RTT_MODE_NO_BLOCK_SKIP);
+#endif
 
     /* Initialize all configured peripherals */
     usart1_uart_init();

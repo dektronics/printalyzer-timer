@@ -31,6 +31,11 @@
 #include <sys/times.h>
 #include <stm32f4xx_hal.h>
 
+#ifdef USE_SEGGER_RTT
+#include <reent.h>
+#include "SEGGER_RTT.h"
+#endif
+
 #define STDOUT_FILENO 1
 #define STDERR_FILENO 2
 
@@ -81,6 +86,22 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
     return len;
 }
 
+#ifdef USE_SEGGER_RTT
+__attribute__((weak)) int _write(int file, char *ptr, int len)
+{
+    (void)file;
+    SEGGER_RTT_Write(0, ptr, len);
+    return len;
+}
+
+__attribute__((weak)) int _write_r(struct _reent *r, int file, const void *ptr, size_t len)
+{
+    (void)r;
+    (void)file;
+    SEGGER_RTT_Write(0, ptr, len);
+    return len;
+}
+#else
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
     if (file == STDOUT_FILENO || file == STDERR_FILENO) {
@@ -96,6 +117,7 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
         return -1;
     }
 }
+#endif
 
 int _close(int file)
 {
@@ -183,8 +205,16 @@ int _execve(char *name, char **argv, char **env)
     return -1;
 }
 
+#ifdef USE_SEGGER_RTT
+__attribute__((weak)) int __io_putchar(int ch)
+{
+    SEGGER_RTT_PutChar(0, ch);
+    return ch;
+}
+#else
 __attribute__((weak)) int __io_putchar(int ch)
 {
     HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1, 0xFFFF);
     return (status == HAL_OK ? ch : 0);
 }
+#endif
