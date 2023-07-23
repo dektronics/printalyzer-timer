@@ -139,3 +139,10 @@
  License:  MIT
 
 ******************************************************************************
+
+ Segger RTT
+ Path:     firmware/external/RTT
+ Upstream: https://www.segger.com/downloads/jlink/
+ License:  One-clause BSD license (see LICENSE file for details)
+
+******************************************************************************
