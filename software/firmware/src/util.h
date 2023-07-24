@@ -117,6 +117,20 @@ float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, fl
  */
 bool is_valid_number(float num);
 
+/**
+ * Convert two adjacent 8-bit elements in an array into a 16-bit unsigned integer
+ * @param src Pointer to the source array
+ * @param val Output value
+ */
+uint16_t conv_array_u16(uint8_t *src);
+
+/**
+ * Convert a 16-bit unsigned integer into two adjacent 8-bit elements in an array
+ * @param dst Pointer to the destination array
+ * @param src Input value
+ */
+void conv_u16_array(uint8_t *dst, uint16_t src);
+
 osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status);
 HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status);
 

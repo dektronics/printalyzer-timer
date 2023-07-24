@@ -24,6 +24,7 @@
 #include "densitometer.h"
 #include "usb_host.h"
 #include "dmx.h"
+#include "util.h"
 
 extern I2C_HandleTypeDef hi2c2;
 
@@ -451,7 +452,8 @@ menu_result_t diagnostics_dmx512()
     char state_buf[32];
     char buf[256];
     uint16_t frame_offset = 0;
-    uint8_t frame_val[6] = {0};
+    uint8_t frame_val[8] = {0};
+    bool wide_mode = false;
     uint8_t marker = 0;
     bool marker_all = false;
     dmx_port_state_t port_state = DMX_PORT_DISABLED;
@@ -479,23 +481,42 @@ menu_result_t diagnostics_dmx512()
             break;
         }
 
-        sprintf(buf,
-            " Port State %s \n"
-            "                                \n"
-            "  %03d  %03d  %03d  %03d  %03d  %03d  \n"
-            " [%03d][%03d][%03d][%03d][%03d][%03d] \n"
-            "   %c    %c    %c    %c    %c    %c   \n",
-            state_buf,
-            frame_offset + 1, frame_offset + 2, frame_offset + 3,
-            frame_offset + 4, frame_offset + 5, frame_offset + 6,
-            frame_val[0], frame_val[1], frame_val[2],
-            frame_val[3], frame_val[4], frame_val[5],
-            ((marker == 0 || marker_all) ? '*' : ' '),
-            ((marker == 1 || marker_all) ? '*' : ' '),
-            ((marker == 2 || marker_all) ? '*' : ' '),
-            ((marker == 3 || marker_all) ? '*' : ' '),
-            ((marker == 4 || marker_all) ? '*' : ' '),
-            ((marker == 5 || marker_all) ? '*' : ' '));
+        if (wide_mode) {
+            sprintf(buf,
+                " Port state %s\n"
+                " Resolution            [16-bit]\n"
+                "    %03d    %03d    %03d    %03d    \n"
+                "  [%05d][%05d][%05d][%05d]  \n"
+                "     %c      %c      %c      %c     \n",
+                state_buf,
+                frame_offset + 1, frame_offset + 3, frame_offset + 5, frame_offset + 7,
+                conv_array_u16(frame_val),
+                conv_array_u16(frame_val + 2),
+                conv_array_u16(frame_val + 4),
+                conv_array_u16(frame_val + 6),
+                ((marker == 0 || marker_all) ? '*' : ' '),
+                ((marker == 1 || marker_all) ? '*' : ' '),
+                ((marker == 2 || marker_all) ? '*' : ' '),
+                ((marker == 3 || marker_all) ? '*' : ' '));
+        } else {
+            sprintf(buf,
+                " Port state %s\n"
+                " Resolution             [8-bit]\n"
+                "  %03d  %03d  %03d  %03d  %03d  %03d  \n"
+                " [%03d][%03d][%03d][%03d][%03d][%03d] \n"
+                "   %c    %c    %c    %c    %c    %c   \n",
+                state_buf,
+                frame_offset + 1, frame_offset + 2, frame_offset + 3,
+                frame_offset + 4, frame_offset + 5, frame_offset + 6,
+                frame_val[0], frame_val[1], frame_val[2],
+                frame_val[3], frame_val[4], frame_val[5],
+                ((marker == 0 || marker_all) ? '*' : ' '),
+                ((marker == 1 || marker_all) ? '*' : ' '),
+                ((marker == 2 || marker_all) ? '*' : ' '),
+                ((marker == 3 || marker_all) ? '*' : ' '),
+                ((marker == 4 || marker_all) ? '*' : ' '),
+                ((marker == 5 || marker_all) ? '*' : ' '));
+        }
 
         display_static_list("DMX512 Control Test", buf);
 
@@ -523,70 +544,134 @@ menu_result_t diagnostics_dmx512()
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (marker_all) {
-                    memset(frame_val, 0xFF, sizeof(frame_val));
+                    memset(frame_val, 0xFF, wide_mode ? 8 : 6);
                 } else {
-                    frame_val[marker] = 0xFF;
+                    if (wide_mode) {
+                        frame_val[marker * 2] = 0xFF;
+                        frame_val[(marker * 2) + 1] = 0xFF;
+                    } else {
+                        frame_val[marker] = 0xFF;
+                    }
                 }
                 dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 if (marker_all) {
-                    memset(frame_val, 0x00, sizeof(frame_val));
+                    memset(frame_val, 0x00, wide_mode ? 8 : 6);
                 } else {
-                    frame_val[marker] = 0x00;
+                    if (wide_mode) {
+                        frame_val[marker * 2] = 0x00;
+                        frame_val[(marker * 2) + 1] = 0x00;
+                    } else {
+                        frame_val[marker] = 0x00;
+                    }
                 }
                 dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
             } else if (keypad_event.key == KEYPAD_ENCODER_CW) {
-                if (marker_all) {
-                    for (uint8_t i = 0; i < sizeof(frame_val); i++) {
-                        if (frame_val[i] < 0xFF) {
-                            frame_val[i]++;
+                if (wide_mode) {
+                    if (marker_all) {
+                        for (uint8_t i = 0; i < 8; i += 2) {
+                            uint16_t temp = conv_array_u16(frame_val + i);
+                            if (temp < 0xFFFF) { temp++; }
+                            conv_u16_array(frame_val + i, temp);
                         }
+                    } else {
+                        size_t i = marker * 2;
+                        uint16_t temp = conv_array_u16(frame_val + i);
+                        if (temp < 0xFFFF) { temp++; }
+                        conv_u16_array(frame_val + i, temp);
                     }
                 } else {
-                    if (frame_val[marker] < 0xFF) {
-                        frame_val[marker]++;
+                    if (marker_all) {
+                        for (uint8_t i = 0; i < 6; i++) {
+                            if (frame_val[i] < 0xFF) {
+                                frame_val[i]++;
+                            }
+                        }
+                    } else {
+                        if (frame_val[marker] < 0xFF) {
+                            frame_val[marker]++;
+                        }
                     }
                 }
                 dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
             } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
-                if (marker_all) {
-                    for (uint8_t i = 0; i < sizeof(frame_val); i++) {
-                        if (frame_val[i] > 0x00) {
-                            frame_val[i]--;
+                if (wide_mode) {
+                    if (marker_all) {
+                        for (uint8_t i = 0; i < 8; i += 2) {
+                            uint16_t temp = conv_array_u16(frame_val + i);
+                            if (temp > 0x0000) { temp--; }
+                            conv_u16_array(frame_val + i, temp);
                         }
+                    } else {
+                        size_t i = marker * 2;
+                        uint16_t temp = conv_array_u16(frame_val + i);
+                        if (temp > 0x0000) { temp--; }
+                        conv_u16_array(frame_val + i, temp);
                     }
                 } else {
-                    if (frame_val[marker] > 0x00) {
-                        frame_val[marker]--;
+                    if (marker_all) {
+                        for (uint8_t i = 0; i < 6; i++) {
+                            if (frame_val[i] > 0x00) {
+                                frame_val[i]--;
+                            }
+                        }
+                    } else {
+                        if (frame_val[marker] > 0x00) {
+                            frame_val[marker]--;
+                        }
                     }
                 }
                 dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (marker < 5) { marker++; }
+                if (marker < (wide_mode ? 3 : 5)) { marker++; }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 if (marker > 0) { marker--; }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
                 marker_all = !marker_all;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_TEST_STRIP)) {
-                uint16_t value_sel = frame_offset + 1;
-                if (display_input_value_u16(
-                    "Starting Channel",
-                    "\n\n",
-                    "", &value_sel, 1, 507, 3, "") == UINT8_MAX) {
-                    continue;
-                }
-                if (value_sel - 1 != frame_offset) {
-                    /* Zero out the current frame for simplicity */
-                    memset(frame_val, 0x00, sizeof(frame_val));
-                    dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                uint8_t option = 1;
+                do {
+                    sprintf(buf,
+                        "Port offset                [%03d]\n"
+                        "Resolution              %s",
+                        frame_offset + 1,
+                        wide_mode ? "[16-bit]" : " [8-bit]");
+                    option = display_selection_list(
+                        "DMX512 Control Options", option, buf);
 
-                    /* Reset the markers */
-                    marker = 0;
-                    marker_all = false;
+                    if (option == 1) {
+                        uint16_t value_sel = frame_offset + 1;
+                        if (display_input_value_u16(
+                            "Starting Channel",
+                            "\n\n",
+                            "", &value_sel, 1, 507, 3, "") == UINT8_MAX) {
+                            continue;
+                        }
+                        if (value_sel - 1 != frame_offset) {
+                            /* Zero out the current frame for simplicity */
+                            memset(frame_val, 0x00, sizeof(frame_val));
+                            dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
 
-                    /* Update the frame offset */
-                    frame_offset = value_sel - 1;
-                }
+                            /* Reset the markers */
+                            marker = 0;
+                            marker_all = false;
+
+                            /* Update the frame offset */
+                            frame_offset = value_sel - 1;
+                        }
+                    } else if (option == 2) {
+                        /* Zero out the current frame for simplicity */
+                        memset(frame_val, 0x00, sizeof(frame_val));
+                        dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+
+                        /* Reset the markers */
+                        marker = 0;
+                        marker_all = false;
+
+                        /* Change the bit mode */
+                        wide_mode = !wide_mode;
+                    }
+                } while (option > 0 && option != UINT8_MAX);
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
             } else if (keypad_event.key == KEYPAD_USB_KEYBOARD

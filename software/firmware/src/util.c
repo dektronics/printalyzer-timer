@@ -199,6 +199,17 @@ bool is_valid_number(float num)
     return isnormal(num) || fpclassify(num) == FP_ZERO;
 }
 
+uint16_t conv_array_u16(uint8_t *src)
+{
+    return (uint16_t)(*src) << 8 | *(src + 1);
+}
+
+void conv_u16_array(uint8_t *dst, uint16_t src)
+{
+    *dst = (uint8_t)((src & 0xFF00) >> 8);
+    *(dst + 1) = (uint8_t)(src & 0x00FF);
+}
+
 osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status)
 {
     switch (hal_status) {
