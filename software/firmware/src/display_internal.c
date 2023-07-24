@@ -116,7 +116,10 @@ const char *display_u16toa(uint16_t v, uint8_t d)
     if (d > 5) {
         d = 5;
     }
-    sprintf(buf, "%*d", d, v);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+    snprintf(buf, sizeof(buf), "%*d", d, v);
+#pragma GCC diagnostic pop
     return buf;
 }
 
@@ -332,7 +335,10 @@ static const char *display_f16toa(uint16_t val, uint8_t wdigits, uint8_t fdigits
         fdigits = 2;
     }
 
-    sprintf(buf, "%*d.%0*d", wdigits, wval, fdigits, fval);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+    snprintf(buf, sizeof(buf), "%*d.%0*d", wdigits, wval, fdigits, fval);
+#pragma GCC diagnostic pop
     return buf;
 }
 
