@@ -337,7 +337,7 @@ osStatus_t dmx_control_stop()
     return osOK;
 }
 
-osStatus_t dmx_set_frame(uint8_t offset, const uint8_t *frame, size_t len)
+osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len)
 {
     if (!dmx_initialized) { return osErrorResource; }
 

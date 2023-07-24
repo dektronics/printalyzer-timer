@@ -21,7 +21,7 @@ osStatus_t dmx_enable();
 osStatus_t dmx_disable();
 osStatus_t dmx_start();
 osStatus_t dmx_stop();
-osStatus_t dmx_set_frame(uint8_t offset, const uint8_t *frame, size_t len);
+osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len);
 
 /**
  * Call this function from the timer ISR
