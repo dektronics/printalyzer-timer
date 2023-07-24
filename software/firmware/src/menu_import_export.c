@@ -513,7 +513,7 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_profile_
             } else if (strncmp("safelight_mode", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
                 if (num >= 0 && num <= UINT8_MAX) {
-                    settings_set_safelight_mode(num);
+                    //FIXME settings_set_safelight_mode(num);
                 }
             } else if (strncmp("focus_timeout", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
@@ -1074,7 +1074,7 @@ bool write_section_config(FIL *fp)
     json_write_int(fp, 4, "exposure_time", settings_get_default_exposure_time(), true);
     json_write_int(fp, 4, "contrast_grade", (uint8_t)settings_get_default_contrast_grade(), true);
     json_write_int(fp, 4, "step_size", (uint8_t)settings_get_default_step_size(), true);
-    json_write_int(fp, 4, "safelight_mode", (uint8_t)settings_get_safelight_mode(), true);
+    //FIXME json_write_int(fp, 4, "safelight_mode", (uint8_t)settings_get_safelight_mode(), true);
     json_write_int(fp, 4, "focus_timeout", settings_get_enlarger_focus_timeout(), true);
     json_write_int(fp, 4, "display_brightness", settings_get_display_brightness(), true);
     json_write_int(fp, 4, "led_brightness", settings_get_led_brightness(), true);

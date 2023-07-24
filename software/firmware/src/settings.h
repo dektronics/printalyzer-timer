@@ -19,10 +19,19 @@
 #define MAX_PAPER_PROFILES 16
 
 typedef enum {
-    SAFELIGHT_MODE_OFF = 0, /* Safelight is always off */
-    SAFELIGHT_MODE_ON,      /* Safelight is off when the enlarger is on */
-    SAFELIGHT_MODE_AUTO     /* Safelight is off during metering and printing */
+    SAFELIGHT_MODE_OFF = 0, /*!< Safelight is always off */
+    SAFELIGHT_MODE_ON,      /*!< Safelight is off when the enlarger is on */
+    SAFELIGHT_MODE_AUTO     /*!< Safelight is off during metering and printing */
 } safelight_mode_t;
+
+typedef struct {
+    safelight_mode_t mode;  /*!< Safelight operation mode */
+    bool relay_control;     /*!< Set if control via relay is enabled */
+    bool dmx_control;       /*!< Set if control via DMX is enabled */
+    uint16_t dmx_address;    /*!< DMX device address */
+    bool dmx_wide_mode;     /*!< True for 16-bit mode, false for 8-bit mode */
+    uint16_t dmx_on_value;  /*!< Brightness value for the on state */
+} safelight_config_t;
 
 typedef enum {
     TESTSTRIP_MODE_INCREMENTAL = 0,
@@ -71,13 +80,6 @@ void settings_set_default_contrast_grade(contrast_grade_t contrast_grade);
 exposure_adjustment_increment_t settings_get_default_step_size();
 
 void settings_set_default_step_size(exposure_adjustment_increment_t step_size);
-
-/**
- * Behavior of the safelight control
- */
-safelight_mode_t settings_get_safelight_mode();
-
-void settings_set_safelight_mode(safelight_mode_t mode);
 
 /**
  * Enlarger timeout when in focus mode.
@@ -151,6 +153,13 @@ void settings_set_default_paper_profile_index(uint8_t index);
 float settings_get_tcs3472_ga_factor();
 
 void settings_set_tcs3472_ga_factor(float value);
+
+/**
+ * Safelight control configuration.
+ */
+bool settings_get_safelight_config(safelight_config_t *safelight_config);
+
+bool settings_set_safelight_config(const safelight_config_t *safelight_config);
 
 /**
  * Get the enlarger profile saved at the specified index

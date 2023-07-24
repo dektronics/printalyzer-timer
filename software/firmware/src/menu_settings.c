@@ -393,11 +393,13 @@ menu_result_t menu_settings_test_strip_mode()
 menu_result_t menu_settings_safelight_mode()
 {
     menu_result_t menu_result = MENU_OK;
+    safelight_config_t safelight_config;
+    settings_get_safelight_config(&safelight_config);
 
-    safelight_mode_t setting = settings_get_safelight_mode();
+    safelight_mode_t setting = safelight_config.mode;
 
     uint8_t option;
-    switch (setting) {
+    switch (safelight_config.mode) {
     case SAFELIGHT_MODE_OFF:
         option = 1;
         break;
@@ -434,7 +436,8 @@ menu_result_t menu_settings_safelight_mode()
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     if (menu_result == MENU_OK) {
-        settings_set_safelight_mode(setting);
+        safelight_config.mode = setting;
+        settings_set_safelight_config(&safelight_config);
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     }
 

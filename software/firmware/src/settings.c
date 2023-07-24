@@ -14,7 +14,6 @@
 #define DEFAULT_EXPOSURE_TIME           15000
 #define DEFAULT_CONTRAST_GRADE          CONTRAST_GRADE_2
 #define DEFAULT_STEP_SIZE               EXPOSURE_ADJ_QUARTER
-#define DEFAULT_SAFELIGHT_MODE          SAFELIGHT_MODE_AUTO
 #define DEFAULT_ENLARGER_FOCUS_TIMEOUT  300000
 #define DEFAULT_DISPLAY_BRIGHTNESS      0x0F
 #define DEFAULT_LED_BRIGHTNESS          127
@@ -24,6 +23,9 @@
 #define DEFAULT_ENLARGER_PROFILE        0
 #define DEFAULT_PAPER_PROFILE           0
 #define DEFAULT_TCS3472_GA_FACTOR       1.20F
+
+#define LATEST_CONFIG2_VERSION          1
+#define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, true, false, 0, false, 255 }
 
 #define LATEST_ENLARGER_PROFILE_VERSION 1
 #define LATEST_PAPER_PROFILE_VERSION    1
@@ -37,7 +39,6 @@ static osMutexId_t eeprom_i2c_mutex = NULL;
 static uint32_t setting_default_exposure_time = DEFAULT_EXPOSURE_TIME;
 static contrast_grade_t setting_default_contrast_grade = DEFAULT_CONTRAST_GRADE;
 static exposure_adjustment_increment_t setting_default_step_size = DEFAULT_STEP_SIZE;
-static safelight_mode_t setting_safelight_mode = DEFAULT_SAFELIGHT_MODE;
 static uint32_t setting_enlarger_focus_timeout = DEFAULT_ENLARGER_FOCUS_TIMEOUT;
 static uint8_t setting_display_brightness = DEFAULT_DISPLAY_BRIGHTNESS;
 static uint8_t setting_led_brightness = DEFAULT_LED_BRIGHTNESS;
@@ -47,16 +48,32 @@ static teststrip_patches_t setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES
 static uint8_t setting_enlarger_profile = DEFAULT_ENLARGER_PROFILE;
 static uint8_t setting_paper_profile = DEFAULT_PAPER_PROFILE;
 static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
+static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 
-#define PAGE_BASE                        0x00000
-#define BASE_MAGIC                       0 /* "PRINTALYZER\0" */
+/**
+ * Header Page (256b)
+ * Mostly unused at the moment, will be populated if any top-level system
+ * data needs to be stored. Unlike other pages, it begins with a magic
+ * string.
+ */
+#define PAGE_HEADER                      0x00000UL
+#define PAGE_HEADER_SIZE                 (256U)
+#define HEADER_MAGIC                     0 /* "PRINTALYZER\0" */
+#define HEADER_START                     16
+#define HEADER_VERSION                   1UL
 
-#define PAGE_CONFIG                      0x00100
+/**
+ * Basic configuration page (256b)
+ * Contains simple configuration values that are stored
+ * as standalone elements.
+ */
+#define PAGE_CONFIG                      0x00100UL
+#define PAGE_CONFIG_SIZE                 (256U)
 #define CONFIG_VERSION                   0
 #define CONFIG_EXPOSURE_TIME             4
 #define CONFIG_CONTRAST_GRADE            8
 #define CONFIG_STEP_SIZE                 12
-#define CONFIG_SAFELIGHT_MODE            16
+/* RESERVED                              16*/
 #define CONFIG_ENLARGER_FOCUS_TIMEOUT    20
 #define CONFIG_DISPLAY_BRIGHTNESS        24
 #define CONFIG_LED_BRIGHTNESS            28
@@ -68,11 +85,23 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define CONFIG_TCS3472_GA_FACTOR         52
 
 /**
+ * Detailed configuration page (256b)
+ * Contains configuration values that are stored as structures of
+ * related elements.
+ */
+#define PAGE_CONFIG2                     0x00200UL
+#define PAGE_CONFIG2_SIZE                (256U)
+#define CONFIG2_VERSION                  0
+#define CONFIG2_SAFELIGHT_CONTROL        4
+#define CONFIG2_SAFELIGHT_CONTROL_SIZE   (8U)
+
+/**
+ * Enlarger profiles (4096b)
  * Each enlarger profile is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
  * profile entries.
  */
-#define PAGE_ENLARGER_PROFILE_BASE       0x01000
+#define PAGE_ENLARGER_PROFILE_BASE       0x01000UL
 #define ENLARGER_PROFILE_VERSION         0
 #define ENLARGER_PROFILE_NAME            4  /* char[32] */
 #define ENLARGER_PROFILE_TURN_ON_DELAY   36
@@ -86,11 +115,12 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define ENLARGER_PROFILE_IR_CONTENT      68
 
 /**
+ * Paper profiles (4096b)
  * Each paper profile is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
  * profile entries.
  */
-#define PAGE_PAPER_PROFILE_BASE          0x02000
+#define PAGE_PAPER_PROFILE_BASE          0x02000UL
 #define PAPER_PROFILE_VERSION            0
 #define PAPER_PROFILE_NAME               4  /* char[32] */
 #define PAPER_PROFILE_GRADE00_HT         36
@@ -118,10 +148,11 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 #define PAPER_PROFILE_CONTRAST_FILTER    124
 
 /**
+ * Step wedge profile (256b)
  * Only a single step wedge profile is supported, and
  * it is given a full 256-byte page.
  */
-#define PAGE_STEP_WEDGE_BASE             0x03000
+#define PAGE_STEP_WEDGE_BASE             0x03000UL
 #define STEP_WEDGE_VERSION               0
 #define STEP_WEDGE_NAME                  4  /* char[32] */
 #define STEP_WEDGE_BASE_DENSITY          36
@@ -132,31 +163,46 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 /**
  * Size of a memory page.
  */
-#define PAGE_SIZE                        0x00100
+#define PAGE_SIZE                        0x00100UL
 
 /**
  * End of the EEPROM memory space, kept here for reference.
  */
-#define PAGE_LIMIT                       0x20000
+#define PAGE_LIMIT                       0x20000UL
 
-HAL_StatusTypeDef settings_init_default_config();
-void settings_init_parse_config_page(const uint8_t *data);
+static HAL_StatusTypeDef settings_read_header(bool *valid);
+static HAL_StatusTypeDef settings_write_header();
+
+static bool settings_init_config(bool force_clear);
+static HAL_StatusTypeDef settings_init_default_config();
+static void settings_init_parse_config_page(const uint8_t *data);
+
+static bool settings_init_config2(bool force_clear);
+static bool settings_clear_config2();
+static void settings_set_safelight_config_defaults(safelight_config_t *safelight_config);
+static bool settings_validate_safelight_config(const safelight_config_t *safelight_config);
+static bool settings_load_safelight_config();
+
 static void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uint8_t *data);
 static void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data);
 static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data);
 static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
 static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data);
 static void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data);
+static bool read_u32(uint32_t address, uint32_t *val);
 static bool write_u32(uint32_t address, uint32_t val);
 static bool write_f32(uint32_t address, float val);
 static void copy_from_u32(uint8_t *buf, uint32_t val);
 static uint32_t copy_to_u32(const uint8_t *buf);
 static void copy_from_f32(uint8_t *buf, float val);
 static float copy_to_f32(const uint8_t *buf);
+static void copy_from_u16(uint8_t *buf, uint16_t val);
+static uint16_t copy_to_u16(const uint8_t *buf);
 
 HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
 {
     HAL_StatusTypeDef ret = HAL_OK;
+    bool valid = false;
 
     if (!hi2c || !i2c_mutex) {
         return HAL_ERROR;
@@ -165,43 +211,118 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
     eeprom_i2c = hi2c;
     eeprom_i2c_mutex = i2c_mutex;
 
-    log_i("settings_init");
-
     osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     do {
-        // Read the base page
-        uint8_t data[PAGE_SIZE];
-        ret = m24m01_read_buffer(eeprom_i2c, PAGE_BASE, data, sizeof(data));
+        log_i("Settings init");
+
+        /* Read and validate the header page */
+        ret = settings_read_header(&valid);
         if (ret != HAL_OK) { break; }
 
-        if (memcmp(data, "PRINTALYZER\0", 12) != 0) {
-            log_i("Initializing base page");
-            memset(data, 0, sizeof(data));
-            memcpy(data, "PRINTALYZER\0", 12);
-            ret = m24m01_write_page(eeprom_i2c, PAGE_BASE, data, sizeof(data));
-            if (ret != HAL_OK) { break; }
+        /* Initialize all settings data pages */
+        if (!settings_init_config(!valid)) { break; }
+        if (!settings_init_config2(!valid)) { break; }
 
-            ret = settings_init_default_config();
+        /* Initialize the header page if necessary */
+        if (!valid) {
+            ret = settings_write_header();
             if (ret != HAL_OK) { break; }
-        } else {
-            log_i("Loading config page");
-            ret = m24m01_read_buffer(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
-            if (ret != HAL_OK) { break; }
-
-            uint32_t config_version = copy_to_u32(data + CONFIG_VERSION);
-            if (config_version == 0 || config_version > LATEST_CONFIG_VERSION) {
-                log_w("Invalid config version %ld", config_version);
-                ret = settings_init_default_config();
-                if (ret != HAL_OK) { break; }
-                break;
-            } else {
-                settings_init_parse_config_page(data);
-            }
         }
+
+        log_i("Settings loaded");
     } while (0);
     osMutexRelease(eeprom_i2c_mutex);
 
     return ret;
+}
+
+
+HAL_StatusTypeDef settings_read_header(bool *valid)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    bool is_valid = true;
+    uint8_t data[PAGE_HEADER_SIZE];
+
+    do {
+        /* Read the header into a buffer */
+        ret = m24m01_read_buffer(eeprom_i2c, PAGE_HEADER, data, sizeof(data));
+        if (ret != HAL_OK) {
+            log_e("Unable to read settings header: %d", ret);
+            break;
+        }
+
+        /* Validate the magic bytes at the start of the header */
+        if (memcmp(data, "PRINTALYZER\0", 12) != 0) {
+            log_w("Invalid magic");
+            is_valid = false;
+            break;
+        }
+
+        /* Validate the header version */
+        uint32_t version = copy_to_u32(&data[HEADER_START - PAGE_HEADER]);
+        if (version != HEADER_VERSION) {
+            log_w("Unexpected header version: %d", version);
+            /*
+             * When there are multiple versions, then this should be handled
+             * gracefully and shouldn't cause EEPROM validation to fail.
+             * Until then, it is probably okay to treat this as if it were
+             * part of the magic string.
+             */
+            is_valid = false;
+            break;
+        }
+    } while (0);
+
+    if (ret == HAL_OK) {
+        if (valid) { *valid = is_valid; }
+    }
+    return ret;
+}
+
+HAL_StatusTypeDef settings_write_header()
+{
+    log_i("Write settings header");
+    HAL_StatusTypeDef ret;
+    uint8_t data[PAGE_HEADER_SIZE];
+
+    /* Fill the page with the magic bytes and version header */
+    memset(data, 0, sizeof(data));
+    memcpy(data, "PRINTALYZER\0", 12);
+    copy_from_u32(&data[HEADER_START - PAGE_HEADER], HEADER_VERSION);
+
+    /* Write the buffer */
+    ret = m24m01_write_buffer(eeprom_i2c, PAGE_HEADER, data, sizeof(data));
+    if (ret != HAL_OK) {
+        log_e("Unable to write settings header: %d", ret);
+    }
+    return ret;
+}
+
+bool settings_init_config(bool force_clear)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    if (force_clear) {
+        log_i("Clearing config page");
+        ret = settings_init_default_config();
+        if (ret != HAL_OK) { return false; }
+    } else {
+        uint8_t data[PAGE_CONFIG_SIZE];
+
+        log_i("Loading config page");
+        ret = m24m01_read_buffer(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
+        if (ret != HAL_OK) { return false; }
+
+        uint32_t config_version = copy_to_u32(data + CONFIG_VERSION);
+        if (config_version == 0 || config_version > LATEST_CONFIG_VERSION) {
+            log_w("Invalid config version %ld", config_version);
+            ret = settings_init_default_config();
+            if (ret != HAL_OK) { return false; }
+        } else {
+            settings_init_parse_config_page(data);
+        }
+    }
+    return true;
 }
 
 HAL_StatusTypeDef settings_init_default_config()
@@ -213,7 +334,6 @@ HAL_StatusTypeDef settings_init_default_config()
     copy_from_u32(data + CONFIG_EXPOSURE_TIME,          DEFAULT_EXPOSURE_TIME);
     copy_from_u32(data + CONFIG_CONTRAST_GRADE,         DEFAULT_CONTRAST_GRADE);
     copy_from_u32(data + CONFIG_STEP_SIZE,              DEFAULT_STEP_SIZE);
-    copy_from_u32(data + CONFIG_SAFELIGHT_MODE,         DEFAULT_SAFELIGHT_MODE);
     copy_from_u32(data + CONFIG_ENLARGER_FOCUS_TIMEOUT, DEFAULT_ENLARGER_FOCUS_TIMEOUT);
     copy_from_u32(data + CONFIG_DISPLAY_BRIGHTNESS,     DEFAULT_DISPLAY_BRIGHTNESS);
     copy_from_u32(data + CONFIG_LED_BRIGHTNESS,         DEFAULT_LED_BRIGHTNESS);
@@ -249,13 +369,6 @@ void settings_init_parse_config_page(const uint8_t *data)
         setting_default_step_size = val;
     } else {
         setting_default_step_size = DEFAULT_STEP_SIZE;
-    }
-
-    val = copy_to_u32(data + CONFIG_SAFELIGHT_MODE);
-    if (val >= SAFELIGHT_MODE_OFF && val <= SAFELIGHT_MODE_AUTO) {
-        setting_safelight_mode = val;
-    } else {
-        setting_safelight_mode = DEFAULT_SAFELIGHT_MODE;
     }
 
     val = copy_to_u32(data + CONFIG_ENLARGER_FOCUS_TIMEOUT);
@@ -320,6 +433,61 @@ void settings_init_parse_config_page(const uint8_t *data)
     }
 }
 
+bool settings_init_config2(bool force_clear)
+{
+    /* Initialize all fields to their default values */
+    settings_set_safelight_config_defaults(&setting_safelight_config);
+
+    if (force_clear) {
+        if (settings_clear_config2() != HAL_OK) {
+            return false;
+        }
+    } else {
+        log_i("Loading config2 page");
+        /* Load settings if the version matches */
+        uint32_t version;
+        if (!read_u32(PAGE_CONFIG2, &version)) {
+            return false;
+        }
+
+        if (version == LATEST_CONFIG2_VERSION) {
+            /* Version is good, load data with per-field validation */
+            settings_load_safelight_config();
+        } else {
+            /* Version is bad, initialize a blank page */
+            log_w("Unexpected config2 version: %d != %d", version, LATEST_CONFIG2_VERSION);
+            if (!settings_clear_config2()) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool settings_clear_config2()
+{
+    log_i("Clearing config2 page");
+
+    /* Zero the page version */
+    if (!write_u32(PAGE_CONFIG2, 0UL)) {
+        return false;
+    }
+
+    /* Write a default safelight config struct */
+    safelight_config_t safelight_config;
+    settings_set_safelight_config_defaults(&safelight_config);
+    if (!settings_set_safelight_config(&safelight_config)) {
+        return false;
+    }
+
+    /* Write the page version */
+    if (!write_u32(PAGE_CONFIG2, LATEST_CONFIG2_VERSION)) {
+        return false;
+    }
+
+    return true;
+}
+
 HAL_StatusTypeDef settings_clear(I2C_HandleTypeDef *hi2c)
 {
     HAL_StatusTypeDef ret = HAL_OK;
@@ -334,10 +502,13 @@ HAL_StatusTypeDef settings_clear(I2C_HandleTypeDef *hi2c)
     do {
         log_i("settings_clear");
 
-        ret = m24m01_write_page(hi2c, PAGE_BASE, data, sizeof(data));
+        ret = m24m01_write_page(hi2c, PAGE_HEADER, data, sizeof(data));
         if (ret != HAL_OK) { break; }
 
         ret = m24m01_write_page(hi2c, PAGE_CONFIG, data, sizeof(data));
+        if (ret != HAL_OK) { break; }
+
+        ret = m24m01_write_page(hi2c, PAGE_CONFIG2, data, sizeof(data));
         if (ret != HAL_OK) { break; }
 
     } while (0);
@@ -386,21 +557,6 @@ void settings_set_default_step_size(exposure_adjustment_increment_t step_size)
         && step_size >= EXPOSURE_ADJ_TWELFTH && step_size <=  EXPOSURE_ADJ_WHOLE) {
         if (write_u32(PAGE_CONFIG + CONFIG_STEP_SIZE, step_size)) {
             setting_default_step_size = step_size;
-        }
-    }
-}
-
-safelight_mode_t settings_get_safelight_mode()
-{
-    return setting_safelight_mode;
-}
-
-void settings_set_safelight_mode(safelight_mode_t mode)
-{
-    if (setting_safelight_mode != mode
-        && mode >= SAFELIGHT_MODE_OFF && mode <= SAFELIGHT_MODE_AUTO) {
-        if (write_u32(PAGE_CONFIG + CONFIG_SAFELIGHT_MODE, mode)) {
-            setting_safelight_mode = mode;
         }
     }
 }
@@ -533,6 +689,98 @@ void settings_set_tcs3472_ga_factor(float value)
         if (write_f32(PAGE_CONFIG + CONFIG_TCS3472_GA_FACTOR, value)) {
             setting_tcs3472_ga_factor = value;
         }
+    }
+}
+
+void settings_set_safelight_config_defaults(safelight_config_t *safelight_config)
+{
+    if (!safelight_config) { return; }
+    memset(safelight_config, 0, sizeof(safelight_config_t));
+    safelight_config->mode = SAFELIGHT_MODE_AUTO;
+    safelight_config->relay_control = true;
+    safelight_config->dmx_control = false;
+    safelight_config->dmx_address = 0;
+    safelight_config->dmx_wide_mode = false;
+    safelight_config->dmx_on_value = 255;
+}
+
+bool settings_validate_safelight_config(const safelight_config_t *safelight_config)
+{
+    if (!safelight_config) { return false; }
+
+    /* Validate field properties */
+    if (safelight_config->mode > SAFELIGHT_MODE_AUTO) {
+        return false;
+    }
+    if (safelight_config->dmx_address > 511) {
+        return false;
+    }
+    if (!safelight_config->dmx_wide_mode && safelight_config->dmx_on_value > 0xFF) {
+        return false;
+    }
+    if (safelight_config->dmx_wide_mode && safelight_config->dmx_on_value > 0xFFFF) {
+        return false;
+    }
+
+    return true;
+}
+
+bool settings_load_safelight_config()
+{
+    uint8_t buf[CONFIG2_SAFELIGHT_CONTROL_SIZE];
+
+    if (m24m01_read_buffer(eeprom_i2c, PAGE_CONFIG2 + CONFIG2_SAFELIGHT_CONTROL, buf, sizeof(buf)) != HAL_OK) {
+        return false;
+    }
+
+    setting_safelight_config.mode = (safelight_mode_t)buf[0];
+    setting_safelight_config.relay_control = buf[1];
+    setting_safelight_config.dmx_control = buf[2];
+    setting_safelight_config.dmx_wide_mode = buf[3];
+    setting_safelight_config.dmx_address = copy_to_u16(&buf[4]);
+    setting_safelight_config.dmx_on_value = copy_to_u16(&buf[6]);
+
+    return true;
+}
+
+bool settings_get_safelight_config(safelight_config_t *safelight_config)
+{
+    if (!safelight_config) { return false; }
+
+    /* Copy over the settings values */
+    memcpy(safelight_config, &setting_safelight_config, sizeof(safelight_config_t));
+
+    /* Set default values if validation fails */
+    if (!settings_validate_safelight_config(safelight_config)) {
+        settings_set_safelight_config_defaults(safelight_config);
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool settings_set_safelight_config(const safelight_config_t *safelight_config)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    if (!safelight_config) { return false; }
+
+    uint8_t buf[CONFIG2_SAFELIGHT_CONTROL_SIZE];
+    buf[0] = (uint8_t)safelight_config->mode;
+    buf[1] = safelight_config->relay_control ? 1 : 0;
+    buf[2] = safelight_config->dmx_control ? 1 : 0;
+    buf[3] = safelight_config->dmx_wide_mode;
+    copy_from_u16(&buf[4], safelight_config->dmx_address);
+    copy_from_u16(&buf[6], safelight_config->dmx_on_value);
+
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+    ret = m24m01_write_buffer(eeprom_i2c, PAGE_CONFIG2 + CONFIG2_SAFELIGHT_CONTROL, buf, sizeof(buf));
+    osMutexRelease(eeprom_i2c_mutex);
+
+    if (ret == HAL_OK) {
+        memcpy(&setting_safelight_config, safelight_config, sizeof(safelight_config_t));
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -934,6 +1182,18 @@ void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
     }
 }
 
+bool read_u32(uint32_t address, uint32_t *val)
+{
+    uint8_t data[4];
+    osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+    bool result = m24m01_read_buffer(eeprom_i2c, address, data, sizeof(data)) == HAL_OK;
+    osMutexRelease(eeprom_i2c_mutex);
+    if (result && val) {
+        *val = copy_to_u32(data);
+    }
+    return result;
+}
+
 bool write_u32(uint32_t address, uint32_t val)
 {
     uint8_t data[4];
@@ -983,4 +1243,16 @@ float copy_to_f32(const uint8_t *buf)
     uint32_t int_val = copy_to_u32(buf);
     memcpy(&val, &int_val, sizeof(float));
     return val;
+}
+
+void copy_from_u16(uint8_t *buf, uint16_t val)
+{
+    buf[0] = (val >> 8) & 0xFF;
+    buf[1] = val & 0xFF;
+}
+
+uint16_t copy_to_u16(const uint8_t *buf)
+{
+    return (uint32_t)buf[0] << 8
+        | (uint32_t)buf[1];
 }

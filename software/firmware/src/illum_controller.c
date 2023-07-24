@@ -33,6 +33,9 @@ void illum_controller_init()
 
 void illum_controller_safelight_state(illum_safelight_t mode)
 {
+    safelight_config_t safelight_config;
+    settings_get_safelight_config(&safelight_config);
+
     osMutexAcquire(illum_mutex, portMAX_DELAY);
 
     if (illum_safelight != mode) {
@@ -41,7 +44,7 @@ void illum_controller_safelight_state(illum_safelight_t mode)
     }
 
     if (!illum_blackout) {
-        safelight_mode_t setting = settings_get_safelight_mode();
+        const safelight_mode_t setting = safelight_config.mode;
         bool safelight_enabled = true;
         if (setting == SAFELIGHT_MODE_OFF) {
             safelight_enabled = false;
