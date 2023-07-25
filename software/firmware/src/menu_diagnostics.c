@@ -553,7 +553,7 @@ menu_result_t diagnostics_dmx512()
                         frame_val[marker] = 0xFF;
                     }
                 }
-                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 if (marker_all) {
                     memset(frame_val, 0x00, wide_mode ? 8 : 6);
@@ -565,7 +565,7 @@ menu_result_t diagnostics_dmx512()
                         frame_val[marker] = 0x00;
                     }
                 }
-                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
             } else if (keypad_event.key == KEYPAD_ENCODER_CW) {
                 if (wide_mode) {
                     if (marker_all) {
@@ -593,7 +593,7 @@ menu_result_t diagnostics_dmx512()
                         }
                     }
                 }
-                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
             } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
                 if (wide_mode) {
                     if (marker_all) {
@@ -621,7 +621,7 @@ menu_result_t diagnostics_dmx512()
                         }
                     }
                 }
-                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (marker < (wide_mode ? 3 : 5)) { marker++; }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
@@ -650,7 +650,7 @@ menu_result_t diagnostics_dmx512()
                         if (value_sel - 1 != frame_offset) {
                             /* Zero out the current frame for simplicity */
                             memset(frame_val, 0x00, sizeof(frame_val));
-                            dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                            dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
 
                             /* Reset the markers */
                             marker = 0;
@@ -662,7 +662,7 @@ menu_result_t diagnostics_dmx512()
                     } else if (option == 2) {
                         /* Zero out the current frame for simplicity */
                         memset(frame_val, 0x00, sizeof(frame_val));
-                        dmx_set_frame(frame_offset, frame_val, sizeof(frame_val));
+                        dmx_set_frame(frame_offset, frame_val, sizeof(frame_val), false);
 
                         /* Reset the markers */
                         marker = 0;

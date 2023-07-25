@@ -67,10 +67,18 @@ static const osSemaphoreAttr_t dmx_frame_semaphore_attrs = {
     .name = "dmx_frame_semaphore"
 };
 
+/* Mutex to protect DMX frame updates */
+static osMutexId_t dmx_frame_mutex;
+static const osMutexAttr_t dmx_frame_mutex_attributes = {
+    .name = "dmx_frame_mutex"
+};
+
 static bool dmx_initialized = false;
 static dmx_port_state_t port_state = DMX_PORT_DISABLED;
 static dmx_frame_state_t frame_state = DMX_FRAME_IDLE;
 static uint8_t dmx_pending_frame[513] = {0};
+static bool has_pending_frame = false;
+static bool pending_frame_blocking = false;
 static uint8_t dmx_frame[513] = {0};
 
 static void dmx_task_loop();
@@ -128,6 +136,13 @@ void task_dmx_run(void *argument)
         return;
     }
 
+    /* Create the mutex used to protect DMX frame update */
+    dmx_frame_mutex = osMutexNew(&dmx_frame_mutex_attributes);
+    if (!dmx_frame_mutex) {
+        log_e("dmx_frame_mutex create error");
+        return;
+    }
+
     dmx_initialized = true;
 
     /* Release the startup semaphore */
@@ -156,12 +171,18 @@ void dmx_task_loop()
             /* Block until the frame is sent */
             osSemaphoreAcquire(dmx_frame_semaphore, portMAX_DELAY);
 
+            /* Copy any pending frame updates */
+            osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+            if (has_pending_frame && !pending_frame_blocking) {
+                memcpy(dmx_frame, dmx_pending_frame, sizeof(dmx_frame));
+                has_pending_frame = false;
+            }
+            osMutexRelease(dmx_frame_mutex);
+
             /* Add a delay to fill out the BREAK to BREAK time */
             osDelayUntil(ticks_start + DMX_FRAME_PERIOD_MS);
 
-            //FIXME allow processing of multiple commands that arrived during frame send
             ret = osMessageQueueGet(dmx_control_queue, &control_event, NULL, 0);
-
         } else {
             ret = osMessageQueueGet(dmx_control_queue, &control_event, NULL, portMAX_DELAY);
         }
@@ -337,24 +358,32 @@ osStatus_t dmx_control_stop()
     return osOK;
 }
 
-osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len)
+osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool blocking)
 {
+    osStatus_t result = osOK;
+
     if (!dmx_initialized) { return osErrorResource; }
 
     if (offset + len > 512) {
         return osErrorParameter;
     }
 
-    osStatus_t result = osOK;
-    dmx_control_event_t control_event = {
-        .event_type = DMX_CONTROL_SET_FRAME,
-        .result = &result
-    };
-
+    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
     memcpy(dmx_pending_frame + offset + 1, frame, len);
+    has_pending_frame = true;
+    pending_frame_blocking = blocking;
+    osMutexRelease(dmx_frame_mutex);
 
-    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
-    osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
+    if (blocking) {
+        dmx_control_event_t control_event = {
+            .event_type = DMX_CONTROL_SET_FRAME,
+            .result = &result
+        };
+
+        osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
+        osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
+    }
+
     return result;
 }
 
@@ -367,13 +396,14 @@ osStatus_t dmx_control_set_frame()
         return osErrorResource;
     }
 
+    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
     memcpy(dmx_frame, dmx_pending_frame, sizeof(dmx_frame));
-
-    log_i("DMX512 frame updated");
+    has_pending_frame = false;
+    pending_frame_blocking = false;
+    osMutexRelease(dmx_frame_mutex);
 
     return osOK;
 }
-
 
 void dmx_send_frame()
 {
