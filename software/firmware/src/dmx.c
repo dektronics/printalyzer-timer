@@ -353,6 +353,14 @@ osStatus_t dmx_control_stop()
 
     port_state = DMX_PORT_ENABLED_IDLE;
 
+    /* Clear the active and pending DMX frame values */
+    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+    memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));
+    memset(dmx_frame, 0, sizeof(dmx_frame));
+    has_pending_frame = false;
+    pending_frame_blocking = false;
+    osMutexRelease(dmx_frame_mutex);
+
     log_i("DMX512 frame output stopped");
 
     return osOK;
