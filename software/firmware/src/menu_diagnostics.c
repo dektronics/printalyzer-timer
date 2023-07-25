@@ -458,9 +458,8 @@ menu_result_t diagnostics_dmx512()
     bool marker_all = false;
     dmx_port_state_t port_state = DMX_PORT_DISABLED;
 
-    /* Enable DMX output on entry */
-    if (dmx_enable() != osOK) {
-        return MENU_OK;
+    if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+        dmx_clear_frame(false);
     }
 
     for (;;) {
@@ -681,14 +680,15 @@ menu_result_t diagnostics_dmx512()
         }
     }
 
-    /* Disable DMX output on exit */
+    /* Clear DMX output frame */
     port_state = dmx_get_port_state();
-    if (port_state == DMX_PORT_ENABLED_IDLE) {
-        dmx_disable();
-    } else if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
+    if (port_state == DMX_PORT_ENABLED_TRANSMITTING) {
         dmx_stop();
-        dmx_disable();
     }
+
+    /* Reset the DMX controller state */
+    illum_controller_refresh();
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return MENU_OK;
 }

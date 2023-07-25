@@ -226,6 +226,7 @@ void main_task_run(void *argument)
     main_task_enable_interrupts();
 
     /* Set the startup safelight state */
+    illum_controller_refresh();
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     /*

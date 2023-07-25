@@ -10,7 +10,9 @@
 #include "relay.h"
 #include "display.h"
 #include "led.h"
+#include "dmx.h"
 #include "settings.h"
+#include "util.h"
 
 static osMutexId_t illum_mutex;
 static const osMutexAttr_t illum_mutex_attributes = {
@@ -18,9 +20,12 @@ static const osMutexAttr_t illum_mutex_attributes = {
   .attr_bits = osMutexRecursive,
 };
 
+static safelight_config_t illum_safelight_config;
 static illum_safelight_t illum_safelight = ILLUM_SAFELIGHT_HOME;
 static bool illum_blackout = false;
 static bool illum_screenshot_mode = false;
+
+static void illum_controller_set_safelight(bool enabled);
 
 void illum_controller_init()
 {
@@ -31,11 +36,41 @@ void illum_controller_init()
     }
 }
 
+void illum_controller_refresh()
+{
+    bool dmx_enabled = false;
+
+    osMutexAcquire(illum_mutex, portMAX_DELAY);
+
+    settings_get_safelight_config(&illum_safelight_config);
+
+    /* Check if DMX is needed for safelight control */
+    if (illum_safelight_config.control == SAFELIGHT_CONTROL_DMX || illum_safelight_config.control == SAFELIGHT_CONTROL_BOTH) {
+        dmx_enabled = true;
+    }
+
+    if (dmx_enabled) {
+        if (dmx_get_port_state() == DMX_PORT_DISABLED) {
+            dmx_enable();
+        }
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_IDLE) {
+            dmx_start();
+        }
+        dmx_clear_frame(false);
+    } else {
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+            dmx_stop();
+        }
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_IDLE) {
+            dmx_disable();
+        }
+    }
+
+    osMutexRelease(illum_mutex);
+}
+
 void illum_controller_safelight_state(illum_safelight_t mode)
 {
-    safelight_config_t safelight_config;
-    settings_get_safelight_config(&safelight_config);
-
     osMutexAcquire(illum_mutex, portMAX_DELAY);
 
     if (illum_safelight != mode) {
@@ -44,7 +79,7 @@ void illum_controller_safelight_state(illum_safelight_t mode)
     }
 
     if (!illum_blackout) {
-        const safelight_mode_t setting = safelight_config.mode;
+        const safelight_mode_t setting = illum_safelight_config.mode;
         bool safelight_enabled = true;
         if (setting == SAFELIGHT_MODE_OFF) {
             safelight_enabled = false;
@@ -86,12 +121,58 @@ void illum_controller_safelight_state(illum_safelight_t mode)
             }
         }
 
-        relay_safelight_enable(safelight_enabled);
+        illum_controller_set_safelight(safelight_enabled);
     } else {
-        relay_safelight_enable(false);
+        illum_controller_set_safelight(false);
     }
 
     osMutexRelease(illum_mutex);
+}
+
+void illum_controller_set_safelight(bool enabled)
+{
+    bool toggle_relay = false;
+    bool toggle_dmx = false;
+
+    switch (illum_safelight_config.control) {
+    case SAFELIGHT_CONTROL_DMX:
+        toggle_dmx = true;
+        break;
+    case SAFELIGHT_CONTROL_BOTH:
+        toggle_relay = true;
+        toggle_dmx = true;
+        break;
+    case SAFELIGHT_CONTROL_RELAY:
+    default:
+        toggle_relay = true;
+        break;
+    }
+
+    /* Make sure the safelight relay is turned off if not enabled */
+    if (!toggle_relay && relay_safelight_is_enabled()) {
+        relay_safelight_enable(false);
+    }
+
+    /* Toggle the relay, if configured */
+    if (toggle_relay) {
+        relay_safelight_enable(enabled);
+    }
+
+    /* Toggle the DMX output channel, if configured */
+    if (toggle_dmx) {
+        uint8_t frame[2] = {0};
+        if (illum_safelight_config.dmx_wide_mode) {
+            if (enabled) {
+                conv_u16_array(frame, illum_safelight_config.dmx_on_value);
+            }
+            dmx_set_frame(illum_safelight_config.dmx_address, frame, 2, false);
+        } else {
+            if (enabled) {
+                frame[0] = (uint8_t)illum_safelight_config.dmx_on_value;
+            }
+            dmx_set_frame(illum_safelight_config.dmx_address, frame, 1, false);
+        }
+    }
 }
 
 bool illum_controller_is_blackout()

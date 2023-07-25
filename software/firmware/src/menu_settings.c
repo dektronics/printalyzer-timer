@@ -529,6 +529,7 @@ menu_result_t menu_settings_safelight_configuration()
 
     if (config_changed) {
         settings_set_safelight_config(&safelight_config);
+        illum_controller_refresh();
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     }
 

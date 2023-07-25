@@ -65,6 +65,16 @@ osStatus_t dmx_stop();
 osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool blocking);
 
 /**
+ * Clear the current DMX frame.
+ *
+ * This is a convenience function to zero out the current frame from an unknown
+ * state prior to setting it with an explicit new value.
+ *
+ * @param blocking True to block until the update takes effect, false to return immediately.
+ */
+osStatus_t dmx_clear_frame(bool blocking);
+
+/**
  * Call this function from the timer ISR
  */
 void dmx_timer_notify();
