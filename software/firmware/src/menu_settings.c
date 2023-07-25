@@ -6,6 +6,9 @@
 #include <string.h>
 #include <math.h>
 
+#define LOG_TAG "menu_settings"
+#include <elog.h>
+
 #include "display.h"
 #include "led.h"
 #include "settings.h"
@@ -15,7 +18,8 @@
 static menu_result_t menu_settings_default_exposure();
 static menu_result_t menu_settings_default_step_size();
 static menu_result_t menu_settings_test_strip_mode();
-static menu_result_t menu_settings_safelight_mode();
+static menu_result_t menu_settings_safelight_configuration();
+static menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config);
 static menu_result_t menu_settings_enlarger_auto_shutoff();
 static menu_result_t menu_settings_display_brightness();
 static menu_result_t menu_settings_buzzer_volume();
@@ -32,7 +36,7 @@ menu_result_t menu_settings()
             "Default Exposure\n"
             "Default Step Size\n"
             "Test Strip Mode\n"
-            "Safelight Mode\n"
+            "Safelight Configuration\n"
             "Enlarger Auto-Shutoff\n"
             "Display Brightness\n"
             "Buzzer Volume\n"
@@ -45,7 +49,7 @@ menu_result_t menu_settings()
         } else if (option == 3) {
             menu_result = menu_settings_test_strip_mode();
         } else if (option == 4) {
-            menu_result = menu_settings_safelight_mode();
+            menu_result = menu_settings_safelight_configuration();
         } else if (option == 5) {
             menu_result = menu_settings_enlarger_auto_shutoff();
         } else if (option == 6) {
@@ -390,16 +394,153 @@ menu_result_t menu_settings_test_strip_mode()
     return menu_result;
 }
 
-menu_result_t menu_settings_safelight_mode()
+menu_result_t menu_settings_safelight_configuration()
 {
     menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
     safelight_config_t safelight_config;
-    settings_get_safelight_config(&safelight_config);
+    bool config_changed = false;
+    char buf[512];
 
-    safelight_mode_t setting = safelight_config.mode;
+    /* Load safelight configuration */
+    if (!settings_get_safelight_config(&safelight_config)) {
+        log_i("No valid config, using default");
+    }
+
+    do {
+        size_t offset = 0;
+        offset = sprintf(buf, "Safelight mode            ");
+        switch(safelight_config.mode) {
+        case SAFELIGHT_MODE_OFF:
+            offset += sprintf(buf + offset, " [Off]\n");
+            break;
+        case SAFELIGHT_MODE_ON:
+            offset += sprintf(buf + offset, "  [On]\n");
+            break;
+        case SAFELIGHT_MODE_AUTO:
+        default:
+            offset += sprintf(buf + offset, "[Auto]\n");
+            break;
+        }
+
+        offset += sprintf(buf + offset, "Power control        ");
+        switch(safelight_config.control) {
+        case SAFELIGHT_CONTROL_DMX:
+            offset += sprintf(buf + offset, "      [DMX]");
+            break;
+        case SAFELIGHT_CONTROL_BOTH:
+            offset += sprintf(buf + offset, "[Relay+DMX]");
+            break;
+        case SAFELIGHT_CONTROL_RELAY:
+        default:
+            offset += sprintf(buf + offset, "    [Relay]");
+            break;
+        }
+
+        if (safelight_config.control == SAFELIGHT_CONTROL_DMX || safelight_config.control == SAFELIGHT_CONTROL_BOTH) {
+            offset += sprintf(buf + offset, "\n");
+
+            offset += sprintf(buf + offset, "DMX address                [%3d]\n",
+                safelight_config.dmx_address + 1);
+
+            offset += sprintf(buf + offset, "DMX resolution          ");
+            if (safelight_config.dmx_wide_mode) {
+                offset += sprintf(buf + offset, "[16-bit]\n");
+            } else {
+                offset += sprintf(buf + offset, " [8-bit]\n");
+            }
+
+            offset += sprintf(buf + offset, "DMX brightness value     ");
+            if (safelight_config.dmx_wide_mode) {
+                offset += sprintf(buf + offset, "[%5d]", safelight_config.dmx_on_value);
+            } else {
+                offset += sprintf(buf + offset, "  [%3d]", (uint8_t)safelight_config.dmx_on_value);
+            }
+        }
+
+        option = display_selection_list("Safelight Configuration", option, buf);
+
+        if (option == 1) {
+            menu_result = menu_settings_safelight_mode(&safelight_config);
+            if (menu_result == MENU_OK) { config_changed = true; }
+        } else if (option == 2) {
+            if (safelight_config.control < SAFELIGHT_CONTROL_BOTH) {
+                safelight_config.control++;
+            } else {
+                safelight_config.control = 0;
+            }
+            config_changed = true;
+        } else if (option == 3) {
+            uint16_t value_sel = safelight_config.dmx_address + 1;
+            if (display_input_value_u16(
+                "DMX Address",
+                "Channel to which the safelights\n"
+                "have been assigned.\n",
+                "", &value_sel, 1, 512, 3, "") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                safelight_config.dmx_address = value_sel - 1;
+                config_changed = true;
+            }
+        } else if (option == 4) {
+            if (safelight_config.dmx_wide_mode) {
+                safelight_config.dmx_wide_mode = false;
+                safelight_config.dmx_on_value = (safelight_config.dmx_on_value & 0xFF00) >> 8;
+            } else {
+                safelight_config.dmx_wide_mode = true;
+                if (safelight_config.dmx_on_value == 0xFF) {
+                    safelight_config.dmx_on_value = 0xFFFF;
+                } else {
+                    safelight_config.dmx_on_value = (safelight_config.dmx_on_value & 0xFF) << 8;
+                }
+            }
+            config_changed = true;
+        } else if (option == 5) {
+            if (safelight_config.dmx_wide_mode) {
+                uint16_t value_sel = safelight_config.dmx_on_value;
+                if (display_input_value_u16(
+                    "DMX Brightness Value",
+                    "Value to send when the\n"
+                    "safelights are turned on.\n",
+                    "", &value_sel, 0, 65535, 5, " / 65535") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    safelight_config.dmx_on_value = value_sel;
+                    config_changed = true;
+                }
+            } else {
+                uint8_t value_sel = safelight_config.dmx_on_value;
+                if (display_input_value(
+                    "DMX Brightness Value",
+                    "Value to send when the\n"
+                    "safelights are turned on.\n",
+                    "", &value_sel, 0, 255, 3, " / 255") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    safelight_config.dmx_on_value = value_sel;
+                    config_changed = true;
+                }
+            }
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    if (config_changed) {
+        settings_set_safelight_config(&safelight_config);
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    }
+
+    return menu_result;
+}
+
+menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
+{
+    menu_result_t menu_result = MENU_OK;
 
     uint8_t option;
-    switch (safelight_config.mode) {
+    switch (safelight_config->mode) {
     case SAFELIGHT_MODE_OFF:
         option = 1;
         break;
@@ -420,13 +561,13 @@ menu_result_t menu_settings_safelight_mode()
             "Auto");
 
         if (option == 1) {
-            setting = SAFELIGHT_MODE_OFF;
+            safelight_config->mode = SAFELIGHT_MODE_OFF;
             break;
         } else if (option == 2) {
-            setting = SAFELIGHT_MODE_ON;
+            safelight_config->mode = SAFELIGHT_MODE_ON;
             break;
         } else if (option == 3) {
-            setting = SAFELIGHT_MODE_AUTO;
+            safelight_config->mode = SAFELIGHT_MODE_AUTO;
             break;
         } else if (option == 0) {
             menu_result = MENU_CANCEL;
@@ -434,12 +575,6 @@ menu_result_t menu_settings_safelight_mode()
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
-
-    if (menu_result == MENU_OK) {
-        safelight_config.mode = setting;
-        settings_set_safelight_config(&safelight_config);
-        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-    }
 
     return menu_result;
 }

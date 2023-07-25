@@ -24,13 +24,18 @@ typedef enum {
     SAFELIGHT_MODE_AUTO     /*!< Safelight is off during metering and printing */
 } safelight_mode_t;
 
+typedef enum {
+    SAFELIGHT_CONTROL_RELAY = 0, /*!< Safelight power is relay controlled */
+    SAFELIGHT_CONTROL_DMX,       /*!< Safelight power is DMX controlled */
+    SAFELIGHT_CONTROL_BOTH       /*!< Safelight power is controlled by both relay and DMX */
+} safelight_control_t;
+
 typedef struct {
-    safelight_mode_t mode;  /*!< Safelight operation mode */
-    bool relay_control;     /*!< Set if control via relay is enabled */
-    bool dmx_control;       /*!< Set if control via DMX is enabled */
-    uint16_t dmx_address;    /*!< DMX device address */
-    bool dmx_wide_mode;     /*!< True for 16-bit mode, false for 8-bit mode */
-    uint16_t dmx_on_value;  /*!< Brightness value for the on state */
+    safelight_mode_t mode;       /*!< Safelight operation mode */
+    safelight_control_t control; /*!< Set power control method */
+    uint16_t dmx_address;        /*!< DMX device address */
+    bool dmx_wide_mode;          /*!< True for 16-bit mode, false for 8-bit mode */
+    uint16_t dmx_on_value;       /*!< Brightness value for the on state */
 } safelight_config_t;
 
 typedef enum {

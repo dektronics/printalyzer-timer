@@ -25,7 +25,7 @@
 #define DEFAULT_TCS3472_GA_FACTOR       1.20F
 
 #define LATEST_CONFIG2_VERSION          1
-#define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, true, false, 0, false, 255 }
+#define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, SAFELIGHT_CONTROL_RELAY, 0, false, 255 }
 
 #define LATEST_ENLARGER_PROFILE_VERSION 1
 #define LATEST_PAPER_PROFILE_VERSION    1
@@ -697,8 +697,7 @@ void settings_set_safelight_config_defaults(safelight_config_t *safelight_config
     if (!safelight_config) { return; }
     memset(safelight_config, 0, sizeof(safelight_config_t));
     safelight_config->mode = SAFELIGHT_MODE_AUTO;
-    safelight_config->relay_control = true;
-    safelight_config->dmx_control = false;
+    safelight_config->control = SAFELIGHT_CONTROL_RELAY;
     safelight_config->dmx_address = 0;
     safelight_config->dmx_wide_mode = false;
     safelight_config->dmx_on_value = 255;
@@ -710,6 +709,9 @@ bool settings_validate_safelight_config(const safelight_config_t *safelight_conf
 
     /* Validate field properties */
     if (safelight_config->mode > SAFELIGHT_MODE_AUTO) {
+        return false;
+    }
+    if (safelight_config->control > SAFELIGHT_CONTROL_BOTH) {
         return false;
     }
     if (safelight_config->dmx_address > 511) {
@@ -734,8 +736,7 @@ bool settings_load_safelight_config()
     }
 
     setting_safelight_config.mode = (safelight_mode_t)buf[0];
-    setting_safelight_config.relay_control = buf[1];
-    setting_safelight_config.dmx_control = buf[2];
+    setting_safelight_config.control = (safelight_control_t)buf[1];
     setting_safelight_config.dmx_wide_mode = buf[3];
     setting_safelight_config.dmx_address = copy_to_u16(&buf[4]);
     setting_safelight_config.dmx_on_value = copy_to_u16(&buf[6]);
@@ -766,8 +767,7 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config)
 
     uint8_t buf[CONFIG2_SAFELIGHT_CONTROL_SIZE];
     buf[0] = (uint8_t)safelight_config->mode;
-    buf[1] = safelight_config->relay_control ? 1 : 0;
-    buf[2] = safelight_config->dmx_control ? 1 : 0;
+    buf[1] = (uint8_t)safelight_config->control;
     buf[3] = safelight_config->dmx_wide_mode;
     copy_from_u16(&buf[4], safelight_config->dmx_address);
     copy_from_u16(&buf[6], safelight_config->dmx_on_value);
