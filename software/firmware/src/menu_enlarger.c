@@ -252,16 +252,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
     do {
         size_t offset = 0;
 
-        size_t name_len = MIN(strlen(profile->name), 25);
-
-        strcpy(buf, "Name ");
-        offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (name_len + 2));
-        buf[offset++] = '[';
-        strncpy(buf + offset, profile->name, name_len + 1);
-        offset += name_len;
-        buf[offset++] = ']';
-        buf[offset++] = '\n';
-        buf[offset] = '\0';
+        offset += menu_build_padded_str_row(buf, "Name", profile->name);
 
         sprintf(buf + offset,
             "Turn on delay          [%5lums]\n"

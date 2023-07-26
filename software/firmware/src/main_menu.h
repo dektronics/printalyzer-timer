@@ -17,5 +17,6 @@ menu_result_t main_menu_start(state_controller_t *controller);
 menu_result_t menu_confirm_cancel(const char *title);
 
 size_t menu_build_padded_str_row(char *buf, const char *label, const char *value);
+size_t menu_build_padded_format_row(char *buf, const char *label, const char *format, ...);
 
 #endif /* MAIN_MENU_H */

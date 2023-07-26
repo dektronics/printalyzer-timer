@@ -409,54 +409,54 @@ menu_result_t menu_settings_safelight_configuration()
 
     do {
         size_t offset = 0;
-        offset = sprintf(buf, "Safelight mode            ");
+        const char *val_str;
         switch(safelight_config.mode) {
         case SAFELIGHT_MODE_OFF:
-            offset += sprintf(buf + offset, " [Off]\n");
+            val_str = "Off";
             break;
         case SAFELIGHT_MODE_ON:
-            offset += sprintf(buf + offset, "  [On]\n");
+            val_str = "On";
             break;
         case SAFELIGHT_MODE_AUTO:
         default:
-            offset += sprintf(buf + offset, "[Auto]\n");
+            val_str = "Auto";
             break;
         }
+        offset += menu_build_padded_str_row(buf + offset, "Safelight mode", val_str);
 
-        offset += sprintf(buf + offset, "Power control        ");
         switch(safelight_config.control) {
         case SAFELIGHT_CONTROL_DMX:
-            offset += sprintf(buf + offset, "      [DMX]");
+            val_str = "DMX";
             break;
         case SAFELIGHT_CONTROL_BOTH:
-            offset += sprintf(buf + offset, "[Relay+DMX]");
+            val_str = "Relay+DMX";
             break;
         case SAFELIGHT_CONTROL_RELAY:
         default:
-            offset += sprintf(buf + offset, "    [Relay]");
+            val_str = "Relay";
             break;
         }
+        offset += menu_build_padded_str_row(buf + offset, "Power control", val_str);
 
         if (safelight_config.control == SAFELIGHT_CONTROL_DMX || safelight_config.control == SAFELIGHT_CONTROL_BOTH) {
-            offset += sprintf(buf + offset, "\n");
-
             offset += sprintf(buf + offset, "DMX address                [%3d]\n",
                 safelight_config.dmx_address + 1);
 
-            offset += sprintf(buf + offset, "DMX resolution          ");
             if (safelight_config.dmx_wide_mode) {
-                offset += sprintf(buf + offset, "[16-bit]\n");
+                val_str = "16-bit";
             } else {
-                offset += sprintf(buf + offset, " [8-bit]\n");
+                val_str = "8-bit";
             }
+            offset += menu_build_padded_str_row(buf + offset, "DMX resolution", val_str);
 
-            offset += sprintf(buf + offset, "DMX brightness value     ");
+            val_str = "DMX brightness value";
             if (safelight_config.dmx_wide_mode) {
-                offset += sprintf(buf + offset, "[%5d]", safelight_config.dmx_on_value);
+                offset += menu_build_padded_format_row(buf + offset, val_str, "%5d", safelight_config.dmx_on_value);
             } else {
-                offset += sprintf(buf + offset, "  [%3d]", (uint8_t)safelight_config.dmx_on_value);
+                offset += menu_build_padded_format_row(buf + offset, val_str, "%3d", (uint8_t)safelight_config.dmx_on_value);
             }
         }
+        buf[offset - 1] = '\0';
 
         option = display_selection_list("Safelight Configuration", option, buf);
 

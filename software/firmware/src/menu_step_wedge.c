@@ -39,37 +39,28 @@ menu_result_t menu_step_wedge()
 
     do {
         size_t offset = 0;
-        size_t name_len = MIN(strlen(wedge->name), 25);
         int cal_status = calibration_status(wedge);
+        const char *value_str;
 
-        strcpy(buf, "Name ");
-        offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (name_len + 2));
-        buf[offset++] = '[';
-        strncpy(buf + offset, wedge->name, name_len + 1);
-        offset += name_len;
-        buf[offset++] = ']';
-        buf[offset++] = '\n';
-        buf[offset] = '\0';
+        offset += menu_build_padded_str_row(buf, "Name", wedge->name);
 
         offset += sprintf(buf + offset,
             "Steps                       [%2lu]\n"
             "Base density            [D=%0.02f]\n"
-            "Density increment       [D=%0.02f]\n"
-            "Calibration       ",
+            "Density increment       [D=%0.02f]\n",
             wedge->step_count,
             wedge->base_density,
             wedge->density_increment);
 
         if (cal_status == 1) {
-            offset += sprintf(buf + offset,
-                "  [Calibrated]\n");
+            value_str = "Calibrated";
         } else if (cal_status == 2) {
-            offset += sprintf(buf + offset,
-                "     [Partial]\n");
+            value_str = "Partial";
         } else {
-            offset += sprintf(buf + offset,
-                "[Uncalibrated]\n");
+            value_str = "Uncalibrated";
         }
+        offset += menu_build_padded_str_row(buf + offset, "Calibration", value_str);
+
         sprintf(buf + offset,
             "*** Save Changes ***\n"
             "*** Select From List ***");

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "display.h"
 #include "keypad.h"
@@ -106,6 +107,18 @@ size_t menu_build_padded_str_row(char *buf, const char *label, const char *value
     buf[offset++] = '\n';
     buf[offset] = '\0';
     return offset;
+}
+
+size_t menu_build_padded_format_row(char *buf, const char *label, const char *format, ...)
+{
+    va_list ap;
+    char val_buf[DISPLAY_MENU_ROW_LENGTH];
+
+    va_start(ap, format);
+    vsnprintf(val_buf, sizeof(val_buf), format, ap);
+    va_end(ap);
+
+    return menu_build_padded_str_row(buf, label, val_buf);
 }
 
 menu_result_t menu_about()
