@@ -94,19 +94,25 @@ size_t menu_build_padded_str_row(char *buf, const char *label, const char *value
 {
     size_t offset = 0;
     size_t label_len = strlen(label);
-    size_t value_len = MIN(strlen(value), DISPLAY_MENU_ROW_LENGTH - (label_len + 2));
+    size_t value_len = strlen(value);
+    size_t value_display_len = MIN(value_len, DISPLAY_MENU_ROW_LENGTH - (label_len + 3));
 
     strcpy(buf, label);
     strcat(buf, " ");
 
-    offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (value_len + 2));
+    offset = pad_str_to_length(buf, ' ', DISPLAY_MENU_ROW_LENGTH - (value_display_len + 2));
     buf[offset++] = '[';
-    strncpy(buf + offset, value, value_len + 1);
-    offset += value_len;
-    buf[offset++] = ']';
-    buf[offset++] = '\n';
-    buf[offset] = '\0';
-    return offset;
+    strncpy(buf + offset, value, value_display_len + 1);
+
+    if (value_display_len < value_len) {
+        buf[DISPLAY_MENU_ROW_LENGTH - 2] = '\x7F';
+    }
+
+    buf[DISPLAY_MENU_ROW_LENGTH - 1] = ']';
+    buf[DISPLAY_MENU_ROW_LENGTH] = '\n';
+    buf[DISPLAY_MENU_ROW_LENGTH + 1] = '\0';
+
+    return DISPLAY_MENU_ROW_LENGTH + 1;
 }
 
 size_t menu_build_padded_format_row(char *buf, const char *label, const char *format, ...)
