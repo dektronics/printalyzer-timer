@@ -15,6 +15,7 @@
 #include "keypad.h"
 #include "util.h"
 #include "illum_controller.h"
+#include "enlarger_config.h"
 #include "exposure_timer.h"
 #include "settings.h"
 
@@ -23,9 +24,9 @@ static state_t state_timer_data = {
     .state_process = state_timer_process
 };
 
-static bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_profile_t *enlarger_profile);
+static bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config);
 static bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data);
-static bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enlarger_profile_t *enlarger_profile, int burn_dodge_index);
+static bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config, int burn_dodge_index);
 static bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data);
 
 state_t *state_timer()
@@ -36,11 +37,11 @@ state_t *state_timer()
 bool state_timer_process(state_t *state_base, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
-    const enlarger_profile_t *enlarger_profile = state_controller_get_enlarger_profile(controller);
+    const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
 
-    if (state_timer_main_exposure(exposure_state, enlarger_profile)) {
+    if (state_timer_main_exposure(exposure_state, enlarger_config)) {
         for (int i = 0; i < exposure_burn_dodge_count(exposure_state); i++) {
-            if (!state_timer_burn_dodge_exposure(exposure_state, enlarger_profile, i)) {
+            if (!state_timer_burn_dodge_exposure(exposure_state, enlarger_config, i)) {
                 break;
             }
         }
@@ -50,7 +51,7 @@ bool state_timer_process(state_t *state_base, state_controller_t *controller)
     return true;
 }
 
-bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_profile_t *enlarger_profile)
+bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config)
 {
     bool result;
 
@@ -87,7 +88,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_profile);
+    exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
     exposure_timer_set_config(&timer_config);
 
@@ -134,7 +135,7 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
     return true;
 }
 
-bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enlarger_profile_t *enlarger_profile, int burn_dodge_index)
+bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config, int burn_dodge_index)
 {
     bool result;
     const exposure_burn_dodge_t *entry = exposure_burn_dodge_get(exposure_state, burn_dodge_index);
@@ -185,7 +186,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     convert_exposure_to_display_timer(&(elements.time_elements), exposure_time_ms);
 
     // Check for the short-time case
-    uint32_t min_exposure_time_ms = enlarger_profile_min_exposure(enlarger_profile);
+    uint32_t min_exposure_time_ms = enlarger_config_min_exposure(enlarger_config);
     elements.time_too_short = (min_exposure_time_ms > 0) && (exposure_time_ms < min_exposure_time_ms);
 
     display_draw_adjustment_exposure_elements(&elements);
@@ -222,7 +223,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_profile);
+    exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
     exposure_timer_set_config(&timer_config);
 

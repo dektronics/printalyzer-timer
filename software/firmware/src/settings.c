@@ -29,14 +29,14 @@ _Static_assert(PROFILE_NAME_LEN == 32, "PROFILE_NAME_LEN length has been changed
 #define DEFAULT_BUZZER_VOLUME           BUZZER_VOLUME_MEDIUM
 #define DEFAULT_TESTSTRIP_MODE          TESTSTRIP_MODE_INCREMENTAL
 #define DEFAULT_TESTSTRIP_PATCHES       TESTSTRIP_PATCHES_7
-#define DEFAULT_ENLARGER_PROFILE        0
+#define DEFAULT_ENLARGER_CONFIG         0
 #define DEFAULT_PAPER_PROFILE           0
 #define DEFAULT_TCS3472_GA_FACTOR       1.20F
 
 #define LATEST_CONFIG2_VERSION          1
 #define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, SAFELIGHT_CONTROL_RELAY, 0, false, 255 }
 
-#define LATEST_ENLARGER_PROFILE_VERSION 1
+#define LATEST_ENLARGER_CONFIG_VERSION  1
 #define LATEST_PAPER_PROFILE_VERSION    1
 #define LATEST_STEP_WEDGE_VERSION       1
 
@@ -54,7 +54,7 @@ static uint8_t setting_led_brightness = DEFAULT_LED_BRIGHTNESS;
 static buzzer_volume_t setting_buzzer_volume = DEFAULT_BUZZER_VOLUME;
 static teststrip_mode_t setting_teststrip_mode = DEFAULT_TESTSTRIP_MODE;
 static teststrip_patches_t setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES;
-static uint8_t setting_enlarger_profile = DEFAULT_ENLARGER_PROFILE;
+static uint8_t setting_enlarger_config = DEFAULT_ENLARGER_CONFIG;
 static uint8_t setting_paper_profile = DEFAULT_PAPER_PROFILE;
 static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
@@ -89,7 +89,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG_BUZZER_VOLUME             32
 #define CONFIG_TESTSTRIP_MODE            36
 #define CONFIG_TESTSTRIP_PATCHES         40
-#define CONFIG_ENLARGER_PROFILE          44
+#define CONFIG_ENLARGER_CONFIG           44
 #define CONFIG_PAPER_PROFILE             48
 #define CONFIG_TCS3472_GA_FACTOR         52
 
@@ -105,23 +105,23 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG2_SAFELIGHT_CONTROL_SIZE   (8U)
 
 /**
- * Enlarger profiles (4096b)
- * Each enlarger profile is allocated a full 256-byte page,
+ * Enlarger configurations (4096b)
+ * Each enlarger configuration is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
- * profile entries.
+ * configuration entries.
  */
-#define PAGE_ENLARGER_PROFILE_BASE       0x01000UL
-#define ENLARGER_PROFILE_VERSION         0
-#define ENLARGER_PROFILE_NAME            4  /* char[32] */
-#define ENLARGER_PROFILE_TURN_ON_DELAY   36
-#define ENLARGER_PROFILE_RISE_TIME       40
-#define ENLARGER_PROFILE_RISE_TIME_EQUIV 44
-#define ENLARGER_PROFILE_TURN_OFF_DELAY  48
-#define ENLARGER_PROFILE_FALL_TIME       52
-#define ENLARGER_PROFILE_FALL_TIME_EQUIV 56
-#define ENLARGER_PROFILE_COLOR_TEMP      60
-#define ENLARGER_PROFILE_LIGHT_SOURCE    64
-#define ENLARGER_PROFILE_IR_CONTENT      68
+#define PAGE_ENLARGER_CONFIG_BASE              0x01000UL
+#define ENLARGER_CONFIG_VERSION                0
+#define ENLARGER_CONFIG_NAME                   4  /* char[32] */
+#define ENLARGER_CONFIG_TIMING_TURN_ON_DELAY   36
+#define ENLARGER_CONFIG_TIMING_RISE_TIME       40
+#define ENLARGER_CONFIG_TIMING_RISE_TIME_EQUIV 44
+#define ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY  48
+#define ENLARGER_CONFIG_TIMING_FALL_TIME       52
+#define ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV 56
+#define ENLARGER_CONFIG_TIMING_COLOR_TEMP      60
+#define ENLARGER_CONFIG_TIMING_LIGHT_SOURCE    64
+#define ENLARGER_CONFIG_TIMING_IR_CONTENT      68
 
 /**
  * Paper profiles (4096b)
@@ -192,8 +192,8 @@ static void settings_set_safelight_config_defaults(safelight_config_t *safelight
 static bool settings_validate_safelight_config(const safelight_config_t *safelight_config);
 static bool settings_load_safelight_config();
 
-static void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uint8_t *data);
-static void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data);
+static void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_t *data);
+static void settings_enlarger_config_populate_page(const enlarger_config_t *config, uint8_t *data);
 static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data);
 static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
 static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data);
@@ -349,7 +349,7 @@ HAL_StatusTypeDef settings_init_default_config()
     copy_from_u32(data + CONFIG_BUZZER_VOLUME,          DEFAULT_BUZZER_VOLUME);
     copy_from_u32(data + CONFIG_TESTSTRIP_MODE,         DEFAULT_TESTSTRIP_MODE);
     copy_from_u32(data + CONFIG_TESTSTRIP_PATCHES,      DEFAULT_TESTSTRIP_PATCHES);
-    copy_from_u32(data + CONFIG_ENLARGER_PROFILE,       DEFAULT_ENLARGER_PROFILE);
+    copy_from_u32(data + CONFIG_ENLARGER_CONFIG,        DEFAULT_ENLARGER_CONFIG);
     copy_from_u32(data + CONFIG_PAPER_PROFILE,          DEFAULT_PAPER_PROFILE);
     copy_from_f32(data + CONFIG_TCS3472_GA_FACTOR,      DEFAULT_TCS3472_GA_FACTOR);
     return m24m01_write_page(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
@@ -422,11 +422,11 @@ void settings_init_parse_config_page(const uint8_t *data)
         setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES;
     }
 
-    val = copy_to_u32(data + CONFIG_ENLARGER_PROFILE);
-    if (val < MAX_ENLARGER_PROFILES) {
-        setting_enlarger_profile = val;
+    val = copy_to_u32(data + CONFIG_ENLARGER_CONFIG);
+    if (val < MAX_ENLARGER_CONFIGS) {
+        setting_enlarger_config = val;
     } else {
-        setting_enlarger_profile = DEFAULT_ENLARGER_PROFILE;
+        setting_enlarger_config = DEFAULT_ENLARGER_CONFIG;
     }
 
     val = copy_to_u32(data + CONFIG_PAPER_PROFILE);
@@ -659,16 +659,16 @@ void settings_set_teststrip_patches(teststrip_patches_t patches)
     }
 }
 
-uint8_t settings_get_default_enlarger_profile_index()
+uint8_t settings_get_default_enlarger_config_index()
 {
-    return setting_enlarger_profile;
+    return setting_enlarger_config;
 }
 
-void settings_set_default_enlarger_profile_index(uint8_t index)
+void settings_set_default_enlarger_config_index(uint8_t index)
 {
-    if (setting_enlarger_profile != index && index < MAX_ENLARGER_PROFILES) {
-        if (write_u32(PAGE_CONFIG + CONFIG_ENLARGER_PROFILE, index)) {
-            setting_enlarger_profile = index;
+    if (setting_enlarger_config != index && index < MAX_ENLARGER_CONFIGS) {
+        if (write_u32(PAGE_CONFIG + CONFIG_ENLARGER_CONFIG, index)) {
+            setting_enlarger_config = index;
         }
     }
 }
@@ -793,11 +793,11 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config)
     }
 }
 
-bool settings_get_enlarger_profile_name(char *name, uint8_t index)
+bool settings_get_enlarger_config_name(char *name, uint8_t index)
 {
-    if (!name || index >= MAX_ENLARGER_PROFILES) { return false; }
+    if (!name || index >= MAX_ENLARGER_CONFIGS) { return false; }
 
-    log_i("Load enlarger profile name: %d", index);
+    log_i("Load enlarger config name: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[4 + PROFILE_NAME_LEN];
@@ -806,24 +806,24 @@ bool settings_get_enlarger_profile_name(char *name, uint8_t index)
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
         ret = m24m01_read_buffer(eeprom_i2c,
-            PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+            PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
             data, sizeof(data));
         osMutexRelease(eeprom_i2c_mutex);
         if (ret != HAL_OK) { break; }
 
-        uint32_t profile_version = copy_to_u32(data + ENLARGER_PROFILE_VERSION);
-        if (profile_version == UINT32_MAX) {
-            log_d("Profile index is empty");
+        uint32_t config_version = copy_to_u32(data + ENLARGER_CONFIG_VERSION);
+        if (config_version == UINT32_MAX) {
+            log_d("Config index is empty");
             ret = HAL_ERROR;
             break;
         }
-        if (profile_version == 0 || profile_version > LATEST_ENLARGER_PROFILE_VERSION) {
-            log_w("Invalid profile version %ld", profile_version);
+        if (config_version == 0 || config_version > LATEST_ENLARGER_CONFIG_VERSION) {
+            log_w("Invalid config version %ld", config_version);
             ret = HAL_ERROR;
             break;
         }
 
-        strncpy(name, (const char *)(data + ENLARGER_PROFILE_NAME), PROFILE_NAME_LEN);
+        strncpy(name, (const char *)(data + ENLARGER_CONFIG_NAME), PROFILE_NAME_LEN);
         name[PROFILE_NAME_LEN - 1] = '\0';
 
     } while (0);
@@ -831,11 +831,11 @@ bool settings_get_enlarger_profile_name(char *name, uint8_t index)
     return (ret == HAL_OK);
 }
 
-bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
+bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index)
 {
-    if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
+    if (!config || index >= MAX_ENLARGER_CONFIGS) { return false; }
 
-    log_i("Load enlarger profile: %d", index);
+    log_i("Load enlarger config: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[PAGE_SIZE];
@@ -844,89 +844,89 @@ bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
         ret = m24m01_read_buffer(eeprom_i2c,
-            PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+            PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
             data, sizeof(data));
         osMutexRelease(eeprom_i2c_mutex);
         if (ret != HAL_OK) { break; }
 
-        uint32_t profile_version = copy_to_u32(data + ENLARGER_PROFILE_VERSION);
-        if (profile_version == UINT32_MAX) {
-            log_d("Profile index is empty");
+        uint32_t config_version = copy_to_u32(data + ENLARGER_CONFIG_VERSION);
+        if (config_version == UINT32_MAX) {
+            log_d("Config index is empty");
             ret = HAL_ERROR;
             break;
         }
-        if (profile_version == 0 || profile_version > LATEST_ENLARGER_PROFILE_VERSION) {
-            log_w("Invalid profile version %ld", profile_version);
+        if (config_version == 0 || config_version > LATEST_ENLARGER_CONFIG_VERSION) {
+            log_w("Invalid profile version %ld", config_version);
             ret = HAL_ERROR;
             break;
         }
 
-        settings_enlarger_profile_parse_page(profile, data);
+        settings_enlarger_config_parse_page(config, data);
 
     } while (0);
 
     return (ret == HAL_OK);
 }
 
-void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uint8_t *data)
+void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_t *data)
 {
-    memset(profile, 0, sizeof(enlarger_profile_t));
+    memset(config, 0, sizeof(enlarger_config_t));
 
-    strncpy(profile->name, (const char *)(data + ENLARGER_PROFILE_NAME), PROFILE_NAME_LEN);
-    profile->name[PROFILE_NAME_LEN - 1] = '\0';
+    strncpy(config->name, (const char *)(data + ENLARGER_CONFIG_NAME), PROFILE_NAME_LEN);
+    config->name[PROFILE_NAME_LEN - 1] = '\0';
 
-    profile->turn_on_delay = copy_to_u32(data + ENLARGER_PROFILE_TURN_ON_DELAY);
-    profile->rise_time = copy_to_u32(data + ENLARGER_PROFILE_RISE_TIME);
-    profile->rise_time_equiv = copy_to_u32(data + ENLARGER_PROFILE_RISE_TIME_EQUIV);
-    profile->turn_off_delay = copy_to_u32(data + ENLARGER_PROFILE_TURN_OFF_DELAY);
-    profile->fall_time = copy_to_u32(data + ENLARGER_PROFILE_FALL_TIME);
-    profile->fall_time_equiv = copy_to_u32(data + ENLARGER_PROFILE_FALL_TIME_EQUIV);
-    profile->color_temperature = copy_to_u32(data + ENLARGER_PROFILE_COLOR_TEMP);
+    config->timing.turn_on_delay = copy_to_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY);
+    config->timing.rise_time = copy_to_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME);
+    config->timing.rise_time_equiv = copy_to_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME_EQUIV);
+    config->timing.turn_off_delay = copy_to_u32(data + ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY);
+    config->timing.fall_time = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME);
+    config->timing.fall_time_equiv = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV);
+    config->timing.color_temperature = copy_to_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP);
 }
 
-bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index)
+bool settings_set_enlarger_config(const enlarger_config_t *config, uint8_t index)
 {
-    if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
+    if (!config || index >= MAX_ENLARGER_CONFIGS) { return false; }
 
-    log_i("Save enlarger profile: %d", index);
+    log_i("Save enlarger config: %d", index);
 
     uint8_t data[PAGE_SIZE];
     memset(data, 0, sizeof(data));
 
-    settings_enlarger_profile_populate_page(profile, data);
+    settings_enlarger_config_populate_page(config, data);
 
     osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     HAL_StatusTypeDef ret = m24m01_write_page(eeprom_i2c,
-        PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+        PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
     osMutexRelease(eeprom_i2c_mutex);
     return (ret == HAL_OK);
 }
 
-void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, uint8_t *data)
+void settings_enlarger_config_populate_page(const enlarger_config_t *config, uint8_t *data)
 {
-    copy_from_u32(data + ENLARGER_PROFILE_VERSION, LATEST_ENLARGER_PROFILE_VERSION);
+    copy_from_u32(data + ENLARGER_CONFIG_VERSION, LATEST_ENLARGER_CONFIG_VERSION);
 
-    strncpy((char *)(data + ENLARGER_PROFILE_NAME), profile->name, PROFILE_NAME_LEN);
+    strncpy((char *)(data + ENLARGER_CONFIG_NAME), config->name, PROFILE_NAME_LEN);
 
-    copy_from_u32(data + ENLARGER_PROFILE_TURN_ON_DELAY,   profile->turn_on_delay);
-    copy_from_u32(data + ENLARGER_PROFILE_RISE_TIME,       profile->rise_time);
-    copy_from_u32(data + ENLARGER_PROFILE_RISE_TIME_EQUIV, profile->rise_time_equiv);
-    copy_from_u32(data + ENLARGER_PROFILE_TURN_OFF_DELAY,  profile->turn_off_delay);
-    copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME,       profile->fall_time);
-    copy_from_u32(data + ENLARGER_PROFILE_FALL_TIME_EQUIV, profile->fall_time_equiv);
-    copy_from_u32(data + ENLARGER_PROFILE_COLOR_TEMP,      profile->color_temperature);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY,   config->timing.turn_on_delay);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME,       config->timing.rise_time);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME_EQUIV, config->timing.rise_time_equiv);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY,  config->timing.turn_off_delay);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME,       config->timing.fall_time);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV, config->timing.fall_time_equiv);
+    copy_from_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP,      config->timing.color_temperature);
 }
 
-void settings_clear_enlarger_profile(uint8_t index)
+void settings_clear_enlarger_config(uint8_t index)
 {
-    if (index >= MAX_ENLARGER_PROFILES) { return; }
+    if (index >= MAX_ENLARGER_CONFIGS) { return; }
 
     uint8_t data[PAGE_SIZE];
 
-    /* Read the profile page, and abort if it is already blank */
+    /* Read the config page, and abort if it is already blank */
     if (m24m01_read_buffer(eeprom_i2c,
-        PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+        PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
         data, sizeof(data)) == HAL_OK) {
         bool is_empty = true;
         for (size_t i = 0; i < PAGE_SIZE; i++) {
@@ -946,7 +946,7 @@ void settings_clear_enlarger_profile(uint8_t index)
 
     osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     m24m01_write_page(eeprom_i2c,
-        PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+        PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
         data, sizeof(data));
     osMutexRelease(eeprom_i2c_mutex);
 }

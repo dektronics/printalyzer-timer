@@ -10,6 +10,7 @@
 
 #include "exposure_timer.h"
 #include "illum_controller.h"
+#include "enlarger_config.h"
 #include "buzzer.h"
 #include "relay.h"
 #include "settings.h"
@@ -38,13 +39,13 @@ void exposure_timer_init(TIM_HandleTypeDef *htim)
 }
 
 void exposure_timer_set_config_time(exposure_timer_config_t *config,
-    uint32_t exposure_time, const enlarger_profile_t *profile)
+    uint32_t exposure_time, const enlarger_config_t *enlarger_config)
 {
     if (!config) {
         return;
     }
-    if (!profile || !enlarger_profile_is_valid(profile)) {
-        log_i("Setting defaults based on missing or invalid enlarger profile");
+    if (!enlarger_config || !enlarger_config_is_valid(enlarger_config)) {
+        log_i("Setting defaults based on missing or invalid enlarger config");
         config->exposure_time = exposure_time;
         config->relay_on_delay = 0;
         config->relay_off_delay = 0;
@@ -54,7 +55,7 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
     // Log a warning if the exposure is too short.
     // Not yet sure what should be done in this case, but any user alerts
     // should probably happen before we even get to this code.
-    uint32_t min_exposure_time = enlarger_profile_min_exposure(profile);
+    uint32_t min_exposure_time = enlarger_config_min_exposure(enlarger_config);
     log_d("Minimum allowable exposure time: %ldms", min_exposure_time);
     if (exposure_time < round_to_10(min_exposure_time)) {
         log_e("Cannot accurately time short exposure: %ldms < %ldms",
@@ -63,9 +64,9 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
 
     // Assign the time fields based on the enlarger profile
     config->exposure_time = exposure_time;
-    config->relay_on_delay = round_to_10(profile->turn_on_delay + (profile->rise_time - profile->rise_time_equiv));
-    config->relay_off_delay = round_to_10(profile->turn_off_delay + profile->fall_time_equiv);
-    config->exposure_end_delay = round_to_10(profile->fall_time - profile->fall_time_equiv);
+    config->relay_on_delay = round_to_10(enlarger_config->timing.turn_on_delay + (enlarger_config->timing.rise_time - enlarger_config->timing.rise_time_equiv));
+    config->relay_off_delay = round_to_10(enlarger_config->timing.turn_off_delay + enlarger_config->timing.fall_time_equiv);
+    config->exposure_end_delay = round_to_10(enlarger_config->timing.fall_time - enlarger_config->timing.fall_time_equiv);
 
     // Log all the relevant time properties
     log_d("Set for desired time of %ldms", exposure_time);

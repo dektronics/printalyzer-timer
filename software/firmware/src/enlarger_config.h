@@ -1,16 +1,11 @@
-#ifndef ENLARGER_PROFILE_H
-#define ENLARGER_PROFILE_H
+#ifndef ENLARGER_CONFIG_H
+#define ENLARGER_CONFIG_H
 
 #include <stdint.h>
 #include <stdbool.h>
 #include "util.h"
 
 typedef struct {
-    /*
-     * Name of the enlarger profile, to be displayed in settings.
-     */
-    char name[PROFILE_NAME_LEN];
-
     /*
      * Time period (ms) from when the enlarger relay is activated until
      * its light level starts to rise.
@@ -51,27 +46,41 @@ typedef struct {
      * Color temperature (K) of the enlarger lamp.
      */
     uint32_t color_temperature;
-} enlarger_profile_t;
+} enlarger_timing_t;
 
 /**
- * Check whether the profile is valid, based on relationships between
+ * Enlarger configuration, which contains all the control and timing
+ * information specific to the operation of a particular enlarger.
+ */
+typedef struct {
+    /*
+     * Name of the enlarger configuration, to be displayed in settings.
+     */
+    char name[PROFILE_NAME_LEN];
+
+    enlarger_timing_t timing; /*!< Enlarger on/off timing profile */
+
+} enlarger_config_t;
+
+/**
+ * Check whether the configuration is valid, based on relationships between
  * the various values.
  */
-bool enlarger_profile_is_valid(const enlarger_profile_t *profile);
+bool enlarger_config_is_valid(const enlarger_config_t *config);
 
 /**
- * Check whether the two enlarger profiles are equivalent.
+ * Check whether the two enlarger configurations are equivalent.
  */
-bool enlarger_profile_compare(const enlarger_profile_t *profile1, const enlarger_profile_t *profile2);
+bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_config_t *config2);
 
 /**
- * Clear out the provided profile and set sensible default values.
+ * Clear out the provided configuration and set sensible default values.
  */
-void enlarger_profile_set_defaults(enlarger_profile_t *profile);
+void enlarger_config_set_defaults(enlarger_config_t *config);
 
 /**
- * Get the minimum supported exposure for the profile.
+ * Get the minimum supported exposure for the enlarger.
  */
-uint32_t enlarger_profile_min_exposure(const enlarger_profile_t *profile);
+uint32_t enlarger_config_min_exposure(const enlarger_config_t *config);
 
-#endif /* ENLARGER_PROFILE_H */
+#endif /* ENLARGER_CONFIG_H */

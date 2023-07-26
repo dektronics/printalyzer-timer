@@ -36,7 +36,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
         option = display_selection_list(
                 "Main Menu", option,
                 "Settings\n"
-                "Enlarger Profiles\n"
+                "Enlarger Configurations\n"
                 "Paper Profiles\n"
                 "Step Wedge Properties\n"
                 "Import / Export\n"
@@ -46,7 +46,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
         if (option == 1) {
             menu_result = menu_settings();
         } else if (option == 2) {
-            menu_result = menu_enlarger_profiles(controller);
+            menu_result = menu_enlarger_configs(controller);
         } else if (option == 3) {
             menu_result = menu_paper_profiles(controller);
         } else if (option == 4) {

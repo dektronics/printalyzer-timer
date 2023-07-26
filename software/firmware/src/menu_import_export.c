@@ -46,9 +46,9 @@ static bool import_config_file(const char *filename, bool *reload_paper);
 static bool validate_section_header(const char *buf, size_t len);
 static menu_result_t import_section_prompt(bool *has_settings, int *has_enlargers, int *has_papers, bool *has_step_wedge);
 static int parse_section_version(const char *buf, size_t len);
-static bool import_section_settings(const char *buf, size_t len, int *enlarger_profile_index, int *paper_profile_index);
+static bool import_section_settings(const char *buf, size_t len, int *enlarger_config_index, int *paper_profile_index);
 static int import_section_enlargers(const char *buf, size_t len);
-static bool parse_section_enlarger(const char *buf, size_t len, enlarger_profile_t *profile);
+static bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *config);
 static int import_section_papers(const char *buf, size_t len);
 static bool parse_section_paper(const char *buf, size_t len, paper_profile_t *profile);
 static void parse_section_paper_grades(const char *buf, size_t len, paper_profile_t *profile);
@@ -146,7 +146,7 @@ menu_result_t menu_import_config(state_controller_t *controller)
     }
 
     /* Reload active profiles that may have changed */
-    state_controller_reload_enlarger_profile(controller);
+    state_controller_reload_enlarger_config(controller);
     if (reload_paper) {
         state_controller_reload_paper_profile(controller, true);
     }
@@ -175,7 +175,7 @@ bool import_config_file(const char *filename, bool *reload_paper)
     int has_enlargers = 0;
     int has_papers = 0;
     bool has_step_wedge = false;
-    int enlarger_profile_index = -1;
+    int enlarger_config_index = -1;
     int paper_profile_index = -1;
     int imported_enlargers = -1;
     int imported_papers = -1;
@@ -286,7 +286,7 @@ bool import_config_file(const char *filename, bool *reload_paper)
 
             if (strncmp("settings", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
                 if (has_settings) {
-                    import_section_settings(pair.value, pair.valueLength, &enlarger_profile_index, &paper_profile_index);
+                    import_section_settings(pair.value, pair.valueLength, &enlarger_config_index, &paper_profile_index);
                 }
             } else if (strncmp("enlargers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
                 if (has_enlargers) {
@@ -309,11 +309,11 @@ bool import_config_file(const char *filename, bool *reload_paper)
     } while (0);
 
     /* Set default indices for enlarger and paper sections */
-    if (has_enlargers && imported_enlargers > 0 && enlarger_profile_index >= 0) {
-        if (enlarger_profile_index < imported_enlargers) {
-            settings_set_default_enlarger_profile_index(enlarger_profile_index);
+    if (has_enlargers && imported_enlargers > 0 && enlarger_config_index >= 0) {
+        if (enlarger_config_index < imported_enlargers) {
+            settings_set_default_enlarger_config_index(enlarger_config_index);
         } else {
-            settings_set_default_enlarger_profile_index(0);
+            settings_set_default_enlarger_config_index(0);
         }
     }
     if (has_papers && imported_papers > 0 && paper_profile_index >= 0) {
@@ -471,7 +471,7 @@ int parse_section_version(const char *buf, size_t len)
     return version;
 }
 
-bool import_section_settings(const char *buf, size_t len, int *enlarger_profile_index, int *paper_profile_index)
+bool import_section_settings(const char *buf, size_t len, int *enlarger_config_index, int *paper_profile_index)
 {
     JSONStatus_t status;
     size_t start = 0;
@@ -545,11 +545,11 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_profile_
                 if (num >= 0 && num <= UINT8_MAX) {
                     settings_set_teststrip_patches(num);
                 }
-            } else if (strncmp("enlarger_profile_index", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+            } else if (strncmp("enlarger_config_index", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
-                if (num >= 0 && num < MAX_ENLARGER_PROFILES) {
-                    if (enlarger_profile_index) {
-                        *enlarger_profile_index = num;
+                if (num >= 0 && num < MAX_ENLARGER_CONFIGS) {
+                    if (enlarger_config_index) {
+                        *enlarger_config_index = num;
                     }
                 }
             } else if (strncmp("paper_profile_index", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
@@ -585,24 +585,24 @@ int import_section_enlargers(const char *buf, size_t len)
         if (!pair.key && pair.jsonType == JSONObject) {
             int version = parse_section_version(pair.value, pair.valueLength);
             if (version == ENLARGER_EXPORT_VERSION) {
-                enlarger_profile_t profile;
-                enlarger_profile_t existing_profile;
-                if (parse_section_enlarger(pair.value, pair.valueLength, &profile)) {
+                enlarger_config_t config;
+                enlarger_config_t existing_config;
+                if (parse_section_enlarger(pair.value, pair.valueLength, &config)) {
                     /*
                      * Check if the loaded profile matches the already-saved
                      * profile at its index, and only store if it is different.
                      * However, increment the count in either case.
                      */
-                    if (settings_get_enlarger_profile(&existing_profile, count)
-                        && enlarger_profile_compare(&existing_profile, &profile)) {
-                        log_i("Skipping unchanged profile at index: %d", count);
+                    if (settings_get_enlarger_config(&existing_config, count)
+                        && enlarger_config_compare(&existing_config, &config)) {
+                        log_i("Skipping unchanged config at index: %d", count);
                         count++;
-                    } else if (settings_set_enlarger_profile(&profile, count)) {
-                        log_i("Updated profile at index: %d", count);
+                    } else if (settings_set_enlarger_config(&config, count)) {
+                        log_i("Updated config at index: %d", count);
                         count++;
                     }
                 } else {
-                    log_w("Parsed profile is not valid");
+                    log_w("Parsed config is not valid");
                 }
             } else {
                 log_w("Enlarger element has invalid version: %d", version);
@@ -617,49 +617,50 @@ int import_section_enlargers(const char *buf, size_t len)
      * beyond the last index we actually imported.
      */
     if (count > 0) {
-        for (int i = count; i < MAX_ENLARGER_PROFILES; i++) {
-            settings_clear_enlarger_profile(i);
+        for (int i = count; i < MAX_ENLARGER_CONFIGS; i++) {
+            settings_clear_enlarger_config(i);
         }
     }
 
     return count;
 }
 
-bool parse_section_enlarger(const char *buf, size_t len, enlarger_profile_t *profile)
+bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *config)
 {
     JSONStatus_t status;
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
 
-    memset(profile, 0, sizeof(enlarger_profile_t));
+    memset(config, 0, sizeof(enlarger_config_t));
 
+    //TODO Redo the enlarger section to handle the new config structure layout and fields
     status = JSON_Iterate(buf, len, &start, &next, &pair);
     while (status == JSONSuccess) {
         if (pair.key) {
             if (strncmp("name", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
-                strncpy(profile->name, pair.value, MIN(pair.valueLength, 32));
-                profile->name[31] = '\0';
+                strncpy(config->name, pair.value, MIN(pair.valueLength, 32));
+                config->name[31] = '\0';
             } else if (strncmp("turn_on_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->turn_on_delay = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.turn_on_delay = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("rise_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->rise_time = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.rise_time = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("rise_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->rise_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.rise_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("turn_off_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->turn_off_delay = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.turn_off_delay = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("fall_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->fall_time = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.fall_time = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("fall_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->fall_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.fall_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("color_temperature", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                profile->color_temperature = json_parse_int(pair.value, pair.valueLength, 0);
+                config->timing.color_temperature = json_parse_int(pair.value, pair.valueLength, 0);
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
     }
 
-    return enlarger_profile_is_valid(profile);
+    return enlarger_config_is_valid(config);
 }
 
 int import_section_papers(const char *buf, size_t len)
@@ -1081,7 +1082,7 @@ bool write_section_config(FIL *fp)
     json_write_int(fp, 4, "buzzer_volume", (uint8_t)settings_get_buzzer_volume(), true);
     json_write_int(fp, 4, "teststrip_mode", (uint8_t)settings_get_teststrip_mode(), true);
     json_write_int(fp, 4, "teststrip_patches", (uint8_t)settings_get_teststrip_patches(), true);
-    json_write_int(fp, 4, "enlarger_profile_index", settings_get_default_enlarger_profile_index(), true);
+    json_write_int(fp, 4, "enlarger_config_index", settings_get_default_enlarger_config_index(), true);
     json_write_int(fp, 4, "paper_profile_index", settings_get_default_paper_profile_index(), true);
     json_write_float02(fp, 4, "tcs3472_ga_factor", settings_get_tcs3472_ga_factor(), false);
     f_printf(fp, "\n  }");
@@ -1091,11 +1092,12 @@ bool write_section_config(FIL *fp)
 bool write_section_enlargers(FIL *fp)
 {
     int i;
-    enlarger_profile_t profile;
+    enlarger_config_t config;
 
+    //TODO Redo the enlarger section to handle the new config structure layout and fields
     f_printf(fp, "  \"enlargers\": [\n");
-    for (i = 0; i < MAX_ENLARGER_PROFILES; i++) {
-        if (!settings_get_enlarger_profile(&profile, i)) {
+    for (i = 0; i < MAX_ENLARGER_CONFIGS; i++) {
+        if (!settings_get_enlarger_config(&config, i)) {
             break;
         }
         if (i > 0) {
@@ -1103,14 +1105,14 @@ bool write_section_enlargers(FIL *fp)
         }
         f_printf(fp, "    {\n");
         json_write_int(fp, 6, "version", ENLARGER_EXPORT_VERSION, true);
-        json_write_string(fp, 6, "name", profile.name, true);
-        json_write_int(fp, 6, "turn_on_delay", profile.turn_on_delay, true);
-        json_write_int(fp, 6, "rise_time", profile.rise_time, true);
-        json_write_int(fp, 6, "rise_time_equiv", profile.rise_time_equiv, true);
-        json_write_int(fp, 6, "turn_off_delay", profile.turn_off_delay, true);
-        json_write_int(fp, 6, "fall_time", profile.fall_time, true);
-        json_write_int(fp, 6, "fall_time_equiv", profile.fall_time_equiv, true);
-        json_write_int(fp, 6, "color_temperature", profile.color_temperature, false);
+        json_write_string(fp, 6, "name", config.name, true);
+        json_write_int(fp, 6, "turn_on_delay", config.timing.turn_on_delay, true);
+        json_write_int(fp, 6, "rise_time", config.timing.rise_time, true);
+        json_write_int(fp, 6, "rise_time_equiv", config.timing.rise_time_equiv, true);
+        json_write_int(fp, 6, "turn_off_delay", config.timing.turn_off_delay, true);
+        json_write_int(fp, 6, "fall_time", config.timing.fall_time, true);
+        json_write_int(fp, 6, "fall_time_equiv", config.timing.fall_time_equiv, true);
+        json_write_int(fp, 6, "color_temperature", config.timing.color_temperature, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {

@@ -3,8 +3,7 @@
 
 #include <stm32f4xx_hal.h>
 #include <stdbool.h>
-
-#include "enlarger_profile.h"
+#include "enlarger_config.h"
 
 typedef enum {
     EXPOSURE_TIMER_START_TONE_NONE = 0,
@@ -66,10 +65,10 @@ void exposure_timer_init(TIM_HandleTypeDef *htim);
 
 /**
  * Set the time and delay fields in the timer configuration using
- * an enlarger profile.
+ * an enlarger configuration.
  */
 void exposure_timer_set_config_time(exposure_timer_config_t *config,
-    uint32_t exposure_time, const enlarger_profile_t *profile);
+    uint32_t exposure_time, const enlarger_config_t *enlarger_config);
 
 /**
  * Set the provided configuration as the active configuration for

@@ -2,8 +2,8 @@
 #define STATE_CONTROLLER_H
 
 #include <stdbool.h>
+#include "enlarger_config.h"
 #include "exposure_state.h"
-#include "enlarger_profile.h"
 
 #define STATE_KEYPAD_WAIT 200
 
@@ -55,8 +55,8 @@ void state_controller_loop();
 
 void state_controller_set_next_state(state_controller_t *controller, state_identifier_t next_state, uint32_t param);
 exposure_state_t *state_controller_get_exposure_state(state_controller_t *controller);
-const enlarger_profile_t *state_controller_get_enlarger_profile(state_controller_t *controller);
-void state_controller_reload_enlarger_profile(state_controller_t *controller);
+const enlarger_config_t *state_controller_get_enlarger_config(state_controller_t *controller);
+void state_controller_reload_enlarger_config(state_controller_t *controller);
 void state_controller_reload_paper_profile(state_controller_t *controller, bool use_default);
 void state_controller_start_focus_timeout(state_controller_t *controller);
 void state_controller_stop_focus_timeout(state_controller_t *controller);

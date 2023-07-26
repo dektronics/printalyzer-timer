@@ -11,11 +11,11 @@
 #include <stdbool.h>
 #include "buzzer.h"
 #include "exposure_state.h"
-#include "enlarger_profile.h"
+#include "enlarger_config.h"
 #include "paper_profile.h"
 #include "step_wedge.h"
 
-#define MAX_ENLARGER_PROFILES 16
+#define MAX_ENLARGER_CONFIGS 16
 #define MAX_PAPER_PROFILES 16
 
 typedef enum {
@@ -135,13 +135,13 @@ teststrip_patches_t settings_get_teststrip_patches();
 void settings_set_teststrip_patches(teststrip_patches_t patches);
 
 /**
- * Index of the default enlarger profile.
+ * Index of the default enlarger configuration.
  *
  * @return An index value from 0 to 15
  */
-uint8_t settings_get_default_enlarger_profile_index();
+uint8_t settings_get_default_enlarger_config_index();
 
-void settings_set_default_enlarger_profile_index(uint8_t index);
+void settings_set_default_enlarger_config_index(uint8_t index);
 
 /**
  * Index of the default paper profile.
@@ -167,42 +167,42 @@ bool settings_get_safelight_config(safelight_config_t *safelight_config);
 bool settings_set_safelight_config(const safelight_config_t *safelight_config);
 
 /**
- * Get the name of the enlarger profile saved at the specified index
+ * Get the name of the enlarger configuration saved at the specified index
  *
  * This function is intended to provide an more efficient way of building
- * a list of saved profiles, than loading all of them into memory.
+ * a list of saved configurations than loading all of them into memory.
  *
  * @param name Pointer to a buffer with at least 32 bytes.
  * @param index An index value from 0 to 15
- * @return True if the profile name was successfully loaded, false otherwise
+ * @return True if the configuration name was successfully loaded, false otherwise
  */
-bool settings_get_enlarger_profile_name(char *name, uint8_t index);
+bool settings_get_enlarger_config_name(char *name, uint8_t index);
 
 /**
- * Get the enlarger profile saved at the specified index
+ * Get the enlarger configuration saved at the specified index
  *
- * @param profile Pointer to the profile struct to load data into
+ * @param profile Pointer to the configuration struct to load data into
  * @param index An index value from 0 to 15
- * @return True if the profile was successfully loaded, false if no valid
- *         profile was found at the specified index.
+ * @return True if the configuration was successfully loaded, false if no valid
+ *         configuration was found at the specified index.
  */
-bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index);
+bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index);
 
 /**
- * Save an enlarger profile at the specified index
+ * Save an enlarger configuration at the specified index
  *
- * @param profile Pointer to the profile struct to save data from
+ * @param profile Pointer to the configuration struct to save data from
  * @param index An index value from 0 to 15
- * @return True if the profile was successfully saved
+ * @return True if the configuration was successfully saved
  */
-bool settings_set_enlarger_profile(const enlarger_profile_t *profile, uint8_t index);
+bool settings_set_enlarger_config(const enlarger_config_t *config, uint8_t index);
 
 /**
- * Clear any enlarger profile saved at the specified index
+ * Clear any enlarger configuration saved at the specified index
  *
  * @param index An index value from 0 to 15
  */
-void settings_clear_enlarger_profile(uint8_t index);
+void settings_clear_enlarger_config(uint8_t index);
 
 /**
  * Get the paper profile saved at the specified index

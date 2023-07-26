@@ -15,13 +15,12 @@
 #include "keypad.h"
 #include "display.h"
 #include "exposure_state.h"
-#include "enlarger_profile.h"
 #include "main_menu.h"
 #include "buzzer.h"
 #include "led.h"
 #include "relay.h"
 #include "exposure_timer.h"
-#include "enlarger_profile.h"
+#include "enlarger_config.h"
 #include "illum_controller.h"
 #include "meter_probe.h"
 #include "util.h"
@@ -37,7 +36,7 @@ struct __state_controller_t {
     state_identifier_t next_state;
     uint32_t next_state_param;
     exposure_state_t *exposure_state;
-    enlarger_profile_t enlarger_profile;
+    enlarger_config_t enlarger_config;
     TickType_t focus_start_ticks;
 };
 
@@ -67,7 +66,7 @@ void state_controller_init()
         abort();
     }
 
-    state_controller_reload_enlarger_profile(&state_controller);
+    state_controller_reload_enlarger_config(&state_controller);
 
     state_map[STATE_HOME] = state_home();
     state_map[STATE_HOME_CHANGE_TIME_INCREMENT] = state_home_change_time_increment();
@@ -154,21 +153,21 @@ exposure_state_t *state_controller_get_exposure_state(state_controller_t *contro
     return controller->exposure_state;
 }
 
-const enlarger_profile_t *state_controller_get_enlarger_profile(state_controller_t *controller)
+const enlarger_config_t *state_controller_get_enlarger_config(state_controller_t *controller)
 {
     if (!controller) { return NULL; }
-    return &(controller->enlarger_profile);
+    return &(controller->enlarger_config);
 }
 
-void state_controller_reload_enlarger_profile(state_controller_t *controller)
+void state_controller_reload_enlarger_config(state_controller_t *controller)
 {
     if (!controller) { return; }
-    uint8_t profile_index = settings_get_default_enlarger_profile_index();
-    bool result = settings_get_enlarger_profile(&controller->enlarger_profile, profile_index);
-    if (!(result && enlarger_profile_is_valid(&controller->enlarger_profile))) {
-        enlarger_profile_set_defaults(&controller->enlarger_profile);
+    uint8_t profile_index = settings_get_default_enlarger_config_index();
+    bool result = settings_get_enlarger_config(&controller->enlarger_config, profile_index);
+    if (!(result && enlarger_config_is_valid(&controller->enlarger_config))) {
+        enlarger_config_set_defaults(&controller->enlarger_config);
     }
-    exposure_set_min_exposure_time(controller->exposure_state, enlarger_profile_min_exposure(&controller->enlarger_profile) / 1000.0F);
+    exposure_set_min_exposure_time(controller->exposure_state, enlarger_config_min_exposure(&controller->enlarger_config) / 1000.0F);
 }
 
 void state_controller_reload_paper_profile(state_controller_t *controller, bool use_default)
