@@ -80,10 +80,10 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
 {
     menu_result_t menu_result = MENU_OK;
 
-    enlarger_profile_t *profile_list;
-    profile_list = pvPortMalloc(sizeof(enlarger_profile_t) * MAX_ENLARGER_PROFILES);
-    if (!profile_list) {
-        log_e("Unable to allocate memory for profile list");
+    char *profile_name_list;
+    profile_name_list = pvPortMalloc(PROFILE_NAME_LEN * MAX_ENLARGER_PROFILES);
+    if (!profile_name_list) {
+        log_e("Unable to allocate memory for profile name list");
         return MENU_OK;
     }
 
@@ -99,7 +99,7 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
             profile_count = 0;
             profile_default_index = settings_get_default_enlarger_profile_index();
             for (size_t i = 0; i < MAX_ENLARGER_PROFILES; i++) {
-                if (!settings_get_enlarger_profile(&profile_list[i], i)) {
+                if (!settings_get_enlarger_profile_name(profile_name_list + (i * PROFILE_NAME_LEN), i)) {
                     break;
                 } else {
                     profile_count = i + 1;
@@ -110,17 +110,18 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
         }
 
         for (size_t i = 0; i < profile_count; i++) {
-            if (profile_list[i].name && strlen(profile_list[i].name) > 0) {
+            const char *profile_name = profile_name_list + (i * PROFILE_NAME_LEN);
+            if (profile_name && strlen(profile_name) > 0) {
                 sprintf(buf + offset, "%c%02d%c %s",
-                    (i == profile_default_index) ? '<' : '[',
+                    ((i == profile_default_index) ? '<' : '['),
                     i + 1,
-                    (i == profile_default_index) ? '>' : ']',
-                    profile_list[i].name);
+                    ((i == profile_default_index) ? '>' : ']'),
+                    profile_name);
             } else {
                 sprintf(buf + offset, "%c%02d%c Enlarger profile %d",
-                    (i == profile_default_index) ? '<' : '[',
+                    ((i == profile_default_index) ? '<' : '['),
                     i + 1,
-                    (i == profile_default_index) ? '>' : ']',
+                    ((i == profile_default_index) ? '>' : ']'),
                     i + 1);
             }
             offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
@@ -154,7 +155,8 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                     && enlarger_profile_is_valid(&working_profile)) {
                     if (settings_set_enlarger_profile(&working_profile, profile_count)) {
                         log_i("New profile added at index: %d", profile_count);
-                        memcpy(&profile_list[profile_count], &working_profile, sizeof(enlarger_profile_t));
+                        strncpy(profile_name_list + (profile_count * PROFILE_NAME_LEN), working_profile.name, PROFILE_NAME_LEN);
+                        profile_name_list[(profile_count * PROFILE_NAME_LEN) - 1] = '\0';
                         profile_count++;
                     }
                 }
@@ -167,7 +169,8 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
                     menu_result = MENU_OK;
                     if (settings_set_enlarger_profile(&working_profile, profile_count)) {
                         log_i("New profile manually added at index: %d", profile_count);
-                        memcpy(&profile_list[profile_count], &working_profile, sizeof(enlarger_profile_t));
+                        strncpy(profile_name_list + (profile_count * PROFILE_NAME_LEN), working_profile.name, PROFILE_NAME_LEN);
+                        profile_name_list[(profile_count * PROFILE_NAME_LEN) - 1] = '\0';
                         profile_count++;
                     }
                 }
@@ -175,30 +178,38 @@ menu_result_t menu_enlarger_profiles(state_controller_t *controller)
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         } else {
+            uint8_t profile_index = option - 1;
             if (option_key == KEYPAD_MENU) {
                 enlarger_profile_t working_profile;
-                memcpy(&working_profile, &profile_list[option - 1], sizeof(enlarger_profile_t));
-                menu_result = menu_enlarger_profile_edit(&working_profile, option - 1);
+
+                if (!settings_get_enlarger_profile(&working_profile, profile_index)) {
+                    log_w("Unable to load profile at index: %d", profile_index);
+                    enlarger_profile_set_defaults(&working_profile);
+                }
+
+                menu_result = menu_enlarger_profile_edit(&working_profile, profile_index);
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
-                    if (settings_set_enlarger_profile(&working_profile, option - 1)) {
-                        log_i("Profile saved at index: %d", option - 1);
-                        memcpy(&profile_list[option - 1], &working_profile, sizeof(enlarger_profile_t));
+                    if (settings_set_enlarger_profile(&working_profile, profile_index)) {
+                        log_i("Profile saved at index: %d", profile_index);
+
+                        strncpy(profile_name_list + (profile_index * 32), working_profile.name, PROFILE_NAME_LEN);
+                        profile_name_list[(profile_index * PROFILE_NAME_LEN) - 1] = '\0';
                     }
                 } else if (menu_result == MENU_DELETE) {
                     menu_result = MENU_OK;
-                    menu_enlarger_delete_profile(option - 1, profile_count);
+                    menu_enlarger_delete_profile(profile_index, profile_count);
                     reload_profiles = true;
                 }
             } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
-                log_i("Set default profile at index: %d", option - 1);
-                settings_set_default_enlarger_profile_index(option - 1);
+                log_i("Set default profile at index: %d", profile_index);
+                settings_set_default_enlarger_profile_index(profile_index);
                 profile_default_index = option - 1;
             }
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
-    vPortFree(profile_list);
+    vPortFree(profile_name_list);
 
     // There are many paths in this menu that can change profile settings,
     // so its easiest to just reload the state controller's active profile
@@ -279,7 +290,7 @@ menu_result_t menu_enlarger_profile_edit(enlarger_profile_t *profile, uint8_t in
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            if (display_input_text("Enlarger Name", profile->name, 32) > 0) {
+            if (display_input_text("Enlarger Name", profile->name, PROFILE_NAME_LEN) > 0) {
                 profile_dirty = true;
             }
         } else if (option == 2) {

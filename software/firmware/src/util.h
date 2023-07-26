@@ -23,6 +23,9 @@
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
+/** Standard length for all profile name strings */
+#define PROFILE_NAME_LEN (32U)
+
 /**
  * Convert the current exposure state into printing display elements.
  */

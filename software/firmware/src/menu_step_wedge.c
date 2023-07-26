@@ -68,7 +68,7 @@ menu_result_t menu_step_wedge()
         option = display_selection_list("Step Wedge Properties", option, buf);
 
         if (option == 1) {
-            display_input_text("Step Wedge Name", wedge->name, 32);
+            display_input_text("Step Wedge Name", wedge->name, PROFILE_NAME_LEN);
         } else if (option == 2) {
             uint8_t value_sel = wedge->step_count;
             if (display_input_value(

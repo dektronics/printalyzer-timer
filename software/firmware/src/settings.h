@@ -167,11 +167,22 @@ bool settings_get_safelight_config(safelight_config_t *safelight_config);
 bool settings_set_safelight_config(const safelight_config_t *safelight_config);
 
 /**
+ * Get the name of the enlarger profile saved at the specified index
+ *
+ * This function is intended to provide an more efficient way of building
+ * a list of saved profiles, than loading all of them into memory.
+ *
+ * @param name Pointer to a buffer with at least 32 bytes.
+ * @param index An index value from 0 to 15
+ * @return True if the profile name was successfully loaded, false otherwise
+ */
+bool settings_get_enlarger_profile_name(char *name, uint8_t index);
+
+/**
  * Get the enlarger profile saved at the specified index
  *
  * @param profile Pointer to the profile struct to load data into
  * @param index An index value from 0 to 15
- *
  * @return True if the profile was successfully loaded, false if no valid
  *         profile was found at the specified index.
  */

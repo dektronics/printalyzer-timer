@@ -20,6 +20,7 @@
 #include "step_wedge.h"
 #include "menu_step_wedge.h"
 #include "exposure_state.h"
+#include "util.h"
 
 typedef struct {
     step_wedge_t *wedge;
@@ -266,7 +267,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            if (display_input_text("Paper Profile Name", profile->name, 32) > 0) {
+            if (display_input_text("Paper Profile Name", profile->name, PROFILE_NAME_LEN) > 0) {
                 profile_dirty = true;
             }
         } else if (option == 2) {

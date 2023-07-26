@@ -3,12 +3,13 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "util.h"
 
 typedef struct {
     /*
      * Name of the enlarger profile, to be displayed in settings.
      */
-    char name[32];
+    char name[PROFILE_NAME_LEN];
 
     /*
      * Time period (ms) from when the enlarger relay is activated until

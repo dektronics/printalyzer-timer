@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include "util.h"
 
 /*
  * Profile describing the characteristics of a step wedge used for
@@ -13,7 +14,7 @@ typedef struct {
     /**
      * Name of the step wedge.
      */
-    char name[32];
+    char name[PROFILE_NAME_LEN];
 
     /**
      * Density of the base of the step wedge.

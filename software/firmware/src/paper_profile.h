@@ -6,6 +6,7 @@
 
 #include "exposure_state.h"
 #include "contrast.h"
+#include "util.h"
 
 /**
  * Profile values for a specific contrast grade of a printing paper.
@@ -73,7 +74,7 @@ typedef struct {
     /**
      * Name of the paper profile.
      */
-    char name[32];
+    char name[PROFILE_NAME_LEN];
 
     /**
      * Profile data for each contrast grade.

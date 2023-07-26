@@ -9,6 +9,15 @@
 
 #include "buzzer.h"
 #include "m24m01.h"
+#include "util.h"
+
+/*
+ * Make sure the name length constant hasn't been altered, as the memory
+ * alignment of many settings blocks depends on it.
+ */
+#ifndef __CDT_PARSER__
+_Static_assert(PROFILE_NAME_LEN == 32, "PROFILE_NAME_LEN length has been changed");
+#endif
 
 #define LATEST_CONFIG_VERSION           1
 #define DEFAULT_EXPOSURE_TIME           15000
@@ -784,6 +793,44 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config)
     }
 }
 
+bool settings_get_enlarger_profile_name(char *name, uint8_t index)
+{
+    if (!name || index >= MAX_ENLARGER_PROFILES) { return false; }
+
+    log_i("Load enlarger profile name: %d", index);
+
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[4 + PROFILE_NAME_LEN];
+    memset(data, 0, sizeof(data));
+
+    do {
+        osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+        ret = m24m01_read_buffer(eeprom_i2c,
+            PAGE_ENLARGER_PROFILE_BASE + (PAGE_SIZE * index),
+            data, sizeof(data));
+        osMutexRelease(eeprom_i2c_mutex);
+        if (ret != HAL_OK) { break; }
+
+        uint32_t profile_version = copy_to_u32(data + ENLARGER_PROFILE_VERSION);
+        if (profile_version == UINT32_MAX) {
+            log_d("Profile index is empty");
+            ret = HAL_ERROR;
+            break;
+        }
+        if (profile_version == 0 || profile_version > LATEST_ENLARGER_PROFILE_VERSION) {
+            log_w("Invalid profile version %ld", profile_version);
+            ret = HAL_ERROR;
+            break;
+        }
+
+        strncpy(name, (const char *)(data + ENLARGER_PROFILE_NAME), PROFILE_NAME_LEN);
+        name[PROFILE_NAME_LEN - 1] = '\0';
+
+    } while (0);
+
+    return (ret == HAL_OK);
+}
+
 bool settings_get_enlarger_profile(enlarger_profile_t *profile, uint8_t index)
 {
     if (!profile || index >= MAX_ENLARGER_PROFILES) { return false; }
@@ -825,8 +872,8 @@ void settings_enlarger_profile_parse_page(enlarger_profile_t *profile, const uin
 {
     memset(profile, 0, sizeof(enlarger_profile_t));
 
-    strncpy(profile->name, (const char *)(data + ENLARGER_PROFILE_NAME), 32);
-    profile->name[31] = '\0';
+    strncpy(profile->name, (const char *)(data + ENLARGER_PROFILE_NAME), PROFILE_NAME_LEN);
+    profile->name[PROFILE_NAME_LEN - 1] = '\0';
 
     profile->turn_on_delay = copy_to_u32(data + ENLARGER_PROFILE_TURN_ON_DELAY);
     profile->rise_time = copy_to_u32(data + ENLARGER_PROFILE_RISE_TIME);
@@ -860,7 +907,7 @@ void settings_enlarger_profile_populate_page(const enlarger_profile_t *profile, 
 {
     copy_from_u32(data + ENLARGER_PROFILE_VERSION, LATEST_ENLARGER_PROFILE_VERSION);
 
-    strncpy((char *)(data + ENLARGER_PROFILE_NAME), profile->name, 32);
+    strncpy((char *)(data + ENLARGER_PROFILE_NAME), profile->name, PROFILE_NAME_LEN);
 
     copy_from_u32(data + ENLARGER_PROFILE_TURN_ON_DELAY,   profile->turn_on_delay);
     copy_from_u32(data + ENLARGER_PROFILE_RISE_TIME,       profile->rise_time);
@@ -946,8 +993,8 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
 {
     memset(profile, 0, sizeof(paper_profile_t));
 
-    strncpy(profile->name, (const char *)(data + PAPER_PROFILE_NAME), 32);
-    profile->name[31] = '\0';
+    strncpy(profile->name, (const char *)(data + PAPER_PROFILE_NAME), PROFILE_NAME_LEN);
+    profile->name[PROFILE_NAME_LEN - 1] = '\0';
 
     profile->grade[CONTRAST_GRADE_00].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HT);
     profile->grade[CONTRAST_GRADE_00].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HM);
@@ -1013,7 +1060,7 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
 {
     copy_from_u32(data + PAPER_PROFILE_VERSION, LATEST_PAPER_PROFILE_VERSION);
 
-    strncpy((char *)(data + PAPER_PROFILE_NAME), profile->name, 32);
+    strncpy((char *)(data + PAPER_PROFILE_NAME), profile->name, PROFILE_NAME_LEN);
 
     copy_from_u32(data + PAPER_PROFILE_GRADE00_HT, profile->grade[CONTRAST_GRADE_00].ht_lev100);
     copy_from_u32(data + PAPER_PROFILE_GRADE00_HM, profile->grade[CONTRAST_GRADE_00].hm_lev100);
@@ -1129,7 +1176,7 @@ void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data)
         return;
     }
 
-    strncpy((*wedge)->name, (const char *)(data + PAPER_PROFILE_NAME), 32);
+    strncpy((*wedge)->name, (const char *)(data + PAPER_PROFILE_NAME), PROFILE_NAME_LEN);
     (*wedge)->name[31] = '\0';
 
     float val = copy_to_f32(data + STEP_WEDGE_BASE_DENSITY);
@@ -1171,7 +1218,7 @@ void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
 {
     copy_from_u32(data + STEP_WEDGE_VERSION, LATEST_STEP_WEDGE_VERSION);
 
-    strncpy((char *)(data + STEP_WEDGE_NAME), wedge->name, 32);
+    strncpy((char *)(data + STEP_WEDGE_NAME), wedge->name, PROFILE_NAME_LEN);
 
     copy_from_f32(data + STEP_WEDGE_BASE_DENSITY, wedge->base_density);
     copy_from_f32(data + STEP_WEDGE_DENSITY_INCREMENT, wedge->density_increment);
