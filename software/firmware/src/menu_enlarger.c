@@ -482,16 +482,55 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
         } else if (option == 3) {
             enlarger_control->dmx_wide_mode = !enlarger_control->dmx_wide_mode;
 
+            if (has_rgb_channels) {
+                const bool has_white = (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW);
+                /* Check if the channel IDs are consecutive, and adjust them accordingly */
+                if (enlarger_control->dmx_wide_mode) {
+                    /*
+                     * 8-bit -> 16-bit
+                     * e.g.
+                     * 0, 1, 2, 3 -> 0, 2, 4, 6
+                     * 508, 509, 510, 511 -> 504, 506, 508, 510
+                     */
+                    if (enlarger_control->dmx_channel_green == enlarger_control->dmx_channel_red + 1
+                        && enlarger_control->dmx_channel_blue == enlarger_control->dmx_channel_red + 2
+                        && (!has_white || enlarger_control->dmx_channel_white == enlarger_control->dmx_channel_red + 3)
+                        && enlarger_control->dmx_channel_red + (has_white ? 8 : 6) <= 512) {
+
+                        enlarger_control->dmx_channel_green = enlarger_control->dmx_channel_red + 2;
+                        enlarger_control->dmx_channel_blue = enlarger_control->dmx_channel_red + 4;
+                        if (has_white) {
+                            enlarger_control->dmx_channel_white = enlarger_control->dmx_channel_red + 6;
+                        }
+                    }
+                } else {
+                    /*
+                     * 16-bit -> 8-bit
+                     * 0, 2, 4, 6 -> 0, 1, 2, 3
+                     */
+                    if (enlarger_control->dmx_channel_green == enlarger_control->dmx_channel_red + 2
+                        && enlarger_control->dmx_channel_blue == enlarger_control->dmx_channel_red + 4
+                        && (!has_white || enlarger_control->dmx_channel_white == enlarger_control->dmx_channel_red + 6)) {
+                        enlarger_control->dmx_channel_green = enlarger_control->dmx_channel_red + 1;
+                        enlarger_control->dmx_channel_blue = enlarger_control->dmx_channel_red + 2;
+                        if (has_white) {
+                            enlarger_control->dmx_channel_white = enlarger_control->dmx_channel_red + 3;
+                        }
+                    }
+                }
+            }
+
+            /* Scale the values for focus and safe modes */
             enlarger_control->focus_value = dmx_adjust_value(enlarger_control->focus_value, enlarger_control->dmx_wide_mode);
             enlarger_control->safe_value = dmx_adjust_value(enlarger_control->safe_value, enlarger_control->dmx_wide_mode);
 
+            /* Scale the values for the contrast grades */
             for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
                 enlarger_control->grade_values[i].channel_red = dmx_adjust_value(enlarger_control->grade_values[i].channel_red, enlarger_control->dmx_wide_mode);
                 enlarger_control->grade_values[i].channel_green = dmx_adjust_value(enlarger_control->grade_values[i].channel_green, enlarger_control->dmx_wide_mode);
                 enlarger_control->grade_values[i].channel_blue = dmx_adjust_value(enlarger_control->grade_values[i].channel_blue, enlarger_control->dmx_wide_mode);
                 enlarger_control->grade_values[i].channel_white = dmx_adjust_value(enlarger_control->grade_values[i].channel_white, enlarger_control->dmx_wide_mode);
             }
-
             config_dirty = true;
         } else if (option == 4) {
             if (has_rgb_channels) {

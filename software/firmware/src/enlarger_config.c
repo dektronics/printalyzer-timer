@@ -75,6 +75,24 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
 {
     memset(config, 0, sizeof(enlarger_config_t));
     strcpy(config->name, "Default");
+
+    config->control.dmx_control = false;
+    config->control.channel_set = ENLARGER_CHANNEL_SET_RGBW;
+    config->control.dmx_wide_mode = false;
+    config->control.dmx_channel_red = 0;
+    config->control.dmx_channel_green = 1;
+    config->control.dmx_channel_blue = 2;
+    config->control.dmx_channel_white = 3;
+    config->control.contrast_mode = ENLARGER_CONTRAST_MODE_WHITE;
+    config->control.focus_value = UINT8_MAX;
+    config->control.safe_value = UINT8_MAX;
+    for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
+        config->control.grade_values[i].channel_red = 0;
+        config->control.grade_values[i].channel_green = UINT8_MAX;
+        config->control.grade_values[i].channel_blue = UINT8_MAX;
+        config->control.grade_values[i].channel_white = 0;
+    }
+
     config->timing.turn_on_delay = 40;
     config->timing.turn_off_delay = 10;
     config->timing.color_temperature = 3000;
