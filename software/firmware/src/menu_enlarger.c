@@ -61,6 +61,8 @@ typedef enum {
 } calibration_result_t;
 
 static menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index);
+static menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_control);
+static uint16_t dmx_adjust_value(uint16_t value, bool wide_mode);
 static menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile);
 static void menu_enlarger_delete_config(uint8_t index, size_t config_count);
 static bool menu_enlarger_config_delete_prompt(const enlarger_config_t *config, uint8_t index);
@@ -154,7 +156,7 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
                 if (settings_set_enlarger_config(&working_config, config_count)) {
                     log_i("New config added at index: %d", config_count);
                     strncpy(config_name_list + (config_count * PROFILE_NAME_LEN), working_config.name, PROFILE_NAME_LEN);
-                    config_name_list[(config_count * PROFILE_NAME_LEN) - 1] = '\0';
+                    config_name_list[((config_count * PROFILE_NAME_LEN) + PROFILE_NAME_LEN) - 1] = '\0';
                     config_count++;
                 }
             }
@@ -177,8 +179,8 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
                     if (settings_set_enlarger_config(&working_config, config_index)) {
                         log_i("Config saved at index: %d", config_index);
 
-                        strncpy(config_name_list + (config_index * 32), working_config.name, PROFILE_NAME_LEN);
-                        config_name_list[(config_index * PROFILE_NAME_LEN) - 1] = '\0';
+                        strncpy(config_name_list + (config_index * PROFILE_NAME_LEN), working_config.name, PROFILE_NAME_LEN);
+                        config_name_list[((config_index * PROFILE_NAME_LEN) + PROFILE_NAME_LEN) - 1] = '\0';
                     }
                 } else if (menu_result == MENU_DELETE) {
                     menu_result = MENU_OK;
@@ -248,7 +250,7 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
         size_t offset = 0;
 
         offset += menu_build_padded_str_row(buf + offset, "Name", config->name);
-        offset += menu_build_padded_str_row(buf + offset, "Power control", "Relay");
+        offset += menu_build_padded_str_row(buf + offset, "Power control", config->control.dmx_control ? "DMX" : "Relay");
         offset += menu_build_padded_str_row(buf + offset, "Timing profile", "\xB7\xB7\xB7");
 
         offset += sprintf(buf + offset, "*** Test Enlarger ***\n");
@@ -343,6 +345,334 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_control)
+{
+    char buf[512];
+    const char *value_str;
+    menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
+    bool has_rgb_channels = false;
+    bool has_contrast_grades = false;
+    bool config_dirty = false;
+
+    do {
+        size_t offset = 0;
+        offset += menu_build_padded_str_row(buf + offset, "Control method",
+            enlarger_control->dmx_control ? "DMX" : "Relay");
+
+        if (enlarger_control->dmx_control) {
+            switch (enlarger_control->channel_set) {
+            case ENLARGER_CHANNEL_SET_RGB:
+                value_str = "RGB";
+                has_rgb_channels = true;
+                break;
+            case ENLARGER_CHANNEL_SET_RGBW:
+                value_str = "RGB+W";
+                has_rgb_channels = true;
+                break;
+            case ENLARGER_CHANNEL_SET_WHITE:
+            default:
+                value_str = "White";
+                has_rgb_channels = false;
+                break;
+            }
+
+            offset += menu_build_padded_str_row(buf + offset, "DMX channel set", value_str);
+
+            offset += menu_build_padded_str_row(buf + offset, "DMX resolution",
+                enlarger_control->dmx_wide_mode ? "16-bit" : "8-bit");
+
+            switch (enlarger_control->channel_set) {
+            case ENLARGER_CHANNEL_SET_RGB:
+                offset += menu_build_padded_format_row(buf + offset,
+                    "Channel IDs", "%3d][%3d][%3d",
+                    enlarger_control->dmx_channel_red + 1,
+                    enlarger_control->dmx_channel_green + 1,
+                    enlarger_control->dmx_channel_blue + 1);
+                break;
+            case ENLARGER_CHANNEL_SET_RGBW:
+                offset += menu_build_padded_format_row(buf + offset,
+                    "Channel IDs", "%3d][%3d][%3d][%3d",
+                    enlarger_control->dmx_channel_red + 1,
+                    enlarger_control->dmx_channel_green + 1,
+                    enlarger_control->dmx_channel_blue + 1,
+                    enlarger_control->dmx_channel_white + 1);
+                break;
+            case ENLARGER_CHANNEL_SET_WHITE:
+            default:
+                offset += menu_build_padded_format_row(buf + offset,
+                    "Channel ID", "%3d",
+                    enlarger_control->dmx_channel_white + 1);
+                break;
+            }
+
+            if (has_rgb_channels) {
+                offset += menu_build_padded_str_row(buf + offset, "Contrast control",
+                    (enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE)
+                    ? "Green+Blue" : "None");
+            }
+
+            value_str = "Focus brightness";
+            if (enlarger_control->dmx_wide_mode) {
+                offset += menu_build_padded_format_row(buf + offset,
+                    value_str, "%5d", enlarger_control->focus_value);
+            } else {
+                offset += menu_build_padded_format_row(buf + offset,
+                    value_str, "%3d", (uint8_t)enlarger_control->focus_value);
+            }
+
+            if (has_rgb_channels) {
+                value_str = "Safe (Red) brightness";
+                if (enlarger_control->dmx_wide_mode) {
+                    offset += menu_build_padded_format_row(buf + offset,
+                        value_str, "%5d", enlarger_control->safe_value);
+                } else {
+                    offset += menu_build_padded_format_row(buf + offset,
+                        value_str, "%3d", (uint8_t)enlarger_control->safe_value);
+                }
+            }
+
+            if (has_rgb_channels && enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
+                offset += menu_build_padded_str_row(buf + offset, "Contrast grades", "\xB7\xB7\xB7");
+                has_contrast_grades = true;
+            } else {
+                has_contrast_grades = false;
+            }
+        } else {
+            has_rgb_channels = false;
+            has_contrast_grades = false;
+        }
+        buf[offset - 1] = '\0';
+
+        option = display_selection_list("Enlarger Power Control", option, buf);
+
+        if (option == 1) {
+            enlarger_control->dmx_control = !enlarger_control->dmx_control;
+            config_dirty = true;
+        } else if (option == 2) {
+            enlarger_channel_set_t channel_set = enlarger_control->channel_set;
+            if (channel_set > ENLARGER_CHANNEL_SET_RGBW) { channel_set = 0; }
+
+            uint8_t sub_option = display_selection_list(
+                "DMX Channel Set", channel_set + 1,
+                "White\n"
+                "RGB\n"
+                "RGB+W");
+
+            if (sub_option > 0 && sub_option < UINT8_MAX) {
+                channel_set = sub_option - 1;
+                if (channel_set != enlarger_control->channel_set && channel_set <= ENLARGER_CHANNEL_SET_RGBW) {
+                    enlarger_control->channel_set = channel_set;
+                    config_dirty = true;
+                }
+            } else if (sub_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+                break;
+            } else {
+                continue;
+            }
+        } else if (option == 3) {
+            enlarger_control->dmx_wide_mode = !enlarger_control->dmx_wide_mode;
+
+            enlarger_control->focus_value = dmx_adjust_value(enlarger_control->focus_value, enlarger_control->dmx_wide_mode);
+            enlarger_control->safe_value = dmx_adjust_value(enlarger_control->safe_value, enlarger_control->dmx_wide_mode);
+
+            config_dirty = true;
+        } else if (option == 4) {
+            if (has_rgb_channels) {
+                uint16_t ch_red = enlarger_control->dmx_channel_red + 1;
+                uint16_t ch_green = enlarger_control->dmx_channel_green + 1;
+                uint16_t ch_blue = enlarger_control->dmx_channel_blue + 1;
+                uint16_t ch_white = enlarger_control->dmx_channel_white + 1;
+                uint8_t sub_option = 0;
+
+                do {
+                    offset = 0;
+                    offset += menu_build_padded_format_row(buf + offset, "Red channel", "%3d", ch_red);
+                    offset += menu_build_padded_format_row(buf + offset, "Green channel", "%3d", ch_green);
+                    offset += menu_build_padded_format_row(buf + offset, "Blue channel", "%3d", ch_blue);
+                    if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW) {
+                        offset += menu_build_padded_format_row(buf + offset, "White channel", "%3d", ch_white);
+                    }
+                    buf[offset - 1] = '\0';
+
+                    sub_option = display_selection_list("DMX Channel IDs", sub_option, buf);
+
+                    if (sub_option >= 1 && sub_option <= 4) {
+                        const char *title;
+                        uint16_t *value_sel;
+
+                        switch (sub_option) {
+                        case 1:
+                            title = "Red Channel ID";
+                            value_sel = &ch_red;
+                            break;
+                        case 2:
+                            title = "Green Channel ID";
+                            value_sel = &ch_green;
+                            break;
+                        case 3:
+                            title = "Blue Channel ID";
+                            value_sel = &ch_blue;
+                            break;
+                        case 4:
+                        default:
+                            title = "White Channel ID";
+                            value_sel = &ch_white;
+                            break;
+                        }
+
+                        if (display_input_value_u16(
+                            title,
+                            "Channel for the selected\n"
+                            "enlarger light.\n",
+                            "", value_sel, 1, 512, 3, "") == UINT8_MAX) {
+                            menu_result = MENU_TIMEOUT;
+                        }
+                    } else if (sub_option == UINT8_MAX) {
+                        menu_result = MENU_TIMEOUT;
+                    } else {
+                        continue;
+                    }
+                } while (sub_option > 0 && menu_result != MENU_TIMEOUT);
+
+                if (sub_option == 0 &&
+                    (ch_red != enlarger_control->dmx_channel_red + 1
+                        || ch_green != enlarger_control->dmx_channel_green + 1
+                        || ch_blue != enlarger_control->dmx_channel_blue + 1
+                        || ch_white != enlarger_control->dmx_channel_white + 1)) {
+                    enlarger_control->dmx_channel_red = ch_red - 1;
+                    enlarger_control->dmx_channel_green = ch_green - 1;
+                    enlarger_control->dmx_channel_blue = ch_blue - 1;
+                    enlarger_control->dmx_channel_white = ch_white - 1;
+                    config_dirty = true;
+                }
+            } else {
+                uint16_t value_sel = enlarger_control->dmx_channel_white + 1;
+                if (display_input_value_u16(
+                    "White Channel ID",
+                    "Channel for the enlarger's\n"
+                    "white light.\n",
+                    "", &value_sel, 1, 512, 3, "") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->dmx_channel_white + 1) {
+                        enlarger_control->dmx_channel_white = value_sel - 1;
+                        config_dirty = true;
+                    }
+                }
+            }
+        } else if (has_rgb_channels && option == 5) {
+            enlarger_contrast_mode_t contrast_mode = enlarger_control->contrast_mode;
+            if (contrast_mode > ENLARGER_CONTRAST_MODE_GREEN_BLUE) { contrast_mode = 0; }
+
+            uint8_t sub_option = display_selection_list(
+                "Contrast Control", contrast_mode + 1,
+                "None (Filtered White)\n"
+                "Green + Blue");
+
+            if (sub_option > 0 && sub_option < UINT8_MAX) {
+                contrast_mode = sub_option - 1;
+                if (contrast_mode != enlarger_control->contrast_mode && contrast_mode <= ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
+                    enlarger_control->contrast_mode = contrast_mode;
+                    config_dirty = true;
+                }
+            } else if (sub_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+                break;
+            } else {
+                continue;
+            }
+        } else if (option == (has_rgb_channels ? 6 : 5)) {
+            const char *title = "Focus Brightness Value";
+            const char *msg =
+                "Brightness when the enlarger\n"
+                "is turned on for focusing.\n";
+
+            if (enlarger_control->dmx_wide_mode) {
+                uint16_t value_sel = enlarger_control->focus_value;
+                if (display_input_value_u16(
+                    title, msg,
+                    "", &value_sel, 0, 65535, 5, " / 65535") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->focus_value) {
+                        enlarger_control->focus_value = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            } else {
+                uint8_t value_sel = enlarger_control->focus_value;
+                if (display_input_value(
+                    title, msg,
+                    "", &value_sel, 0, 255, 3, " / 255") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->focus_value) {
+                        enlarger_control->focus_value = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            }
+        } else if (has_rgb_channels && option == 7) {
+            const char *title = "Safe (Red) Brightness Value";
+            const char *msg =
+                "Brightness when the enlarger's\n"
+                "red light is turned on between\n"
+                "exposure steps.\n";
+
+            if (enlarger_control->dmx_wide_mode) {
+                uint16_t value_sel = enlarger_control->safe_value;
+                if (display_input_value_u16(
+                    title, msg,
+                    "", &value_sel, 0, 65535, 5, " / 65535") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->safe_value) {
+                        enlarger_control->safe_value = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            } else {
+                uint8_t value_sel = enlarger_control->safe_value;
+                if (display_input_value(
+                    title, msg,
+                    "", &value_sel, 0, 255, 3, " / 255") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->safe_value) {
+                        enlarger_control->safe_value = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            }
+        } else if (has_contrast_grades && option == 8) {
+            log_d("-->Contrast grades"); //XXX
+            //TODO
+        } else if (option == 0 && config_dirty) {
+            menu_result = MENU_SAVE;
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+uint16_t dmx_adjust_value(uint16_t value, bool wide_mode)
+{
+    if (wide_mode) {
+        if (value == 0xFF) {
+            return 0xFFFF;
+        } else {
+            return (value & 0xFF) << 8;
+        }
+    } else {
+        return (value & 0xFF00) >> 8;
+    }
 }
 
 menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile)

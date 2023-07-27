@@ -36,7 +36,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
         option = display_selection_list(
                 "Main Menu", option,
                 "Settings\n"
-                "Enlarger Configurations\n"
+                "Enlarger Configuration\n"
                 "Paper Profiles\n"
                 "Step Wedge Properties\n"
                 "Import / Export\n"
