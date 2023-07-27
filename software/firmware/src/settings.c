@@ -60,7 +60,7 @@ static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 
 /**
- * Header Page (256b)
+ * Header Page (256B)
  * Mostly unused at the moment, will be populated if any top-level system
  * data needs to be stored. Unlike other pages, it begins with a magic
  * string.
@@ -72,7 +72,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define HEADER_VERSION                   1UL
 
 /**
- * Basic configuration page (256b)
+ * Basic configuration page (256B)
  * Contains simple configuration values that are stored
  * as standalone elements.
  */
@@ -94,7 +94,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG_TCS3472_GA_FACTOR         52
 
 /**
- * Detailed configuration page (256b)
+ * Detailed configuration page (256B)
  * Contains configuration values that are stored as structures of
  * related elements.
  */
@@ -105,7 +105,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG2_SAFELIGHT_CONTROL_SIZE   (8U)
 
 /**
- * Enlarger configurations (4096b)
+ * Enlarger configurations (4096B)
  * Each enlarger configuration is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
  * configuration entries.
@@ -122,9 +122,21 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define ENLARGER_CONFIG_TIMING_COLOR_TEMP      60
 #define ENLARGER_CONFIG_TIMING_LIGHT_SOURCE    64
 #define ENLARGER_CONFIG_TIMING_IR_CONTENT      68
+/* RESERVED */
+#define ENLARGER_CONFIG_CONTROL_DMX_ENABLED   128 /* 1B (bool) */
+#define ENLARGER_CONFIG_CONTROL_CHANNEL_SET   129 /* 1B (enlarger_channel_set_t) */
+#define ENLARGER_CONFIG_CONTROL_DMX_WIDE      130 /* 1B (bool) */
+#define ENLARGER_CONFIG_CONTROL_CHANNEL_ID_R  131 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_CHANNEL_ID_G  133 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_CHANNEL_ID_B  135 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_CHANNEL_ID_W  137 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_CONTRAST_MODE 139 /* 1B (enlarger_contrast_mode_t) */
+#define ENLARGER_CONFIG_CONTROL_FOCUS_VALUE   140 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_SAFE_VALUE    142 /* 2B (uint16_t) */
+#define ENLARGER_CONFIG_CONTROL_GRADE_VALUES  144 /* 56B (7 * (4 * uint16_t)) */
 
 /**
- * Paper profiles (4096b)
+ * Paper profiles (4096B)
  * Each paper profile is allocated a full 256-byte page,
  * starting at this address, up to a maximum of 16
  * profile entries.
@@ -157,7 +169,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define PAPER_PROFILE_CONTRAST_FILTER    124
 
 /**
- * Step wedge profile (256b)
+ * Step wedge profile (256B)
  * Only a single step wedge profile is supported, and
  * it is given a full 256-byte page.
  */
@@ -178,6 +190,19 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
  * End of the EEPROM memory space, kept here for reference.
  */
 #define PAGE_LIMIT                       0x20000UL
+
+/**
+ * List of whole contrast grades to make certain profile code
+ * more compact.
+ * Stored here to prevent any external changes from inadvertently
+ * affecting persisted binary data.
+ */
+const contrast_grade_t whole_grade_list[] = {
+    CONTRAST_GRADE_00,
+    CONTRAST_GRADE_0, CONTRAST_GRADE_1, CONTRAST_GRADE_2,
+    CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
+};
+const size_t whole_grade_count = 7;
 
 static HAL_StatusTypeDef settings_read_header(bool *valid);
 static HAL_StatusTypeDef settings_write_header();
@@ -875,6 +900,7 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
     strncpy(config->name, (const char *)(data + ENLARGER_CONFIG_NAME), PROFILE_NAME_LEN);
     config->name[PROFILE_NAME_LEN - 1] = '\0';
 
+    /* Timing profile data */
     config->timing.turn_on_delay = copy_to_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY);
     config->timing.rise_time = copy_to_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME);
     config->timing.rise_time_equiv = copy_to_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME_EQUIV);
@@ -882,6 +908,30 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
     config->timing.fall_time = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME);
     config->timing.fall_time_equiv = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV);
     config->timing.color_temperature = copy_to_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP);
+
+    /* Enlarger control configuration */
+    config->control.dmx_control = (bool)data[ENLARGER_CONFIG_CONTROL_DMX_ENABLED];
+    config->control.channel_set = (enlarger_channel_set_t)data[ENLARGER_CONFIG_CONTROL_CHANNEL_SET];
+    config->control.dmx_wide_mode = (bool)data[ENLARGER_CONFIG_CONTROL_DMX_WIDE];
+    config->control.dmx_channel_red = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_R);
+    config->control.dmx_channel_green = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_G);
+    config->control.dmx_channel_blue = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_B);
+    config->control.dmx_channel_white = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_W);
+    config->control.contrast_mode = (enlarger_contrast_mode_t)data[ENLARGER_CONFIG_CONTROL_CONTRAST_MODE];
+    config->control.focus_value = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_FOCUS_VALUE);
+    config->control.safe_value = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_SAFE_VALUE);
+
+    size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
+    for (size_t i = 0; i < whole_grade_count; i++) {
+        config->control.grade_values[i].channel_red = copy_to_u16(data + offset);
+        offset += 2;
+        config->control.grade_values[i].channel_green = copy_to_u16(data + offset);
+        offset += 2;
+        config->control.grade_values[i].channel_blue = copy_to_u16(data + offset);
+        offset += 2;
+        config->control.grade_values[i].channel_white = copy_to_u16(data + offset);
+        offset += 2;
+    }
 }
 
 bool settings_set_enlarger_config(const enlarger_config_t *config, uint8_t index)
@@ -909,6 +959,7 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
 
     strncpy((char *)(data + ENLARGER_CONFIG_NAME), config->name, PROFILE_NAME_LEN);
 
+    /* Timing profile data */
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY,   config->timing.turn_on_delay);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME,       config->timing.rise_time);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_RISE_TIME_EQUIV, config->timing.rise_time_equiv);
@@ -916,6 +967,30 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME,       config->timing.fall_time);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV, config->timing.fall_time_equiv);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP,      config->timing.color_temperature);
+
+    /* Enlarger control configuration */
+    data[ENLARGER_CONFIG_CONTROL_DMX_ENABLED] = (uint8_t)config->control.dmx_control;
+    data[ENLARGER_CONFIG_CONTROL_CHANNEL_SET] = (uint8_t)config->control.channel_set;
+    data[ENLARGER_CONFIG_CONTROL_DMX_WIDE] = (uint8_t)config->control.dmx_wide_mode;
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_R, config->control.dmx_channel_red);
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_G, config->control.dmx_channel_green);
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_B, config->control.dmx_channel_blue);
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_CHANNEL_ID_W, config->control.dmx_channel_white);
+    data[ENLARGER_CONFIG_CONTROL_CONTRAST_MODE] = (uint8_t)config->control.contrast_mode;
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_FOCUS_VALUE, config->control.focus_value);
+    copy_from_u16(data + ENLARGER_CONFIG_CONTROL_SAFE_VALUE, config->control.safe_value);
+
+    size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
+    for (size_t i = 0; i < whole_grade_count; i++) {
+        copy_from_u16(data + offset, config->control.grade_values[i].channel_red);
+        offset += 2;
+        copy_from_u16(data + offset, config->control.grade_values[i].channel_green);
+        offset += 2;
+        copy_from_u16(data + offset, config->control.grade_values[i].channel_blue);
+        offset += 2;
+        copy_from_u16(data + offset, config->control.grade_values[i].channel_white);
+        offset += 2;
+    }
 }
 
 void settings_clear_enlarger_config(uint8_t index)
