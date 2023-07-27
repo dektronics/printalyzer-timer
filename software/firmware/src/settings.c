@@ -923,13 +923,13 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
 
     size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
     for (size_t i = 0; i < whole_grade_count; i++) {
-        config->control.grade_values[i].channel_red = copy_to_u16(data + offset);
+        config->control.grade_values[whole_grade_list[i]].channel_red = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[i].channel_green = copy_to_u16(data + offset);
+        config->control.grade_values[whole_grade_list[i]].channel_green = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[i].channel_blue = copy_to_u16(data + offset);
+        config->control.grade_values[whole_grade_list[i]].channel_blue = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[i].channel_white = copy_to_u16(data + offset);
+        config->control.grade_values[whole_grade_list[i]].channel_white = copy_to_u16(data + offset);
         offset += 2;
     }
 }
@@ -982,13 +982,13 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
 
     size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
     for (size_t i = 0; i < whole_grade_count; i++) {
-        copy_from_u16(data + offset, config->control.grade_values[i].channel_red);
+        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_red);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[i].channel_green);
+        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_green);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[i].channel_blue);
+        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_blue);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[i].channel_white);
+        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_white);
         offset += 2;
     }
 }

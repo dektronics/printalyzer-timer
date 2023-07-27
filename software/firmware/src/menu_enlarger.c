@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "enlarger_config.h"
 #include "illum_controller.h"
+#include "dmx.h"
 #include "util.h"
 
 #define REFERENCE_READING_ITERATIONS 100
@@ -64,6 +65,9 @@ static menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_
 static menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_t *enlarger_control, contrast_grade_t grade);
+static menu_result_t menu_enlarger_config_control_test_relay();
+static menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *enlarger_control);
+static void enlarger_test_set_frame(const enlarger_control_t *enlarger_control, uint16_t red, uint16_t green, uint16_t blue, uint16_t white);
 static uint16_t dmx_adjust_value(uint16_t value, bool wide_mode);
 static menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile);
 static void menu_enlarger_delete_config(uint8_t index, size_t config_count);
@@ -204,6 +208,10 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
     // whenever exiting from this menu.
     state_controller_reload_enlarger_config(controller);
 
+    /* Refresh the illumination controller, as it controls the DMX task */
+    illum_controller_refresh();
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
     return menu_result;
 }
 
@@ -297,7 +305,15 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             }
         } else if (option == 4) {
             /* Test Enlarger */
-            //TODO enlarger test screen(s)
+            menu_result_t sub_result;
+            if (config->control.dmx_control) {
+                sub_result = menu_enlarger_config_control_test_dmx(&(config->control));
+            } else {
+                sub_result = menu_enlarger_config_control_test_relay();
+            }
+            if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+            }
         } else if (option == 5) {
             log_d("Run calibration from profile editor");
             uint8_t sub_option = display_message(
@@ -874,6 +890,248 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
     }
 
     return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_test_relay(enlarger_control_t *enlarger_control)
+{
+    char buf[256];
+    menu_result_t menu_result = MENU_OK;
+    bool relay_enlg = false;
+
+    relay_enlarger_enable(false);
+
+    for (;;) {
+        sprintf(buf,
+            "\n\n"
+            "Relay control [%s]",
+            relay_enlg ? "**" : "  ");
+        display_static_list("Enlarger Test", buf);
+
+        keypad_event_t keypad_event;
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        if (ret == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                relay_enlg = !relay_enlg;
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            }
+
+            relay_enlarger_enable(relay_enlg);
+        } else if (ret == HAL_TIMEOUT) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        }
+    }
+
+    relay_enlarger_enable(false);
+
+    return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *enlarger_control)
+{
+    char buf[256];
+    menu_result_t menu_result = MENU_OK;
+    bool enlarger_on = false;
+    int test_mode = 0;
+    contrast_grade_t test_grade = CONTRAST_GRADE_MAX;
+
+    const bool has_rgb =
+        enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB
+        || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
+    const bool has_contrast = enlarger_control->contrast_mode != ENLARGER_CONTRAST_MODE_WHITE;
+
+    /* Make sure the DMX port is running and the frame is clear */
+    if (dmx_get_port_state() == DMX_PORT_DISABLED) {
+        dmx_enable();
+    }
+    if (dmx_get_port_state() == DMX_PORT_ENABLED_IDLE) {
+        dmx_start();
+    }
+    if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+        dmx_clear_frame(false);
+    }
+
+    if (has_contrast) {
+        test_grade = CONTRAST_GRADE_2;
+    } else {
+        test_grade = CONTRAST_GRADE_MAX;
+    }
+
+    for (;;) {
+        size_t offset = 0;
+        offset += sprintf(buf, "\n");
+        offset += sprintf(buf + offset, "  Enlarger power          [%s]  \n", enlarger_on ? "**" : "  ");
+
+        offset += sprintf(buf + offset, "  Mode              ");
+        if (test_mode == 0) {
+            offset += sprintf(buf + offset, "   [Focus]  \n");
+        } else if (test_mode == 1) {
+            offset += sprintf(buf + offset, "    [Safe]  \n");
+        } else {
+            offset += sprintf(buf + offset, "[Exposure]  \n");
+        }
+
+        offset += sprintf(buf + offset, "  Contrast grade    ");
+        if (test_grade >= CONTRAST_GRADE_0 && test_grade <= CONTRAST_GRADE_5) {
+            buf[offset++] = ' ';
+            buf[offset] = '\0';
+        }
+
+        if (test_grade < CONTRAST_GRADE_MAX) {
+            offset += sprintf(buf + offset, "[Grade %s]  \n", contrast_grade_str(test_grade));
+        } else {
+            offset += sprintf(buf + offset, "     [N/A]  \n");
+        }
+
+        display_static_list("Enlarger Test", buf);
+
+        keypad_event_t keypad_event;
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        if (ret == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                enlarger_on = !enlarger_on;
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+                if (test_mode == 0) {
+                    if (has_rgb && enlarger_control->safe_value > 0) {
+                        test_mode = 1;
+                    } else {
+                        test_mode = 2;
+                    }
+                } else if (test_mode == 1) {
+                    test_mode = 2;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+                if (test_mode == 2) {
+                    if (has_rgb && enlarger_control->safe_value > 0) {
+                        test_mode = 1;
+                    } else {
+                        test_mode = 0;
+                    }
+                } else if (test_mode == 1) {
+                    test_mode = 0;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST) && has_contrast) {
+                if (test_grade == CONTRAST_GRADE_00) {
+                    test_grade++;
+                } else if (test_grade <= CONTRAST_GRADE_4) {
+                    test_grade += 2;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST) && has_contrast) {
+                if (test_grade == CONTRAST_GRADE_0) {
+                    test_grade--;
+                } else if (test_grade >= CONTRAST_GRADE_1) {
+                    test_grade -= 2;
+                }
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            }
+        } else if (ret == HAL_TIMEOUT) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        }
+
+        if (enlarger_on) {
+            if (test_mode == 0) {
+                /* Focus mode */
+                if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB) {
+                    enlarger_test_set_frame(enlarger_control,
+                        enlarger_control->focus_value,
+                        enlarger_control->focus_value,
+                        enlarger_control->focus_value,
+                        0);
+                } else {
+                    enlarger_test_set_frame(enlarger_control,
+                        0, 0, 0,
+                        enlarger_control->focus_value);
+                }
+            } else if (test_mode == 1) {
+                /* Safe mode */
+                if (has_rgb) {
+                    enlarger_test_set_frame(enlarger_control,
+                        enlarger_control->safe_value,
+                        0, 0, 0);
+                }
+            } else if (test_mode == 2) {
+                /* Exposure mode */
+                if (has_rgb && enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
+                    enlarger_test_set_frame(enlarger_control,
+                        0,
+                        enlarger_control->grade_values[test_grade].channel_green,
+                        enlarger_control->grade_values[test_grade].channel_blue,
+                        0);
+                } else {
+                    //TODO Store exposure values for White mode under a fixed contrast grade (perhaps grade 2?)
+                    //TODO Should add settings menus to handle the variations on this case
+                    if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB) {
+                        enlarger_test_set_frame(enlarger_control,
+                            enlarger_control->focus_value,
+                            enlarger_control->focus_value,
+                            enlarger_control->focus_value,
+                            0);
+                    } else {
+                        enlarger_test_set_frame(enlarger_control,
+                            0, 0, 0,
+                            enlarger_control->focus_value);
+                    }
+                }
+            }
+        } else {
+            enlarger_test_set_frame(enlarger_control, 0, 0, 0, 0);
+        }
+    }
+
+    /* Clear DMX output frame */
+    if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+        dmx_stop();
+    }
+
+    /* Refresh the illumination controller, to return to our previous DMX state */
+    illum_controller_refresh();
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
+    return menu_result;
+}
+
+void enlarger_test_set_frame(const enlarger_control_t *enlarger_control, uint16_t red, uint16_t green, uint16_t blue, uint16_t white)
+{
+    const bool has_rgb =
+        enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB
+        || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
+    const bool has_white =
+        enlarger_control->channel_set == ENLARGER_CHANNEL_SET_WHITE
+        || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
+    uint8_t frame[2];
+
+    //TODO Add DMX task function to set a frame as a set of non-adjacent channels in blocking mode
+
+    if (has_rgb) {
+        if (enlarger_control->dmx_wide_mode) {
+            conv_u16_array(frame, red);
+            dmx_set_frame(enlarger_control->dmx_channel_red, frame, 2, false);
+            conv_u16_array(frame, green);
+            dmx_set_frame(enlarger_control->dmx_channel_green, frame, 2, false);
+            conv_u16_array(frame, blue);
+            dmx_set_frame(enlarger_control->dmx_channel_blue, frame, 2, false);
+        } else {
+            frame[0] = red;
+            dmx_set_frame(enlarger_control->dmx_channel_red, frame, 1, false);
+            frame[0] = green;
+            dmx_set_frame(enlarger_control->dmx_channel_green, frame, 1, false);
+            frame[0] = blue;
+            dmx_set_frame(enlarger_control->dmx_channel_blue, frame, 1, false);
+        }
+    }
+
+    if (has_white) {
+        if (enlarger_control->dmx_wide_mode) {
+            conv_u16_array(frame, white);
+            dmx_set_frame(enlarger_control->dmx_channel_white, frame, 2, false);
+        } else {
+            frame[0] = white;
+            dmx_set_frame(enlarger_control->dmx_channel_white, frame, 1, false);
+        }
+    }
 }
 
 uint16_t dmx_adjust_value(uint16_t value, bool wide_mode)
