@@ -17,7 +17,6 @@
 #include "display_internal.h"
 #include "keypad.h"
 
-#define MENU_TIMEOUT_MS 30000
 #define MENU_KEY_POLL_MS 100
 
 static u8g2_t u8g2;

@@ -62,6 +62,8 @@ typedef enum {
 
 static menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index);
 static menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_control);
+static menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enlarger_control);
+static menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_t *enlarger_control, contrast_grade_t grade);
 static uint16_t dmx_adjust_value(uint16_t value, bool wide_mode);
 static menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile);
 static void menu_enlarger_delete_config(uint8_t index, size_t config_count);
@@ -279,6 +281,8 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             if (sub_result == MENU_SAVE) {
                 memcpy(&(config->control), &enlarger_control, sizeof(enlarger_control_t));
                 config_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
             }
         } else if (option == 3) {
             /* Edit timing profile */
@@ -288,6 +292,8 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             if (sub_result == MENU_SAVE) {
                 memcpy(&(config->timing), &timing_profile, sizeof(enlarger_timing_t));
                 config_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
             }
         } else if (option == 4) {
             /* Test Enlarger */
@@ -311,14 +317,14 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
                     break;
                 }
             } else if (sub_option == 2) {
-                // Cancel selected
+                /* Cancel selected */
                 continue;
             } else if (sub_option == UINT8_MAX) {
-                // Return assuming timeout
+                /* Return assuming timeout */
                 menu_result = MENU_TIMEOUT;
                 break;
             } else {
-                // Return assuming no timeout
+                /* Return assuming no timeout */
                 continue;
             }
         } else if (option == 6) {
@@ -478,6 +484,13 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
 
             enlarger_control->focus_value = dmx_adjust_value(enlarger_control->focus_value, enlarger_control->dmx_wide_mode);
             enlarger_control->safe_value = dmx_adjust_value(enlarger_control->safe_value, enlarger_control->dmx_wide_mode);
+
+            for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
+                enlarger_control->grade_values[i].channel_red = dmx_adjust_value(enlarger_control->grade_values[i].channel_red, enlarger_control->dmx_wide_mode);
+                enlarger_control->grade_values[i].channel_green = dmx_adjust_value(enlarger_control->grade_values[i].channel_green, enlarger_control->dmx_wide_mode);
+                enlarger_control->grade_values[i].channel_blue = dmx_adjust_value(enlarger_control->grade_values[i].channel_blue, enlarger_control->dmx_wide_mode);
+                enlarger_control->grade_values[i].channel_white = dmx_adjust_value(enlarger_control->grade_values[i].channel_white, enlarger_control->dmx_wide_mode);
+            }
 
             config_dirty = true;
         } else if (option == 4) {
@@ -649,8 +662,12 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
                 }
             }
         } else if (has_contrast_grades && option == 8) {
-            log_d("-->Contrast grades"); //XXX
-            //TODO
+            menu_result_t sub_result = menu_enlarger_config_control_contrast_edit(enlarger_control);
+            if (sub_result == MENU_SAVE) {
+                config_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+            }
         } else if (option == 0 && config_dirty) {
             menu_result = MENU_SAVE;
         } else if (option == UINT8_MAX) {
@@ -658,6 +675,164 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
         }
 
     } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enlarger_control)
+{
+    char buf[256];
+    menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
+    bool contrast_dirty = false;
+
+    const char *format_str = enlarger_control->dmx_wide_mode ? "%5d][%5d" : "%3d][%3d";
+    const uint16_t format_mask = enlarger_control->dmx_wide_mode ? 0xFFFF : 0x00FF;
+
+    const contrast_grade_t grade_list[] = {
+        CONTRAST_GRADE_00,
+        CONTRAST_GRADE_0, CONTRAST_GRADE_1, CONTRAST_GRADE_2,
+        CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
+    };
+    const size_t grade_count = 7;
+
+    do {
+        size_t offset = 0;
+        for (size_t i = 0; i < grade_count; i++) {
+            char label_buf[10];
+            strcpy(label_buf, "Grade ");
+            strcat(label_buf, contrast_grade_str(grade_list[i]));
+
+            offset += menu_build_padded_format_row(buf + offset,
+                label_buf, format_str,
+                enlarger_control->grade_values[grade_list[i]].channel_green & format_mask,
+                enlarger_control->grade_values[grade_list[i]].channel_blue & format_mask);
+        }
+        buf[offset - 1] = '\0';
+        option = display_selection_list("Contrast Grades", option, buf);
+
+        if (option >= 1 && option <= grade_count) {
+            menu_result_t sub_result = menu_enlarger_config_control_contrast_entry_edit(enlarger_control, grade_list[option - 1]);
+            if (sub_result == MENU_SAVE) {
+                contrast_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else if (option == 0 && contrast_dirty) {
+            menu_result = MENU_SAVE;
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_t *enlarger_control, contrast_grade_t grade)
+{
+    char buf[256];
+    char title_buf[10];
+    menu_result_t menu_result = MENU_OK;
+    uint8_t row = 0;
+
+    const uint16_t max_val = enlarger_control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
+    uint16_t green_val = enlarger_control->grade_values[grade].channel_green;
+    uint16_t blue_val = enlarger_control->grade_values[grade].channel_blue;
+
+    strcpy(title_buf, "Grade ");
+    strcat(title_buf, contrast_grade_str(grade));
+
+    for (;;) {
+        size_t offset = 0;
+        offset += sprintf(buf + offset, "\n");
+        if (enlarger_control->dmx_wide_mode) {
+            offset += sprintf(buf + offset,
+                " %c Green       [%5d / 65535]  \n"
+                " %c Blue        [%5d / 65535]  \n",
+                (row == 0 ? '*' : ' '), green_val,
+                (row == 1 ? '*' : ' '), blue_val);
+        } else {
+            offset += sprintf(buf + offset,
+                " %c Green           [%3d / 255]  \n"
+                " %c Blue            [%3d / 255]  \n",
+                (row == 0 ? '*' : ' '), (uint8_t)green_val,
+                (row == 1 ? '*' : ' '), (uint8_t)blue_val);
+        }
+        display_static_list(title_buf, buf);
+
+        keypad_event_t keypad_event;
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        if (ret == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
+                /* Increment active row with rollover */
+                if (row == 0) {
+                    if (green_val < max_val) { green_val++; }
+                    else { green_val = 0; }
+                } else if (row == 1) {
+                    if (blue_val < max_val) { blue_val++; }
+                    else { blue_val = 0; }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
+                /* Decrement active row with rollover */
+                if (row == 0) {
+                    if (green_val > 0) { green_val--; }
+                    else { green_val = max_val; }
+                } else if (row == 1) {
+                    if (blue_val > 0) { blue_val--; }
+                    else { blue_val = max_val; }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+                /* Skip-increment active row */
+                if (row == 0) {
+                    if (green_val > max_val - 10) {
+                        green_val = max_val;
+                    } else {
+                        green_val += 10;
+                    }
+                } else if (row == 1) {
+                    if (blue_val > max_val - 10) {
+                        blue_val = max_val;
+                    } else {
+                        blue_val += 10;
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+                /* Skip-decrement active row */
+                if (row == 0) {
+                    if (green_val < 10) {
+                        green_val = 0;
+                    } else {
+                        green_val -= 10;
+                    }
+                } else if (row == 1) {
+                    if (blue_val < 10) {
+                        blue_val = 0;
+                    } else {
+                        blue_val -= 10;
+                    }
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+                /* Toggle active row */
+                if (row == 0) { row = 1; }
+                else { row = 0; }
+            } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
+                /* Accept values, if changed, and return */
+                if (green_val != enlarger_control->grade_values[grade].channel_green
+                    || blue_val != enlarger_control->grade_values[grade].channel_blue) {
+                    enlarger_control->grade_values[grade].channel_green = green_val;
+                    enlarger_control->grade_values[grade].channel_blue = blue_val;
+                    menu_result = MENU_SAVE;
+                }
+                break;
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                /* Reject values and return */
+                break;
+            }
+        } else if (ret == HAL_TIMEOUT) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        }
+    }
 
     return menu_result;
 }

@@ -6,6 +6,8 @@
 #include "u8g2_stm32_hal.h"
 #include "contrast.h"
 
+#define MENU_TIMEOUT_MS 30000
+
 typedef enum {
     DISPLAY_MENU_ACCEPT_MENU = 0x01,
     DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT = 0x02,
