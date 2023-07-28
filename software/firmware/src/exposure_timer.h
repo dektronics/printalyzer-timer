@@ -36,11 +36,11 @@ typedef struct {
     /* Duration of the effective exposure (ms) */
     uint32_t exposure_time;
 
-    /* Time delay between turning the relay on and the start of the timer period */
-    uint16_t relay_on_delay;
+    /* Time delay between turning the enlarger on and the start of the timer period */
+    uint16_t enlarger_on_delay;
 
-    /* Time delay between turning the relay off and the end of the timer period */
-    uint16_t relay_off_delay;
+    /* Time delay between turning the enlarger off and the end of the timer period */
+    uint16_t enlarger_off_delay;
 
     /* Time delay between the end of the timer period and the completion of the timer process */
     uint16_t exposure_end_delay;
@@ -53,6 +53,9 @@ typedef struct {
 
     /* The rate at which to invoke the callback function */
     exposure_timer_callback_rate_t callback_rate;
+
+    /* The selected contrast grade, used for enlargers with contrast control */
+    contrast_grade_t contrast_grade;
 
     /* Callback function to be invoked at the specified rate */
     exposure_timer_callback_t timer_callback;

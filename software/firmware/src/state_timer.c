@@ -88,6 +88,8 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
+    timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
     exposure_timer_set_config(&timer_config, &enlarger_config->control);
@@ -222,6 +224,8 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     } else {
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
+
+    timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
 
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 

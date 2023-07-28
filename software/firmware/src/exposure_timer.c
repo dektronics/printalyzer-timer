@@ -22,16 +22,16 @@ static exposure_timer_config_t timer_config = {0};
 static enlarger_control_t enlarger_control = {0};
 
 static TaskHandle_t timer_task_handle = 0;
-static bool relay_activated = false;
-static bool relay_deactivated = false;
+static bool enlarger_activated = false;
+static bool enlarger_deactivated = false;
 static bool timer_notify_end = false;
 static bool timer_cancel_request = false;
 static exposure_timer_state_t timer_state = EXPOSURE_TIMER_STATE_NONE;
 static uint32_t time_elapsed = 0;
 static uint32_t buzz_start = 0;
 static uint32_t buzz_stop = 0;
-static uint32_t relay_on_event_ticks = 0;
-static uint32_t relay_off_event_ticks = 0;
+static uint32_t enlarger_on_event_ticks = 0;
+static uint32_t enlarger_off_event_ticks = 0;
 
 void exposure_timer_init(TIM_HandleTypeDef *htim)
 {
@@ -49,8 +49,8 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
     if (!enlarger_config || !enlarger_config_is_valid(enlarger_config)) {
         log_i("Setting defaults based on missing or invalid enlarger config");
         config->exposure_time = exposure_time;
-        config->relay_on_delay = 0;
-        config->relay_off_delay = 0;
+        config->enlarger_on_delay = 0;
+        config->enlarger_off_delay = 0;
         return;
     }
 
@@ -66,15 +66,15 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
 
     // Assign the time fields based on the enlarger profile
     config->exposure_time = exposure_time;
-    config->relay_on_delay = round_to_10(enlarger_config->timing.turn_on_delay + (enlarger_config->timing.rise_time - enlarger_config->timing.rise_time_equiv));
-    config->relay_off_delay = round_to_10(enlarger_config->timing.turn_off_delay + enlarger_config->timing.fall_time_equiv);
+    config->enlarger_on_delay = round_to_10(enlarger_config->timing.turn_on_delay + (enlarger_config->timing.rise_time - enlarger_config->timing.rise_time_equiv));
+    config->enlarger_off_delay = round_to_10(enlarger_config->timing.turn_off_delay + enlarger_config->timing.fall_time_equiv);
     config->exposure_end_delay = round_to_10(enlarger_config->timing.fall_time - enlarger_config->timing.fall_time_equiv);
 
     // Log all the relevant time properties
     log_d("Set for desired time of %ldms", exposure_time);
-    log_d("Adjusted exposure time: %ldms", config->relay_on_delay + config->exposure_time);
-    log_d("On delay: %dms", config->relay_on_delay);
-    log_d("Off delay: %dms", config->relay_off_delay);
+    log_d("Adjusted exposure time: %ldms", config->enlarger_on_delay + config->exposure_time);
+    log_d("On delay: %dms", config->enlarger_on_delay);
+    log_d("Off delay: %dms", config->enlarger_off_delay);
     log_d("End delay: %dms", config->exposure_end_delay);
 }
 
@@ -104,21 +104,21 @@ HAL_StatusTypeDef exposure_timer_run()
         log_e("Exposure time too long: %ld > %ld", timer_config.exposure_time, 0x100000UL);
         return HAL_ERROR;
     }
-    if (timer_config.relay_off_delay >= timer_config.exposure_time) {
+    if (timer_config.enlarger_off_delay >= timer_config.exposure_time) {
         log_e("Relay off delay cannot be longer than the exposure time: %d >= %ld",
-            timer_config.relay_off_delay, timer_config.exposure_time);
+            timer_config.enlarger_off_delay, timer_config.exposure_time);
         return HAL_ERROR;
     }
 
     timer_task_handle = xTaskGetCurrentTaskHandle();
-    relay_activated = false;
-    relay_deactivated = false;
+    enlarger_activated = false;
+    enlarger_deactivated = false;
     timer_notify_end = false;
     timer_cancel_request = false;
     timer_state = EXPOSURE_TIMER_STATE_NONE;
     time_elapsed = 0;
-    relay_on_event_ticks = 0;
-    relay_off_event_ticks = 0;
+    enlarger_on_event_ticks = 0;
+    enlarger_off_event_ticks = 0;
 
     buzzer_volume_t current_volume = buzzer_get_volume();
     pam8904e_freq_t current_frequency = buzzer_get_frequency();
@@ -197,8 +197,8 @@ HAL_StatusTypeDef exposure_timer_run()
 
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
-        log_d("Actual relay on/off time: %lums",
-            (relay_off_event_ticks - relay_on_event_ticks) / portTICK_RATE_MS);
+        log_d("Actual enlarger on/off time: %lums",
+            (enlarger_off_event_ticks - enlarger_on_event_ticks) / portTICK_RATE_MS);
 
         // Handling the completion beep outside the ISR for simplicity.
         if (timer_cancel_request) {
@@ -251,19 +251,17 @@ void exposure_timer_notify()
         HAL_TIM_Base_Stop_IT(timer_htim);
     }
 
-    if (!relay_activated) {
-        //XXX
-
-        relay_on_event_ticks = osKernelGetTickCount();
+    if (!enlarger_activated) {
+        enlarger_on_event_ticks = osKernelGetTickCount();
         relay_enlarger_enable(true);
-        relay_activated = true;
+        enlarger_activated = true;
     } else {
         time_elapsed += 10;
     }
 
     if (timer_state == EXPOSURE_TIMER_STATE_NONE) {
-        if (time_elapsed >= timer_config.relay_on_delay) {
-            // After the relay on delay, mark the visible timer as active
+        if (time_elapsed >= timer_config.enlarger_on_delay) {
+            // After the enlarger on delay, mark the visible timer as active
             timer_state = EXPOSURE_TIMER_STATE_START;
 
             // Set the time of the first beep to be second-aligned
@@ -280,16 +278,16 @@ void exposure_timer_notify()
         }
     }
 
-    if (!relay_deactivated
-        && ((time_elapsed >= timer_config.relay_on_delay + (timer_config.exposure_time - timer_config.relay_off_delay)) || cancel_flag)) {
-        relay_off_event_ticks = osKernelGetTickCount();
+    if (!enlarger_deactivated
+        && ((time_elapsed >= timer_config.enlarger_on_delay + (timer_config.exposure_time - timer_config.enlarger_off_delay)) || cancel_flag)) {
+        enlarger_off_event_ticks = osKernelGetTickCount();
         relay_enlarger_enable(false);
-        relay_deactivated = true;
+        enlarger_deactivated = true;
     }
 
     // If we are at the end of the exposure time, transition to the end state
     if ((timer_state == EXPOSURE_TIMER_STATE_START || timer_state == EXPOSURE_TIMER_STATE_TICK)
-        && ((time_elapsed >= timer_config.exposure_time + timer_config.relay_on_delay) || cancel_flag)) {
+        && ((time_elapsed >= timer_config.exposure_time + timer_config.enlarger_on_delay) || cancel_flag)) {
         timer_state = EXPOSURE_TIMER_STATE_END;
     }
 
@@ -315,7 +313,7 @@ void exposure_timer_notify()
         notify_timer = timer_config.exposure_time;
         break;
     case EXPOSURE_TIMER_STATE_TICK:
-        notify_timer = timer_config.exposure_time - (time_elapsed - timer_config.relay_on_delay);
+        notify_timer = timer_config.exposure_time - (time_elapsed - timer_config.enlarger_on_delay);
         break;
     case EXPOSURE_TIMER_STATE_END:
     case EXPOSURE_TIMER_STATE_DONE:
@@ -356,7 +354,7 @@ void exposure_timer_notify()
     if (timer_state == EXPOSURE_TIMER_STATE_START) {
         timer_state = EXPOSURE_TIMER_STATE_TICK;
     } else if (timer_state == EXPOSURE_TIMER_STATE_END && buzz_stop == 0
-        && (time_elapsed > timer_config.relay_on_delay + timer_config.exposure_time + timer_config.exposure_end_delay || cancel_flag)) {
+        && (time_elapsed > timer_config.enlarger_on_delay + timer_config.exposure_time + timer_config.exposure_end_delay || cancel_flag)) {
         timer_state = EXPOSURE_TIMER_STATE_DONE;
     }
 }
