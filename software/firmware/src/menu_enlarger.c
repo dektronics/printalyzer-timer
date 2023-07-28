@@ -65,6 +65,7 @@ static menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_
 static menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_t *enlarger_control, contrast_grade_t grade);
+static menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_test_relay();
 static menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *enlarger_control);
 static void enlarger_test_set_frame(const enlarger_control_t *enlarger_control, uint16_t red, uint16_t green, uint16_t blue, uint16_t white);
@@ -460,6 +461,18 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
                 offset += menu_build_padded_str_row(buf + offset, "Contrast grades", "\xB7\xB7\xB7");
                 has_contrast_grades = true;
             } else {
+                value_str = "Exposure brightness";
+                if (has_rgb_channels) {
+                    offset += menu_build_padded_str_row(buf + offset, value_str, "\xB7\xB7\xB7");
+                } else {
+                    if (enlarger_control->dmx_wide_mode) {
+                        offset += menu_build_padded_format_row(buf + offset,
+                            value_str, "%5d", enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
+                    } else {
+                        offset += menu_build_padded_format_row(buf + offset,
+                            value_str, "%3d", (uint8_t)enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
+                    }
+                }
                 has_contrast_grades = false;
             }
         } else {
@@ -723,6 +736,44 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
             } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
+        } else if (!has_contrast_grades && has_rgb_channels && option == 8) {
+            menu_result_t sub_result = menu_enlarger_config_control_exposure_entry_edit(enlarger_control);
+            if (sub_result == MENU_SAVE) {
+                config_dirty = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else if (!has_contrast_grades && !has_rgb_channels && option == 6) {
+            const char *title = "Exposure Brightness Value";
+            const char *msg =
+                "Brightness when the enlarger's\n"
+                "white light is turned on\n"
+                "for paper exposure.\n";
+            if (enlarger_control->dmx_wide_mode) {
+                uint16_t value_sel = enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white;
+                if (display_input_value_u16(
+                    title, msg,
+                    "", &value_sel, 0, 65535, 5, " / 65535") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white) {
+                        enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            } else {
+                uint8_t value_sel = enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white;
+                if (display_input_value(
+                    title, msg,
+                    "", &value_sel, 0, 255, 3, " / 255") == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white) {
+                        enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white = value_sel;
+                        config_dirty = true;
+                    }
+                }
+            }
         } else if (option == 0 && config_dirty) {
             menu_result = MENU_SAVE;
         } else if (option == UINT8_MAX) {
@@ -876,6 +927,113 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
                     || blue_val != enlarger_control->grade_values[grade].channel_blue) {
                     enlarger_control->grade_values[grade].channel_green = green_val;
                     enlarger_control->grade_values[grade].channel_blue = blue_val;
+                    menu_result = MENU_SAVE;
+                }
+                break;
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                /* Reject values and return */
+                break;
+            }
+        } else if (ret == HAL_TIMEOUT) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        }
+    }
+
+    return menu_result;
+}
+
+menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_t *enlarger_control)
+{
+    char buf[256];
+    char title_buf[32];
+    menu_result_t menu_result = MENU_OK;
+    uint8_t row = 0;
+
+    const contrast_grade_t grade = CONTRAST_GRADE_2;
+    const uint16_t max_val = enlarger_control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
+    const bool has_white = enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
+    uint16_t row_val[] = {
+        enlarger_control->grade_values[grade].channel_red,
+        enlarger_control->grade_values[grade].channel_green,
+        enlarger_control->grade_values[grade].channel_blue,
+        enlarger_control->grade_values[grade].channel_white
+    };
+
+    strcpy(title_buf, "Exposure Brightness");
+
+    for (;;) {
+        size_t offset = 0;
+        offset += sprintf(buf + offset, "\n");
+        if (enlarger_control->dmx_wide_mode) {
+            offset += sprintf(buf + offset,
+                " %c Red         [%5d / 65535]  \n"
+                " %c Green       [%5d / 65535]  \n"
+                " %c Blue        [%5d / 65535]  \n",
+                (row == 0 ? '*' : ' '), row_val[0],
+                (row == 1 ? '*' : ' '), row_val[1],
+                (row == 2 ? '*' : ' '), row_val[2]);
+            if (has_white) {
+                offset += sprintf(buf + offset,
+                    " %c White       [%5d / 65535]  ",
+                    (row == 3 ? '*' : ' '), row_val[3]);
+            }
+        } else {
+            offset += sprintf(buf + offset,
+                " %c Red             [%3d / 255]  \n"
+                " %c Green           [%3d / 255]  \n"
+                " %c Blue            [%3d / 255]  \n",
+                (row == 0 ? '*' : ' '), (uint8_t)row_val[0],
+                (row == 1 ? '*' : ' '), (uint8_t)row_val[1],
+                (row == 2 ? '*' : ' '), (uint8_t)row_val[2]);
+            if (has_white) {
+                offset += sprintf(buf + offset,
+                    " %c White           [%3d / 255]  ",
+                    (row == 3 ? '*' : ' '), (uint8_t)row_val[3]);
+            }
+        }
+        display_static_list(title_buf, buf);
+
+        keypad_event_t keypad_event;
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        if (ret == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
+                /* Increment active row with rollover */
+                if (row_val[row] < max_val) { row_val[row]++; }
+                else { row_val[row] = 0; }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
+                /* Decrement active row with rollover */
+                if (row_val[row] > 0) { row_val[row]--; }
+                else { row_val[row] = max_val; }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+                /* Skip-increment active row */
+                if (row_val[row] > max_val - 10) {
+                    row_val[row] = max_val;
+                } else {
+                    row_val[row] += 10;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+                /* Skip-decrement active row */
+                if (row_val[row] < 10) {
+                    row_val[row] = 0;
+                } else {
+                    row_val[row] -= 10;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+                /* Toggle active row */
+                row++;
+                if (row == 3 && !has_white) { row = 0; }
+                else if (row > 3) { row = 0; }
+            } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
+                /* Accept values, if changed, and return */
+                if (row_val[0] != enlarger_control->grade_values[grade].channel_red
+                    || row_val[1] != enlarger_control->grade_values[grade].channel_green
+                    || row_val[2] != enlarger_control->grade_values[grade].channel_blue
+                    || row_val[3] != enlarger_control->grade_values[grade].channel_white) {
+                    enlarger_control->grade_values[grade].channel_red = row_val[0];
+                    enlarger_control->grade_values[grade].channel_green = row_val[1];
+                    enlarger_control->grade_values[grade].channel_blue = row_val[2];
+                    enlarger_control->grade_values[grade].channel_white = row_val[3];
                     menu_result = MENU_SAVE;
                 }
                 break;
@@ -1061,18 +1219,22 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
                         enlarger_control->grade_values[test_grade].channel_blue,
                         0);
                 } else {
-                    //TODO Store exposure values for White mode under a fixed contrast grade (perhaps grade 2?)
-                    //TODO Should add settings menus to handle the variations on this case
                     if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB) {
                         enlarger_test_set_frame(enlarger_control,
-                            enlarger_control->focus_value,
-                            enlarger_control->focus_value,
-                            enlarger_control->focus_value,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_red,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_green,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_blue,
                             0);
+                    } else if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW) {
+                        enlarger_test_set_frame(enlarger_control,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_red,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_green,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_blue,
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
                     } else {
                         enlarger_test_set_frame(enlarger_control,
                             0, 0, 0,
-                            enlarger_control->focus_value);
+                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
                     }
                 }
             }

@@ -87,10 +87,10 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
     config->control.focus_value = UINT8_MAX;
     config->control.safe_value = UINT8_MAX;
     for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
-        config->control.grade_values[i].channel_red = 0;
+        config->control.grade_values[i].channel_red = UINT8_MAX;
         config->control.grade_values[i].channel_green = UINT8_MAX;
         config->control.grade_values[i].channel_blue = UINT8_MAX;
-        config->control.grade_values[i].channel_white = 0;
+        config->control.grade_values[i].channel_white = UINT8_MAX;
     }
 
     config->timing.turn_on_delay = 40;
