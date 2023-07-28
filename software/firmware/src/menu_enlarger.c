@@ -19,6 +19,7 @@
 #include "tcs3472.h"
 #include "settings.h"
 #include "enlarger_config.h"
+#include "enlarger_control.h"
 #include "illum_controller.h"
 #include "dmx.h"
 #include "util.h"
@@ -66,9 +67,8 @@ static menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlar
 static menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_t *enlarger_control, contrast_grade_t grade);
 static menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_t *enlarger_control);
-static menu_result_t menu_enlarger_config_control_test_relay();
+static menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *enlarger_control);
 static menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *enlarger_control);
-static void enlarger_test_set_frame(const enlarger_control_t *enlarger_control, uint16_t red, uint16_t green, uint16_t blue, uint16_t white);
 static uint16_t dmx_adjust_value(uint16_t value, bool wide_mode);
 static menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile);
 static void menu_enlarger_delete_config(uint8_t index, size_t config_count);
@@ -310,7 +310,7 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             if (config->control.dmx_control) {
                 sub_result = menu_enlarger_config_control_test_dmx(&(config->control));
             } else {
-                sub_result = menu_enlarger_config_control_test_relay();
+                sub_result = menu_enlarger_config_control_test_relay(&(config->control));
             }
             if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
@@ -1050,38 +1050,43 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
     return menu_result;
 }
 
-menu_result_t menu_enlarger_config_control_test_relay(enlarger_control_t *enlarger_control)
+menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *enlarger_control)
 {
     char buf[256];
     menu_result_t menu_result = MENU_OK;
-    bool relay_enlg = false;
+    bool enlarger_on = false;
 
-    relay_enlarger_enable(false);
+    enlarger_control_set_state(enlarger_control,
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
 
     for (;;) {
         sprintf(buf,
             "\n\n"
             "Relay control [%s]",
-            relay_enlg ? "**" : "  ");
+            enlarger_on ? "**" : "  ");
         display_static_list("Enlarger Test", buf);
 
         keypad_event_t keypad_event;
         HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                relay_enlg = !relay_enlg;
+                enlarger_on = !enlarger_on;
+
+                enlarger_control_set_state(enlarger_control,
+                    (enlarger_on ? ENLARGER_CONTROL_STATE_EXPOSURE : ENLARGER_CONTROL_STATE_OFF),
+                    CONTRAST_GRADE_MAX, false);
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
             }
 
-            relay_enlarger_enable(relay_enlg);
         } else if (ret == HAL_TIMEOUT) {
             menu_result = MENU_TIMEOUT;
             break;
         }
     }
 
-    relay_enlarger_enable(false);
+    enlarger_control_set_state(enlarger_control,
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
 
     return menu_result;
 }
@@ -1191,55 +1196,14 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
 
         if (enlarger_on) {
             if (test_mode == 0) {
-                /* Focus mode */
-                if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB) {
-                    enlarger_test_set_frame(enlarger_control,
-                        enlarger_control->focus_value,
-                        enlarger_control->focus_value,
-                        enlarger_control->focus_value,
-                        0);
-                } else {
-                    enlarger_test_set_frame(enlarger_control,
-                        0, 0, 0,
-                        enlarger_control->focus_value);
-                }
+                enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_FOCUS, test_grade, false);
             } else if (test_mode == 1) {
-                /* Safe mode */
-                if (has_rgb) {
-                    enlarger_test_set_frame(enlarger_control,
-                        enlarger_control->safe_value,
-                        0, 0, 0);
-                }
+                enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_SAFE, test_grade, false);
             } else if (test_mode == 2) {
-                /* Exposure mode */
-                if (has_rgb && enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
-                    enlarger_test_set_frame(enlarger_control,
-                        0,
-                        enlarger_control->grade_values[test_grade].channel_green,
-                        enlarger_control->grade_values[test_grade].channel_blue,
-                        0);
-                } else {
-                    if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB) {
-                        enlarger_test_set_frame(enlarger_control,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_red,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_green,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_blue,
-                            0);
-                    } else if (enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW) {
-                        enlarger_test_set_frame(enlarger_control,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_red,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_green,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_blue,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
-                    } else {
-                        enlarger_test_set_frame(enlarger_control,
-                            0, 0, 0,
-                            enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white);
-                    }
-                }
+                enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_EXPOSURE, test_grade, false);
             }
         } else {
-            enlarger_test_set_frame(enlarger_control, 0, 0, 0, 0);
+            enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_OFF, test_grade, false);
         }
     }
 
@@ -1253,47 +1217,6 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return menu_result;
-}
-
-void enlarger_test_set_frame(const enlarger_control_t *enlarger_control, uint16_t red, uint16_t green, uint16_t blue, uint16_t white)
-{
-    const bool has_rgb =
-        enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB
-        || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
-    const bool has_white =
-        enlarger_control->channel_set == ENLARGER_CHANNEL_SET_WHITE
-        || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
-    uint8_t frame[2];
-
-    //TODO Add DMX task function to set a frame as a set of non-adjacent channels in blocking mode
-
-    if (has_rgb) {
-        if (enlarger_control->dmx_wide_mode) {
-            conv_u16_array(frame, red);
-            dmx_set_frame(enlarger_control->dmx_channel_red, frame, 2, false);
-            conv_u16_array(frame, green);
-            dmx_set_frame(enlarger_control->dmx_channel_green, frame, 2, false);
-            conv_u16_array(frame, blue);
-            dmx_set_frame(enlarger_control->dmx_channel_blue, frame, 2, false);
-        } else {
-            frame[0] = red;
-            dmx_set_frame(enlarger_control->dmx_channel_red, frame, 1, false);
-            frame[0] = green;
-            dmx_set_frame(enlarger_control->dmx_channel_green, frame, 1, false);
-            frame[0] = blue;
-            dmx_set_frame(enlarger_control->dmx_channel_blue, frame, 1, false);
-        }
-    }
-
-    if (has_white) {
-        if (enlarger_control->dmx_wide_mode) {
-            conv_u16_array(frame, white);
-            dmx_set_frame(enlarger_control->dmx_channel_white, frame, 2, false);
-        } else {
-            frame[0] = white;
-            dmx_set_frame(enlarger_control->dmx_channel_white, frame, 1, false);
-        }
-    }
 }
 
 uint16_t dmx_adjust_value(uint16_t value, bool wide_mode)

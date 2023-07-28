@@ -395,6 +395,41 @@ osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool
     return result;
 }
 
+osStatus_t dmx_set_sparse_frame(const uint16_t *channels, const uint8_t *values, size_t len, bool blocking)
+{
+    osStatus_t result = osOK;
+
+    if (!dmx_initialized) { return osErrorResource; }
+
+    if (!channels || !values) {
+        return osErrorParameter;
+    }
+
+    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+
+    for (size_t i = 0; i < len; i++) {
+        if (channels[i] > 511) { continue; }
+        dmx_pending_frame[channels[i] + 1] = values[i];
+    }
+
+    has_pending_frame = true;
+    pending_frame_blocking = blocking;
+
+    osMutexRelease(dmx_frame_mutex);
+
+    if (blocking) {
+        dmx_control_event_t control_event = {
+            .event_type = DMX_CONTROL_SET_FRAME,
+            .result = &result
+        };
+
+        osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
+        osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
+    }
+
+    return result;
+}
+
 osStatus_t dmx_clear_frame(bool blocking)
 {
     osStatus_t result = osOK;

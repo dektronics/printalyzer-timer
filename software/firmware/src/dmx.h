@@ -65,6 +65,19 @@ osStatus_t dmx_stop();
 osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool blocking);
 
 /**
+ * Set the value of specific slots in the current DMX data frame.
+ *
+ * The underlying frame is up to 512 bytes long, so this function provides
+ * an interface for altering a subset of that frame.
+ *
+ * @param channels Array of channels to update
+ * @param values Corresponding array of values to write
+ * @param len Length of both arrays
+ * @param blocking True to block until the update takes effect, false to return immediately.
+ */
+osStatus_t dmx_set_sparse_frame(const uint16_t *channels, const uint8_t *values, size_t len, bool blocking);
+
+/**
  * Clear the current DMX frame.
  *
  * This is a convenience function to zero out the current frame from an unknown

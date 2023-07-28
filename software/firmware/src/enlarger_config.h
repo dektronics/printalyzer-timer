@@ -1,3 +1,9 @@
+/*
+ * Enlarger Configuration
+ *
+ * The data structures and support functions here are indented to capture
+ * the complete configuration of an enlarger.
+ */
 #ifndef ENLARGER_CONFIG_H
 #define ENLARGER_CONFIG_H
 
@@ -126,6 +132,13 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
  * Clear out the provided configuration and set sensible default values.
  */
 void enlarger_config_set_defaults(enlarger_config_t *config);
+
+/**
+ * This fills in portions of the enlarger configuration that are not saved,
+ * and are derived from other values, such as half-grade contrast brightness
+ * settings.
+ */
+void enlarger_config_recalculate(enlarger_config_t *config);
 
 /**
  * Get the minimum supported exposure for the enlarger.

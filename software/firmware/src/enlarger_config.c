@@ -59,7 +59,7 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
         return false;
     }
 
-    /* Compare all the integer fields */
+    /* Compare all the timing fields */
     const enlarger_timing_t *timing1 = &config1->timing;
     const enlarger_timing_t *timing2 = &config2->timing;
     return timing1->turn_on_delay == timing2->turn_on_delay
@@ -69,10 +69,15 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
         && timing1->fall_time == timing2->fall_time
         && timing1->fall_time_equiv == timing2->fall_time_equiv
         && timing1->color_temperature == timing2->color_temperature;
+
+    /* Compare all the control fields */
+    //TODO
 }
 
 void enlarger_config_set_defaults(enlarger_config_t *config)
 {
+    if (!config) { return; }
+
     memset(config, 0, sizeof(enlarger_config_t));
     strcpy(config->name, "Default");
 
@@ -96,6 +101,12 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
     config->timing.turn_on_delay = 40;
     config->timing.turn_off_delay = 10;
     config->timing.color_temperature = 3000;
+}
+
+void enlarger_config_recalculate(enlarger_config_t *config)
+{
+    if (!config) { return; }
+    //TODO
 }
 
 uint32_t enlarger_config_min_exposure(const enlarger_config_t *config)
