@@ -9,14 +9,16 @@
 
 #include "buzzer.h"
 #include "m24m01.h"
+#include "contrast.h"
 #include "util.h"
 
 /*
- * Make sure the name length constant hasn't been altered, as the memory
- * alignment of many settings blocks depends on it.
+ * Make sure any length constants, which the memory alignment of
+ * settings may depend upon, haven't been changed.
  */
 #ifndef __CDT_PARSER__
 _Static_assert(PROFILE_NAME_LEN == 32, "PROFILE_NAME_LEN length has been changed");
+_Static_assert(CONTRAST_WHOLE_GRADE_COUNT == 7, "CONTRAST_WHOLE_GRADE_COUNT length has been changed");
 #endif
 
 #define LATEST_CONFIG_VERSION           1
@@ -190,19 +192,6 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
  * End of the EEPROM memory space, kept here for reference.
  */
 #define PAGE_LIMIT                       0x20000UL
-
-/**
- * List of whole contrast grades to make certain profile code
- * more compact.
- * Stored here to prevent any external changes from inadvertently
- * affecting persisted binary data.
- */
-const contrast_grade_t whole_grade_list[] = {
-    CONTRAST_GRADE_00,
-    CONTRAST_GRADE_0, CONTRAST_GRADE_1, CONTRAST_GRADE_2,
-    CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
-};
-const size_t whole_grade_count = 7;
 
 static HAL_StatusTypeDef settings_read_header(bool *valid);
 static HAL_StatusTypeDef settings_write_header();
@@ -887,7 +876,7 @@ bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index)
         }
 
         settings_enlarger_config_parse_page(config, data);
-
+        enlarger_config_recalculate(config);
     } while (0);
 
     return (ret == HAL_OK);
@@ -922,14 +911,14 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
     config->control.safe_value = copy_to_u16(data + ENLARGER_CONFIG_CONTROL_SAFE_VALUE);
 
     size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
-    for (size_t i = 0; i < whole_grade_count; i++) {
-        config->control.grade_values[whole_grade_list[i]].channel_red = copy_to_u16(data + offset);
+    for (size_t i = 0; i < CONTRAST_WHOLE_GRADE_COUNT; i++) {
+        config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_red = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[whole_grade_list[i]].channel_green = copy_to_u16(data + offset);
+        config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_green = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[whole_grade_list[i]].channel_blue = copy_to_u16(data + offset);
+        config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_blue = copy_to_u16(data + offset);
         offset += 2;
-        config->control.grade_values[whole_grade_list[i]].channel_white = copy_to_u16(data + offset);
+        config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_white = copy_to_u16(data + offset);
         offset += 2;
     }
 }
@@ -981,14 +970,14 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
     copy_from_u16(data + ENLARGER_CONFIG_CONTROL_SAFE_VALUE, config->control.safe_value);
 
     size_t offset = ENLARGER_CONFIG_CONTROL_GRADE_VALUES;
-    for (size_t i = 0; i < whole_grade_count; i++) {
-        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_red);
+    for (size_t i = 0; i < CONTRAST_WHOLE_GRADE_COUNT; i++) {
+        copy_from_u16(data + offset, config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_red);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_green);
+        copy_from_u16(data + offset, config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_green);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_blue);
+        copy_from_u16(data + offset, config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_blue);
         offset += 2;
-        copy_from_u16(data + offset, config->control.grade_values[whole_grade_list[i]].channel_white);
+        copy_from_u16(data + offset, config->control.grade_values[CONTRAST_WHOLE_GRADES[i]].channel_white);
         offset += 2;
     }
 }

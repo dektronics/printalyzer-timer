@@ -2,6 +2,12 @@
 
 #include <stddef.h>
 
+const contrast_grade_t CONTRAST_WHOLE_GRADES[] = {
+    CONTRAST_GRADE_00,
+    CONTRAST_GRADE_0, CONTRAST_GRADE_1, CONTRAST_GRADE_2,
+    CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
+};
+
 static const char *GRADE_FILTER_STR_DURST_170M[] = {
     "115Y+0M", "100Y+5M", "88Y+7M",   "75Y+10M",
     "65Y+15M", "52Y+20M", "42Y+28M",  "34Y+45M",

@@ -1,6 +1,8 @@
 #ifndef CONTRAST_H
 #define CONTRAST_H
 
+#include <stddef.h>
+
 /**
  * Enumerated contrast grades used for exposure settings
  * and paper profiles.
@@ -20,6 +22,9 @@ typedef enum {
     CONTRAST_GRADE_5,
     CONTRAST_GRADE_MAX
 } contrast_grade_t;
+
+extern const contrast_grade_t CONTRAST_WHOLE_GRADES[];
+#define CONTRAST_WHOLE_GRADE_COUNT 7
 
 /**
  * Different types of contrast filters that can be used for

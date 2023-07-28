@@ -795,30 +795,23 @@ menu_result_t menu_enlarger_config_control_contrast_edit(enlarger_control_t *enl
     const char *format_str = enlarger_control->dmx_wide_mode ? "%5d][%5d" : "%3d][%3d";
     const uint16_t format_mask = enlarger_control->dmx_wide_mode ? 0xFFFF : 0x00FF;
 
-    const contrast_grade_t grade_list[] = {
-        CONTRAST_GRADE_00,
-        CONTRAST_GRADE_0, CONTRAST_GRADE_1, CONTRAST_GRADE_2,
-        CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
-    };
-    const size_t grade_count = 7;
-
     do {
         size_t offset = 0;
-        for (size_t i = 0; i < grade_count; i++) {
+        for (size_t i = 0; i < CONTRAST_WHOLE_GRADE_COUNT; i++) {
             char label_buf[10];
             strcpy(label_buf, "Grade ");
-            strcat(label_buf, contrast_grade_str(grade_list[i]));
+            strcat(label_buf, contrast_grade_str(CONTRAST_WHOLE_GRADES[i]));
 
             offset += menu_build_padded_format_row(buf + offset,
                 label_buf, format_str,
-                enlarger_control->grade_values[grade_list[i]].channel_green & format_mask,
-                enlarger_control->grade_values[grade_list[i]].channel_blue & format_mask);
+                enlarger_control->grade_values[CONTRAST_WHOLE_GRADES[i]].channel_green & format_mask,
+                enlarger_control->grade_values[CONTRAST_WHOLE_GRADES[i]].channel_blue & format_mask);
         }
         buf[offset - 1] = '\0';
         option = display_selection_list("Contrast Grades", option, buf);
 
-        if (option >= 1 && option <= grade_count) {
-            menu_result_t sub_result = menu_enlarger_config_control_contrast_entry_edit(enlarger_control, grade_list[option - 1]);
+        if (option >= 1 && option <= CONTRAST_WHOLE_GRADE_COUNT) {
+            menu_result_t sub_result = menu_enlarger_config_control_contrast_entry_edit(enlarger_control, CONTRAST_WHOLE_GRADES[option - 1]);
             if (sub_result == MENU_SAVE) {
                 contrast_dirty = true;
             } else if (sub_result == MENU_TIMEOUT) {
