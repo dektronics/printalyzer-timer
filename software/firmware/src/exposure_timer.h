@@ -74,7 +74,7 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
  * Set the provided configuration as the active configuration for
  * the exposure timer.
  */
-void exposure_timer_set_config(const exposure_timer_config_t *config);
+void exposure_timer_set_config(const exposure_timer_config_t *config, const enlarger_control_t *control);
 
 /**
  * Start the exposure timer process.

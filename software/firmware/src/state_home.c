@@ -11,6 +11,8 @@
 
 #include "keypad.h"
 #include "display.h"
+#include "enlarger_config.h"
+#include "enlarger_control.h"
 #include "exposure_state.h"
 #include "relay.h"
 #include "illum_controller.h"
@@ -229,10 +231,10 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state_controller_set_next_state(controller, STATE_TIMER, 0);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                if (!relay_enlarger_is_enabled()) {
+                if (!state_controller_is_enlarger_focus(controller)) {
                     log_i("Focus mode enabled");
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
-                    relay_enlarger_enable(true);
+                    state_controller_set_enlarger_focus(controller, true);
                     state_controller_start_focus_timeout(controller);
                     if (meter_probe_start() == osOK) {
                         meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 500);
@@ -240,7 +242,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     }
                 } else {
                     log_i("Focus mode disabled");
-                    relay_enlarger_enable(false);
+                    state_controller_set_enlarger_focus(controller, false);
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                     state_controller_stop_focus_timeout(controller);
                     meter_probe_sensor_disable();
@@ -341,7 +343,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state->cancel_repeat = 0;
                 }
             } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
-                && relay_enlarger_is_enabled() && meter_probe_is_started()) {
+                && state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
@@ -518,10 +520,10 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
         && next_state != STATE_EDIT_ADJUSTMENT
         && next_state != STATE_LIST_ADJUSTMENTS) {
-        if (relay_enlarger_is_enabled()) {
+        if (state_controller_is_enlarger_focus(controller)) {
             log_i("Focus mode disabled due to state change");
-            relay_enlarger_enable(false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+            state_controller_set_enlarger_focus(controller, false);
             state_controller_stop_focus_timeout(controller);
         }
     }

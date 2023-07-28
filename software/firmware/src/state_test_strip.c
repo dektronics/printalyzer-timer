@@ -213,7 +213,7 @@ bool state_test_strip_countdown(const enlarger_config_t *enlarger_config, uint32
 
     exposure_timer_set_config_time(&timer_config, patch_time_ms, enlarger_config);
 
-    exposure_timer_set_config(&timer_config);
+    exposure_timer_set_config(&timer_config, &enlarger_config->control);
 
     display_redraw_test_strip_timer(&elements);
 

@@ -90,7 +90,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
-    exposure_timer_set_config(&timer_config);
+    exposure_timer_set_config(&timer_config, &enlarger_config->control);
 
     log_i("Starting exposure timer for %ldms", exposure_time_ms);
 
@@ -225,7 +225,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
-    exposure_timer_set_config(&timer_config);
+    exposure_timer_set_config(&timer_config, &enlarger_config->control);
 
     log_i("Starting burn/dodge exposure timer for %ldms", exposure_time_ms);
 

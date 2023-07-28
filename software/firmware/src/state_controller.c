@@ -21,6 +21,7 @@
 #include "relay.h"
 #include "exposure_timer.h"
 #include "enlarger_config.h"
+#include "enlarger_control.h"
 #include "illum_controller.h"
 #include "meter_probe.h"
 #include "util.h"
@@ -37,6 +38,7 @@ struct __state_controller_t {
     uint32_t next_state_param;
     exposure_state_t *exposure_state;
     enlarger_config_t enlarger_config;
+    bool enlarger_focus_mode;
     TickType_t focus_start_ticks;
 };
 
@@ -113,7 +115,7 @@ void state_controller_loop()
 
             // Reset inactivity timeouts as necessary
             if (result) {
-                if (relay_enlarger_is_enabled()) {
+                if (state_controller_is_enlarger_focus(&state_controller)) {
                     state_controller_start_focus_timeout(&state_controller);
                 }
             }
@@ -121,9 +123,9 @@ void state_controller_loop()
 
         // Handle behaviors resulting from inactivity timeouts
         TickType_t max_focus_ticks = pdMS_TO_TICKS(settings_get_enlarger_focus_timeout());
-        if (relay_enlarger_is_enabled() && (xTaskGetTickCount() - state_controller.focus_start_ticks) >= max_focus_ticks) {
+        if (state_controller_is_enlarger_focus(&state_controller) && (xTaskGetTickCount() - state_controller.focus_start_ticks) >= max_focus_ticks) {
             log_i("Focus mode disabled due to timeout");
-            relay_enlarger_enable(false);
+            state_controller_set_enlarger_focus(&state_controller, false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller.focus_start_ticks = 0;
             meter_probe_sensor_disable();
@@ -159,9 +161,29 @@ const enlarger_config_t *state_controller_get_enlarger_config(state_controller_t
     return &(controller->enlarger_config);
 }
 
+void state_controller_set_enlarger_focus(state_controller_t *controller, bool enabled)
+{
+    if (!controller) { return; }
+
+    const enlarger_control_state_t next_state =
+        enabled ? ENLARGER_CONTROL_STATE_FOCUS : ENLARGER_CONTROL_STATE_OFF;
+
+    enlarger_control_set_state(&(controller->enlarger_config.control),
+        next_state, CONTRAST_GRADE_MAX, false);
+
+    controller->enlarger_focus_mode = enabled;
+}
+
+bool state_controller_is_enlarger_focus(const state_controller_t *controller)
+{
+    if (!controller) { return false; }
+    return controller->enlarger_focus_mode;
+}
+
 void state_controller_reload_enlarger_config(state_controller_t *controller)
 {
     if (!controller) { return; }
+
     uint8_t profile_index = settings_get_default_enlarger_config_index();
     bool result = settings_get_enlarger_config(&controller->enlarger_config, profile_index);
     if (!(result && enlarger_config_is_valid(&controller->enlarger_config))) {

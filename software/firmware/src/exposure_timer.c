@@ -11,6 +11,7 @@
 #include "exposure_timer.h"
 #include "illum_controller.h"
 #include "enlarger_config.h"
+#include "enlarger_control.h"
 #include "buzzer.h"
 #include "relay.h"
 #include "settings.h"
@@ -18,6 +19,7 @@
 
 static TIM_HandleTypeDef *timer_htim = 0;
 static exposure_timer_config_t timer_config = {0};
+static enlarger_control_t enlarger_control = {0};
 
 static TaskHandle_t timer_task_handle = 0;
 static bool relay_activated = false;
@@ -76,12 +78,18 @@ void exposure_timer_set_config_time(exposure_timer_config_t *config,
     log_d("End delay: %dms", config->exposure_end_delay);
 }
 
-void exposure_timer_set_config(const exposure_timer_config_t *config)
+void exposure_timer_set_config(const exposure_timer_config_t *config, const enlarger_control_t *control)
 {
     if (!config) {
         memset(&timer_config, 0, sizeof(exposure_timer_config_t));
     } else {
         memcpy(&timer_config, config, sizeof(exposure_timer_config_t));
+    }
+
+    if (!control) {
+        memset(&enlarger_control, 0, sizeof(enlarger_control_t));
+    } else {
+        memcpy(&enlarger_control, control, sizeof(enlarger_control_t));
     }
 }
 
@@ -244,6 +252,8 @@ void exposure_timer_notify()
     }
 
     if (!relay_activated) {
+        //XXX
+
         relay_on_event_ticks = osKernelGetTickCount();
         relay_enlarger_enable(true);
         relay_activated = true;
