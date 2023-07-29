@@ -8,7 +8,7 @@
 typedef enum {
     DMX_PORT_DISABLED = 0,        /*!< Port is not enabled */
     DMX_PORT_ENABLED_IDLE,        /*!< Port line drivers are enabled, but nothing is being sent */
-    DMX_PORT_ENABLED_TRANSMITTING /*!< Port is enabled and sending DMX frames */
+    DMX_PORT_ENABLED_TRANSMITTING,/*!< Port is enabled and sending DMX frames */
 } dmx_port_state_t;
 
 /**
@@ -47,9 +47,21 @@ osStatus_t dmx_start();
 /**
  * Stop sending data frames out the DMX control port.
  *
+ * This function will clear the active frame contents.
+ *
  * This function will block until it has taken effect.
  */
 osStatus_t dmx_stop();
+
+/**
+ * Pause automatically sending frames out the DMX control port.
+ *
+ * This function will not clear the active frame contents,
+ * and sending can be resumed by calling 'dmx_start()'.
+ *
+ * This function will block until it has taken effect.
+ */
+osStatus_t dmx_pause();
 
 /**
  * Set the value of the current DMX data frame.
@@ -86,6 +98,27 @@ osStatus_t dmx_set_sparse_frame(const uint16_t *channels, const uint8_t *values,
  * @param blocking True to block until the update takes effect, false to return immediately.
  */
 osStatus_t dmx_clear_frame(bool blocking);
+
+/**
+ * Enable the direct updating of the active frame.
+ *
+ * This function enables the circumvention of any task synchronization,
+ * and should only be used when in the IDLE state and intending to
+ * explicitly send frames via the 'dmx_send_frame_from_isr()' function.
+ *
+ * A call to any function that changes the port state will disable
+ * this feature.
+ */
+void dmx_enable_direct_frame_update();
+
+/**
+ * Explicitly send the next DMX frame.
+ *
+ * This function is intended for use when the timing of frame sending
+ * is being controlled externally.
+ * It may fail silently if called more frequently than the frame period.
+ */
+void dmx_send_frame_explicit();
 
 /**
  * Call this function from the timer ISR

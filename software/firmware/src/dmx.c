@@ -41,6 +41,7 @@ typedef enum {
     DMX_CONTROL_DISABLE,
     DMX_CONTROL_START,
     DMX_CONTROL_STOP,
+    DMX_CONTROL_PAUSE,
     DMX_CONTROL_SET_FRAME
 } dmx_control_event_type_t;
 
@@ -80,12 +81,13 @@ static uint8_t dmx_pending_frame[513] = {0};
 static bool has_pending_frame = false;
 static bool pending_frame_blocking = false;
 static uint8_t dmx_frame[513] = {0};
+static volatile bool dmx_direct_frame_update = false;
 
 static void dmx_task_loop();
 static osStatus_t dmx_control_enable();
 static osStatus_t dmx_control_disable();
 static osStatus_t dmx_control_start();
-static osStatus_t dmx_control_stop();
+static osStatus_t dmx_control_stop(bool clear_frame);
 static osStatus_t dmx_control_set_frame();
 static void dmx_send_frame();
 
@@ -200,7 +202,10 @@ void dmx_task_loop()
             ret = dmx_control_start();
             break;
         case DMX_CONTROL_STOP:
-            ret = dmx_control_stop();
+            ret = dmx_control_stop(true);
+            break;
+        case DMX_CONTROL_PAUSE:
+            ret = dmx_control_stop(false);
             break;
         case DMX_CONTROL_SET_FRAME:
             ret = dmx_control_set_frame();
@@ -226,6 +231,7 @@ dmx_port_state_t dmx_get_port_state()
 osStatus_t dmx_enable()
 {
     if (!dmx_initialized) { return osErrorResource; }
+    dmx_direct_frame_update = false;
 
     osStatus_t result = osOK;
     dmx_control_event_t control_event = {
@@ -264,6 +270,7 @@ osStatus_t dmx_control_enable()
 osStatus_t dmx_disable()
 {
     if (!dmx_initialized) { return osErrorResource; }
+    dmx_direct_frame_update = false;
 
     osStatus_t result = osOK;
     dmx_control_event_t control_event = {
@@ -299,6 +306,7 @@ osStatus_t dmx_control_disable()
 osStatus_t dmx_start()
 {
     if (!dmx_initialized) { return osErrorResource; }
+    dmx_direct_frame_update = false;
 
     osStatus_t result = osOK;
     dmx_control_event_t control_event = {
@@ -330,6 +338,7 @@ osStatus_t dmx_control_start()
 osStatus_t dmx_stop()
 {
     if (!dmx_initialized) { return osErrorResource; }
+    dmx_direct_frame_update = false;
 
     osStatus_t result = osOK;
     dmx_control_event_t control_event = {
@@ -342,9 +351,25 @@ osStatus_t dmx_stop()
     return result;
 }
 
-osStatus_t dmx_control_stop()
+osStatus_t dmx_pause()
 {
-    log_d("dmx_control_stop");
+    if (!dmx_initialized) { return osErrorResource; }
+    dmx_direct_frame_update = false;
+
+    osStatus_t result = osOK;
+    dmx_control_event_t control_event = {
+        .event_type = DMX_CONTROL_PAUSE,
+        .result = &result
+    };
+
+    osMessageQueuePut(dmx_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(dmx_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t dmx_control_stop(bool clear_frame)
+{
+    log_d("dmx_control_stop: %d", clear_frame);
 
     if (frame_state != DMX_FRAME_MARK_BEFORE_BREAK || port_state != DMX_PORT_ENABLED_TRANSMITTING) {
         log_w("Invalid state");
@@ -353,13 +378,15 @@ osStatus_t dmx_control_stop()
 
     port_state = DMX_PORT_ENABLED_IDLE;
 
-    /* Clear the active and pending DMX frame values */
-    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
-    memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));
-    memset(dmx_frame, 0, sizeof(dmx_frame));
-    has_pending_frame = false;
-    pending_frame_blocking = false;
-    osMutexRelease(dmx_frame_mutex);
+    if (clear_frame) {
+        /* Clear the active and pending DMX frame values */
+        osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+        memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));
+        memset(dmx_frame, 0, sizeof(dmx_frame));
+        has_pending_frame = false;
+        pending_frame_blocking = false;
+        osMutexRelease(dmx_frame_mutex);
+    }
 
     log_i("DMX512 frame output stopped");
 
@@ -376,11 +403,15 @@ osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool
         return osErrorParameter;
     }
 
-    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
-    memcpy(dmx_pending_frame + offset + 1, frame, len);
-    has_pending_frame = true;
-    pending_frame_blocking = blocking;
-    osMutexRelease(dmx_frame_mutex);
+    if (dmx_direct_frame_update) {
+        memcpy(dmx_frame + offset + 1, frame, len);
+    } else {
+        osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+        memcpy(dmx_pending_frame + offset + 1, frame, len);
+        has_pending_frame = true;
+        pending_frame_blocking = blocking;
+        osMutexRelease(dmx_frame_mutex);
+    }
 
     if (blocking) {
         dmx_control_event_t control_event = {
@@ -405,17 +436,24 @@ osStatus_t dmx_set_sparse_frame(const uint16_t *channels, const uint8_t *values,
         return osErrorParameter;
     }
 
-    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+    if (dmx_direct_frame_update) {
+        for (size_t i = 0; i < len; i++) {
+            if (channels[i] > 511) { continue; }
+            dmx_frame[channels[i] + 1] = values[i];
+        }
+    } else {
+        osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
 
-    for (size_t i = 0; i < len; i++) {
-        if (channels[i] > 511) { continue; }
-        dmx_pending_frame[channels[i] + 1] = values[i];
+        for (size_t i = 0; i < len; i++) {
+            if (channels[i] > 511) { continue; }
+            dmx_pending_frame[channels[i] + 1] = values[i];
+        }
+
+        has_pending_frame = true;
+        pending_frame_blocking = blocking;
+
+        osMutexRelease(dmx_frame_mutex);
     }
-
-    has_pending_frame = true;
-    pending_frame_blocking = blocking;
-
-    osMutexRelease(dmx_frame_mutex);
 
     if (blocking) {
         dmx_control_event_t control_event = {
@@ -436,11 +474,15 @@ osStatus_t dmx_clear_frame(bool blocking)
 
     if (!dmx_initialized) { return osErrorResource; }
 
-    osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
-    memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));
-    has_pending_frame = true;
-    pending_frame_blocking = blocking;
-    osMutexRelease(dmx_frame_mutex);
+    if (dmx_direct_frame_update) {
+        memset(dmx_frame, 0, sizeof(dmx_frame));
+    } else {
+        osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
+        memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));
+        has_pending_frame = true;
+        pending_frame_blocking = blocking;
+        osMutexRelease(dmx_frame_mutex);
+    }
 
     if (blocking) {
         dmx_control_event_t control_event = {
@@ -471,6 +513,16 @@ osStatus_t dmx_control_set_frame()
     osMutexRelease(dmx_frame_mutex);
 
     return osOK;
+}
+
+void dmx_enable_direct_frame_update()
+{
+    dmx_direct_frame_update = true;
+}
+
+void dmx_send_frame_explicit()
+{
+    dmx_send_frame();
 }
 
 void dmx_send_frame()
