@@ -61,6 +61,9 @@ static keypad_blackout_callback_t blackout_callback = NULL;
 /* User data for the blackout callback */
 static void *blackout_callback_user_data = NULL;
 
+/* Current blackout state */
+static bool blackout_state = false;
+
 /* Flag to track initialization state */
 static bool keypad_initialized = false;
 
@@ -70,6 +73,7 @@ static void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ti
 static void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks);
 static void keypad_button_repeat_timer_callback(TimerHandle_t xTimer);
 static uint8_t keypad_keycode_to_index(keypad_key_t keycode);
+static uint16_t keypad_pins_to_mask(const tca8418_pins_t *pins);
 static bool keypad_keycode_can_repeat(keypad_key_t keycode);
 
 void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
@@ -144,6 +148,7 @@ void task_keypad_run(void *argument)
 HAL_StatusTypeDef keypad_controller_init()
 {
     HAL_StatusTypeDef ret = HAL_OK;
+    tca8418_pins_t pins_initial = {0};
 
     log_i("Initializing keypad controller");
 
@@ -176,6 +181,21 @@ HAL_StatusTypeDef keypad_controller_init()
             break;
         }
 
+        /* Disable debouncing to read startup values */
+        if ((ret = tca8418_debounce_disable(keypad_i2c, &pins_int)) != HAL_OK) {
+            break;
+        }
+
+        /* Get the initial pin state */
+        if ((ret = tca8148_get_gpio_data_status(keypad_i2c, &pins_initial)) != HAL_OK) {
+            break;
+        }
+
+        /* Enable debouncing for normal operation */
+        if ((ret = tca8418_debounce_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
+            break;
+        }
+
         /* Enable GPIO interrupts */
         if ((ret = tca8418_gpio_interrupt_enable(keypad_i2c, &pins_int)) != HAL_OK) {
             break;
@@ -185,6 +205,7 @@ HAL_StatusTypeDef keypad_controller_init()
         if ((ret = tca8148_set_config(keypad_i2c, TCA8418_CFG_KE_IEN)) != HAL_OK) {
             break;
         }
+
     } while (0);
     osMutexRelease(keypad_i2c_mutex);
 
@@ -193,6 +214,8 @@ HAL_StatusTypeDef keypad_controller_init()
         return ret;
     }
 
+    button_state = keypad_pins_to_mask(&pins_initial);
+
     log_i("Keypad controller initialized");
 
     return HAL_OK;
@@ -200,7 +223,6 @@ HAL_StatusTypeDef keypad_controller_init()
 
 void keypad_task_loop()
 {
-    bool blackout_state = false;
     keypad_raw_event_t raw_event;
     for (;;) {
         if(osMessageQueueGet(keypad_raw_event_queue, &raw_event, NULL, portMAX_DELAY) == osOK) {
@@ -226,6 +248,11 @@ void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *use
 {
     blackout_callback = callback;
     blackout_callback_user_data = user_data;
+    if (callback) {
+        const int index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
+        blackout_state = (button_state & (1 << index)) != 0;
+        callback(blackout_state, user_data);
+    }
 }
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
@@ -583,6 +610,59 @@ uint8_t keypad_keycode_to_index(keypad_key_t keycode)
     default:
         return KEYPAD_INDEX_MAX;
     }
+}
+
+uint16_t keypad_pins_to_mask(const tca8418_pins_t *pins)
+{
+    uint16_t mask = 0;
+    if (!pins) { return mask; }
+
+    if ((pins->rows & 0x01) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_ENCODER);
+    }
+    if ((pins->rows & 0x02) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_BLACKOUT);
+    }
+    if ((pins->rows & 0x04) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_FOOTSWITCH);
+    }
+    if ((pins->rows & 0x08) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_METER_PROBE);
+    }
+
+    if ((pins->cols_l & 0x01) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_START);
+    }
+    if ((pins->cols_l & 0x02) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_FOCUS);
+    }
+    if ((pins->cols_l & 0x04) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_INC_EXPOSURE);
+    }
+    if ((pins->cols_l & 0x08) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_DEC_EXPOSURE);
+    }
+    if ((pins->cols_l & 0x10) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_INC_CONTRAST);
+    }
+    if ((pins->cols_l & 0x20) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_DEC_CONTRAST);
+    }
+    if ((pins->cols_l & 0x40) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_TEST_STRIP);
+    }
+    if ((pins->cols_l & 0x80) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_ADD_ADJUSTMENT);
+    }
+
+    if ((pins->cols_h & 0x01) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_CANCEL);
+    }
+    if ((pins->cols_h & 0x02) == 0) {
+        mask |= 1 << keypad_keycode_to_index(KEYPAD_MENU);
+    }
+
+    return mask;
 }
 
 bool keypad_keycode_can_repeat(keypad_key_t keycode)

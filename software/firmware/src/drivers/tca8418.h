@@ -106,6 +106,13 @@ HAL_StatusTypeDef tca8418_gpio_data_direction(I2C_HandleTypeDef *hi2c, const tca
  */
 HAL_StatusTypeDef tca8418_gpio_pullup_disable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins);
 
+/**
+ * Debounce disable.
+ * A bit value of '0' enables debouncing for the corresponding pin.
+ * A bit value of '1' disables debouncing for the corresponding pin.
+ */
+HAL_StatusTypeDef tca8418_debounce_disable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins);
+
 HAL_StatusTypeDef tca8418_clear_interrupt_status(I2C_HandleTypeDef *hi2c);
 
 #endif /* TCA8418_H */
