@@ -38,7 +38,8 @@ void illum_controller_init()
 
 void illum_controller_refresh()
 {
-    bool dmx_enabled = false;
+    bool safelight_dmx = false;
+    bool enlarger_dmx = false;
 
     osMutexAcquire(illum_mutex, portMAX_DELAY);
 
@@ -46,10 +47,15 @@ void illum_controller_refresh()
 
     /* Check if DMX is needed for safelight control */
     if (illum_safelight_config.control == SAFELIGHT_CONTROL_DMX || illum_safelight_config.control == SAFELIGHT_CONTROL_BOTH) {
-        dmx_enabled = true;
+        safelight_dmx = true;
     }
 
-    if (dmx_enabled) {
+    /* Check if DMX is needed for enlarger control */
+    uint8_t index = settings_get_default_enlarger_config_index();
+    settings_get_enlarger_config_dmx_control(&enlarger_dmx, index);
+
+    /* Enable or disable the DMX controller accordingly */
+    if (safelight_dmx || enlarger_dmx) {
         if (dmx_get_port_state() == DMX_PORT_DISABLED) {
             dmx_enable();
         }

@@ -179,6 +179,19 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config);
 bool settings_get_enlarger_config_name(char *name, uint8_t index);
 
 /**
+ * Get whether the specified enlarger configuration uses DMX control
+ *
+ * This function is intended to provide an more efficient way of
+ * checking just one property of an enlarger configuration without
+ * having to load the entire data structure.
+ *
+ * @param dmx_control Pointer to the output variable
+ * @param index An index value from 0 to 15
+ * @return True if the configuration value was successfully loaded, false otherwise
+ */
+bool settings_get_enlarger_config_dmx_control(bool *dmx_control, uint8_t index);
+
+/**
  * Get the enlarger configuration saved at the specified index
  *
  * @param profile Pointer to the configuration struct to load data into

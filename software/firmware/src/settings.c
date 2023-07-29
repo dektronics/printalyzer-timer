@@ -845,6 +845,47 @@ bool settings_get_enlarger_config_name(char *name, uint8_t index)
     return (ret == HAL_OK);
 }
 
+bool settings_get_enlarger_config_dmx_control(bool *dmx_control, uint8_t index)
+{
+    if (!dmx_control || index >= MAX_ENLARGER_CONFIGS) { return false; }
+
+    log_i("Load enlarger config dmx_mode: %d", index);
+
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[5] = {0};
+
+    do {
+        osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
+        ret = m24m01_read_buffer(eeprom_i2c,
+            PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index),
+            data, 4);
+        if (ret == HAL_OK) {
+            ret = m24m01_read_buffer(eeprom_i2c,
+                PAGE_ENLARGER_CONFIG_BASE + (PAGE_SIZE * index)
+                + ENLARGER_CONFIG_CONTROL_DMX_ENABLED,
+                data + 4, 1);
+        }
+        osMutexRelease(eeprom_i2c_mutex);
+        if (ret != HAL_OK) { break; }
+
+        uint32_t config_version = copy_to_u32(data + ENLARGER_CONFIG_VERSION);
+        if (config_version == UINT32_MAX) {
+            log_d("Config index is empty");
+            ret = HAL_ERROR;
+            break;
+        }
+        if (config_version == 0 || config_version > LATEST_ENLARGER_CONFIG_VERSION) {
+            log_w("Invalid config version %ld", config_version);
+            ret = HAL_ERROR;
+            break;
+        }
+
+        *dmx_control = (bool)data[4];
+    } while (0);
+
+    return (ret == HAL_OK);
+}
+
 bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index)
 {
     if (!config || index >= MAX_ENLARGER_CONFIGS) { return false; }
