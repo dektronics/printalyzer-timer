@@ -16,6 +16,7 @@
 #include "util.h"
 #include "illum_controller.h"
 #include "enlarger_config.h"
+#include "enlarger_control.h"
 #include "exposure_timer.h"
 #include "settings.h"
 
@@ -57,7 +58,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     float adjusted_exposure_time = exposure_get_exposure_time(exposure_state);
 
-    // If a dodge adjustment is configured, then reduce the base exposure time
+    /* If a dodge adjustment is configured, then reduce the base exposure time */
     const exposure_burn_dodge_t *burn_dodge_entry = exposure_burn_dodge_get(exposure_state, 0);
     if (burn_dodge_entry && burn_dodge_entry->numerator < 0) {
         float adj_stops = (float)burn_dodge_entry->numerator / (float)burn_dodge_entry->denominator;
@@ -125,7 +126,7 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
         display_draw_exposure_timer(elements, &prev_elements);
     }
 
-    // Handle the next keypad event without blocking
+    /* Handle the next keypad event without blocking */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
@@ -146,7 +147,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     elements.burn_dodge_index = burn_dodge_index + 1;
 
-    // Set the title text, which includes the stops adjustment
+    /* Set the title text, which includes the stops adjustment */
     size_t offset = 0;
     char buf_title[32];
     if (entry->numerator < 0) {
@@ -157,7 +158,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     append_signed_fraction(buf_title + offset, entry->numerator, entry->denominator);
     elements.title = buf_title;
 
-    // Set the contrast grade, if applicable
+    /* Set the contrast grade, if applicable */
     if (entry->numerator < 0) {
         elements.contrast_grade = CONTRAST_GRADE_MAX;
     } else {
@@ -171,29 +172,33 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
         exposure_get_contrast_filter(exposure_state), elements.contrast_grade);
 
 
-    // Calculate the raw time for the adjustment exposure
+    /* Calculate the raw time for the adjustment exposure */
     float adj_stops = (float)entry->numerator / (float)entry->denominator;
     float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
     float burn_dodge_time = 0;
     if (entry->numerator < 0) {
-        // Dodge adjustment
+        /* Dodge adjustment */
         burn_dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
     } else {
-        // Burn adjustment
+        /* Burn adjustment */
         burn_dodge_time = adj_time - exposure_get_exposure_time(exposure_state);
     }
 
-    // Set the exposure time for the adjustment
+    /* Set the exposure time for the adjustment */
     uint32_t exposure_time_ms = rounded_exposure_time_ms(burn_dodge_time);
     convert_exposure_to_display_timer(&(elements.time_elements), exposure_time_ms);
 
-    // Check for the short-time case
+    /* Check for the short-time case */
     uint32_t min_exposure_time_ms = enlarger_config_min_exposure(enlarger_config);
     elements.time_too_short = (min_exposure_time_ms > 0) && (exposure_time_ms < min_exposure_time_ms);
 
     display_draw_adjustment_exposure_elements(&elements);
 
-    // Wait for start or cancel
+    /* Enable the enlarger in safe mode */
+    enlarger_control_set_state(&enlarger_config->control,
+        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, false);
+
+    /* Wait for start or cancel */
     keypad_event_t keypad_event;
     do {
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
@@ -208,7 +213,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
         }
     } while (1);
 
-    // Prepare the exposure timer
+    /* Prepare the exposure timer */
     exposure_timer_config_t timer_config = {0};
     timer_config.start_tone = EXPOSURE_TIMER_START_TONE_COUNTDOWN;
     timer_config.end_tone = EXPOSURE_TIMER_END_TONE_REGULAR;
@@ -233,7 +238,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     log_i("Starting burn/dodge exposure timer for %ldms", exposure_time_ms);
 
-    // Redraw the display elements in exposure timer mode
+    /* Redraw the display elements in exposure timer mode */
     elements.contrast_grade = CONTRAST_GRADE_MAX;
     elements.contrast_note = NULL;
     display_draw_adjustment_exposure_elements(&elements);
@@ -251,6 +256,9 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     log_i("Exposure timer complete");
 
+    enlarger_control_set_state(&enlarger_config->control,
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
+
     return result;
 }
 
@@ -263,7 +271,7 @@ bool state_timer_burn_dodge_exposure_callback(exposure_timer_state_t state, uint
         display_redraw_adjustment_exposure_timer(time_elements);
     }
 
-    // Handle the next keypad event without blocking
+    /* Handle the next keypad event without blocking */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {

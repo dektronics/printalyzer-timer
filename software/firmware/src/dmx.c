@@ -405,6 +405,9 @@ osStatus_t dmx_set_frame(uint16_t offset, const uint8_t *frame, size_t len, bool
 
     if (dmx_direct_frame_update) {
         memcpy(dmx_frame + offset + 1, frame, len);
+        memcpy(dmx_pending_frame + offset + 1, frame, len);
+        has_pending_frame = false;
+        pending_frame_blocking = false;
     } else {
         osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
         memcpy(dmx_pending_frame + offset + 1, frame, len);
@@ -440,7 +443,10 @@ osStatus_t dmx_set_sparse_frame(const uint16_t *channels, const uint8_t *values,
         for (size_t i = 0; i < len; i++) {
             if (channels[i] > 511) { continue; }
             dmx_frame[channels[i] + 1] = values[i];
+            dmx_pending_frame[channels[i] + 1] = values[i];
         }
+        has_pending_frame = false;
+        pending_frame_blocking = false;
     } else {
         osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
 
@@ -476,6 +482,9 @@ osStatus_t dmx_clear_frame(bool blocking)
 
     if (dmx_direct_frame_update) {
         memset(dmx_frame, 0, sizeof(dmx_frame));
+        memset(dmx_pending_frame, 0, sizeof(dmx_frame));
+        has_pending_frame = false;
+        pending_frame_blocking = false;
     } else {
         osMutexAcquire(dmx_frame_mutex, portMAX_DELAY);
         memset(dmx_pending_frame, 0, sizeof(dmx_pending_frame));

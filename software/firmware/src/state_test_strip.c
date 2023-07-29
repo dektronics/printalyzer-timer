@@ -14,6 +14,7 @@
 #include "led.h"
 #include "util.h"
 #include "illum_controller.h"
+#include "enlarger_control.h"
 #include "exposure_timer.h"
 #include "settings.h"
 
@@ -124,6 +125,9 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
 
+    enlarger_control_set_state(&enlarger_config->control,
+        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, false);
+
     bool canceled = false;
     float patch_time;
     if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
@@ -180,7 +184,7 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     update_display_timer(elements, time_ms);
     display_redraw_test_strip_timer(elements);
 
-    // Handle the next keypad event without blocking
+    /* Handle the next keypad event without blocking */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
         if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
@@ -237,6 +241,10 @@ void state_test_strip_exit(state_t *state_base, state_controller_t *controller, 
     state_test_strip_t *state = (state_test_strip_t *)state_base;
 
     led_set_off(LED_IND_TEST_STRIP);
+
+    const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
+    enlarger_control_set_state(&enlarger_config->control,
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
 
     buzzer_set_volume(state->current_volume);
     buzzer_set_frequency(state->current_frequency);
