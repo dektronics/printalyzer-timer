@@ -662,74 +662,30 @@ HAL_StatusTypeDef tsl2585_get_als_data2(I2C_HandleTypeDef *hi2c, uint16_t *data)
     return HAL_OK;
 }
 
+static const char *TSL2585_GAIN_STR[] = {
+    "0.5x", "1x", "2x", "4x", "8x", "16x", "32x", "64x",
+    "128x", "256x", "512x", "1024x", "2048x", "4096x"
+};
+
 const char* tsl2585_gain_str(tsl2585_gain_t gain)
 {
-    switch(gain) {
-    case TSL2585_GAIN_0_5X:
-        return "0.5x";
-    case TSL2585_GAIN_1X:
-        return "1x";
-    case TSL2585_GAIN_2X:
-        return "2x";
-    case TSL2585_GAIN_4X:
-        return "4x";
-    case TSL2585_GAIN_8X:
-        return "8x";
-    case TSL2585_GAIN_16X:
-        return "16x";
-    case TSL2585_GAIN_32X:
-        return "32x";
-    case TSL2585_GAIN_64X:
-        return "64x";
-    case TSL2585_GAIN_128X:
-        return "128x";
-    case TSL2585_GAIN_256X:
-        return "256x";
-    case TSL2585_GAIN_512X:
-        return "512x";
-    case TSL2585_GAIN_1024X:
-        return "1024x";
-    case TSL2585_GAIN_2048X:
-        return "2048x";
-    case TSL2585_GAIN_4096X:
-        return "4096x";
-    default:
+    if (gain >= TSL2585_GAIN_0_5X && gain <= TSL2585_GAIN_4096X) {
+        return TSL2585_GAIN_STR[gain];
+    } else {
         return "?";
     }
 }
 
+static const float TSL2585_GAIN_VAL[] = {
+    0.5F, 1.0F, 2.0F, 4.0F, 8.0F, 16.0F, 32.0F, 64.0F,
+    128.0F, 256.0F, 512.0F, 1024.0F, 2048.0F, 4096.0F
+};
+
 float tsl2585_gain_value(tsl2585_gain_t gain)
 {
-    switch(gain) {
-    case TSL2585_GAIN_0_5X:
-        return 0.5F;
-    case TSL2585_GAIN_1X:
-        return 1.0F;
-    case TSL2585_GAIN_2X:
-        return 2.0F;
-    case TSL2585_GAIN_4X:
-        return 4.0F;
-    case TSL2585_GAIN_8X:
-        return 8.0F;
-    case TSL2585_GAIN_16X:
-        return 16.0F;
-    case TSL2585_GAIN_32X:
-        return 32.0F;
-    case TSL2585_GAIN_64X:
-        return 64.0F;
-    case TSL2585_GAIN_128X:
-        return 128.0F;
-    case TSL2585_GAIN_256X:
-        return 256.0F;
-    case TSL2585_GAIN_512X:
-        return 512.0F;
-    case TSL2585_GAIN_1024X:
-        return 1024.0F;
-    case TSL2585_GAIN_2048X:
-        return 2048.0F;
-    case TSL2585_GAIN_4096X:
-        return 4096.0F;
-    default:
+    if (gain >= TSL2585_GAIN_0_5X && gain <= TSL2585_GAIN_4096X) {
+        return TSL2585_GAIN_VAL[gain];
+    } else {
         return NAN;
     }
 }

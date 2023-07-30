@@ -8,6 +8,11 @@ const contrast_grade_t CONTRAST_WHOLE_GRADES[] = {
     CONTRAST_GRADE_3, CONTRAST_GRADE_4, CONTRAST_GRADE_5
 };
 
+static const char *CONTRAST_GRADE_STR[] = {
+    "00", "0", "1/2", "1", "1-1/2", "2", "2-1/2", "3", "3-1/2",
+    "4", "4-1/2", "5"
+};
+
 static const char *GRADE_FILTER_STR_DURST_170M[] = {
     "115Y+0M", "100Y+5M", "88Y+7M",   "75Y+10M",
     "65Y+15M", "52Y+20M", "42Y+28M",  "34Y+45M",
@@ -47,32 +52,9 @@ static const char *GRADE_FILTER_STR_MEOPTA[] = {
 
 const char *contrast_grade_str(contrast_grade_t contrast_grade)
 {
-    switch (contrast_grade) {
-    case CONTRAST_GRADE_00:
-        return "00";
-    case CONTRAST_GRADE_0:
-        return "0";
-    case CONTRAST_GRADE_0_HALF:
-        return "1/2";
-    case CONTRAST_GRADE_1:
-        return "1";
-    case CONTRAST_GRADE_1_HALF:
-        return "1-1/2";
-    case CONTRAST_GRADE_2:
-        return "2";
-    case CONTRAST_GRADE_2_HALF:
-        return "2-1/2";
-    case CONTRAST_GRADE_3:
-        return "3";
-    case CONTRAST_GRADE_3_HALF:
-        return "3-1/2";
-    case CONTRAST_GRADE_4:
-        return "4";
-    case CONTRAST_GRADE_4_HALF:
-        return "4-1/2";
-    case CONTRAST_GRADE_5:
-        return "5";
-    default:
+    if (contrast_grade >= CONTRAST_GRADE_00 && contrast_grade < CONTRAST_GRADE_MAX) {
+        return CONTRAST_GRADE_STR[contrast_grade];
+    } else {
         return "";
     }
 }
