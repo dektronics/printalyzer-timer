@@ -48,7 +48,11 @@
 
 typedef struct __exposure_state_t {
     exposure_mode_t mode;
+    exposure_mode_t last_printing_mode;
     contrast_grade_t contrast_grade;
+    uint16_t channel_default_values[3];
+    uint16_t channel_values[3];
+    bool channel_wide_mode;
     float base_time;
     float adjusted_time;
     float min_exposure_time;
@@ -88,6 +92,7 @@ exposure_state_t *exposure_state_create()
         return NULL;
     }
     memset(state, 0, sizeof(exposure_state_t));
+    state->last_printing_mode = EXPOSURE_MODE_PRINTING_BW;
     exposure_state_defaults(state);
 
     // Initialize fields that aren't reset every time the user
@@ -112,41 +117,55 @@ void exposure_state_free(exposure_state_t *state)
 void exposure_state_defaults(exposure_state_t *state)
 {
     if (!state) { return; }
-    state->mode = EXPOSURE_MODE_PRINTING;
+
+    if (state->last_printing_mode == EXPOSURE_MODE_PRINTING_BW || state->last_printing_mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        state->mode = state->last_printing_mode;
+    } else {
+        state->mode = EXPOSURE_MODE_PRINTING_BW;
+    }
+
     state->contrast_grade = settings_get_default_contrast_grade();
     state->base_time = settings_get_default_exposure_time() / 1000.0f;
     state->adjusted_time = state->base_time;
     state->adjustment_value = 0;
     state->adjustment_increment = settings_get_default_step_size();
 
-    for (int i = 0; i < EXPOSURE_BURN_DODGE_MAX; i++) {
+    for (size_t i = 0; i < EXPOSURE_BURN_DODGE_MAX; i++) {
         memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
     }
     state->burn_dodge_count = 0;
 
-    for (int i = 0; i < MAX_LUX_READINGS; i++) {
+    for (size_t i = 0; i < MAX_LUX_READINGS; i++) {
         state->lux_readings[i] = NAN;
     }
     state->lux_reading_count = 0;
     state->calibration_pev = 0;
     state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
+
+    for (size_t i = 0; i < 3; i++) {
+        state->channel_values[i] = state->channel_default_values[i];
+    }
 }
 
 exposure_mode_t exposure_get_mode(const exposure_state_t *state)
 {
-    if (!state) { return EXPOSURE_MODE_PRINTING; }
+    if (!state) { return EXPOSURE_MODE_PRINTING_BW; }
     return state->mode;
 }
 
 void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
 {
     if (!state) { return; }
-    if (mode < EXPOSURE_MODE_PRINTING || mode > EXPOSURE_MODE_CALIBRATION) { return; }
+    if (mode < EXPOSURE_MODE_PRINTING_BW || mode > EXPOSURE_MODE_CALIBRATION) { return; }
 
     if (state->mode != mode) {
+        if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
+            state->last_printing_mode = mode;
+        }
+
         state->mode = mode;
 
-        if (state->mode == EXPOSURE_MODE_PRINTING) {
+        if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
             // Reset the base exposure and light readings if entering printing or densitometer mode
             state->base_time = settings_get_default_exposure_time() / 1000.0f;
             state->adjusted_time = state->base_time;
@@ -305,7 +324,7 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
     bool place_added_reading = false;
     if (!state) { return 0; }
 
-    if (state->mode == EXPOSURE_MODE_PRINTING) {
+    if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
         //TODO consider filtering out "new" readings that are very close to old readings, but unsure of tolerance
         if (state->lux_reading_count < MAX_LUX_READINGS) {
             state->lux_readings[state->lux_reading_count++] = lux;
@@ -517,6 +536,97 @@ void exposure_contrast_decrease(exposure_state_t *state)
         exposure_recalculate_base_time(state);
         exposure_recalculate(state);
     }
+}
+
+uint16_t exposure_get_channel_value(const exposure_state_t *state, int index)
+{
+    if (!state || index > 2) { return 0; }
+    return state->channel_values[index];
+}
+
+void exposure_set_channel_default_value(exposure_state_t *state, int index, uint16_t value)
+{
+    if (!state || index > 2) { return; }
+
+    const uint16_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
+
+    if (value > max_val) {
+        state->channel_default_values[index] = max_val;
+        state->channel_values[index] = max_val;
+    } else {
+        state->channel_default_values[index] = value;
+        state->channel_values[index] = value;
+    }
+}
+
+void exposure_channel_increase(exposure_state_t *state, int index)
+{
+    if (!state) { return; }
+
+    const uint16_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
+
+    if (index < 3) {
+        if (state->channel_values[index] < max_val) {
+            state->channel_values[index]++;
+        } else {
+            state->channel_values[index] = 0;
+        }
+    } else {
+        for (size_t i = 0; i < 3; i++) {
+            if (state->channel_values[i] < max_val) {
+                state->channel_values[i]++;
+            }
+        }
+    }
+}
+
+void exposure_channel_decrease(exposure_state_t *state, int index)
+{
+    if (!state) { return; }
+
+    const uint16_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
+
+    if (index < 3) {
+        if (state->channel_values[index] > 0) {
+            state->channel_values[index]--;
+        } else {
+            state->channel_values[index] = max_val;
+        }
+    } else {
+        for (size_t i = 0; i < 3; i++) {
+            if (state->channel_values[i] > 0) {
+                state->channel_values[i]--;
+            }
+        }
+    }
+}
+
+bool exposure_get_channel_wide_mode(const exposure_state_t *state)
+{
+    if (!state) { return false; }
+    return state->channel_wide_mode;
+}
+
+void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode)
+{
+    if (!state) { return; }
+
+    if (!state->channel_wide_mode && wide_mode) {
+        /* 8-bit -> 16-bit */
+        for (size_t i = 0; i < 2; i++) {
+            if (state->channel_values[i] == 0xFF) {
+                state->channel_values[i] = 0xFFFF;
+            } else {
+                state->channel_values[i] = (state->channel_values[i] & 0xFF) << 8;
+            }
+        }
+    } else if (state->channel_wide_mode && !wide_mode) {
+        /* 16-bit -> 8-bit */
+        for (size_t i = 0; i < 2; i++) {
+            state->channel_values[i] = (state->channel_values[i] & 0xFF00) >> 8;
+        }
+    }
+
 }
 
 exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state)
@@ -764,7 +874,7 @@ void exposure_recalculate(exposure_state_t *state)
     float stops = state->adjustment_value / 12.0f;
     state->adjusted_time = state->base_time * powf(2.0f, stops);
 
-    if (state->mode == EXPOSURE_MODE_PRINTING) {
+    if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
         exposure_populate_tone_graph(state);
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         if (state->lux_reading_count > 0 && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {

@@ -13,7 +13,8 @@
 #define EXPOSURE_BURN_DODGE_MAX 9
 
 typedef enum {
-    EXPOSURE_MODE_PRINTING = 0,
+    EXPOSURE_MODE_PRINTING_BW = 0,
+    EXPOSURE_MODE_PRINTING_COLOR,
     EXPOSURE_MODE_DENSITOMETER,
     EXPOSURE_MODE_CALIBRATION
 } exposure_mode_t;
@@ -101,6 +102,13 @@ int exposure_adj_max(exposure_state_t *state);
 contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state);
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
+
+uint16_t exposure_get_channel_value(const exposure_state_t *state, int index);
+void exposure_set_channel_default_value(exposure_state_t *state, int index, uint16_t value);
+void exposure_channel_increase(exposure_state_t *state, int index);
+void exposure_channel_decrease(exposure_state_t *state, int index);
+bool exposure_get_channel_wide_mode(const exposure_state_t *state);
+void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode);
 
 exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state);
 void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_preset_t preset);

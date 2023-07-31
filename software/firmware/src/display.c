@@ -914,7 +914,7 @@ void display_draw_stop_increment(uint8_t increment_den)
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
-    u8g2_SetFont(&u8g2, u8g2_font_logisoso34_tf);
+    u8g2_SetFont(&u8g2, u8g2_font_logisoso32_tf);
     u8g2_SetFontMode(&u8g2, 0);
 
     u8g2_uint_t x = 50;
@@ -948,13 +948,13 @@ void display_draw_mode_text(const char *text)
     u8g2_SetDrawColor(&u8g2, 0);
     u8g2_ClearBuffer(&u8g2);
     u8g2_SetDrawColor(&u8g2, 1);
-    u8g2_SetFont(&u8g2, u8g2_font_logisoso34_tf);
+    u8g2_SetFont(&u8g2, u8g2_font_logisoso32_tf);
     u8g2_SetFontMode(&u8g2, 0);
     u8g2_SetFontDirection(&u8g2, 0);
     u8g2_SetFontPosBaseline(&u8g2);
 
     if (text) {
-        u8g2_DrawUTF8Line(&u8g2, 0, 54,
+        u8g2_DrawUTF8Line(&u8g2, 0, 50,
             u8g2_GetDisplayWidth(&u8g2), text, 0, 0);
     }
 

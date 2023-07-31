@@ -44,9 +44,14 @@ typedef enum {
  * @param enlarger_control The control portion of the active enlarger configuration
  * @param state The enlarger state to set
  * @param grade The selected contrast grade (only used in the exposure state, and only with certain enlarger configurations)
+ * @param channel_red Explicit red channel value (only used in the exposure state, when contrast is unset)
+ * @param channel_green Explicit green channel value (only used in the exposure state, when contrast is unset)
+ * @param channel_blue Explicit blue channel value (only used in the exposure state, when contrast is unset)
  * @param blocking True to block until the change has taken effect, false otherwise
  */
 osStatus_t enlarger_control_set_state(const enlarger_control_t *enlarger_control,
-    enlarger_control_state_t state, contrast_grade_t grade, bool blocking);
+    enlarger_control_state_t state, contrast_grade_t grade,
+    uint16_t channel_red, uint16_t channel_green, uint16_t channel_blue,
+    bool blocking);
 
 #endif /* ENLARGER_CONTROL_H */

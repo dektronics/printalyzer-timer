@@ -215,3 +215,14 @@ uint32_t enlarger_config_min_exposure(const enlarger_config_t *config)
 
     return config->timing.rise_time_equiv + config->timing.fall_time_equiv + config->timing.turn_off_delay;
 }
+
+bool enlarger_config_has_rgb(const enlarger_config_t *config)
+{
+    if (!config) {
+        return false;
+    }
+
+    return config->control.dmx_control
+        && (config->control.channel_set == ENLARGER_CHANNEL_SET_RGB
+            || config->control.channel_set == ENLARGER_CHANNEL_SET_RGBW);
+}

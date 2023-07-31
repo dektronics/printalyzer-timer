@@ -156,4 +156,9 @@ void enlarger_config_recalculate(enlarger_config_t *config);
  */
 uint32_t enlarger_config_min_exposure(const enlarger_config_t *config);
 
+/**
+ * Gets whether the enlarger has the necessary capabilities for RGB printing.
+ */
+bool enlarger_config_has_rgb(const enlarger_config_t *config);
+
 #endif /* ENLARGER_CONFIG_H */

@@ -57,6 +57,15 @@ typedef struct {
     /* The selected contrast grade, used for enlargers with contrast control */
     contrast_grade_t contrast_grade;
 
+    /* Red channel value, if RGB-capable and contrast grade is unset */
+    uint16_t channel_red;
+
+    /* Green channel value, if RGB-capable and contrast grade is unset */
+    uint16_t channel_green;
+
+    /* Blue channel value, if RGB-capable and contrast grade is unset */
+    uint16_t channel_blue;
+
     /* Callback function to be invoked at the specified rate */
     exposure_timer_callback_t timer_callback;
 

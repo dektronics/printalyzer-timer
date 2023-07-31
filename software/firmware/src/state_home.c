@@ -34,6 +34,7 @@ typedef struct {
     int adjustment_repeat;
     int cancel_repeat;
     uint32_t updated_tone_element;
+    uint8_t highlight_element;
     bool display_dirty;
 } state_home_t;
 
@@ -44,6 +45,7 @@ typedef struct {
 typedef struct {
     state_t base;
     exposure_mode_t working_value;
+    bool accepted;
 } state_home_change_mode_t;
 
 typedef struct {
@@ -84,6 +86,7 @@ static state_home_t state_home_data = {
     .adjustment_repeat = 0,
     .cancel_repeat = 0,
     .updated_tone_element = 0,
+    .highlight_element = 0,
     .display_dirty = true
 };
 
@@ -133,6 +136,8 @@ static state_home_adjust_absolute_t state_home_adjust_absolute_data = {
     .value_accepted = false
 };
 
+static void update_display_highlight_element(display_main_printing_elements_t *elements, uint8_t highlight_element);
+
 state_t *state_home()
 {
     return (state_t *)&state_home_data;
@@ -141,6 +146,10 @@ state_t *state_home()
 void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_home_t *state = (state_home_t *)state_base;
+    const enlarger_config_t *enlarger = state_controller_get_enlarger_config(controller);
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    const exposure_mode_t mode = exposure_get_mode(exposure_state);
+    const bool has_color_mode = enlarger_config_has_rgb(enlarger);
 
     state->change_inc_pending = false;
     state->change_inc_swallow_release_up = false;
@@ -153,7 +162,12 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     state->adjustment_repeat = 0;
     state->cancel_repeat = 0;
     state->updated_tone_element = 0;
+    state->highlight_element = 0;
     state->display_dirty = true;
+
+    if (mode == EXPOSURE_MODE_PRINTING_COLOR && !has_color_mode) {
+        exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING_BW);
+    }
 }
 
 bool state_home_process(state_t *state_base, state_controller_t *controller)
@@ -165,12 +179,13 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 
     if (state->display_dirty) {
         // Draw current exposure state
-        if (mode == EXPOSURE_MODE_PRINTING) {
+        if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
             display_main_printing_elements_t main_elements;
             if (state->updated_tone_element != 0) {
                 /* Blink the most recently added tone graph element */
                 uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
                 convert_exposure_to_display_printing(&main_elements, exposure_state, enlarger);
+                update_display_highlight_element(&main_elements, state->highlight_element);
                 display_draw_main_elements_printing(&main_elements);
 
                 if ((tone_graph | state->updated_tone_element) == tone_graph) {
@@ -185,6 +200,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 state->updated_tone_element = 0;
             } else {
                 convert_exposure_to_display_printing(&main_elements, exposure_state, enlarger);
+                update_display_highlight_element(&main_elements, state->highlight_element);
                 display_draw_main_elements_printing(&main_elements);
             }
         } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
@@ -250,31 +266,95 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     meter_probe_stop();
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                    if (state->highlight_element == 0) {
+                        exposure_adj_increase(exposure_state);
+                    } else if (state->highlight_element < 5) {
+                        exposure_channel_increase(exposure_state, state->highlight_element - 1);
+                    }
+                    state->display_dirty = true;
+                } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
                     exposure_adj_increase(exposure_state);
                     state->display_dirty = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-                if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                    if (state->highlight_element == 0) {
+                        exposure_adj_decrease(exposure_state);
+                    } else if (state->highlight_element < 5) {
+                        exposure_channel_decrease(exposure_state, state->highlight_element - 1);
+                    }
+                    state->display_dirty = true;
+                } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
                     exposure_adj_decrease(exposure_state);
                     state->display_dirty = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING_BW) {
                     exposure_contrast_increase(exposure_state);
+                } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                    switch (state->highlight_element) {
+                    case 0:
+                        state->highlight_element = 4;
+                        break;
+                    case 1:
+                        state->highlight_element = 0;
+                        break;
+                    case 2:
+                        state->highlight_element = 1;
+                        break;
+                    case 3:
+                        state->highlight_element = 2;
+                        break;
+                    case 4:
+                        state->highlight_element = 3;
+                        break;
+                    default:
+                        break;
+                    }
                 } else if (mode == EXPOSURE_MODE_CALIBRATION) {
                     exposure_calibration_pev_increase(exposure_state);
                 }
                 state->display_dirty = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING_BW) {
                     exposure_contrast_decrease(exposure_state);
+                } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                    switch (state->highlight_element) {
+                    case 0:
+                        state->highlight_element = 1;
+                        break;
+                    case 1:
+                        state->highlight_element = 2;
+                        break;
+                    case 2:
+                        state->highlight_element = 3;
+                        break;
+                    case 3:
+                        state->highlight_element = 4;
+                        break;
+                    case 4:
+                        state->highlight_element = 0;
+                        break;
+                    default:
+                        break;
+                    }
                 } else if (mode == EXPOSURE_MODE_CALIBRATION) {
                     exposure_calibration_pev_decrease(exposure_state);
                 }
                 state->display_dirty = true;
+            } else if (keypad_event.key == KEYPAD_ENCODER_CW) {
+                if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
+                    exposure_channel_increase(exposure_state, state->highlight_element - 1);
+                    state->display_dirty = true;
+                }
+            } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
+                if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
+                    exposure_channel_decrease(exposure_state, state->highlight_element - 1);
+                    state->display_dirty = true;
+                }
             } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
-                if (mode == EXPOSURE_MODE_PRINTING) {
+                if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
                     if (keypad_event.pressed || keypad_event.repeated) {
                         state->adjustment_repeat++;
                     } else {
@@ -305,7 +385,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     if (keypad_event.pressed || keypad_event.repeated) {
                         state->test_strip_repeat++;
                     } else {
-                        if (state->test_strip_repeat > 2 && mode == EXPOSURE_MODE_PRINTING) {
+                        if (state->test_strip_repeat > 2 && (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR)) {
                             state_home_select_paper_profile(controller);
                         } else {
                             state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
@@ -570,16 +650,23 @@ void state_home_change_mode_entry(state_t *state_base, state_controller_t *contr
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
     state->working_value = exposure_get_mode(exposure_state);
+    state->accepted = false;
 }
 
 bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller)
 {
     state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
+    const enlarger_config_t *enlarger = state_controller_get_enlarger_config(controller);
 
-    // Draw the current mode
+    const bool has_color_mode = enlarger_config_has_rgb(enlarger);
+
+    /* Draw the current mode */
     switch (state->working_value) {
-    case EXPOSURE_MODE_PRINTING:
-        display_draw_mode_text("Printing");
+    case EXPOSURE_MODE_PRINTING_BW:
+        display_draw_mode_text(has_color_mode ? "B&W Printing" : "Printing");
+        break;
+    case EXPOSURE_MODE_PRINTING_COLOR:
+        display_draw_mode_text("Color Printing");
         break;
     case EXPOSURE_MODE_DENSITOMETER:
         display_draw_mode_text("Densitometer");
@@ -592,22 +679,25 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
         break;
     }
 
-    // Handle the next keypad event
+    /* Handle the next keypad event */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
             switch (state->working_value) {
-            case EXPOSURE_MODE_PRINTING:
+            case EXPOSURE_MODE_PRINTING_BW:
+                state->working_value = has_color_mode ? EXPOSURE_MODE_PRINTING_COLOR : EXPOSURE_MODE_DENSITOMETER;
+                break;
+            case EXPOSURE_MODE_PRINTING_COLOR:
                 state->working_value = EXPOSURE_MODE_DENSITOMETER;
                 break;
             case EXPOSURE_MODE_DENSITOMETER:
                 state->working_value = EXPOSURE_MODE_CALIBRATION;
                 break;
             case EXPOSURE_MODE_CALIBRATION:
-                state->working_value = EXPOSURE_MODE_PRINTING;
+                state->working_value = EXPOSURE_MODE_PRINTING_BW;
                 break;
             default:
-                state->working_value = EXPOSURE_MODE_PRINTING;
+                state->working_value = EXPOSURE_MODE_PRINTING_BW;
                 break;
             }
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
@@ -616,15 +706,21 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
                 state->working_value = EXPOSURE_MODE_DENSITOMETER;
                 break;
             case EXPOSURE_MODE_DENSITOMETER:
-                state->working_value = EXPOSURE_MODE_PRINTING;
+                state->working_value = has_color_mode ? EXPOSURE_MODE_PRINTING_COLOR : EXPOSURE_MODE_PRINTING_BW;
                 break;
-            case EXPOSURE_MODE_PRINTING:
+            case EXPOSURE_MODE_PRINTING_COLOR:
+                state->working_value = EXPOSURE_MODE_PRINTING_BW;
+                break;
+            case EXPOSURE_MODE_PRINTING_BW:
                 state->working_value = EXPOSURE_MODE_CALIBRATION;
                 break;
             default:
-                state->working_value = EXPOSURE_MODE_PRINTING;
+                state->working_value = EXPOSURE_MODE_PRINTING_BW;
                 break;
             }
+        } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
+            state->accepted = true;
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
@@ -641,7 +737,9 @@ void state_home_change_mode_exit(state_t *state_base, state_controller_t *contro
     state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    exposure_set_mode(exposure_state, state->working_value);
+    if (state->accepted) {
+        exposure_set_mode(exposure_state, state->working_value);
+    }
 }
 
 state_t *state_home_adjust_fine()
@@ -794,5 +892,25 @@ void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *co
 
     if (state->value_accepted) {
         exposure_set_base_time(exposure_state, state->working_value / 1000.0f);
+    }
+}
+
+void update_display_highlight_element(display_main_printing_elements_t *elements, uint8_t highlight_element)
+{
+    if (!elements) { return; }
+
+    if (elements->printing_type == DISPLAY_MAIN_PRINTING_COLOR) {
+        if (highlight_element == 0) {
+            elements->color.ch_highlight = 0;
+            elements->time_icon_highlight = true;
+        } else if (highlight_element < 5) {
+            elements->color.ch_highlight = highlight_element;
+            elements->time_icon_highlight = false;
+        } else {
+            elements->color.ch_highlight = 0;
+            elements->time_icon_highlight = true;
+        }
+    } else {
+        elements->time_icon_highlight = false;
     }
 }

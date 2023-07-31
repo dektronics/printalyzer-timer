@@ -270,7 +270,9 @@ void exposure_timer_notify()
     if (!enlarger_activated) {
         enlarger_on_event_ticks = osKernelGetTickCount();
         enlarger_control_set_state(&enlarger_control,
-            ENLARGER_CONTROL_STATE_EXPOSURE, timer_config.contrast_grade, false);
+            ENLARGER_CONTROL_STATE_EXPOSURE, timer_config.contrast_grade,
+            timer_config.channel_red, timer_config.channel_green, timer_config.channel_blue,
+            false);
         if (enlarger_control.dmx_control) {
             dmx_send_frame_explicit();
         }
@@ -284,7 +286,7 @@ void exposure_timer_notify()
                 enlarger_deactivate_pending = true;
             } else {
                 enlarger_control_set_state(&enlarger_control,
-                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, false);
+                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, 0, 0, 0, false);
                 enlarger_off_event_ticks = osKernelGetTickCount();
                 enlarger_deactivated = true;
             }
@@ -293,7 +295,7 @@ void exposure_timer_notify()
         if (enlarger_control.dmx_control && (time_elapsed % 30) == 0) {
             if (enlarger_deactivate_pending) {
                 enlarger_control_set_state(&enlarger_control,
-                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, false);
+                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, 0, 0, 0, false);
             }
             dmx_send_frame_explicit();
             if (enlarger_deactivate_pending) {

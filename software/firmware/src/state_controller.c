@@ -169,7 +169,7 @@ void state_controller_set_enlarger_focus(state_controller_t *controller, bool en
         enabled ? ENLARGER_CONTROL_STATE_FOCUS : ENLARGER_CONTROL_STATE_OFF;
 
     enlarger_control_set_state(&(controller->enlarger_config.control),
-        next_state, CONTRAST_GRADE_MAX, false);
+        next_state, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     controller->enlarger_focus_mode = enabled;
 }
@@ -190,6 +190,24 @@ void state_controller_reload_enlarger_config(state_controller_t *controller)
         enlarger_config_set_defaults(&controller->enlarger_config);
     }
     exposure_set_min_exposure_time(controller->exposure_state, enlarger_config_min_exposure(&controller->enlarger_config) / 1000.0F);
+    exposure_set_channel_wide_mode(controller->exposure_state, controller->enlarger_config.control.dmx_wide_mode);
+
+    uint16_t ch_max = 0;
+    if (controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_red > ch_max) {
+        ch_max = controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_red;
+    }
+    if (controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_green > ch_max) {
+        ch_max = controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_green;
+    }
+    if (controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_blue > ch_max) {
+        ch_max = controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_blue;
+    }
+    if (controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_white > ch_max) {
+        ch_max = controller->enlarger_config.control.grade_values[CONTRAST_GRADE_2].channel_white;
+    }
+    exposure_set_channel_default_value(controller->exposure_state, 0, ch_max);
+    exposure_set_channel_default_value(controller->exposure_state, 1, ch_max);
+    exposure_set_channel_default_value(controller->exposure_state, 2, ch_max);
 }
 
 void state_controller_reload_paper_profile(state_controller_t *controller, bool use_default)

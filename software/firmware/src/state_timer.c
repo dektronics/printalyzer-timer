@@ -89,7 +89,15 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+    const exposure_mode_t mode = exposure_get_mode(exposure_state);
+    if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        timer_config.contrast_grade = CONTRAST_GRADE_MAX;
+        timer_config.channel_red = exposure_get_channel_value(exposure_state, 0);
+        timer_config.channel_green = exposure_get_channel_value(exposure_state, 1);
+        timer_config.channel_blue = exposure_get_channel_value(exposure_state, 2);
+    } else {
+        timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+    }
 
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
@@ -196,7 +204,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     /* Enable the enlarger in safe mode */
     enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, false);
+        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     /* Wait for start or cancel */
     keypad_event_t keypad_event;
@@ -231,6 +239,19 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     }
 
     timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+    const exposure_mode_t mode = exposure_get_mode(exposure_state);
+    if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        timer_config.contrast_grade = CONTRAST_GRADE_MAX;
+        timer_config.channel_red = exposure_get_channel_value(exposure_state, 0);
+        timer_config.channel_green = exposure_get_channel_value(exposure_state, 1);
+        timer_config.channel_blue = exposure_get_channel_value(exposure_state, 2);
+    } else {
+        if (elements.contrast_grade == CONTRAST_GRADE_MAX) {
+            timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+        } else {
+            timer_config.contrast_grade = elements.contrast_grade;
+        }
+    }
 
     exposure_timer_set_config_time(&timer_config, exposure_time_ms, enlarger_config);
 
@@ -257,7 +278,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     log_i("Exposure timer complete");
 
     enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     return result;
 }

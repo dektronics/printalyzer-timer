@@ -15,6 +15,8 @@ static void convert_exposure_float_to_display_timer(display_exposure_timer_t *el
 void convert_exposure_to_display_printing(display_main_printing_elements_t *elements,
     const exposure_state_t *exposure, const enlarger_config_t *enlarger)
 {
+    const exposure_mode_t mode = exposure_get_mode(exposure);
+
     elements->tone_graph = exposure_get_tone_graph(exposure);
 
     int paper_index = exposure_get_active_paper_profile_index(exposure);
@@ -26,12 +28,25 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
-    /* Set B&W printing elements */
-    elements->printing_type = DISPLAY_MAIN_PRINTING_BW;
-    elements->bw.contrast_grade = exposure_get_contrast_grade(exposure);
-    elements->bw.contrast_note = contrast_filter_grade_str(
-        (enlarger->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger->contrast_filter),
-        exposure_get_contrast_grade(exposure));
+    if (mode == EXPOSURE_MODE_PRINTING_BW) {
+        /* Set B&W printing elements */
+        elements->printing_type = DISPLAY_MAIN_PRINTING_BW;
+        elements->bw.contrast_grade = exposure_get_contrast_grade(exposure);
+        elements->bw.contrast_note = contrast_filter_grade_str(
+            (enlarger->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger->contrast_filter),
+            exposure_get_contrast_grade(exposure));
+        elements->time_icon_highlight = false;
+    } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        /* Set color printing elements */
+        elements->printing_type = DISPLAY_MAIN_PRINTING_COLOR;
+        elements->color.ch_labels[0] = 'R';
+        elements->color.ch_labels[1] = 'G';
+        elements->color.ch_labels[2] = 'B';
+        elements->color.ch_values[0] = exposure_get_channel_value(exposure, 0);
+        elements->color.ch_values[1] = exposure_get_channel_value(exposure, 1);
+        elements->color.ch_values[2] = exposure_get_channel_value(exposure, 2);
+        elements->color.ch_wide = exposure_get_channel_wide_mode(exposure);
+    }
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
@@ -40,6 +55,8 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
     float min_exposure_time = exposure_get_min_exposure_time(exposure);
     if ((min_exposure_time > 0) && (exposure_time < min_exposure_time)) {
         elements->time_icon = DISPLAY_MAIN_PRINTING_TIME_ICON_INVALID;
+    } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        elements->time_icon = DISPLAY_MAIN_PRINTING_TIME_ICON_NORMAL;
     } else {
         elements->time_icon = DISPLAY_MAIN_PRINTING_TIME_ICON_NONE;
     }

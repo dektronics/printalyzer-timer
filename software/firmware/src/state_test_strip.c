@@ -30,7 +30,7 @@ typedef struct {
     display_test_strip_elements_t elements;
 } state_test_strip_t;
 
-static bool state_test_strip_countdown(const enlarger_config_t *enlarger_config, contrast_grade_t contrast_grade, uint32_t patch_time_ms, bool last_patch);
+static bool state_test_strip_countdown(const exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config, uint32_t patch_time_ms, bool last_patch);
 
 static void state_test_strip_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller);
@@ -126,7 +126,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
 
     enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, false);
+        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     bool canceled = false;
     float patch_time;
@@ -154,8 +154,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
             || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
 
-            const contrast_grade_t contrast_grade = exposure_get_contrast_grade(exposure_state);
-            if (state_test_strip_countdown(enlarger_config, contrast_grade, patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
+            if (state_test_strip_countdown(exposure_state, enlarger_config, patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
                 if (state->patches_covered < state->exposure_patch_count) {
                     state->patches_covered++;
                 }
@@ -196,7 +195,7 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     return true;
 }
 
-bool state_test_strip_countdown(const enlarger_config_t *enlarger_config, contrast_grade_t contrast_grade, uint32_t patch_time_ms, bool last_patch)
+bool state_test_strip_countdown(const exposure_state_t *exposure_state, const enlarger_config_t *enlarger_config, uint32_t patch_time_ms, bool last_patch)
 {
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, patch_time_ms);
@@ -216,7 +215,15 @@ bool state_test_strip_countdown(const enlarger_config_t *enlarger_config, contra
         timer_config.callback_rate = EXPOSURE_TIMER_RATE_1_SEC;
     }
 
-    timer_config.contrast_grade = contrast_grade;
+    const exposure_mode_t mode = exposure_get_mode(exposure_state);
+    if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        timer_config.contrast_grade = CONTRAST_GRADE_MAX;
+        timer_config.channel_red = exposure_get_channel_value(exposure_state, 0);
+        timer_config.channel_green = exposure_get_channel_value(exposure_state, 1);
+        timer_config.channel_blue = exposure_get_channel_value(exposure_state, 2);
+    } else {
+        timer_config.contrast_grade = exposure_get_contrast_grade(exposure_state);
+    }
 
     exposure_timer_set_config_time(&timer_config, patch_time_ms, enlarger_config);
 
@@ -244,7 +251,7 @@ void state_test_strip_exit(state_t *state_base, state_controller_t *controller, 
 
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
     enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, false);
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     buzzer_set_volume(state->current_volume);
     buzzer_set_frequency(state->current_frequency);

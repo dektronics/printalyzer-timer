@@ -10,18 +10,23 @@
 
 static osStatus_t enlarger_control_set_state_relay(enlarger_control_state_t state);
 static osStatus_t enlarger_control_set_state_dmx(const enlarger_control_t *enlarger_control,
-    enlarger_control_state_t state, contrast_grade_t grade, bool blocking);
+    enlarger_control_state_t state, contrast_grade_t grade,
+    uint16_t channel_red, uint16_t channel_green, uint16_t channel_blue,
+    bool blocking);
 static osStatus_t enlarger_control_set_frame(const enlarger_control_t *enlarger_control,
     uint16_t red, uint16_t green, uint16_t blue, uint16_t white,
     bool blocking);
 
 osStatus_t enlarger_control_set_state(const enlarger_control_t *enlarger_control,
-    enlarger_control_state_t state, contrast_grade_t grade, bool blocking)
+    enlarger_control_state_t state, contrast_grade_t grade,
+    uint16_t channel_red, uint16_t channel_green, uint16_t channel_blue,
+    bool blocking)
 {
     if (!enlarger_control) { return osErrorParameter; }
 
     if (enlarger_control->dmx_control) {
-        return enlarger_control_set_state_dmx(enlarger_control, state, grade, blocking);
+        return enlarger_control_set_state_dmx(enlarger_control, state, grade,
+            channel_red, channel_green, channel_blue, blocking);
     } else {
         return enlarger_control_set_state_relay(state);
     }
@@ -55,7 +60,9 @@ osStatus_t enlarger_control_set_state_relay(enlarger_control_state_t state)
 }
 
 osStatus_t enlarger_control_set_state_dmx(const enlarger_control_t *enlarger_control,
-    enlarger_control_state_t state, contrast_grade_t grade, bool blocking)
+    enlarger_control_state_t state, contrast_grade_t grade,
+    uint16_t channel_red, uint16_t channel_green, uint16_t channel_blue,
+    bool blocking)
 {
     const bool has_rgb =
         enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB
@@ -87,7 +94,11 @@ osStatus_t enlarger_control_set_state_dmx(const enlarger_control_t *enlarger_con
             red = enlarger_control->safe_value;
         }
     } else if (state == ENLARGER_CONTROL_STATE_EXPOSURE) {
-        if (has_rgb && enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
+        if (has_rgb && grade == CONTRAST_GRADE_MAX) {
+            red = channel_red;
+            green = channel_green;
+            blue = channel_blue;
+        } else if (has_rgb && enlarger_control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
             if (grade >= CONTRAST_GRADE_MAX) { return osErrorParameter; }
             green = enlarger_control->grade_values[grade].channel_green;
             blue = enlarger_control->grade_values[grade].channel_blue;
