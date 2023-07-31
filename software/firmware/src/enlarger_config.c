@@ -67,6 +67,11 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
         return false;
     }
 
+    /* Compare the top-level fields */
+    if (config1->contrast_filter != config2->contrast_filter) {
+        return false;
+    }
+
     /* Compare all the control fields */
     const enlarger_control_t *control1 = &config1->control;
     const enlarger_control_t *control2 = &config2->control;
@@ -113,6 +118,7 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
 
     memset(config, 0, sizeof(enlarger_config_t));
     strcpy(config->name, "Default");
+    config->contrast_filter = CONTRAST_FILTER_REGULAR;
 
     config->control.dmx_control = false;
     config->control.channel_set = ENLARGER_CHANNEL_SET_RGBW;

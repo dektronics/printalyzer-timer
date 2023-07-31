@@ -5,11 +5,15 @@
 #include <string.h>
 #include <math.h>
 
+#include "display.h"
+#include "enlarger_config.h"
+#include "exposure_state.h"
 #include "paper_profile.h"
 
 static void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time);
 
-void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure)
+void convert_exposure_to_display_printing(display_main_printing_elements_t *elements,
+    const exposure_state_t *exposure, const enlarger_config_t *enlarger)
 {
     elements->tone_graph = exposure_get_tone_graph(exposure);
 
@@ -24,8 +28,8 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     elements->contrast_grade = exposure_get_contrast_grade(exposure);
 
-    elements->contrast_note = contrast_filter_str(
-        exposure_get_contrast_filter(exposure),
+    elements->contrast_note = contrast_filter_grade_str(
+        (enlarger->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger->contrast_filter),
         exposure_get_contrast_grade(exposure));
 
     float exposure_time = exposure_get_exposure_time(exposure);

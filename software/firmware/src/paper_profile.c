@@ -118,11 +118,6 @@ bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_
         }
     }
 
-    /* Compare the contrast filter settings */
-    if (profile1->contrast_filter != profile2->contrast_filter) {
-        return false;
-    }
-
     return true;
 }
 

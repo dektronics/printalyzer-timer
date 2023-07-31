@@ -13,6 +13,12 @@ static const char *CONTRAST_GRADE_STR[] = {
     "4", "4-1/2", "5"
 };
 
+static const char *CONTRAST_FILTER_NAME_STR[] = {
+    "Regular",
+    "Durst (170M)", "Durst (130M)", "Kodak",
+    "Focomat V35", "Meopta"
+};
+
 static const char *GRADE_FILTER_STR_DURST_170M[] = {
     "115Y+0M", "100Y+5M", "88Y+7M",   "75Y+10M",
     "65Y+15M", "52Y+20M", "42Y+28M",  "34Y+45M",
@@ -59,7 +65,16 @@ const char *contrast_grade_str(contrast_grade_t contrast_grade)
     }
 }
 
-const char *contrast_filter_str(contrast_filter_t filter, contrast_grade_t contrast_grade)
+const char *contrast_filter_name_str(contrast_filter_t filter)
+{
+    if (filter >= CONTRAST_FILTER_REGULAR && filter < CONTRAST_FILTER_MAX) {
+        return CONTRAST_FILTER_NAME_STR[filter];
+    } else {
+        return "";
+    }
+}
+
+const char *contrast_filter_grade_str(contrast_filter_t filter, contrast_grade_t contrast_grade)
 {
     if (contrast_grade >= CONTRAST_GRADE_00 && contrast_grade < CONTRAST_GRADE_MAX) {
         switch (filter) {

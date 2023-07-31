@@ -124,7 +124,8 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define ENLARGER_CONFIG_TIMING_COLOR_TEMP      60
 #define ENLARGER_CONFIG_TIMING_LIGHT_SOURCE    64
 #define ENLARGER_CONFIG_TIMING_IR_CONTENT      68
-/* RESERVED */
+#define ENLARGER_CONFIG_CONTRAST_FILTER        72 /* 1B (contrast_filter_t) */
+/* RESERVED (56B) */
 #define ENLARGER_CONFIG_CONTROL_DMX_ENABLED   128 /* 1B (bool) */
 #define ENLARGER_CONFIG_CONTROL_CHANNEL_SET   129 /* 1B (enlarger_channel_set_t) */
 #define ENLARGER_CONFIG_CONTROL_DMX_WIDE      130 /* 1B (bool) */
@@ -168,7 +169,6 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define PAPER_PROFILE_GRADE5_HM          112
 #define PAPER_PROFILE_GRADE5_HS          116
 #define PAPER_PROFILE_DNET               120
-#define PAPER_PROFILE_CONTRAST_FILTER    124
 
 /**
  * Step wedge profile (256B)
@@ -927,8 +927,10 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
 {
     memset(config, 0, sizeof(enlarger_config_t));
 
+    /* Top-level fields */
     strncpy(config->name, (const char *)(data + ENLARGER_CONFIG_NAME), PROFILE_NAME_LEN);
     config->name[PROFILE_NAME_LEN - 1] = '\0';
+    config->contrast_filter = (contrast_filter_t)data[ENLARGER_CONFIG_CONTRAST_FILTER];
 
     /* Timing profile data */
     config->timing.turn_on_delay = copy_to_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY);
@@ -987,7 +989,9 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
 {
     copy_from_u32(data + ENLARGER_CONFIG_VERSION, LATEST_ENLARGER_CONFIG_VERSION);
 
+    /* Top-level fields */
     strncpy((char *)(data + ENLARGER_CONFIG_NAME), config->name, PROFILE_NAME_LEN);
+    data[ENLARGER_CONFIG_CONTRAST_FILTER] = (uint8_t)config->contrast_filter;
 
     /* Timing profile data */
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_TURN_ON_DELAY,   config->timing.turn_on_delay);
@@ -1133,13 +1137,6 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
     if (profile->max_net_density != NAN && (!isnormal(profile->max_net_density) || profile->max_net_density < 0.0F)) {
         profile->max_net_density = NAN;
     }
-
-    uint32_t val = copy_to_u32(data + PAPER_PROFILE_CONTRAST_FILTER);
-    if (val >= CONTRAST_FILTER_REGULAR && val < CONTRAST_FILTER_MAX) {
-        profile->contrast_filter = val;
-    } else {
-        profile->contrast_filter = CONTRAST_FILTER_REGULAR;
-    }
 }
 
 bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
@@ -1196,7 +1193,6 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
 
     copy_from_f32(data + PAPER_PROFILE_DNET, profile->max_net_density);
-    copy_from_u32(data + PAPER_PROFILE_CONTRAST_FILTER, profile->contrast_filter);
 }
 
 void settings_clear_paper_profile(uint8_t index)

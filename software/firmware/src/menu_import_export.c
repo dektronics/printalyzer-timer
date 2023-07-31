@@ -655,6 +655,11 @@ bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *conf
                 config->timing.fall_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
             } else if (strncmp("color_temperature", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 config->timing.color_temperature = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("contrast_filter", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= CONTRAST_FILTER_MAX) {
+                    config->contrast_filter = num;
+                }
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
@@ -738,11 +743,6 @@ bool parse_section_paper(const char *buf, size_t len, paper_profile_t *profile)
                     profile->max_net_density = json_parse_float(pair.value, pair.valueLength, NAN);
                 } else {
                     profile->max_net_density = NAN;
-                }
-            } else if (strncmp("contrast_filter", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                int num = json_parse_int(pair.value, pair.valueLength, -1);
-                if (num >= 0 && num <= CONTRAST_FILTER_MAX) {
-                    profile->contrast_filter = num;
                 }
             }
         }
@@ -1112,7 +1112,8 @@ bool write_section_enlargers(FIL *fp)
         json_write_int(fp, 6, "turn_off_delay", config.timing.turn_off_delay, true);
         json_write_int(fp, 6, "fall_time", config.timing.fall_time, true);
         json_write_int(fp, 6, "fall_time_equiv", config.timing.fall_time_equiv, true);
-        json_write_int(fp, 6, "color_temperature", config.timing.color_temperature, false);
+        json_write_int(fp, 6, "color_temperature", config.timing.color_temperature, true);
+        json_write_int(fp, 6, "contrast_filter", (uint32_t)config.contrast_filter, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {
@@ -1151,8 +1152,7 @@ bool write_section_papers(FIL *fp)
                 profile.grade[j].ht_lev100, profile.grade[j].hm_lev100, profile.grade[j].hs_lev100);
         }
         f_printf(fp, "\n      ],\n");
-        json_write_float02(fp, 6, "max_net_density", profile.max_net_density, true);
-        json_write_int(fp, 6, "contrast_filter", (uint32_t)profile.contrast_filter, false);
+        json_write_float02(fp, 6, "max_net_density", profile.max_net_density, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {

@@ -159,6 +159,7 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
 bool state_home_process(state_t *state_base, state_controller_t *controller)
 {
     state_home_t *state = (state_home_t *)state_base;
+    const enlarger_config_t *enlarger = state_controller_get_enlarger_config(controller);
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     exposure_mode_t mode = exposure_get_mode(exposure_state);
 
@@ -169,7 +170,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
             if (state->updated_tone_element != 0) {
                 /* Blink the most recently added tone graph element */
                 uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
-                convert_exposure_to_display_printing(&main_elements, exposure_state);
+                convert_exposure_to_display_printing(&main_elements, exposure_state, enlarger);
                 display_draw_main_elements_printing(&main_elements);
 
                 if ((tone_graph | state->updated_tone_element) == tone_graph) {
@@ -183,7 +184,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 
                 state->updated_tone_element = 0;
             } else {
-                convert_exposure_to_display_printing(&main_elements, exposure_state);
+                convert_exposure_to_display_printing(&main_elements, exposure_state, enlarger);
                 display_draw_main_elements_printing(&main_elements);
             }
         } else if (mode == EXPOSURE_MODE_DENSITOMETER) {

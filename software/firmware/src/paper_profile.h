@@ -94,15 +94,6 @@ typedef struct {
      */
     float max_net_density;
 
-    /**
-     * Type of contrast filter used when exposing the paper.
-     *
-     * This value is used purely for display purposes, to improve the
-     * usefulness of the displayed contrast grade to those using dichroic
-     * enlarger heads.
-     */
-    contrast_filter_t contrast_filter;
-
 } paper_profile_t;
 
 /**

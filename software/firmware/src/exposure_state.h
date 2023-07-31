@@ -99,7 +99,6 @@ int exposure_adj_min(exposure_state_t *state);
 int exposure_adj_max(exposure_state_t *state);
 
 contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state);
-contrast_filter_t exposure_get_contrast_filter(const exposure_state_t *state);
 void exposure_contrast_increase(exposure_state_t *state);
 void exposure_contrast_decrease(exposure_state_t *state);
 

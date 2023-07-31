@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "contrast.h"
 #include "util.h"
 
 typedef enum {
@@ -111,10 +112,20 @@ typedef struct {
  * Enlarger configuration, which contains all the control and timing
  * information specific to the operation of a particular enlarger.
  */
-typedef struct {
-    char name[PROFILE_NAME_LEN]; /*!< Enlarger configuration name */
-    enlarger_control_t control;  /*!< Enlarger power control settings */
-    enlarger_timing_t timing;    /*!< Enlarger on/off timing profile */
+typedef struct __enlarger_config_t {
+    char name[PROFILE_NAME_LEN];       /*!< Enlarger configuration name */
+    enlarger_control_t control;        /*!< Enlarger power control settings */
+    enlarger_timing_t timing;          /*!< Enlarger on/off timing profile */
+
+    /**
+     * Type of contrast filter used when exposing the paper.
+     *
+     * This value is used purely for display purposes, to improve the
+     * usefulness of the displayed contrast grade to those using dichroic
+     * enlarger heads.
+     */
+    contrast_filter_t contrast_filter;
+
 } enlarger_config_t;
 
 /**

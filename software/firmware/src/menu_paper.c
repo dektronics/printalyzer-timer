@@ -224,32 +224,6 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             offset += sprintf(buf + offset, "Max net density         [------]\n");
         }
 
-        const char *filter_str;
-        switch (profile->contrast_filter) {
-        case CONTRAST_FILTER_REGULAR:
-            filter_str = "Regular";
-            break;
-        case CONTRAST_FILTER_DURST_170M:
-            filter_str = "Durst (170M)";
-            break;
-        case CONTRAST_FILTER_DURST_130M:
-            filter_str = "Durst (130M)";
-            break;
-        case CONTRAST_FILTER_KODAK:
-            filter_str = "Kodak";
-            break;
-        case CONTRAST_FILTER_LEITZ_FOCOMAT_V35:
-            filter_str = "Focomat V35";
-            break;
-        case CONTRAST_FILTER_MEOPTA:
-            filter_str = "Meopta";
-            break;
-        default:
-            filter_str = "";
-            break;
-        }
-        offset += menu_build_padded_str_row(buf + offset, "Contrast filter", filter_str);
-
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_00);
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_0);
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_1);
@@ -291,45 +265,28 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                     profile_dirty = true;
                 }
             }
-        } else if (option == 3) {
-            uint8_t sub_option = display_selection_list(
-                "Contrast filter", profile->contrast_filter + 1,
-                "Regular\n"
-                "Durst (max 170M)\n"
-                "Durst (max 130M)\n"
-                "Kodak\n"
-                "Leitz Focomat V35\n"
-                "Meopta");
-            if (sub_option == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
-            } else {
-                if (sub_option - 1 != profile->contrast_filter) {
-                    profile->contrast_filter = sub_option - 1;
-                    profile_dirty = true;
-                }
-            }
-        } else if (option >= 4 && option <= 10) {
+        } else if (option >= 3 && option <= 9) {
             contrast_grade_t grade;
             switch (option) {
-            case 4:
+            case 3:
                 grade = CONTRAST_GRADE_00;
                 break;
-            case 5:
+            case 4:
                 grade = CONTRAST_GRADE_0;
                 break;
-            case 6:
+            case 5:
                 grade = CONTRAST_GRADE_1;
                 break;
-            case 7:
+            case 6:
                 grade = CONTRAST_GRADE_2;
                 break;
-            case 8:
+            case 7:
                 grade = CONTRAST_GRADE_3;
                 break;
-            case 9:
+            case 8:
                 grade = CONTRAST_GRADE_4;
                 break;
-            case 10:
+            case 9:
                 grade = CONTRAST_GRADE_5;
                 break;
             default:
@@ -342,11 +299,11 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
-        } else if (option == 11) {
+        } else if (option == 10) {
             log_d("Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 12) {
+        } else if (option == 11) {
             log_d("Delete profile from profile editor");
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;

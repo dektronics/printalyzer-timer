@@ -495,12 +495,6 @@ contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state)
     return state->contrast_grade;
 }
 
-contrast_filter_t exposure_get_contrast_filter(const exposure_state_t *state)
-{
-    if (!state) { return CONTRAST_FILTER_REGULAR; }
-    return state->paper_profile.contrast_filter;
-}
-
 void exposure_contrast_increase(exposure_state_t *state)
 {
     if (!state) { return; }

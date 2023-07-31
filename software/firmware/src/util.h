@@ -8,10 +8,15 @@
 #include <FreeRTOS.h>
 #include <cmsis_os.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "stm32f4xx_hal.h"
 
-#include "display.h"
-#include "exposure_state.h"
+typedef struct __display_exposure_timer_t display_exposure_timer_t;
+typedef struct __display_main_printing_elements_t display_main_printing_elements_t;
+typedef struct __display_main_densitometer_elements_t display_main_densitometer_elements_t;
+typedef struct __display_main_calibration_elements_t display_main_calibration_elements_t;
+typedef struct __exposure_state_t exposure_state_t;
+typedef struct __enlarger_config_t enlarger_config_t;
 
 #define SAFELIGHT_OFF_DELAY pdMS_TO_TICKS(500)
 
@@ -29,7 +34,8 @@
 /**
  * Convert the current exposure state into printing display elements.
  */
-void convert_exposure_to_display_printing(display_main_printing_elements_t *elements, const exposure_state_t *exposure);
+void convert_exposure_to_display_printing(display_main_printing_elements_t *elements,
+    const exposure_state_t *exposure, const enlarger_config_t *enlarger);
 
 /**
  * Convert the current exposure state into densitometer mode display elements.

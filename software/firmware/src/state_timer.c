@@ -168,9 +168,9 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
             elements.contrast_grade = entry->contrast_grade;
         }
     }
-    elements.contrast_note = contrast_filter_str(
-        exposure_get_contrast_filter(exposure_state), elements.contrast_grade);
-
+    elements.contrast_note = contrast_filter_grade_str(
+        (enlarger_config->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger_config->contrast_filter),
+        elements.contrast_grade);
 
     /* Calculate the raw time for the adjustment exposure */
     float adj_stops = (float)entry->numerator / (float)entry->denominator;

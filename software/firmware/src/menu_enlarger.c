@@ -264,6 +264,11 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
         offset += menu_build_padded_str_row(buf + offset, "Power control", config->control.dmx_control ? "DMX" : "Relay");
         offset += menu_build_padded_str_row(buf + offset, "Timing profile", "\xB7\xB7\xB7");
 
+        if (!config->control.dmx_control) {
+            offset += menu_build_padded_str_row(buf + offset, "Contrast filters",
+                contrast_filter_name_str(config->contrast_filter));
+        }
+
         offset += sprintf(buf + offset, "*** Test Enlarger ***\n");
         offset += sprintf(buf + offset, "*** Calibrate Timing ***");
 
@@ -304,7 +309,28 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
-        } else if (option == 4) {
+        } else if (!config->control.dmx_control && option == 4) {
+            /* Contrast filtration type */
+            offset = 0;
+            for (contrast_filter_t i = CONTRAST_FILTER_REGULAR; i < CONTRAST_FILTER_MAX; i++) {
+                offset += sprintf(buf + offset, "%s\n", contrast_filter_name_str(i));
+            }
+            buf[offset - 1] = '\0';
+            uint8_t sub_option = (uint8_t)config->contrast_filter;
+            if (sub_option >= (uint8_t)CONTRAST_FILTER_MAX) { sub_option = 1; }
+            else { sub_option = sub_option + 1; }
+
+            sub_option = display_selection_list(
+                "Contrast filters", sub_option, buf);
+            if (sub_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                if (sub_option - 1 != (uint8_t)config->contrast_filter) {
+                    config->contrast_filter = (contrast_filter_t)(sub_option - 1);
+                    config_dirty = true;
+                }
+            }
+        } else if (option == (config->control.dmx_control ? 4 : 5)) {
             /* Test Enlarger */
             menu_result_t sub_result;
             if (config->control.dmx_control) {
@@ -315,7 +341,7 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
             if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
-        } else if (option == 5) {
+        } else if (option == (config->control.dmx_control ? 5 : 6)) {
             log_d("Run calibration from profile editor");
             uint8_t sub_option = display_message(
                 "Run Timing Calibration?\n",
@@ -344,7 +370,7 @@ menu_result_t menu_enlarger_config_edit(enlarger_config_t *config, uint8_t index
                 /* Return assuming no timeout */
                 continue;
             }
-        } else if (option == 6) {
+        } else if (option == (config->control.dmx_control ? 6 : 7)) {
             log_d("Delete config from config editor");
             if (menu_enlarger_config_delete_prompt(config, index)) {
                 menu_result = MENU_DELETE;

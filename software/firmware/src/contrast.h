@@ -42,6 +42,8 @@ typedef enum {
 
 const char *contrast_grade_str(contrast_grade_t contrast_grade);
 
-const char *contrast_filter_str(contrast_filter_t filter, contrast_grade_t contrast_grade);
+const char *contrast_filter_name_str(contrast_filter_t filter);
+
+const char *contrast_filter_grade_str(contrast_filter_t filter, contrast_grade_t contrast_grade);
 
 #endif /* CONTRAST_H */

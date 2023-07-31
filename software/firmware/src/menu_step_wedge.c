@@ -9,6 +9,7 @@
 
 #include "settings.h"
 #include "step_wedge.h"
+#include "display.h"
 #include "util.h"
 #include "usb_host.h"
 #include "densitometer.h"

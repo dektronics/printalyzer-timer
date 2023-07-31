@@ -26,13 +26,13 @@ typedef enum {
 #define DISPLAY_MENU_ROW_LENGTH 32
 #define DISPLAY_HALF_ROW_LENGTH 16
 
-typedef struct {
+typedef struct __display_exposure_timer_t {
     uint16_t time_seconds;
     uint16_t time_milliseconds;
     uint8_t fraction_digits;
 } display_exposure_timer_t;
 
-typedef struct {
+typedef struct __display_main_printing_elements_t {
     uint32_t tone_graph;
     uint8_t paper_profile_num;
     uint8_t burn_dodge_count;
@@ -42,13 +42,13 @@ typedef struct {
     bool time_too_short;
 } display_main_printing_elements_t;
 
-typedef struct {
+typedef struct __display_main_densitometer_elements_t {
     uint16_t density_whole;
     uint16_t density_fractional;
     uint8_t fraction_digits;
 } display_main_densitometer_elements_t;
 
-typedef struct {
+typedef struct __display_main_calibration_elements_t {
     char *cal_title1;
     char *cal_title2;
     uint16_t cal_value;
