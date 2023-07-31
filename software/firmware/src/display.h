@@ -32,14 +32,41 @@ typedef struct __display_exposure_timer_t {
     uint8_t fraction_digits;
 } display_exposure_timer_t;
 
+typedef enum __display_main_printing_type_t {
+    DISPLAY_MAIN_PRINTING_BW = 0,
+    DISPLAY_MAIN_PRINTING_COLOR
+} display_main_printing_type_t;
+
+typedef struct __display_main_printing_bw_t {
+    contrast_grade_t contrast_grade;
+    const char *contrast_note;
+} display_main_printing_bw_t;
+
+typedef struct __display_main_printing_color_t {
+    char ch_labels[3];
+    uint16_t ch_values[3];
+    uint8_t ch_highlight; /*<! 0 = no highlight, [1..3] = label highlight, 4 = all label highlight */
+    bool ch_wide; /*< true for 0-65535, false for 0-255 */
+} display_main_printing_color_t;
+
+typedef enum __display_main_printing_time_icon_t {
+    DISPLAY_MAIN_PRINTING_TIME_ICON_NONE = 0,
+    DISPLAY_MAIN_PRINTING_TIME_ICON_INVALID,
+    DISPLAY_MAIN_PRINTING_TIME_ICON_NORMAL
+} display_main_printing_time_icon_t;
+
 typedef struct __display_main_printing_elements_t {
     uint32_t tone_graph;
     uint8_t paper_profile_num;
     uint8_t burn_dodge_count;
-    contrast_grade_t contrast_grade;
-    const char *contrast_note;
     display_exposure_timer_t time_elements;
-    bool time_too_short;
+    display_main_printing_time_icon_t time_icon;
+    bool time_icon_highlight;
+    display_main_printing_type_t printing_type;
+    union {
+        display_main_printing_bw_t bw;
+        display_main_printing_color_t color;
+    };
 } display_main_printing_elements_t;
 
 typedef struct __display_main_densitometer_elements_t {

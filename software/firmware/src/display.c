@@ -34,6 +34,9 @@ static void display_set_freq(uint8_t value);
 static void display_draw_tone_graph(uint32_t tone_graph);
 static void display_draw_paper_profile_num(uint8_t num);
 static void display_draw_burn_dodge_count(uint8_t count);
+static void display_draw_bw_elements(const display_main_printing_bw_t *bw_elements);
+static void display_draw_color_elements(const display_main_printing_color_t *color_elements);
+static void display_draw_time_icon(display_main_printing_time_icon_t time_icon, bool highlight);
 static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade);
 static void display_draw_contrast_grade_medium(u8g2_uint_t x, u8g2_uint_t y, contrast_grade_t grade);
@@ -375,6 +378,121 @@ void display_draw_burn_dodge_count(uint8_t count)
     }
 
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+}
+
+static void display_draw_bw_elements(const display_main_printing_bw_t *bw_elements)
+{
+    if (bw_elements->contrast_note) {
+        u8g2_SetFont(&u8g2, u8g2_font_logisoso16_tr);
+        u8g2_SetFontMode(&u8g2, 0);
+        u8g2_SetFontDirection(&u8g2, 0);
+        u8g2_SetFontPosBaseline(&u8g2);
+        display_draw_contrast_grade_medium(9 + 24, 8, bw_elements->contrast_grade);
+        u8g2_DrawUTF8(&u8g2, 9 + 24, 64, bw_elements->contrast_note);
+    } else {
+        display_draw_contrast_grade(9 + 24, 8, bw_elements->contrast_grade);
+    }
+}
+
+void display_draw_color_elements(const display_main_printing_color_t *color_elements)
+{
+    u8g2_uint_t x = 9 + 24;
+    u8g2_uint_t y = 8;
+
+    u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
+    u8g2_SetFontMode(&u8g2, 0);
+
+    for (size_t i = 0; i < 3; i++) {
+        const uint16_t ch_value = color_elements->ch_values[i];
+        const bool highlight = (color_elements->ch_highlight == i + 1 || color_elements->ch_highlight > 3);
+
+        if (highlight) {
+            u8g2_SetDrawColor(&u8g2, 1);
+            u8g2_DrawBox(&u8g2, x, y + 3, 13, 13);
+
+            u8g2_SetDrawColor(&u8g2, 0);
+            u8g2_DrawPixel(&u8g2, x, y + 3);
+            u8g2_DrawPixel(&u8g2, x + 12, y + 3);
+            u8g2_DrawPixel(&u8g2, x, y + 15);
+            u8g2_DrawPixel(&u8g2, x + 12, y + 15);
+        } else {
+            u8g2_SetDrawColor(&u8g2, 1);
+        }
+
+        u8g2_DrawGlyph(&u8g2, x + 3, y + 14, color_elements->ch_labels[i]);
+
+        if (highlight) {
+            u8g2_SetDrawColor(&u8g2, 1);
+        }
+
+        if (color_elements->ch_wide) {
+            if (ch_value >= 10000) {
+                display_draw_vtdigit(&u8g2, x + 16, y + 1, ch_value / 10000);
+            }
+            if (ch_value >= 1000) {
+                display_draw_vtdigit(&u8g2, x + 26, y + 1, (ch_value % 10000) / 1000);
+            }
+            if (ch_value >= 100) {
+                display_draw_vtdigit(&u8g2, x + 36, y + 1, (ch_value % 1000) / 100);
+            }
+            if (ch_value >= 10) {
+                display_draw_vtdigit(&u8g2, x + 46, y + 1, (ch_value % 100) / 10);
+            }
+            display_draw_vtdigit(&u8g2, x + 56, y + 1, ch_value % 10);
+        } else {
+            if (ch_value >= 100) {
+                display_draw_vtdigit(&u8g2, x + 20, y + 1, (ch_value % 1000) / 100);
+            }
+            if (ch_value >= 10) {
+                display_draw_vtdigit(&u8g2, x + 30, y + 1, (ch_value % 100) / 10);
+            }
+            display_draw_vtdigit(&u8g2, x + 40, y + 1, ch_value % 10);
+        }
+
+        y += 19;
+    }
+}
+
+void display_draw_time_icon(display_main_printing_time_icon_t time_icon, bool highlight)
+{
+    u8g2_uint_t x = 106;
+    u8g2_uint_t y = 10;
+
+    if (highlight) {
+        u8g2_SetDrawColor(&u8g2, 1);
+        u8g2_DrawBox(&u8g2, x, y, 24, 24);
+
+        u8g2_SetDrawColor(&u8g2, 0);
+        u8g2_DrawPixel(&u8g2, x, y);
+        u8g2_DrawPixel(&u8g2, x, y + 1);
+        u8g2_DrawPixel(&u8g2, x + 1, y);
+
+        u8g2_DrawPixel(&u8g2, x + 23, y);
+        u8g2_DrawPixel(&u8g2, x + 22, y);
+        u8g2_DrawPixel(&u8g2, x + 23, y + 1);
+
+        u8g2_DrawPixel(&u8g2, x, y + 23);
+        u8g2_DrawPixel(&u8g2, x, y + 22);
+        u8g2_DrawPixel(&u8g2, x + 1, y + 23);
+
+        u8g2_DrawPixel(&u8g2, x + 23, y + 23);
+        u8g2_DrawPixel(&u8g2, x + 23, y + 22);
+        u8g2_DrawPixel(&u8g2, x + 22, y + 23);
+    }
+
+    if (time_icon == DISPLAY_MAIN_PRINTING_TIME_ICON_INVALID) {
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
+        u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+    } else if (time_icon == DISPLAY_MAIN_PRINTING_TIME_ICON_NORMAL) {
+        asset_info_t asset;
+        display_asset_get(&asset, ASSET_TIMER_ICON_24);
+        u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
+    }
+
+    if (highlight) {
+        u8g2_SetDrawColor(&u8g2, 1);
+    }
 }
 
 void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value)
@@ -720,26 +838,17 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
     display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
-    if (elements->contrast_note) {
-        u8g2_SetFont(&u8g2, u8g2_font_logisoso16_tr);
-        u8g2_SetFontMode(&u8g2, 0);
-        u8g2_SetFontDirection(&u8g2, 0);
-        u8g2_SetFontPosBaseline(&u8g2);
-        display_draw_contrast_grade_medium(9 + 24, 8, elements->contrast_grade);
-        u8g2_DrawUTF8(&u8g2, 9 + 24, 64, elements->contrast_note);
-    } else {
-        display_draw_contrast_grade(9 + 24, 8, elements->contrast_grade);
+    if (elements->printing_type == DISPLAY_MAIN_PRINTING_BW) {
+        display_draw_bw_elements(&elements->bw);
+    } else if (elements->printing_type == DISPLAY_MAIN_PRINTING_COLOR) {
+        display_draw_color_elements(&elements->color);
     }
 
     display_draw_counter_time(elements->time_elements.time_seconds,
         elements->time_elements.time_milliseconds,
         elements->time_elements.fraction_digits);
 
-    if (elements->time_too_short) {
-        asset_info_t asset;
-        display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
-        u8g2_DrawXBM(&u8g2, 106, 10, asset.width, asset.height, asset.bits);
-    }
+    display_draw_time_icon(elements->time_icon, elements->time_icon_highlight);
 
     u8g2_SendBuffer(&u8g2);
 

@@ -26,17 +26,23 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     elements->burn_dodge_count = exposure_burn_dodge_count(exposure);
 
-    elements->contrast_grade = exposure_get_contrast_grade(exposure);
-
-    elements->contrast_note = contrast_filter_grade_str(
+    /* Set B&W printing elements */
+    elements->printing_type = DISPLAY_MAIN_PRINTING_BW;
+    elements->bw.contrast_grade = exposure_get_contrast_grade(exposure);
+    elements->bw.contrast_note = contrast_filter_grade_str(
         (enlarger->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger->contrast_filter),
         exposure_get_contrast_grade(exposure));
 
     float exposure_time = exposure_get_exposure_time(exposure);
     convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
 
+    /* Check for minimum exposure time */
     float min_exposure_time = exposure_get_min_exposure_time(exposure);
-    elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
+    if ((min_exposure_time > 0) && (exposure_time < min_exposure_time)) {
+        elements->time_icon = DISPLAY_MAIN_PRINTING_TIME_ICON_INVALID;
+    } else {
+        elements->time_icon = DISPLAY_MAIN_PRINTING_TIME_ICON_NONE;
+    }
 }
 
 void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure)
