@@ -65,6 +65,8 @@ typedef struct {
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
 static void state_home_select_paper_profile(state_controller_t *controller);
+static void state_home_start_meter_probe();
+static void state_home_stop_meter_probe();
 static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
@@ -253,17 +255,13 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                     state_controller_set_enlarger_focus(controller, true);
                     state_controller_start_focus_timeout(controller);
-                    if (meter_probe_start() == osOK) {
-                        meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 500);
-                        meter_probe_sensor_enable();
-                    }
+                    state_home_start_meter_probe();
                 } else {
                     log_i("Focus mode disabled");
                     state_controller_set_enlarger_focus(controller, false);
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                     state_controller_stop_focus_timeout(controller);
-                    meter_probe_sensor_disable();
-                    meter_probe_stop();
+                    state_home_stop_meter_probe();
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
@@ -509,6 +507,24 @@ void state_home_select_paper_profile(state_controller_t *controller)
     } while (option != 0 && option != UINT8_MAX);
 
     vPortFree(profile_list);
+}
+
+void state_home_start_meter_probe()
+{
+    static uint16_t sample_time = 716;
+    static uint16_t sample_count = 500;
+
+    if (meter_probe_start() == osOK) {
+        meter_probe_sensor_set_config(TSL2585_GAIN_256X, sample_time, sample_count);
+        meter_probe_sensor_enable_agc(sample_count);
+        meter_probe_sensor_enable();
+    }
+}
+
+void state_home_stop_meter_probe()
+{
+    meter_probe_sensor_disable();
+    meter_probe_stop();
 }
 
 uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller)

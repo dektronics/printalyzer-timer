@@ -21,6 +21,7 @@
 #include "tsl2585.h"
 #include "settings.h"
 #include "illum_controller.h"
+#include "enlarger_control.h"
 #include "densitometer.h"
 #include "usb_host.h"
 #include "dmx.h"
@@ -919,9 +920,10 @@ menu_result_t diagnostics_meter_probe()
 {
     HAL_StatusTypeDef ret = HAL_OK;
     char buf[512];
+    enlarger_config_t enlarger_config = {0};
     bool sensor_initialized = false;
     bool sensor_error = false;
-    bool enlarger_enabled = relay_enlarger_is_enabled();
+    bool enlarger_enabled = false;
     bool config_changed = false;
     bool agc_changed = false;
     tsl2585_gain_t gain = 0;
@@ -931,6 +933,13 @@ menu_result_t diagnostics_meter_probe()
     meter_probe_sensor_reading_t reading = {0};
     keypad_event_t keypad_event;
     bool key_changed = false;
+
+    /* Load active enlarger config */
+    uint8_t config_index = settings_get_default_enlarger_config_index();
+    bool result = settings_get_enlarger_config(&enlarger_config, config_index);
+    if (!(result && enlarger_config_is_valid(&enlarger_config))) {
+        enlarger_config_set_defaults(&enlarger_config);
+    }
 
     if (meter_probe_start() != osOK) {
         menu_result_t menu_result = MENU_OK;
@@ -943,6 +952,12 @@ menu_result_t diagnostics_meter_probe()
         }
         return menu_result;
     }
+
+
+    /* Make sure enlarger starts in a known state */
+    illum_controller_refresh();
+    enlarger_control_set_state(&(enlarger_config.control),
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 100) == osOK) {
         gain = TSL2585_GAIN_256X;
@@ -963,12 +978,18 @@ menu_result_t diagnostics_meter_probe()
         if (key_changed) {
             key_changed = false;
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                if (!relay_enlarger_is_enabled()) {
-                    log_i("Meter probe focus mode enabled");
-                    relay_enlarger_enable(true);
+                if (!enlarger_enabled) {
+                    if (enlarger_control_set_state(&(enlarger_config.control),
+                        ENLARGER_CONTROL_STATE_FOCUS, CONTRAST_GRADE_MAX, 0, 0, 0, false) == osOK) {
+                        log_i("Meter probe focus mode enabled");
+                        enlarger_enabled = true;
+                    }
                 } else {
-                    log_i("Meter probe focus mode disabled");
-                    relay_enlarger_enable(false);
+                    if (enlarger_control_set_state(&(enlarger_config.control),
+                        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false) == osOK) {
+                        log_i("Meter probe focus mode disabled");
+                        enlarger_enabled = false;
+                    }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 if (sensor_initialized && !sensor_error) {
@@ -1018,7 +1039,7 @@ menu_result_t diagnostics_meter_probe()
         }
         if (agc_changed) {
             if (agc_enabled) {
-                if (meter_probe_sensor_enable_agc() == osOK) {
+                if (meter_probe_sensor_enable_agc(sample_count) == osOK) {
                     agc_changed = false;
                 }
             } else {
@@ -1034,14 +1055,42 @@ menu_result_t diagnostics_meter_probe()
 
             float basic_result = reading.raw_result / (atime * gain_val);
 
-            sprintf(buf,
-                "TSL2585 (%s, %.2fms)\n"
-                "Data: %ld\n"
-                "Basic: %f\n"
-                "[%s]",
-                tsl2585_gain_str(reading.gain), atime,
-                reading.raw_result, basic_result,
-                agc_enabled ? "AGC" : "---");
+            if (reading.result_status == METER_SENSOR_RESULT_VALID) {
+                sprintf(buf,
+                    "TSL2585 (%s, %.2fms)\n"
+                    "Data: %ld\n"
+                    "Basic: %f\n"
+                    "[%s][%s]",
+                    tsl2585_gain_str(reading.gain), atime,
+                    reading.raw_result, basic_result,
+                    enlarger_enabled ? "**" : "--",
+                    agc_enabled ? "AGC" : "---");
+            } else {
+                const char *status_str;
+                switch (reading.result_status) {
+                case METER_SENSOR_RESULT_INVALID:
+                    status_str = "Invalid";
+                    break;
+                case METER_SENSOR_RESULT_SATURATED_ANALOG:
+                    status_str = "Analog Saturation";
+                    break;
+                case METER_SENSOR_RESULT_SATURATED_DIGITAL:
+                    status_str = "Digital Saturation";
+                    break;
+                default:
+                    status_str = "";
+                    break;
+                }
+                sprintf(buf,
+                    "TSL2585 (%s, %.2fms)\n"
+                    "%s\n"
+                    "\n"
+                    "[%s][%s]",
+                    tsl2585_gain_str(reading.gain), atime,
+                    status_str,
+                    enlarger_enabled ? "**" : "--",
+                    agc_enabled ? "AGC" : "---");
+            }
             display_static_list("Meter Probe Test", buf);
 
             gain = reading.gain;
@@ -1056,7 +1105,9 @@ menu_result_t diagnostics_meter_probe()
 
     meter_probe_sensor_disable();
     meter_probe_stop();
-    relay_enlarger_enable(enlarger_enabled);
+
+    enlarger_control_set_state(&(enlarger_config.control),
+        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
 
     return MENU_OK;
 }

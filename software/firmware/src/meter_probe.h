@@ -25,8 +25,16 @@ typedef enum {
     METER_READING_FAIL
 } meter_probe_result_t;
 
+typedef enum {
+    METER_SENSOR_RESULT_INVALID = 0,
+    METER_SENSOR_RESULT_VALID,
+    METER_SENSOR_RESULT_SATURATED_ANALOG,
+    METER_SENSOR_RESULT_SATURATED_DIGITAL
+} meter_probe_sensor_result_t;
+
 typedef struct {
     uint32_t raw_result;   /*!< Raw sensor reading */
+    meter_probe_sensor_result_t result_status; /*!< Sensor result status. */
     tsl2585_gain_t gain;   /*!< Sensor ADC gain */
     uint16_t sample_time;  /*!< Sensor integration sample time */
     uint16_t sample_count; /*!< Sensor integration sample count */
@@ -93,8 +101,10 @@ osStatus_t meter_probe_sensor_set_config(tsl2585_gain_t gain, uint16_t sample_ti
 
 /**
  * Enable the meter probe sensor's AGC function
+ *
+ * @param sample_count Number of samples in an AGC integration cycle
  */
-osStatus_t meter_probe_sensor_enable_agc();
+osStatus_t meter_probe_sensor_enable_agc(uint16_t sample_count);
 
 /**
  * Disable the meter probe sensor's AGC function
