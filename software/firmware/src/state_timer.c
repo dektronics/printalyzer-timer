@@ -203,8 +203,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     display_draw_adjustment_exposure_elements(&elements);
 
     /* Enable the enlarger in safe mode */
-    enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_safe(&enlarger_config->control, false);
 
     /* Wait for start or cancel */
     keypad_event_t keypad_event;
@@ -277,8 +276,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
 
     log_i("Exposure timer complete");
 
-    enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(&enlarger_config->control, false);
 
     return result;
 }

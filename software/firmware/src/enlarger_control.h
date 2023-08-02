@@ -54,4 +54,8 @@ osStatus_t enlarger_control_set_state(const enlarger_control_t *enlarger_control
     uint16_t channel_red, uint16_t channel_green, uint16_t channel_blue,
     bool blocking);
 
+osStatus_t enlarger_control_set_state_off(const enlarger_control_t *enlarger_control, bool blocking);
+osStatus_t enlarger_control_set_state_focus(const enlarger_control_t *enlarger_control, bool blocking);
+osStatus_t enlarger_control_set_state_safe(const enlarger_control_t *enlarger_control, bool blocking);
+
 #endif /* ENLARGER_CONTROL_H */

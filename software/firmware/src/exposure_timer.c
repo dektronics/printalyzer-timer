@@ -285,8 +285,7 @@ void exposure_timer_notify()
             if (enlarger_control.dmx_control) {
                 enlarger_deactivate_pending = true;
             } else {
-                enlarger_control_set_state(&enlarger_control,
-                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, 0, 0, 0, false);
+                enlarger_control_set_state_off(&enlarger_control, false);
                 enlarger_off_event_ticks = osKernelGetTickCount();
                 enlarger_deactivated = true;
             }
@@ -294,8 +293,7 @@ void exposure_timer_notify()
 
         if (enlarger_control.dmx_control && (time_elapsed % 30) == 0) {
             if (enlarger_deactivate_pending) {
-                enlarger_control_set_state(&enlarger_control,
-                    ENLARGER_CONTROL_STATE_OFF, timer_config.contrast_grade, 0, 0, 0, false);
+                enlarger_control_set_state_off(&enlarger_control, false);
             }
             dmx_send_frame_explicit();
             if (enlarger_deactivate_pending) {

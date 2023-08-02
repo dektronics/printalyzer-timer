@@ -32,6 +32,21 @@ osStatus_t enlarger_control_set_state(const enlarger_control_t *enlarger_control
     }
 }
 
+osStatus_t enlarger_control_set_state_off(const enlarger_control_t *enlarger_control, bool blocking)
+{
+    return enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, blocking);
+}
+
+osStatus_t enlarger_control_set_state_focus(const enlarger_control_t *enlarger_control, bool blocking)
+{
+    return enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_FOCUS, CONTRAST_GRADE_MAX, 0, 0, 0, blocking);
+}
+
+osStatus_t enlarger_control_set_state_safe(const enlarger_control_t *enlarger_control, bool blocking)
+{
+    return enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, 0, 0, 0, blocking);
+}
+
 osStatus_t enlarger_control_set_state_relay(enlarger_control_state_t state)
 {
     bool enabled;

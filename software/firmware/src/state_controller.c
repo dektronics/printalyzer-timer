@@ -165,11 +165,11 @@ void state_controller_set_enlarger_focus(state_controller_t *controller, bool en
 {
     if (!controller) { return; }
 
-    const enlarger_control_state_t next_state =
-        enabled ? ENLARGER_CONTROL_STATE_FOCUS : ENLARGER_CONTROL_STATE_OFF;
-
-    enlarger_control_set_state(&(controller->enlarger_config.control),
-        next_state, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    if (enabled) {
+        enlarger_control_set_state_focus(&(controller->enlarger_config.control), false);
+    } else {
+        enlarger_control_set_state_off(&(controller->enlarger_config.control), false);
+    }
 
     controller->enlarger_focus_mode = enabled;
 }

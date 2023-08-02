@@ -125,8 +125,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
 
-    enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_SAFE, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_safe(&enlarger_config->control, false);
 
     bool canceled = false;
     float patch_time;
@@ -250,8 +249,7 @@ void state_test_strip_exit(state_t *state_base, state_controller_t *controller, 
     led_set_off(LED_IND_TEST_STRIP);
 
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
-    enlarger_control_set_state(&enlarger_config->control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(&enlarger_config->control, false);
 
     buzzer_set_volume(state->current_volume);
     buzzer_set_frequency(state->current_frequency);

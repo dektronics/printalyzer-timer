@@ -1024,8 +1024,7 @@ menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *
     menu_result_t menu_result = MENU_OK;
     bool enlarger_on = false;
 
-    enlarger_control_set_state(enlarger_control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(enlarger_control, false);
 
     for (;;) {
         sprintf(buf,
@@ -1053,8 +1052,7 @@ menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *
         }
     }
 
-    enlarger_control_set_state(enlarger_control,
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(enlarger_control, false);
 
     return menu_result;
 }
@@ -1164,14 +1162,14 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
 
         if (enlarger_on) {
             if (test_mode == 0) {
-                enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_FOCUS, test_grade, 0, 0, 0, false);
+                enlarger_control_set_state_focus(enlarger_control, false);
             } else if (test_mode == 1) {
-                enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_SAFE, test_grade, 0, 0, 0, false);
+                enlarger_control_set_state_safe(enlarger_control, false);
             } else if (test_mode == 2) {
                 enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_EXPOSURE, test_grade, 0, 0, 0, false);
             }
         } else {
-            enlarger_control_set_state(enlarger_control, ENLARGER_CONTROL_STATE_OFF, test_grade, 0, 0, 0, false);
+            enlarger_control_set_state_off(enlarger_control, false);
         }
     }
 

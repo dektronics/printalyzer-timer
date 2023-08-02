@@ -735,8 +735,7 @@ menu_result_t diagnostics_meter_probe()
 
     /* Make sure enlarger starts in a known state */
     illum_controller_refresh();
-    enlarger_control_set_state(&(enlarger_config.control),
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(&(enlarger_config.control), false);
 
     if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 100) == osOK) {
         gain = TSL2585_GAIN_256X;
@@ -758,14 +757,12 @@ menu_result_t diagnostics_meter_probe()
             key_changed = false;
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 if (!enlarger_enabled) {
-                    if (enlarger_control_set_state(&(enlarger_config.control),
-                        ENLARGER_CONTROL_STATE_FOCUS, CONTRAST_GRADE_MAX, 0, 0, 0, false) == osOK) {
+                    if (enlarger_control_set_state_focus(&(enlarger_config.control), false) == osOK) {
                         log_i("Meter probe focus mode enabled");
                         enlarger_enabled = true;
                     }
                 } else {
-                    if (enlarger_control_set_state(&(enlarger_config.control),
-                        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false) == osOK) {
+                    if (enlarger_control_set_state_off(&(enlarger_config.control), false) == osOK) {
                         log_i("Meter probe focus mode disabled");
                         enlarger_enabled = false;
                     }
@@ -912,8 +909,7 @@ menu_result_t diagnostics_meter_probe()
     meter_probe_sensor_disable();
     meter_probe_stop();
 
-    enlarger_control_set_state(&(enlarger_config.control),
-        ENLARGER_CONTROL_STATE_OFF, CONTRAST_GRADE_MAX, 0, 0, 0, false);
+    enlarger_control_set_state_off(&(enlarger_config.control), false);
 
     return MENU_OK;
 }
