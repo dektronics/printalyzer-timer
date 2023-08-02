@@ -68,12 +68,13 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
      * Disable interrupts in case we didn't come up clean, so we're forced
      * to explicitly enable them.
      */
-    data = 0x00;
+    data = TCA8418_CFG_AI;
     ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
+    data = 0x00;
     ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN1, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
@@ -128,7 +129,8 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
 
 HAL_StatusTypeDef tca8148_set_config(I2C_HandleTypeDef *hi2c, uint8_t value)
 {
-    return HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &value, 1, HAL_MAX_DELAY);
+    uint8_t data = value | TCA8418_CFG_AI;
+    return HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
 }
 
 HAL_StatusTypeDef tca8148_get_interrupt_status(I2C_HandleTypeDef *hi2c, uint8_t *status)
