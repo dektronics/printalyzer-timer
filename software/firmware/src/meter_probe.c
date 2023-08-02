@@ -23,10 +23,12 @@ typedef enum {
     METER_PROBE_CONTROL_STOP = 0,
     METER_PROBE_CONTROL_START,
     METER_PROBE_CONTROL_SENSOR_ENABLE,
+    METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT,
     METER_PROBE_CONTROL_SENSOR_DISABLE,
     METER_PROBE_CONTROL_SENSOR_SET_CONFIG,
     METER_PROBE_CONTROL_SENSOR_ENABLE_AGC,
     METER_PROBE_CONTROL_SENSOR_DISABLE_AGC,
+    METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING,
     METER_PROBE_CONTROL_INTERRUPT
 } meter_probe_control_event_type_t;
 
@@ -69,6 +71,7 @@ typedef struct {
     uint16_t agc_sample_count;
     bool config_pending;
     bool agc_pending;
+    bool sai_active;
 } tsl2585_config_t;
 
 /* Global I2C handle for the meter probe */
@@ -77,6 +80,7 @@ extern I2C_HandleTypeDef hi2c2;
 static bool meter_probe_initialized = false;
 static bool meter_probe_started = false;
 static bool meter_probe_sensor_enabled = false;
+static bool meter_probe_sensor_single_shot = false;
 
 static tsl2585_config_t sensor_config = {0};
 
@@ -101,11 +105,12 @@ static const osSemaphoreAttr_t meter_probe_control_semaphore_attrs = {
 /* Meter probe control implementation functions */
 static osStatus_t meter_probe_control_start();
 static osStatus_t meter_probe_control_stop();
-static osStatus_t meter_probe_control_sensor_enable();
+static osStatus_t meter_probe_control_sensor_enable(bool single_shot);
 static osStatus_t meter_probe_control_sensor_disable();
 static osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_params_t *params);
 static osStatus_t meter_probe_control_sensor_enable_agc(const sensor_control_agc_params_t *params);
 static osStatus_t meter_probe_control_sensor_disable_agc();
+static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
 
 static HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading);
@@ -158,7 +163,10 @@ void task_meter_probe_run(void *argument)
                 ret = meter_probe_control_start();
                 break;
             case METER_PROBE_CONTROL_SENSOR_ENABLE:
-                ret = meter_probe_control_sensor_enable();
+                ret = meter_probe_control_sensor_enable(false);
+                break;
+            case METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT:
+                ret = meter_probe_control_sensor_enable(true);
                 break;
             case METER_PROBE_CONTROL_SENSOR_DISABLE:
                 ret = meter_probe_control_sensor_disable();
@@ -171,6 +179,9 @@ void task_meter_probe_run(void *argument)
                 break;
             case METER_PROBE_CONTROL_SENSOR_DISABLE_AGC:
                 ret = meter_probe_control_sensor_disable_agc();
+                break;
+            case METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING:
+                ret = meter_probe_control_sensor_trigger_next_reading();
                 break;
             case METER_PROBE_CONTROL_INTERRUPT:
                 ret = meter_probe_control_interrupt(&control_event.interrupt);
@@ -311,11 +322,25 @@ osStatus_t meter_probe_sensor_enable()
     return result;
 }
 
-osStatus_t meter_probe_control_sensor_enable()
+osStatus_t meter_probe_sensor_enable_single_shot()
+{
+    if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_enable(bool single_shot)
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    log_d("meter_probe_control_sensor_enable");
+    log_d("meter_probe_control_sensor_enable: %s", single_shot ? "single_shot" : "continuous");
 
     do {
         /* Query the initial state of the sensor */
@@ -373,17 +398,17 @@ osStatus_t meter_probe_control_sensor_enable()
 
         const float als_atime = tsl2585_integration_time_ms(sensor_config.sample_time, sensor_config.sample_count);
         const float agc_atime = tsl2585_integration_time_ms(sensor_config.sample_time, sensor_config.agc_sample_count);
-        log_d("TSL2585 Initial State: Gain=%s, ALS_ATIME=%.2fms, AGC_ATIME=",
+        log_d("TSL2585 Initial State: Gain=%s, ALS_ATIME=%.2fms, AGC_ATIME=%.2fms",
             tsl2585_gain_str(sensor_config.gain), als_atime, agc_atime);
-
-        /* Enable the sensor (ALS Enable and Power ON) */
-        ret = tsl2585_enable(&hi2c2);
-        if (ret != HAL_OK) {
-            break;
-        }
 
         /* Clear out any old sensor readings */
         osMessageQueueReset(sensor_reading_queue);
+
+        ret = tsl2585_set_single_shot_mode(&hi2c2, single_shot);
+        if (ret != HAL_OK) { break; }
+
+        ret = tsl2585_set_sleep_after_interrupt(&hi2c2, single_shot);
+        if (ret != HAL_OK) { break; }
 
         /* Configure to interrupt on every ALS cycle */
         ret = tsl2585_set_als_interrupt_persistence(&hi2c2, 0);
@@ -397,6 +422,14 @@ osStatus_t meter_probe_control_sensor_enable()
             break;
         }
 
+        /* Enable the sensor (ALS Enable and Power ON) */
+        ret = tsl2585_enable(&hi2c2);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        sensor_config.sai_active = false;
+        meter_probe_sensor_single_shot = single_shot;
         meter_probe_sensor_enabled = true;
     } while (0);
 
@@ -566,6 +599,43 @@ osStatus_t meter_probe_control_sensor_disable_agc()
     return hal_to_os_status(ret);
 }
 
+osStatus_t meter_probe_sensor_trigger_next_reading()
+{
+    if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return osErrorResource; }
+
+    if (!meter_probe_sensor_single_shot) {
+        log_e("Not in single-shot mode");
+        return osErrorResource;
+    }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_trigger_next_reading()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    log_d("meter_probe_control_sensor_trigger_next_reading");
+
+    if (!sensor_config.sai_active) {
+        log_e("Integration cycle in progress");
+        return osErrorResource;
+    }
+
+    ret = tsl2585_clear_sleep_after_interrupt(&hi2c2);
+    if (ret == HAL_OK) {
+        sensor_config.sai_active = false;
+    }
+
+    return hal_to_os_status(ret);
+}
+
 osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout)
 {
     if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return osErrorResource; }
@@ -662,6 +732,19 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         /* Clear the interrupt status */
         ret = tsl2585_set_status(&hi2c2, status);
         if (ret != HAL_OK) { break; }
+
+        /* Check single-shot specific state */
+        if (meter_probe_sensor_single_shot) {
+            uint8_t status4 = 0;
+            ret = tsl2585_get_status4(&hi2c2, &status4);
+            if (ret != HAL_OK) { break; }
+            if ((status4 & TSL2585_STATUS4_SAI_ACTIVE) != 0) {
+#if 0
+                log_d("Sleep after interrupt");
+#endif
+                sensor_config.sai_active = true;
+            }
+        }
     } while (0);
 
     if (has_reading) {

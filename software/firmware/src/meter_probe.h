@@ -75,12 +75,23 @@ osStatus_t meter_probe_start();
 osStatus_t meter_probe_stop();
 
 /**
- * Enable the meter probe sensor
+ * Enable the meter probe sensor.
+ *
+ * In the normal enabled mode, the sensor will continuously run its
+ * integration cycle and make results available as they come in.
  */
 osStatus_t meter_probe_sensor_enable();
 
 /**
- * Disable the meter probe sensor
+ * Enable the meter probe sensor in single-shot mode.
+ *
+ * In single-shot mode, the sensor will only run its integration cycle
+ * when explicitly triggered.
+ */
+osStatus_t meter_probe_sensor_enable_single_shot();
+
+/**
+ * Disable the meter probe sensor.
  */
 osStatus_t meter_probe_sensor_disable();
 
@@ -110,6 +121,14 @@ osStatus_t meter_probe_sensor_enable_agc(uint16_t sample_count);
  * Disable the meter probe sensor's AGC function
  */
 osStatus_t meter_probe_sensor_disable_agc();
+
+/**
+ * Trigger the meter probe sensor's next sensing cycle.
+ *
+ * This function only works in single-shot mode, and only when
+ * a cycle is not currently in progress.
+ */
+osStatus_t meter_probe_sensor_trigger_next_reading();
 
 /**
  * Get the next reading from the meter probe sensor.

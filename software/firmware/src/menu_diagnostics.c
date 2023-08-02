@@ -694,228 +694,6 @@ menu_result_t diagnostics_dmx512()
     return MENU_OK;
 }
 
-#if 0
-menu_result_t diagnostics_meter_probe()
-{
-    HAL_StatusTypeDef ret = HAL_OK;
-    char buf[512];
-    bool sensor_initialized = false;
-    bool sensor_error = false;
-    bool freeze_data = false;
-    bool use_calibration = true;
-    tcs3472_channel_data_t channel_data;
-    bool enlarger_enabled = relay_enlarger_is_enabled();
-
-    float ga_factor = settings_get_tcs3472_ga_factor();
-
-    memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
-
-    for (;;) {
-        if (!freeze_data && !sensor_initialized) {
-            ret = tcs3472_init(&hi2c2);
-            if (ret == HAL_OK) {
-                sensor_error = false;
-            } else {
-                log_e("Error initializing TCS3472: %d", ret);
-                sensor_error = true;
-            }
-
-            if (!sensor_error) {
-                ret = tcs3472_enable(&hi2c2);
-                if (ret != HAL_OK) {
-                    log_e("Error enabling TCS3472: %d", ret);
-                    sensor_error = true;
-                }
-            }
-            sensor_initialized = true;
-        }
-
-        if (!freeze_data && sensor_initialized && !sensor_error) {
-            memset(&channel_data, 0, sizeof(tcs3472_channel_data_t));
-            ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
-            if (ret != HAL_OK) {
-                log_e("Error getting TCS3472 channel data: %d", ret);
-                sensor_error = true;
-            }
-        }
-
-        if (sensor_initialized && !sensor_error) {
-            uint16_t color_temp = tcs3472_calculate_color_temp(&channel_data);
-
-            float lux = tcs3472_calculate_lux(&channel_data, use_calibration ? ga_factor : 0);
-
-            uint16_t ir = (channel_data.red + channel_data.green + channel_data.blue > channel_data.clear)
-                ? (channel_data.red + channel_data.green + channel_data.blue - channel_data.clear) / 2 : 0;
-            uint16_t ir_pct = roundf(((float)ir / channel_data.clear) * 100.0F);
-
-            sprintf(buf,
-                "TCS3472 (%s, %s, GA=%.02f)\n"
-                "Clear: %d\n"
-                "R/G/B: %d / %d / %d\n"
-                "Temp: %dK\n"
-                "Lux: %04f / IR: %d%%",
-                tcs3472_gain_str(channel_data.gain), tcs3472_atime_str(channel_data.integration),
-                (use_calibration ? ga_factor : 1.0F),
-                channel_data.clear, channel_data.red, channel_data.green, channel_data.blue,
-                color_temp, lux, ir_pct);
-        } else {
-            sprintf(buf, "\n\n**** Sensor Unavailable ****");
-        }
-        if (freeze_data) {
-            display_static_list("**** Meter Probe Test ****", buf);
-        } else {
-            display_static_list("Meter Probe Test", buf);
-        }
-
-        keypad_event_t keypad_event;
-        if (keypad_wait_for_event(&keypad_event, 200) == HAL_OK) {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                if (sensor_initialized && sensor_error) {
-                    sensor_initialized = false;
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                if (!relay_enlarger_is_enabled()) {
-                    log_i("Meter probe focus mode enabled");
-                    relay_enlarger_enable(true);
-                } else {
-                    log_i("Meter probe focus mode disabled");
-                    relay_enlarger_enable(false);
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-                if (!freeze_data && sensor_initialized && !sensor_error) {
-                    tcs3472_again_t again;
-
-                    switch (channel_data.gain) {
-                    case TCS3472_AGAIN_1X:
-                        again = TCS3472_AGAIN_4X;
-                        break;
-                    case TCS3472_AGAIN_4X:
-                        again = TCS3472_AGAIN_16X;
-                        break;
-                    case TCS3472_AGAIN_16X:
-                        again = TCS3472_AGAIN_60X;
-                        break;
-                    case TCS3472_AGAIN_60X:
-                    default:
-                        again = channel_data.gain;
-                        break;
-                    }
-
-                    if (again != channel_data.gain) {
-                        tcs3472_set_gain(&hi2c2, again);
-                    }
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-                if (!freeze_data && sensor_initialized && !sensor_error) {
-                    tcs3472_again_t again;
-
-                    switch (channel_data.gain) {
-                        break;
-                    case TCS3472_AGAIN_60X:
-                        again = TCS3472_AGAIN_16X;
-                        break;
-                    case TCS3472_AGAIN_16X:
-                        again = TCS3472_AGAIN_4X;
-                        break;
-                    case TCS3472_AGAIN_4X:
-                        again = TCS3472_AGAIN_1X;
-                        break;
-                    case TCS3472_AGAIN_1X:
-                    default:
-                        again = channel_data.gain;
-                        break;
-                    }
-
-                    if (again != channel_data.gain) {
-                        tcs3472_set_gain(&hi2c2, again);
-                    }
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (!freeze_data && sensor_initialized && !sensor_error) {
-                    tcs3472_atime_t atime;
-
-                    switch (channel_data.integration) {
-                    case TCS3472_ATIME_2_4MS:
-                        atime = TCS3472_ATIME_4_8MS;
-                        break;
-                    case TCS3472_ATIME_4_8MS:
-                        atime = TCS3472_ATIME_24MS;
-                        break;
-                    case TCS3472_ATIME_24MS:
-                        atime = TCS3472_ATIME_50MS;
-                        break;
-                    case TCS3472_ATIME_50MS:
-                        atime = TCS3472_ATIME_101MS;
-                        break;
-                    case TCS3472_ATIME_101MS:
-                        atime = TCS3472_ATIME_154MS;
-                        break;
-                    case TCS3472_ATIME_154MS:
-                        atime = TCS3472_ATIME_614MS;
-                        break;
-                    case TCS3472_ATIME_614MS:
-                    default:
-                        atime = channel_data.integration;
-                        break;
-                    }
-
-                    if (atime != channel_data.integration) {
-                        tcs3472_set_time(&hi2c2, atime);
-                    }
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (!freeze_data && sensor_initialized && !sensor_error) {
-                    tcs3472_atime_t atime;
-
-                    switch (channel_data.integration) {
-                    case TCS3472_ATIME_614MS:
-                        atime = TCS3472_ATIME_154MS;
-                        break;
-                    case TCS3472_ATIME_154MS:
-                        atime = TCS3472_ATIME_101MS;
-                        break;
-                    case TCS3472_ATIME_101MS:
-                        atime = TCS3472_ATIME_50MS;
-                        break;
-                    case TCS3472_ATIME_50MS:
-                        atime = TCS3472_ATIME_24MS;
-                        break;
-                    case TCS3472_ATIME_24MS:
-                        atime = TCS3472_ATIME_4_8MS;
-                        break;
-                    case TCS3472_ATIME_4_8MS:
-                        atime = TCS3472_ATIME_2_4MS;
-                        break;
-                    case TCS3472_ATIME_2_4MS:
-                    default:
-                        atime = channel_data.integration;
-                        break;
-                    }
-
-                    if (atime != channel_data.integration) {
-                        tcs3472_set_time(&hi2c2, atime);
-                    }
-                }
-            } else if (keypad_event.key == KEYPAD_TEST_STRIP && !keypad_event.pressed) {
-                use_calibration = !use_calibration;
-            } else if ((keypad_event.key == KEYPAD_MENU || keypad_event.key == KEYPAD_METER_PROBE) && !keypad_event.pressed) {
-                freeze_data = !freeze_data;
-            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
-                break;
-            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
-                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
-                break;
-            }
-        }
-    }
-
-    tcs3472_disable(&hi2c2);
-    relay_enlarger_enable(enlarger_enabled);
-
-    return MENU_OK;
-}
-#endif
-
 menu_result_t diagnostics_meter_probe()
 {
     HAL_StatusTypeDef ret = HAL_OK;
@@ -930,6 +708,7 @@ menu_result_t diagnostics_meter_probe()
     uint16_t sample_time = 0;
     uint16_t sample_count = 0;
     bool agc_enabled = false;
+    bool single_shot = false;
     meter_probe_sensor_reading_t reading = {0};
     keypad_event_t keypad_event;
     bool key_changed = false;
@@ -1024,6 +803,29 @@ menu_result_t diagnostics_meter_probe()
                     agc_enabled = !agc_enabled;
                     agc_changed = true;
                 }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_TEST_STRIP)) {
+                if (meter_probe_sensor_disable() == osOK) {
+                    if (single_shot) {
+                        if (meter_probe_sensor_enable() == osOK) {
+                            single_shot = false;
+                        } else {
+                            sensor_error = true;
+                        }
+                    } else {
+                        if (meter_probe_sensor_enable_single_shot() == osOK) {
+                            single_shot = true;
+                        } else {
+                            sensor_error = true;
+                        }
+                    }
+                } else {
+                    sensor_error = true;
+                }
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_METER_PROBE)
+                || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
+                if (single_shot) {
+                    meter_probe_sensor_trigger_next_reading();
+                }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
             } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
@@ -1049,7 +851,7 @@ menu_result_t diagnostics_meter_probe()
             }
         }
 
-        if (meter_probe_sensor_get_next_reading(&reading, 1000) == osOK) {
+        if (meter_probe_sensor_get_next_reading(&reading, single_shot ? 10 : 1000) == osOK) {
             const float atime = tsl2585_integration_time_ms(reading.sample_time, reading.sample_count);
             const float gain_val = tsl2585_gain_value(reading.gain);
 
@@ -1060,11 +862,13 @@ menu_result_t diagnostics_meter_probe()
                     "TSL2585 (%s, %.2fms)\n"
                     "Data: %ld\n"
                     "Basic: %f\n"
-                    "[%s][%s]",
+                    "[%s][%s]\n"
+                    "%s",
                     tsl2585_gain_str(reading.gain), atime,
                     reading.raw_result, basic_result,
-                    enlarger_enabled ? "**" : "--",
-                    agc_enabled ? "AGC" : "---");
+                    (enlarger_enabled ? "**" : "--"),
+                    (agc_enabled ? "AGC" : "---"),
+                    (single_shot ? "Single Shot" : "Continuous"));
             } else {
                 const char *status_str;
                 switch (reading.result_status) {
@@ -1085,11 +889,13 @@ menu_result_t diagnostics_meter_probe()
                     "TSL2585 (%s, %.2fms)\n"
                     "%s\n"
                     "\n"
-                    "[%s][%s]",
+                    "[%s][%s]\n"
+                    "%s",
                     tsl2585_gain_str(reading.gain), atime,
                     status_str,
-                    enlarger_enabled ? "**" : "--",
-                    agc_enabled ? "AGC" : "---");
+                    (enlarger_enabled ? "**" : "--"),
+                    (agc_enabled ? "AGC" : "---"),
+                    (single_shot ? "Single Shot" : "Continuous"));
             }
             display_static_list("Meter Probe Test", buf);
 
