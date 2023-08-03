@@ -586,7 +586,16 @@ osStatus_t meter_probe_control_sensor_disable_agc()
     log_d("meter_probe_control_sensor_disable_agc");
 
     if (meter_probe_sensor_enabled) {
-        ret = tsl2585_set_agc_calibration(&hi2c2, false);
+        do {
+            ret = tsl2585_set_agc_calibration(&hi2c2, false);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_set_calibration_nth_iteration(&hi2c2, 0);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_set_agc_num_samples(&hi2c2, 0);
+            if (ret != HAL_OK) { break; }
+        } while (0);
         if (ret == HAL_OK) {
             sensor_config.agc_enabled = false;
         }
@@ -636,6 +645,11 @@ osStatus_t meter_probe_control_sensor_trigger_next_reading()
     return hal_to_os_status(ret);
 }
 
+osStatus_t meter_probe_sensor_clear_last_reading()
+{
+    return osMessageQueueReset(sensor_reading_queue);
+}
+
 osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout)
 {
     if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return osErrorResource; }
@@ -667,6 +681,10 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     uint8_t status = 0;
     meter_probe_sensor_reading_t reading = {0};
     bool has_reading = false;
+
+    TaskHandle_t current_task_handle = xTaskGetCurrentTaskHandle();
+    UBaseType_t current_task_priority = uxTaskPriorityGet(current_task_handle);
+    vTaskPrioritySet(current_task_handle, osPriorityRealtime);
 
 #if 0
     log_d("meter_probe_control_interrupt");
@@ -747,6 +765,8 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         }
     } while (0);
 
+    vTaskPrioritySet(current_task_handle, current_task_priority);
+
     if (has_reading) {
         QueueHandle_t queue = (QueueHandle_t)sensor_reading_queue;
         xQueueOverwrite(queue, &reading);
@@ -785,10 +805,14 @@ HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *read
         }
 
         if (asat) {
+#if 0
             log_d("TSL2585: [saturated]");
+#endif
             reading->result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
         } else {
+#if 0
             log_d("TSL2585: %d", raw_result);
+#endif
             reading->result_status = METER_SENSOR_RESULT_VALID;
         }
 

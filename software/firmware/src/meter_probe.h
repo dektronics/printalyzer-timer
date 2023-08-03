@@ -131,6 +131,14 @@ osStatus_t meter_probe_sensor_disable_agc();
 osStatus_t meter_probe_sensor_trigger_next_reading();
 
 /**
+ * Clear the last sensor reading.
+ *
+ * This is so we can explicitly block on the next reading in
+ * single shot mode.
+ */
+osStatus_t meter_probe_sensor_clear_last_reading();
+
+/**
  * Get the next reading from the meter probe sensor.
  * If no reading is currently available, then this function will block
  * until the completion of the next sensor integration cycle.
