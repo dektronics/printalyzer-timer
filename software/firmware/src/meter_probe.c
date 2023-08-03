@@ -742,6 +742,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
                 reading.gain = sensor_config.gain;
                 reading.sample_time = sensor_config.sample_time;
                 reading.sample_count = sensor_config.sample_count;
+                reading.ticks = params->ticks;
 
                 has_reading = true;
             }

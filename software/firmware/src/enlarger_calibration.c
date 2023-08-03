@@ -19,14 +19,29 @@
 #include "enlarger_config.h"
 #include "enlarger_control.h"
 #include "meter_probe.h"
+#include "tsl2585.h"
 #include "relay.h"
-#include "tcs3472.h"
 #include "illum_controller.h"
+#include "dmx.h"
 #include "util.h"
 
-#define REFERENCE_READING_ITERATIONS 100
-#define PROFILE_ITERATIONS 5
+#define LIGHT_STABLIZE_WAIT_MS       (5000U)
+#define REFERENCE_READING_ITERATIONS (100U)
+#define PROFILE_ITERATIONS           (5U)
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)
+
+/* Sensor settings for a 2.5ms integration time */
+#define SENSOR_SAMPLE_TIME 179
+#define SENSOR_NUM_SAMPLES 9
+#define SENSOR_READING_TIMEOUT (10U)
+
+/* Minimum value we'll accept for a non-zero reading */
+#define SENSOR_ZERO_THRESHOLD (100U)
+
+/* Duration of each sampling loop */
+#define SAMPLE_TICKS pdMS_TO_TICKS(10)
+
+static const char *DISPLAY_TITLE = "Enlarger Calibration";
 
 /*
  * The enlarger calibration process works by measuring the light output
@@ -34,21 +49,14 @@
  * exposure cycles. The result of this process is a series of numbers that
  * define how the light output of the enlarger behaves on either end of
  * the controllable exposure process.
- *
- * The sensor polling loop used for calibration involves a channel read,
- * followed by a 5ms delay. The sensor itself is configured for an
- * integration time of 4.8ms, and the channel read operation has been
- * measured to take 0.14ms. There does not appear to be a way to synchronize
- * ourselves to the exact integration state of the sensor, so this approach
- * is hopefully sufficient for the data we are trying to collect.
  */
 
 extern I2C_HandleTypeDef hi2c2;
 
 typedef struct {
     float mean;
-    uint16_t min;
-    uint16_t max;
+    uint32_t min;
+    uint32_t max;
     float stddev;
 } reading_stats_t;
 
@@ -59,34 +67,50 @@ typedef enum {
     CALIBRATION_ZERO_READING,
     CALIBRATION_SENSOR_SATURATED,
     CALIBRATION_INVALID_REFERENCE_STATS,
+    CALIBRATION_TIMEOUT,
     CALIBRATION_FAIL
 } calibration_result_t;
 
-static calibration_result_t enlarger_calibration_start(enlarger_config_t *result_config);
+static calibration_result_t enlarger_calibration_start(enlarger_config_t *config);
 static void enlarger_calibration_preview_result(const enlarger_config_t *profile);
 static void enlarger_calibration_show_error(calibration_result_t result_error);
-static calibration_result_t calibration_initialize_sensor();
-static calibration_result_t calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_color);
+static calibration_result_t calibration_collect_reference_stats(const enlarger_control_t *enlarger_control,
+    reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_sensor);
 static calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off);
-static calibration_result_t calibration_build_timing_profile(enlarger_timing_t *timing_profile, const reading_stats_t *stats_on, const reading_stats_t *stats_off);
+static calibration_result_t calibration_build_timing_profile(const enlarger_control_t *enlarger_control,
+    enlarger_timing_t *timing_profile,
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off);
 
-static void calculate_reading_stats(reading_stats_t *stats, uint16_t *readings, size_t len);
+static void calculate_reading_stats(reading_stats_t *stats, uint32_t *readings, size_t len);
 static bool delay_with_cancel(uint32_t time_ms);
 
 menu_result_t menu_enlarger_calibration(enlarger_config_t *config)
 {
-    //TODO Enlarger calibration needs major rework to support the new meter probe sensor
     menu_result_t menu_result = MENU_CANCEL;
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
 
+    /* If we are calibrating a DMX enlarger, then make sure the DMX task is ready */
+    if (config->control.dmx_control) {
+        /* Make sure the DMX port is running and the frame is clear */
+        if (dmx_get_port_state() == DMX_PORT_DISABLED) {
+            dmx_enable();
+        }
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_IDLE) {
+            dmx_start();
+        }
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+            dmx_clear_frame(false);
+        }
+    }
+
     uint8_t option = display_message(
-            "Enlarger Calibration",
-            NULL,
-            "\nMake sure your safelight is off,\n"
-            "the meter probe is connected,\n"
-            "and your enlarger is ready.",
-            " Start ");
+        DISPLAY_TITLE,
+        NULL,
+        "\nMake sure your safelight is off,\n"
+        "the meter probe is connected,\n"
+        "and your enlarger is ready.",
+        " Start ");
 
     if (option == 1) {
         calibration_result_t calibration_result = enlarger_calibration_start(config);
@@ -99,54 +123,62 @@ menu_result_t menu_enlarger_calibration(enlarger_config_t *config)
             enlarger_calibration_show_error(calibration_result);
             menu_result = MENU_CANCEL;
         }
-        relay_enlarger_enable(false);
+        enlarger_control_set_state_off(&config->control, false);
     } else if (option == UINT8_MAX) {
         menu_result = MENU_TIMEOUT;
     }
 
+    /* If we are calibrating a DMX enlarger, then make sure the DMX frame is clean afterwards */
+    if (config->control.dmx_control) {
+        /* Clear DMX output frame */
+        if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+            dmx_stop();
+        }
+    }
+
+    illum_controller_refresh();
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return menu_result;
 }
 
-calibration_result_t enlarger_calibration_start(enlarger_config_t *result_config)
+calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
 {
     calibration_result_t calibration_result;
     log_i("Starting enlarger calibration process");
 
-    display_static_list("Enlarger Calibration", "\n\nInitializing...");
+    display_static_list(DISPLAY_TITLE, "\n\nInitializing...");
 
-    // Turn everything off, just in case it isn't already off
-    relay_safelight_enable(false);
-    relay_enlarger_enable(false);
+    /* Turn everything off, just in case it isn't already off */
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
+    enlarger_control_set_state_off(&config->control, true);
 
-    calibration_result = calibration_initialize_sensor();
-    if (calibration_result != CALIBRATION_OK) {
-        log_e("Could not initialize sensor");
-        return calibration_result;
+    /* Activate the meter probe */
+    if (meter_probe_start() != osOK) {
+        log_e("Could not initialize meter probe");
+        return CALIBRATION_SENSOR_ERROR;
     }
 
     if (!delay_with_cancel(1000)) {
-        tcs3472_disable(&hi2c2);
+        meter_probe_stop();
         return CALIBRATION_CANCEL;
     }
 
-    display_static_list("Enlarger Calibration", "\n\nCollecting Reference Points");
+    display_static_list(DISPLAY_TITLE, "\n\nCollecting Reference Points");
 
     reading_stats_t enlarger_on_stats;
     reading_stats_t enlarger_off_stats;
-    reading_stats_t enlarger_color_stats;
-    calibration_result = calibration_collect_reference_stats(&enlarger_on_stats, &enlarger_off_stats, &enlarger_color_stats);
+    reading_stats_t sensor_stats;
+    calibration_result = calibration_collect_reference_stats(&config->control,
+        &enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
     if (calibration_result != CALIBRATION_OK) {
         log_e("Could not collect reference stats");
-        tcs3472_disable(&hi2c2);
-        if (relay_enlarger_is_enabled()) {
-            relay_enlarger_enable(false);
-        }
+        meter_probe_stop();
+        enlarger_control_set_state_off(&config->control, true);
         return calibration_result;
     }
 
-    // Log statistics used for reference points
+    /* Log statistics used for reference points */
     log_i("Enlarger on");
     log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_on_stats.mean, enlarger_on_stats.min, enlarger_on_stats.max,
@@ -155,85 +187,87 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *result_config
     log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
         enlarger_off_stats.mean, enlarger_off_stats.min, enlarger_off_stats.max,
         enlarger_off_stats.stddev);
-    log_i("Enlarger color temperature");
+    log_i("Sensor integration time");
     log_i("Mean = %.1f, Min = %d, Max = %d, StdDev = %.1f",
-        enlarger_color_stats.mean, enlarger_color_stats.min, enlarger_color_stats.max,
-        enlarger_color_stats.stddev);
+        sensor_stats.mean, sensor_stats.min, sensor_stats.max,
+        sensor_stats.stddev);
 
     calibration_result = calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats);
     if (calibration_result != CALIBRATION_OK) {
         log_w("Reference stats are not usable for calibration");
-        tcs3472_disable(&hi2c2);
+        meter_probe_stop();
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
         return calibration_result;
     }
 
     if (!delay_with_cancel(1000)) {
-        tcs3472_disable(&hi2c2);
+        meter_probe_stop();
         return CALIBRATION_CANCEL;
     }
 
-    // Do the profiling process
-    display_static_list("Enlarger Calibration", "\n\nProfiling enlarger...");
-
+    /* Do the profiling process */
     enlarger_timing_t timing_profile;
-    enlarger_timing_t timing_profile_sum;
-    enlarger_timing_t timing_profile_inc[PROFILE_ITERATIONS];
-
-    memset(&timing_profile, 0, sizeof(enlarger_timing_t));
-    memset(&timing_profile_sum, 0, sizeof(enlarger_timing_t));
+    float turn_on_delay_sum = 0;
+    float rise_time_sum = 0;
+    float rise_time_equiv_sum = 0;
+    float turn_off_delay_sum = 0;
+    float fall_time_sum = 0;
+    float fall_time_equiv_sum = 0;
 
     for (int i = 0; i < PROFILE_ITERATIONS; i++) {
+        char buf[64];
+        enlarger_timing_t timing_profile_inc;
         log_i("Profile run %d...", i + 1);
 
-        calibration_result = calibration_build_timing_profile(&timing_profile_inc[i], &enlarger_on_stats, &enlarger_off_stats);
+        sprintf(buf, "\nProfiling enlarger...\n\nCycle %d of %d", i + 1, PROFILE_ITERATIONS);
+        display_static_list(DISPLAY_TITLE, buf);
+
+        calibration_result = calibration_build_timing_profile(&config->control,
+            &timing_profile_inc,
+            &enlarger_on_stats, &enlarger_off_stats);
         if (calibration_result != CALIBRATION_OK) {
             log_e("Could not build profile");
-            tcs3472_disable(&hi2c2);
+            meter_probe_stop();
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-
-            if (relay_enlarger_is_enabled()) {
-                relay_enlarger_enable(false);
-            }
-
+            enlarger_control_set_state_off(&config->control, true);
             return calibration_result;
         }
 
-        timing_profile_sum.turn_on_delay += timing_profile_inc[i].turn_on_delay;
-        timing_profile_sum.rise_time += timing_profile_inc[i].rise_time;
-        timing_profile_sum.rise_time_equiv += timing_profile_inc[i].rise_time_equiv;
-        timing_profile_sum.turn_off_delay += timing_profile_inc[i].turn_off_delay;
-        timing_profile_sum.fall_time += timing_profile_inc[i].fall_time;
-        timing_profile_sum.fall_time_equiv += timing_profile_inc[i].fall_time_equiv;
+        turn_on_delay_sum += logf(timing_profile_inc.turn_on_delay);
+        rise_time_sum += logf(timing_profile_inc.rise_time);
+        rise_time_equiv_sum += logf(timing_profile_inc.rise_time_equiv);
+        turn_off_delay_sum += logf(timing_profile_inc.turn_off_delay);
+        fall_time_sum += logf(timing_profile_inc.fall_time);
+        fall_time_equiv_sum += logf(timing_profile_inc.fall_time_equiv);
     }
     log_i("Profile runs complete");
 
-    // Average across all the runs
-    timing_profile.turn_on_delay = roundf((float)timing_profile_sum.turn_on_delay / PROFILE_ITERATIONS);
-    timing_profile.rise_time = roundf((float)timing_profile_sum.rise_time / PROFILE_ITERATIONS);
-    timing_profile.rise_time_equiv = roundf((float)timing_profile_sum.rise_time_equiv / PROFILE_ITERATIONS);
-    timing_profile.turn_off_delay = roundf((float)timing_profile_sum.turn_off_delay / PROFILE_ITERATIONS);
-    timing_profile.fall_time = roundf((float)timing_profile_sum.fall_time / PROFILE_ITERATIONS);
-    timing_profile.fall_time_equiv = roundf((float)timing_profile_sum.fall_time_equiv / PROFILE_ITERATIONS);
-    timing_profile.color_temperature = roundf(enlarger_color_stats.mean);
-
-    tcs3472_disable(&hi2c2);
+    meter_probe_stop();
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    enlarger_control_set_state_off(&config->control, true);
+
+    /* Geometric mean across all the runs */
+    memset(&timing_profile, 0, sizeof(enlarger_timing_t));
+    timing_profile.turn_on_delay = lroundf(expf(turn_on_delay_sum / (float)PROFILE_ITERATIONS));
+    timing_profile.rise_time = lroundf(expf(rise_time_sum / (float)PROFILE_ITERATIONS));
+    timing_profile.rise_time_equiv = lroundf(expf(rise_time_equiv_sum / (float)PROFILE_ITERATIONS));
+    timing_profile.turn_off_delay = lroundf(expf(turn_off_delay_sum / (float)PROFILE_ITERATIONS));
+    timing_profile.fall_time = lroundf(expf(fall_time_sum / (float)PROFILE_ITERATIONS));
+    timing_profile.fall_time_equiv = lroundf(expf(fall_time_equiv_sum / (float)PROFILE_ITERATIONS));
 
     log_i("Relay on delay: %ldms", timing_profile.turn_on_delay);
     log_i("Rise time: %ldms (full_equiv=%ldms)", timing_profile.rise_time, timing_profile.rise_time_equiv);
     log_i("Relay off delay: %ldms", timing_profile.turn_off_delay);
     log_i("Fall time: %ldms (full_equiv=%ldms)", timing_profile.fall_time, timing_profile.fall_time_equiv);
-    log_i("Color temperature: %ldK", timing_profile.color_temperature);
 
-    if (result_config) {
-        result_config->timing.turn_on_delay = timing_profile.turn_on_delay;
-        result_config->timing.rise_time = timing_profile.rise_time;
-        result_config->timing.rise_time_equiv = timing_profile.rise_time_equiv;
-        result_config->timing.turn_off_delay = timing_profile.turn_off_delay;
-        result_config->timing.fall_time = timing_profile.fall_time;
-        result_config->timing.fall_time_equiv = timing_profile.fall_time_equiv;
-        result_config->timing.color_temperature = timing_profile.color_temperature;
+    if (config) {
+        config->timing.turn_on_delay = timing_profile.turn_on_delay;
+        config->timing.rise_time = timing_profile.rise_time;
+        config->timing.rise_time_equiv = timing_profile.rise_time_equiv;
+        config->timing.turn_off_delay = timing_profile.turn_off_delay;
+        config->timing.fall_time = timing_profile.fall_time;
+        config->timing.fall_time_equiv = timing_profile.fall_time_equiv;
+        config->timing.color_temperature = 0;
     }
 
     return CALIBRATION_OK;
@@ -290,6 +324,11 @@ void enlarger_calibration_show_error(calibration_result_t result_error)
             "brightness difference between\n"
             "the enlarger being on and off.";
         break;
+    case CALIBRATION_TIMEOUT:
+        msg =
+            "The enlarger took too long to\n"
+            "respond while being measured.";
+        break;
     case CALIBRATION_FAIL:
     default:
         msg =
@@ -306,144 +345,103 @@ void enlarger_calibration_show_error(calibration_result_t result_error)
     } while (1);
 }
 
-calibration_result_t calibration_initialize_sensor()
+calibration_result_t calibration_collect_reference_stats(const enlarger_control_t *enlarger_control,
+    reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_sensor)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    do {
-        log_i("Initializing sensor");
-        ret = tcs3472_init(&hi2c2);
-        if (ret != HAL_OK) {
-            log_e("Error initializing TCS3472: %d", ret);
-            break;
-        }
+    meter_probe_sensor_reading_t sensor_reading = {0};
+    tsl2585_gain_t sensor_gain;
+    uint32_t last_sensor_ticks = 0;
+    uint32_t readings[REFERENCE_READING_ITERATIONS];
+    uint32_t sensor_times[REFERENCE_READING_ITERATIONS];
 
-        ret = tcs3472_enable(&hi2c2);
-        if (ret != HAL_OK) {
-            log_e("Error enabling TCS3472: %d", ret);
-            break;
-        }
-
-        ret = tcs3472_set_gain(&hi2c2, TCS3472_AGAIN_60X);
-        if (ret != HAL_OK) {
-            log_e("Error setting TCS3472 gain: %d", ret);
-            break;
-        }
-
-        ret = tcs3472_set_time(&hi2c2, TCS3472_ATIME_4_8MS);
-        if (ret != HAL_OK) {
-            log_e("Error setting TCS3472 time: %d", ret);
-            break;
-        }
-
-        bool valid = false;
-        do {
-            ret = tcs3472_get_status_valid(&hi2c2, &valid);
-            if (ret != HAL_OK) {
-                log_e("Error getting TCS3472 status: %d", ret);
-                break;
-            }
-        } while (!valid);
-
-        log_i("Sensor initialized");
-    } while(0);
-
-    if (ret != HAL_OK) {
-        tcs3472_disable(&hi2c2);
-        return CALIBRATION_SENSOR_ERROR;
-    }
-    return CALIBRATION_OK;
-}
-
-calibration_result_t calibration_collect_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_color)
-{
-    HAL_StatusTypeDef ret = HAL_OK;
-    uint16_t readings[REFERENCE_READING_ITERATIONS];
-    uint16_t color_readings[REFERENCE_READING_ITERATIONS];
-
-    if (!stats_on || !stats_off) { return false; }
+    if (!stats_on || !stats_off || !stats_sensor) { return CALIBRATION_FAIL; }
 
     log_i("Turning enlarger on for baseline reading");
-    relay_enlarger_enable(true);
+    enlarger_control_set_state_focus(enlarger_control, true);
+
+    log_i("Activating light sensor with AGC");
+    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_enable_agc(SENSOR_NUM_SAMPLES) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_enable() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
 
     log_i("Waiting for light to stabilize");
-    if (!delay_with_cancel(5000)) {
+    if (!delay_with_cancel(LIGHT_STABLIZE_WAIT_MS)) {
         return CALIBRATION_CANCEL;
     }
 
     log_i("Finding appropriate gain setting");
-    bool gain_selected = false;
-    for (tcs3472_again_t gain = TCS3472_AGAIN_60X; gain >= TCS3472_AGAIN_1X; --gain) {
-        tcs3472_channel_data_t channel_data;
-
-        ret = tcs3472_set_gain(&hi2c2, gain);
-        if (ret != HAL_OK) {
-            log_e("Error setting TCS3472 gain: %d (gain=%d)", ret, gain);
-            return CALIBRATION_SENSOR_ERROR;
-        }
-
-        osDelay(pdMS_TO_TICKS(20));
-
-        ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            return CALIBRATION_SENSOR_ERROR;
-        }
-
-        if (channel_data.clear == 0) {
-            log_w("No reading on clear channel");
-            return CALIBRATION_ZERO_READING;
-        }
-        if (tcs3472_calculate_color_temp(&channel_data) > 0) {
-            log_i("Selected gain: %s", tcs3472_gain_str(gain));
-            gain_selected = true;
-            break;
-        }
+    if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
     }
-    if (!gain_selected) {
+    if (sensor_reading.result_status != METER_SENSOR_RESULT_VALID) {
         log_w("Could not find a gain setting with a valid unsaturated reading");
         return CALIBRATION_SENSOR_SATURATED;
     }
+    if (sensor_reading.raw_result < SENSOR_ZERO_THRESHOLD) {
+        log_w("Could not find a gain setting with a reading above the zero threshold");
+        return CALIBRATION_ZERO_READING;
+    }
+    sensor_gain = sensor_reading.gain;
+
+    log_i("Selected gain: %s", tsl2585_gain_str(sensor_gain));
+
+    log_i("Reconfiguring light sensor without AGC");
+    if (meter_probe_sensor_disable_agc() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_set_config(sensor_gain, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+
+    /* Skip a few integration cycles, just to be safe */
+    osDelay(50);
 
     log_i("Collecting data with enlarger on");
     for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
-        tcs3472_channel_data_t channel_data;
-        ret = tcs3472_get_full_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
+        if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = channel_data.clear;
-        color_readings[i] = tcs3472_calculate_color_temp(&channel_data);
-        osDelay(pdMS_TO_TICKS(5));
+        readings[i] = sensor_reading.raw_result;
     }
 
-    relay_enlarger_enable(false);
+    /* Turn the enlarger off */
+    enlarger_control_set_state_off(enlarger_control, true);
 
     log_i("Computing baseline enlarger reading statistics");
     calculate_reading_stats(stats_on, readings, REFERENCE_READING_ITERATIONS);
-    if (stats_color) {
-        calculate_reading_stats(stats_color, color_readings, REFERENCE_READING_ITERATIONS);
-    }
 
     log_i("Waiting for light to stabilize");
-    if (!delay_with_cancel(2000)) {
-        return false;
+    if (!delay_with_cancel(LIGHT_STABLIZE_WAIT_MS / 2)) {
+        return CALIBRATION_TIMEOUT;
     }
 
     log_i("Collecting data with enlarger off");
+
+    /* Capture a reading as the starting point for sensor cycle measurement */
+    if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    last_sensor_ticks = sensor_reading.ticks;
+
     for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
-        uint16_t channel_data;
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            return false;
+        if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+            return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = channel_data;
-        osDelay(pdMS_TO_TICKS(5));
+        readings[i] = sensor_reading.raw_result;
+        sensor_times[i] = sensor_reading.ticks - last_sensor_ticks;
+        last_sensor_ticks = sensor_reading.ticks;
     }
 
     log_i("Computing baseline darkness reading statistics");
     calculate_reading_stats(stats_off, readings, REFERENCE_READING_ITERATIONS);
+
+    calculate_reading_stats(stats_sensor, sensor_times, REFERENCE_READING_ITERATIONS);
 
     return CALIBRATION_OK;
 }
@@ -470,13 +468,14 @@ calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats
     return CALIBRATION_OK;
 }
 
-calibration_result_t calibration_build_timing_profile(enlarger_timing_t *timing_profile, const reading_stats_t *stats_on, const reading_stats_t *stats_off)
+calibration_result_t calibration_build_timing_profile(const enlarger_control_t *enlarger_control,
+    enlarger_timing_t *timing_profile,
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off)
 {
-    if (!timing_profile || !stats_on || !stats_off) {
+    if (!enlarger_control || !timing_profile || !stats_on || !stats_off) {
         return CALIBRATION_FAIL;
     }
 
-    HAL_StatusTypeDef ret = HAL_OK;
     uint16_t rising_threshold = stats_off->max;
     if (rising_threshold < 2) {
         rising_threshold = 2;
@@ -487,106 +486,201 @@ calibration_result_t calibration_build_timing_profile(enlarger_timing_t *timing_
         falling_threshold = 2;
     }
 
-    uint16_t channel_data = 0;
-
-    log_i("Collecting profile data...");
-
-    TaskHandle_t current_task_handle = xTaskGetCurrentTaskHandle();
-    UBaseType_t current_task_priority = uxTaskPriorityGet(current_task_handle);
-
-    TickType_t time_mark = 0;
+    calibration_result_t result = CALIBRATION_OK;
+    meter_probe_sensor_reading_t sensor_reading = {0};
+    TickType_t time_relay_on = 0;
+    TickType_t time_relay_off = 0;
+    TickType_t time_rise_start = 0;
+    TickType_t time_rise_end = 0;
+    TickType_t time_fall_start = 0;
+    TickType_t time_fall_end = 0;
+    uint32_t time_reading = 0;
     uint32_t integrated_rise = 0;
     uint32_t rise_counts = 0;
     uint32_t integrated_fall = 0;
     uint32_t fall_counts = 0;
 
-    vTaskPrioritySet(current_task_handle, osPriorityRealtime);
-    TickType_t time_relay_on = xTaskGetTickCount();
-    time_mark = time_relay_on;
-    relay_enlarger_enable(true);
-    do {
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            vTaskPrioritySet(current_task_handle, current_task_priority);
-            return CALIBRATION_SENSOR_ERROR;
-        }
-        if (channel_data > rising_threshold) { break; }
+    const float sensor_integration_time = tsl2585_integration_time_ms(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES);
+    const uint32_t sensor_integration_ceil = lroundf(ceilf(sensor_integration_time));
+    const uint32_t sensor_integration_mid = lroundf(sensor_integration_time / 2.0F);
 
-        time_mark += pdMS_TO_TICKS(5);
-        osDelayUntil(time_mark);
-        if (time_mark - time_relay_on > MAX_LOOP_DURATION) { return false; }
-    } while (1);
-
-    TickType_t time_rise_start = xTaskGetTickCount();
-    time_mark = time_rise_start;
-    do {
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            vTaskPrioritySet(current_task_handle, current_task_priority);
-            return CALIBRATION_SENSOR_ERROR;
-        }
-        integrated_rise += channel_data;
-        rise_counts++;
-        if (channel_data >= (uint16_t)roundf(stats_on->mean - stats_on->stddev)) { break; }
-
-        time_mark += pdMS_TO_TICKS(5);
-        osDelayUntil(time_mark);
-        if (time_mark - time_rise_start > MAX_LOOP_DURATION) { return false; }
-    } while (1);
-
-    TickType_t time_rise_end = xTaskGetTickCount();
-
-    vTaskPrioritySet(current_task_handle, current_task_priority);
-
-    if (!delay_with_cancel(5000)) {
-        return CALIBRATION_CANCEL;
+    /*
+     * The reading threshold that is used to determine that the enlarger is
+     * completely on is normally based on the standard deviation of the value
+     * as measured during reference stats collection.
+     * However, if the light source is sufficiently stable that the standard
+     * deviation is less than 1% of the mean, then its safer to use that 1%
+     * value instead.
+     */
+    uint32_t enlarger_on_threshold;
+    if ((stats_on->mean / stats_on->stddev) < 0.01F) {
+        enlarger_on_threshold = (uint32_t)roundf(stats_on->mean - (stats_on->mean * 0.01F));
+    } else {
+        enlarger_on_threshold = (uint32_t)roundf(stats_on->mean - stats_on->stddev);
     }
 
-    vTaskPrioritySet(current_task_handle, osPriorityRealtime);
 
-    TickType_t time_relay_off = xTaskGetTickCount();
-    time_mark = time_relay_off;
-    relay_enlarger_enable(false);
+    log_i("Collecting profile data...");
+
+    /*
+     * This code used to raise the task priority to osPriorityRealtime
+     * during each measurement loop. However, that was when it was in
+     * complete control over the entire process. Now it depends on various
+     * other tasks, and it records time based on the sensor interrupt.
+     *
+     * Unpredictable timing of the main task could still cause issues,
+     * but the risk of those issues significantly affecting the results
+     * is much lower. So for now, the task priority control has been
+     * removed. If it is ever re-added, then all of the dependent tasks
+     * will also need attention.
+     */
+
     do {
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            vTaskPrioritySet(current_task_handle, current_task_priority);
-            return CALIBRATION_SENSOR_ERROR;
+        /* Activate enlarger in blocking mode, which should return just before the start of frame */
+        enlarger_control_set_state_focus(enlarger_control, true);
+        time_relay_on = xTaskGetTickCount();
+
+        /* Loop until the light level starts to rise */
+        do {
+            /* Get the next sensor reading */
+            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+                log_w("Unable to get next sensor reading");
+                result = CALIBRATION_SENSOR_ERROR;
+                break;
+            }
+
+            /* Skip if this reading started before the time mark */
+            if ((sensor_reading.ticks - sensor_integration_ceil) < time_relay_on) {
+                continue;
+            }
+
+            /* Record the reading time as the midpoint of the integration cycle */
+            time_reading = sensor_reading.ticks - sensor_integration_mid;
+
+            /* Break if the reading exceeds the rising threshold */
+            if (sensor_reading.raw_result > rising_threshold) {
+                time_rise_start = time_reading;
+                break;
+            }
+
+            /* Check if we've been waiting in this loop for too long */
+            if (xTaskGetTickCount() - time_relay_on > MAX_LOOP_DURATION) {
+                log_w("Took too long for the light to turn on");
+                result = CALIBRATION_TIMEOUT;
+                break;
+            }
+        } while (1);
+        if (result != CALIBRATION_OK) { break; }
+
+        /* Loop until the light level reaches its steady on threshold */
+        do {
+            /* Get the next sensor reading */
+            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+                log_w("Unable to get next sensor reading");
+                result = CALIBRATION_SENSOR_ERROR;
+                break;
+            }
+
+            /* Record the reading time as the midpoint of the integration cycle */
+            time_reading = sensor_reading.ticks - sensor_integration_mid;
+
+            /* Integrate all readings during the rise period */
+            integrated_rise += sensor_reading.raw_result;
+            rise_counts++;
+
+            /* Break once we've reached the fully-on state */
+            if (sensor_reading.raw_result >= enlarger_on_threshold) {
+                time_rise_end = time_reading;
+                break;
+            }
+
+            if (xTaskGetTickCount() - time_rise_start > MAX_LOOP_DURATION) {
+                log_w("Took too long for the light level to rise");
+                result = CALIBRATION_TIMEOUT;
+                break;
+            }
+        } while (1);
+        if (result != CALIBRATION_OK) { break; }
+
+        /* Wait a while to make sure things have stabilized */
+        if (!delay_with_cancel(LIGHT_STABLIZE_WAIT_MS)) {
+            result = CALIBRATION_CANCEL;
+            break;
         }
-        if (channel_data < stats_on->min) { break; }
 
-        time_mark += pdMS_TO_TICKS(5);
-        osDelayUntil(time_mark);
-        if (time_mark - time_relay_off > MAX_LOOP_DURATION) { return false; }
-    } while (1);
+        /* Deactivate enlarger in blocking mode, which should return just before the start of frame */
+        enlarger_control_set_state_off(enlarger_control, true);
+        time_relay_off = xTaskGetTickCount();
 
-    TickType_t time_fall_start = xTaskGetTickCount();
-    time_mark = time_fall_start;
-    do {
-        ret = tcs3472_get_clear_channel_data(&hi2c2, &channel_data);
-        if (ret != HAL_OK) {
-            log_e("Error getting TCS3472 channel data: %d", ret);
-            vTaskPrioritySet(current_task_handle, current_task_priority);
-            return CALIBRATION_SENSOR_ERROR;
+        /* Loop until the light level starts to fall */
+        do {
+            /* Get the next sensor reading */
+            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+                log_w("Unable to get next sensor reading");
+                result = CALIBRATION_SENSOR_ERROR;
+                break;
+            }
+
+            /* Skip if this reading started before the time mark */
+            if ((sensor_reading.ticks - sensor_integration_ceil) < time_relay_off) {
+                continue;
+            }
+
+            /* Record the reading time as the midpoint of the integration cycle */
+            time_reading = sensor_reading.ticks - sensor_integration_mid;
+
+            /* Break if the reading falls below the fully-on threshold */
+            if (sensor_reading.raw_result < stats_on->min) {
+                time_fall_start = time_reading;
+                break;
+            }
+
+            if (xTaskGetTickCount() - time_relay_off > MAX_LOOP_DURATION) {
+                result = CALIBRATION_TIMEOUT;
+                break;
+            }
+        } while (1);
+        if (result != CALIBRATION_OK) { break; }
+
+        /* Loop until the light level bottoms out */
+        do {
+            /* Get the next sensor reading */
+            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+                log_w("Unable to get next sensor reading");
+                result = CALIBRATION_SENSOR_ERROR;
+                break;
+            }
+
+            /* Record the reading time as the midpoint of the integration cycle */
+            time_reading = sensor_reading.ticks - sensor_integration_mid;
+
+            /* Integrate all readings during the fall period */
+            integrated_fall += sensor_reading.raw_result;
+            fall_counts++;
+
+            /* Break once we've reached the fully-off state */
+            if (sensor_reading.raw_result < falling_threshold) {
+                time_fall_end = time_reading;
+                break;
+            }
+
+            if (xTaskGetTickCount() - time_fall_start > MAX_LOOP_DURATION) {
+                result = CALIBRATION_TIMEOUT;
+                break;
+            }
+        } while (1);
+        if (result != CALIBRATION_OK) { break; }
+
+        /* Wait for things to settle at the end */
+        if (!delay_with_cancel(LIGHT_STABLIZE_WAIT_MS)) {
+            result = CALIBRATION_CANCEL;
+            break;
         }
-        integrated_fall += channel_data;
-        fall_counts++;
-        if (channel_data < falling_threshold) { break; }
+    } while (0);
 
-        time_mark += pdMS_TO_TICKS(5);
-        osDelayUntil(time_mark);
-        if (time_mark - time_fall_start > MAX_LOOP_DURATION) { return false; }
-    } while (1);
-
-    TickType_t time_fall_end = xTaskGetTickCount();
-
-    vTaskPrioritySet(current_task_handle, current_task_priority);
-
-    if (!delay_with_cancel(5000)) {
-        return CALIBRATION_CANCEL;
+    if (result != CALIBRATION_OK) {
+        log_w("Calibration did not finish");
+        return result;
     }
 
     memset(timing_profile, 0, sizeof(enlarger_timing_t));
@@ -603,19 +697,19 @@ calibration_result_t calibration_build_timing_profile(enlarger_timing_t *timing_
     timing_profile->fall_time_equiv = roundf(timing_profile->fall_time * fall_scale_factor);
 
     log_i("Relay on delay: %ldms", timing_profile->turn_on_delay);
-    log_i("Rise time: %ldms (full_equiv=%ldms)", timing_profile->rise_time, timing_profile->rise_time_equiv);
+    log_i("Rise time: %ldms (full_equiv=%ldms, counts=%ld)", timing_profile->rise_time, timing_profile->rise_time_equiv, rise_counts);
     log_i("Relay off delay: %ldms", timing_profile->turn_off_delay);
-    log_i("Fall time: %ldms (full_equiv=%ldms)", timing_profile->fall_time, timing_profile->fall_time_equiv);
+    log_i("Fall time: %ldms (full_equiv=%ldms, counts=%ld)", timing_profile->fall_time, timing_profile->fall_time_equiv, fall_counts);
 
     return CALIBRATION_OK;
 }
 
-void calculate_reading_stats(reading_stats_t *stats, uint16_t *readings, size_t len)
+void calculate_reading_stats(reading_stats_t *stats, uint32_t *readings, size_t len)
 {
     if (!stats || !readings) { return; }
 
-    uint16_t reading_min = UINT16_MAX;
-    uint16_t reading_max = 0;
+    uint32_t reading_min = UINT16_MAX;
+    uint32_t reading_max = 0;
     float reading_sum = 0;
 
     for (int i = 0; i < len; i++) {

@@ -127,6 +127,10 @@ osStatus_t meter_probe_sensor_disable_agc();
  *
  * This function only works in single-shot mode, and only when
  * a cycle is not currently in progress.
+ *
+ * Note: There appears to be a 10-20ms delay, on top of the sensor's
+ * integration time, between the trigger and a new reading becoming
+ * available.
  */
 osStatus_t meter_probe_sensor_trigger_next_reading();
 
