@@ -559,11 +559,6 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_config_i
                         *paper_profile_index = num;
                     }
                 }
-            } else if (strncmp("tcs3472_ga_factor", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                float num = json_parse_float(pair.value, pair.valueLength, NAN);
-                if (!isnanf(num) && num >= 0.0F && num < 10.0F) {
-                    settings_set_tcs3472_ga_factor(num);
-                }
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
@@ -1084,7 +1079,6 @@ bool write_section_config(FIL *fp)
     json_write_int(fp, 4, "teststrip_patches", (uint8_t)settings_get_teststrip_patches(), true);
     json_write_int(fp, 4, "enlarger_config_index", settings_get_default_enlarger_config_index(), true);
     json_write_int(fp, 4, "paper_profile_index", settings_get_default_paper_profile_index(), true);
-    json_write_float02(fp, 4, "tcs3472_ga_factor", settings_get_tcs3472_ga_factor(), false);
     f_printf(fp, "\n  }");
     return true;
 }

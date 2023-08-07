@@ -153,13 +153,6 @@ uint8_t settings_get_default_paper_profile_index();
 void settings_set_default_paper_profile_index(uint8_t index);
 
 /**
- * TCS3472 sensor's glass attenuation factor.
- */
-float settings_get_tcs3472_ga_factor();
-
-void settings_set_tcs3472_ga_factor(float value);
-
-/**
  * Safelight control configuration.
  */
 bool settings_get_safelight_config(safelight_config_t *safelight_config);

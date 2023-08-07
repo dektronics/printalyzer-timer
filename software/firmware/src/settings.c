@@ -33,7 +33,6 @@ _Static_assert(CONTRAST_WHOLE_GRADE_COUNT == 7, "CONTRAST_WHOLE_GRADE_COUNT leng
 #define DEFAULT_TESTSTRIP_PATCHES       TESTSTRIP_PATCHES_7
 #define DEFAULT_ENLARGER_CONFIG         0
 #define DEFAULT_PAPER_PROFILE           0
-#define DEFAULT_TCS3472_GA_FACTOR       1.20F
 
 #define LATEST_CONFIG2_VERSION          1
 #define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, SAFELIGHT_CONTROL_RELAY, 0, false, 255 }
@@ -58,7 +57,6 @@ static teststrip_mode_t setting_teststrip_mode = DEFAULT_TESTSTRIP_MODE;
 static teststrip_patches_t setting_teststrip_patches = DEFAULT_TESTSTRIP_PATCHES;
 static uint8_t setting_enlarger_config = DEFAULT_ENLARGER_CONFIG;
 static uint8_t setting_paper_profile = DEFAULT_PAPER_PROFILE;
-static float setting_tcs3472_ga_factor = DEFAULT_TCS3472_GA_FACTOR;
 static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 
 /**
@@ -93,7 +91,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG_TESTSTRIP_PATCHES         40
 #define CONFIG_ENLARGER_CONFIG           44
 #define CONFIG_PAPER_PROFILE             48
-#define CONFIG_TCS3472_GA_FACTOR         52
+/* RESERVED                              52*/
 
 /**
  * Detailed configuration page (256B)
@@ -214,7 +212,7 @@ static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *
 static void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data);
 static bool read_u32(uint32_t address, uint32_t *val);
 static bool write_u32(uint32_t address, uint32_t val);
-static bool write_f32(uint32_t address, float val);
+static bool write_f32(uint32_t address, float val) __attribute__ ((unused));
 static void copy_from_u32(uint8_t *buf, uint32_t val);
 static uint32_t copy_to_u32(const uint8_t *buf);
 static void copy_from_f32(uint8_t *buf, float val);
@@ -365,14 +363,12 @@ HAL_StatusTypeDef settings_init_default_config()
     copy_from_u32(data + CONFIG_TESTSTRIP_PATCHES,      DEFAULT_TESTSTRIP_PATCHES);
     copy_from_u32(data + CONFIG_ENLARGER_CONFIG,        DEFAULT_ENLARGER_CONFIG);
     copy_from_u32(data + CONFIG_PAPER_PROFILE,          DEFAULT_PAPER_PROFILE);
-    copy_from_f32(data + CONFIG_TCS3472_GA_FACTOR,      DEFAULT_TCS3472_GA_FACTOR);
     return m24m01_write_page(eeprom_i2c, PAGE_CONFIG, data, sizeof(data));
 }
 
 void settings_init_parse_config_page(const uint8_t *data)
 {
     uint32_t val;
-    float fval;
     val = copy_to_u32(data + CONFIG_EXPOSURE_TIME);
     if (val > 1000 && val <= 999000) {
         setting_default_exposure_time = val;
@@ -448,11 +444,6 @@ void settings_init_parse_config_page(const uint8_t *data)
         setting_paper_profile = val;
     } else {
         setting_paper_profile = DEFAULT_PAPER_PROFILE;
-    }
-
-    fval = copy_to_f32(data + CONFIG_TCS3472_GA_FACTOR);
-    if (isnormal(fval) && fval > 0) {
-        setting_tcs3472_ga_factor = fval;
     }
 }
 
@@ -697,20 +688,6 @@ void settings_set_default_paper_profile_index(uint8_t index)
     if (setting_paper_profile != index && index < MAX_PAPER_PROFILES) {
         if (write_u32(PAGE_CONFIG + CONFIG_PAPER_PROFILE, index)) {
             setting_paper_profile = index;
-        }
-    }
-}
-
-float settings_get_tcs3472_ga_factor()
-{
-    return setting_tcs3472_ga_factor;
-}
-
-void settings_set_tcs3472_ga_factor(float value)
-{
-    if (isnormal(value) && value > 0.0F && value < 10.0F && fabsf(setting_tcs3472_ga_factor - value) > 0.001F) {
-        if (write_f32(PAGE_CONFIG + CONFIG_TCS3472_GA_FACTOR, value)) {
-            setting_tcs3472_ga_factor = value;
         }
     }
 }

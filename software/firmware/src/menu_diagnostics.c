@@ -17,7 +17,6 @@
 #include "buzzer.h"
 #include "relay.h"
 #include "meter_probe.h"
-#include "tcs3472.h"
 #include "tsl2585.h"
 #include "settings.h"
 #include "illum_controller.h"
