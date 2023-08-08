@@ -33,7 +33,8 @@ typedef enum {
 } meter_probe_sensor_result_t;
 
 typedef struct {
-    uint32_t raw_result;   /*!< Raw sensor reading */
+    uint16_t raw_result;   /*!< Raw sensor reading */
+    uint16_t scale;        /*!< Scale factor for the raw result */
     meter_probe_sensor_result_t result_status; /*!< Sensor result status. */
     tsl2585_gain_t gain;   /*!< Sensor ADC gain */
     uint16_t sample_time;  /*!< Sensor integration sample time */
@@ -152,6 +153,24 @@ osStatus_t meter_probe_sensor_clear_last_reading();
  * @return osOK on success, osErrorTimeout on timeout
  */
 osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout);
+
+/**
+ * Get the raw result with the scaling factor applied.
+ * @param sensor_reading Sensor reading data
+ * @return Scaled raw result
+ */
+uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_reading);
+
+/**
+ * Get the result in a gain and integration time adjusted format.
+ *
+ * This is the number that should be used for all calculations based on
+ * a sensor reading, outside of specific diagnostic functions.
+ *
+ * @param sensor_reading Sensor reading data
+ * @return Basic count result value
+ */
+float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading);
 
 /**
  * Meter probe interrupt handler

@@ -661,6 +661,25 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *rea
     return osMessageQueueGet(sensor_reading_queue, reading, NULL, timeout);
 }
 
+uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_reading)
+{
+    if (!sensor_reading) { return 0; }
+    return (uint32_t)sensor_reading->raw_result * (uint32_t)sensor_reading->scale;
+}
+
+float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading)
+{
+    if (!sensor_reading) { return NAN; }
+
+    const uint32_t scaled_value = meter_probe_scaled_result(sensor_reading);
+    const float atime = tsl2585_integration_time_ms(sensor_reading->sample_time, sensor_reading->sample_count);
+    const float gain_val = tsl2585_gain_value(sensor_reading->gain);
+
+    if (!is_valid_number(atime) || !is_valid_number(gain_val)) { return NAN; }
+
+    return (float)scaled_value / (atime * gain_val);
+}
+
 void meter_probe_int_handler()
 {
     if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return; }
@@ -781,9 +800,10 @@ HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *read
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t als_status = 0;
     uint16_t als_data0 = 0;
-    uint32_t raw_result = 0;
+    uint16_t raw_result = 0;
     uint8_t asat = 0;
     uint8_t scale = 0;
+    uint16_t scale_value = 1;
 
     do {
         ret = tsl2585_get_als_status(&hi2c2, &als_status);
@@ -797,12 +817,17 @@ HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *read
         ret = tsl2585_get_als_scale(&hi2c2, &scale);
         if (ret != HAL_OK) { break; }
 
-        if (als_status & TSL2585_ALS_DATA0_SCALED_STATUS) {
-            /* No scaling needed */
-            raw_result = als_data0;
-        } else {
+        if ((als_status & TSL2585_ALS_DATA0_SCALED_STATUS) == 0) {
             /* Need to scale value: 2^(ALS_SCALED) */
-            raw_result = als_data0 * (scale * scale);
+            uint16_t base = 2;
+            for (;;) {
+                if (scale & 1) {
+                    scale_value *= base;
+                }
+                scale >>= 1;
+                if (!scale) { break; }
+                base *= base;
+            }
         }
 
         if (asat) {
@@ -817,7 +842,8 @@ HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *read
             reading->result_status = METER_SENSOR_RESULT_VALID;
         }
 
-        reading->raw_result = raw_result;
+        reading->raw_result = als_data0;
+        reading->scale = scale_value;
     } while (0);
 
     return ret;
