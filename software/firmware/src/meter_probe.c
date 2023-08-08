@@ -738,12 +738,12 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
             if ((status2 & TSL2585_STATUS2_ALS_DATA_VALID) != 0) {
                 if ((status2 & TSL2585_STATUS2_MOD_ANALOG_SATURATION0) != 0) {
                     log_d("TSL2585: [analog saturation]");
-                    reading.raw_result = UINT32_MAX;
+                    reading.raw_result = UINT16_MAX;
                     reading.result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
 
                 } else if ((status2 & TSL2585_STATUS2_ALS_DIGITAL_SATURATION) != 0) {
                     log_d("TSL2585: [digital saturation]");
-                    reading.raw_result = UINT32_MAX;
+                    reading.raw_result = UINT16_MAX;
                     reading.result_status = METER_SENSOR_RESULT_SATURATED_DIGITAL;
                 } else {
                     /* Get the sensor reading */
@@ -800,7 +800,6 @@ HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *read
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t als_status = 0;
     uint16_t als_data0 = 0;
-    uint16_t raw_result = 0;
     uint8_t asat = 0;
     uint8_t scale = 0;
     uint16_t scale_value = 1;
