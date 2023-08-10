@@ -155,6 +155,15 @@ osStatus_t meter_probe_sensor_clear_last_reading();
 osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout);
 
 /**
+ * High level function to get a light reading in lux.
+ *
+ * This samples a running sensor across several cycles,
+ * wraps all the error and range handling behind a simpler
+ * interface, and returns the result of the lux calculation.
+ */
+meter_probe_result_t meter_probe_measure(float *lux);
+
+/**
  * Get the raw result with the scaling factor applied.
  * @param sensor_reading Sensor reading data
  * @return Scaled raw result

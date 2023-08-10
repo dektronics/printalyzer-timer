@@ -676,6 +676,61 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *rea
     return osMessageQueueGet(sensor_reading_queue, reading, NULL, timeout);
 }
 
+meter_probe_result_t meter_probe_measure(float *lux)
+{
+    meter_probe_result_t result = METER_READING_OK;
+    const int max_count = 10;
+    osStatus_t ret = osOK;
+    meter_probe_sensor_reading_t reading;
+    int count = 0;
+    float reading_lux = NAN;
+    bool has_result = false;
+
+    if (!lux) {
+        return METER_READING_FAIL;
+    }
+
+    //TODO Implement some looping for value averaging and waiting for AGC to settle
+    do {
+        ret = meter_probe_sensor_get_next_reading(&reading, 500);
+        if (ret == osErrorTimeout) { return METER_READING_TIMEOUT; }
+        else if (ret != osOK) { return METER_READING_FAIL; }
+
+        if (reading.result_status == METER_SENSOR_RESULT_VALID) {
+            has_result = true;
+            break;
+        }
+
+        count++;
+
+    } while (count < max_count);
+
+    if (has_result) {
+        if (reading.result_status == METER_SENSOR_RESULT_VALID) {
+            reading_lux = meter_probe_lux_result(&reading);
+            if (!isnormal(reading_lux)) {
+                log_w("Could not calculate lux from sensor reading");
+                result = METER_READING_FAIL;
+            } else if (reading_lux < 0.01F) {
+                log_w("Lux calculation result is too low");
+                result = METER_READING_LOW;
+            } else {
+                result = METER_READING_OK;
+            }
+        } else if (reading.result_status == METER_SENSOR_RESULT_SATURATED_ANALOG
+            || reading.result_status == METER_SENSOR_RESULT_SATURATED_DIGITAL) {
+            result = METER_READING_HIGH;
+        } else {
+            result = METER_READING_FAIL;
+        }
+    } else {
+        result = METER_READING_FAIL;
+    }
+
+    *lux = reading_lux;
+    return result;
+}
+
 uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!sensor_reading) { return 0; }

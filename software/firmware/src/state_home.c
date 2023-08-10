@@ -511,8 +511,9 @@ void state_home_select_paper_profile(state_controller_t *controller)
 
 void state_home_start_meter_probe()
 {
+    /* Start with an integration time of 100.58ms */
     static uint16_t sample_time = 716;
-    static uint16_t sample_count = 500;
+    static uint16_t sample_count = 100;
 
     if (meter_probe_start() == osOK) {
         meter_probe_sensor_set_config(TSL2585_GAIN_256X, sample_time, sample_count);
@@ -532,7 +533,6 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     meter_probe_result_t result = METER_READING_OK;
     float lux = 0;
-    uint32_t cct = 0;
     uint32_t updated_tone_element = 0;
 
     display_draw_mode_text("Measuring");
@@ -541,17 +541,18 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
         osDelay(SAFELIGHT_OFF_DELAY / 2);
 
-        //TODO Add code for new meter probe interface
-        result = METER_READING_FAIL;
+        result = meter_probe_measure(&lux);
+        if (result != METER_READING_OK) {
+            break;
+        }
 
     } while (0);
 
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     if (result == METER_READING_OK) {
-        //TODO If CCT is far from the enlarger profile, warn about filters/safelights/etc
         updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
-        log_i("Measured PEV=%lu, CCT=%luK", exposure_get_calibration_pev(exposure_state), cct);
+        log_i("Measured PEV=%lu (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
         state_home_reading_warning_beep();
