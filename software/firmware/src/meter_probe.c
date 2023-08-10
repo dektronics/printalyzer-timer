@@ -370,6 +370,9 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
         if (ret != HAL_OK) { break; }
 
+        ret = tsl2585_set_max_mod_gain(&hi2c2, TSL2585_GAIN_4096X);
+        if (ret != HAL_OK) { break; }
+
         if (sensor_config.config_pending) {
             ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_config.gain);
             if (ret != HAL_OK) { break; }
@@ -505,7 +508,6 @@ osStatus_t meter_probe_control_sensor_set_config(const sensor_control_config_par
             sensor_config.sample_count = params->sample_count;
         }
 
-        //sensor_discard_next_reading = true;
         osMessageQueueReset(sensor_reading_queue);
     } else {
         sensor_config.gain = params->gain;
