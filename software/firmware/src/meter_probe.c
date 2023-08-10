@@ -84,6 +84,7 @@ static bool meter_probe_started = false;
 static bool meter_probe_sensor_enabled = false;
 static bool meter_probe_sensor_single_shot = false;
 
+static bool meter_probe_has_sensor_settings = false;
 static meter_probe_settings_handle_t meter_probe_settings = {0};
 static meter_probe_settings_tsl2585_t sensor_settings = {0};
 static tsl2585_config_t sensor_config = {0};
@@ -254,8 +255,11 @@ osStatus_t meter_probe_control_start()
 
         /* Read the settings for the current sensor type */
         ret = meter_probe_settings_get_tsl2585(&meter_probe_settings, &sensor_settings);
-        if (ret != HAL_OK) {
-            break;
+        if (ret == HAL_OK) {
+            meter_probe_has_sensor_settings = true;
+        } else {
+            log_w("Unable to load sensor calibration");
+            meter_probe_has_sensor_settings = false;
         }
 
         /*
@@ -308,6 +312,7 @@ osStatus_t meter_probe_control_stop()
     /* Clear the settings */
     memset(&meter_probe_settings, 0, sizeof(meter_probe_settings_handle_t));
     memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
+    meter_probe_has_sensor_settings = false;
 
     return osOK;
 }
@@ -694,6 +699,7 @@ float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!sensor_reading) { return NAN; }
     if (sensor_reading->gain >= TSL2585_GAIN_MAX) { return NAN; }
+    if (!meter_probe_has_sensor_settings) { return NAN; }
 
     const float slope = sensor_settings.gain_cal[sensor_reading->gain].slope;
     const float offset = sensor_settings.gain_cal[sensor_reading->gain].offset;
