@@ -38,6 +38,34 @@ void HAL_MspInit(void)
 }
 
 /**
+ * @brief CRC MSP Initialization
+ * This function configures the hardware resources used in this example
+ * @param hcrc: CRC handle pointer
+ * @retval None
+ */
+void HAL_CRC_MspInit(CRC_HandleTypeDef* hcrc)
+{
+    if (hcrc->Instance == CRC) {
+        /* Peripheral clock enable */
+        __HAL_RCC_CRC_CLK_ENABLE();
+    }
+}
+
+/**
+ * @brief CRC MSP De-Initialization
+ * This function freeze the hardware resources used in this example
+ * @param hcrc: CRC handle pointer
+ * @retval None
+ */
+void HAL_CRC_MspDeInit(CRC_HandleTypeDef* hcrc)
+{
+    if (hcrc->Instance == CRC) {
+        /* Peripheral clock disable */
+        __HAL_RCC_CRC_CLK_DISABLE();
+    }
+}
+
+/**
  * @brief I2C MSP Initialization
  * This function configures the hardware resources used in this example
  * @param hi2c: I2C handle pointer

@@ -5,15 +5,15 @@
 #include <queue.h>
 #include <cmsis_os.h>
 
+#include <string.h>
 #include <math.h>
 
 #define LOG_TAG "meter_probe"
 #include <elog.h>
 
 #include "board_config.h"
-#include "m24c02.h"
+#include "meter_probe_settings.h"
 #include "tsl2585.h"
-#include "settings.h"
 #include "util.h"
 
 /**
@@ -72,6 +72,8 @@ typedef struct {
     bool config_pending;
     bool agc_pending;
     bool sai_active;
+    bool agc_disabled_reset_gain;
+    bool discard_next_reading;
 } tsl2585_config_t;
 
 /* Global I2C handle for the meter probe */
@@ -82,6 +84,8 @@ static bool meter_probe_started = false;
 static bool meter_probe_sensor_enabled = false;
 static bool meter_probe_sensor_single_shot = false;
 
+static meter_probe_settings_handle_t meter_probe_settings = {0};
+static meter_probe_settings_tsl2585_t sensor_settings = {0};
 static tsl2585_config_t sensor_config = {0};
 
 /* Queue for meter probe control events */
@@ -226,7 +230,6 @@ osStatus_t meter_probe_start()
 osStatus_t meter_probe_control_start()
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t id_data[16];
 
     log_d("meter_probe_control_start");
 
@@ -237,26 +240,23 @@ osStatus_t meter_probe_control_start()
     osDelay(1);
 
     do {
-        /* Read the identification area of the meter probe memory */
-        ret = m24c02_read_id_page(&hi2c2, id_data);
+        /* Read the meter probe's settings memory */
+        ret = meter_probe_settings_init(&meter_probe_settings, &hi2c2);
         if (ret != HAL_OK) {
             break;
         }
 
-        log_d("Memory ID: 0x%02X%02X%02X", id_data[0], id_data[1], id_data[2]);
-
-        /* Verify the memory device identification code */
-        if (id_data[0] != 0x20 && id_data[1] != 0xE0 && id_data[2] != 0x08) {
-            log_w("Unexpected memory type");
+        if (meter_probe_settings.type != METER_PROBE_TYPE_TSL2585) {
+            log_w("Unknown meter probe type");
             ret = HAL_ERROR;
             break;
         }
 
-        /*
-         * TODO: Read probe type info out of the rest of the ID page
-         * Can't do this until the ID data format is standardized,
-         * and a way to program it is implemented.
-         */
+        /* Read the settings for the current sensor type */
+        ret = meter_probe_settings_get_tsl2585(&meter_probe_settings, &sensor_settings);
+        if (ret != HAL_OK) {
+            break;
+        }
 
         /*
          * Do a basic initialization of the sensor, which verifies that
@@ -304,6 +304,10 @@ osStatus_t meter_probe_control_stop()
     /* Reset state variables */
     meter_probe_started = false;
     meter_probe_sensor_enabled = false;
+
+    /* Clear the settings */
+    memset(&meter_probe_settings, 0, sizeof(meter_probe_settings_handle_t));
+    memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
 
     return osOK;
 }
@@ -432,6 +436,8 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         }
 
         sensor_config.sai_active = false;
+        sensor_config.agc_disabled_reset_gain = false;
+        sensor_config.discard_next_reading = false;
         meter_probe_sensor_single_shot = single_shot;
         meter_probe_sensor_enabled = true;
     } while (0);
@@ -600,6 +606,8 @@ osStatus_t meter_probe_control_sensor_disable_agc()
         } while (0);
         if (ret == HAL_OK) {
             sensor_config.agc_enabled = false;
+            sensor_config.agc_disabled_reset_gain = true;
+            sensor_config.discard_next_reading = true;
         }
     } else {
         sensor_config.agc_enabled = false;
@@ -682,6 +690,21 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
     return (float)scaled_value / (atime * gain_val);
 }
 
+float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
+{
+    if (!sensor_reading) { return NAN; }
+    if (sensor_reading->gain >= TSL2585_GAIN_MAX) { return NAN; }
+
+    const float slope = sensor_settings.gain_cal[sensor_reading->gain].slope;
+    const float offset = sensor_settings.gain_cal[sensor_reading->gain].offset;
+    if (!is_valid_number(slope) || !is_valid_number(offset)) { return NAN; }
+
+    const float basic_value = meter_probe_basic_result(sensor_reading);
+    if (!is_valid_number(basic_value)) { return NAN; }
+
+    return (basic_value * slope) + offset;
+}
+
 void meter_probe_int_handler()
 {
     if (!meter_probe_initialized || !meter_probe_started || !meter_probe_sensor_enabled) { return; }
@@ -759,13 +782,31 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
                     if (ret != HAL_OK) { break; }
                 }
 
-                /* Fill out other reading fields */
-                reading.gain = sensor_config.gain;
-                reading.sample_time = sensor_config.sample_time;
-                reading.sample_count = sensor_config.sample_count;
-                reading.ticks = params->ticks;
+                if (!sensor_config.discard_next_reading) {
+                    /* Fill out other reading fields */
+                    reading.gain = sensor_config.gain;
+                    reading.sample_time = sensor_config.sample_time;
+                    reading.sample_count = sensor_config.sample_count;
+                    reading.ticks = params->ticks;
 
-                has_reading = true;
+                    has_reading = true;
+                } else {
+                    sensor_config.discard_next_reading = false;
+                }
+
+                /*
+                 * If AGC was just disabled, then reset the gain to its last
+                 * known value and ignore the reading. This is necessary because
+                 * disabling AGC on its own seems to reset the gain to a low
+                 * default, and attempting to set it immediately after setting
+                 * the registers to disable AGC does not seem to take.
+                 */
+                if (sensor_config.agc_disabled_reset_gain) {
+                    ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_config.gain);
+                    if (ret != HAL_OK) { break; }
+                    sensor_config.agc_disabled_reset_gain = false;
+                    sensor_config.discard_next_reading = true;
+                }
             }
         }
 

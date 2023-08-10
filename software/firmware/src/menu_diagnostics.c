@@ -851,16 +851,18 @@ menu_result_t diagnostics_meter_probe()
             const uint32_t scaled_result = meter_probe_scaled_result(&reading);
             const float basic_result = meter_probe_basic_result(&reading);
             const float atime = tsl2585_integration_time_ms(reading.sample_time, reading.sample_count);
+            const float lux_result = meter_probe_lux_result(&reading);
 
             if (reading.result_status == METER_SENSOR_RESULT_VALID) {
                 sprintf(buf,
                     "TSL2585 (%s, %.2fms)\n"
                     "Data: %ld [%d]\n"
-                    "Basic: %f\n"
+                    "Basic: %f, Lux: %f\n"
                     "[%s][%s]\n"
                     "%s",
                     tsl2585_gain_str(reading.gain), atime,
-                    scaled_result, reading.raw_result, basic_result,
+                    scaled_result, reading.raw_result,
+                    basic_result, lux_result,
                     (enlarger_enabled ? "**" : "--"),
                     (agc_enabled ? "AGC" : "---"),
                     (single_shot ? "Single Shot" : "Continuous"));

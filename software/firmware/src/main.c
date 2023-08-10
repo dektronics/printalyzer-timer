@@ -17,6 +17,8 @@
 #include "meter_probe.h"
 #include "dmx.h"
 
+CRC_HandleTypeDef hcrc;
+
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart6_tx;
@@ -46,6 +48,7 @@ static void tim3_init(void);
 static void tim4_init(void);
 static void tim9_init(void);
 static void tim10_init(void);
+static void crc_init(void);
 
 static void logger_init(void);
 
@@ -502,6 +505,14 @@ void tim10_init(void)
     }
 }
 
+void crc_init(void)
+{
+    hcrc.Instance = CRC;
+    if (HAL_CRC_Init(&hcrc) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 void logger_init(void)
 {
     /* Initialize EasyLogger */
@@ -550,6 +561,7 @@ int main(void)
     tim4_init();
     tim9_init();
     tim10_init();
+    crc_init();
 
     /* Initialize the FATFS support code */
     fatfs_init();

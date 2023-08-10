@@ -173,6 +173,17 @@ uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_re
 float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading);
 
 /**
+ * Get the result in lux units, after applying all relevant calibration.
+ *
+ * This is the number that should be used for all actual light measurements
+ * in the print metering path.
+ *
+ * @param sensor_reading Sensor reading data
+ * @return Calibrated lux value
+ */
+float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading);
+
+/**
  * Meter probe interrupt handler
  *
  * This function should only be called from within the ISR for the

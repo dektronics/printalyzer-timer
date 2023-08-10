@@ -7,6 +7,9 @@
 
 #include <stm32f4xx_hal.h>
 
+#define M24C02_PAGE_SIZE  0x10UL
+#define M24C02_PAGE_LIMIT 0x100UL
+
 /**
  * Read a byte from the specified address.
  *
@@ -74,5 +77,18 @@ HAL_StatusTypeDef m24c02_write_page(I2C_HandleTypeDef *hi2c, uint8_t address, co
  * @param data Pointer to a 16-byte buffer to read the data into
  */
 HAL_StatusTypeDef m24c02_read_id_page(I2C_HandleTypeDef *hi2c, uint8_t *data);
+
+/**
+ * Write the identification page
+ *
+ * Note: This function explicitly avoids overwriting the device identification
+ * code, which is stored in the first 3 bytes of the data buffer. Therefore,
+ * the first 3 bytes of the provided buffer must match the first 3 bytes of
+ * the existing identification page value.
+ *
+ * @param hi2c Pointer to a handle for the I2C peripheral
+ * @param data Pointer to a 16-byte buffer to write the data from
+ */
+HAL_StatusTypeDef m24c02_write_id_page(I2C_HandleTypeDef *hi2c, const uint8_t *data);
 
 #endif /* M24C02_H */

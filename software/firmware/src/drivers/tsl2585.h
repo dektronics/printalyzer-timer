@@ -39,6 +39,7 @@ typedef enum {
     TSL2585_GAIN_1024X = 11,
     TSL2585_GAIN_2048X = 12,
     TSL2585_GAIN_4096X = 13,
+    TSL2585_GAIN_MAX   = 14
 } tsl2585_gain_t;
 
 /* ENABLE register values */

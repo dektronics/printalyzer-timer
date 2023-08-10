@@ -123,9 +123,37 @@ HAL_StatusTypeDef m24c02_read_id_page(I2C_HandleTypeDef *hi2c, uint8_t *data)
 
     log_d("m24c02_read_id_page");
 
-    ret = HAL_I2C_Mem_Read(hi2c, M24C02_ID_ADDRESS, 0x00, I2C_MEMADD_SIZE_8BIT, data, 16, HAL_MAX_DELAY);
+    ret = HAL_I2C_Mem_Read(hi2c, M24C02_ID_ADDRESS, 0x00, I2C_MEMADD_SIZE_8BIT, data, M24C02_PAGE_SIZE, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         log_e("HAL_I2C_Mem_Read error: %d", ret);
+    }
+
+    return ret;
+}
+
+HAL_StatusTypeDef m24c02_write_id_page(I2C_HandleTypeDef *hi2c, const uint8_t *data)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    uint8_t buf[M24C02_PAGE_SIZE];
+
+    /* Read the existing ID page value */
+    ret = m24c02_read_id_page(hi2c, buf);
+    if (ret != HAL_OK) { return ret; }
+
+    /* Validate the first 3 bytes */
+    if (buf[0] != data[0] || buf[1] != data[1] || buf[2] != data[2]) {
+        log_e("Device identification mismatch: %02X%02X%02X != %02X%02X%02X",
+            buf[0], buf[1], buf[2],
+            data[0], data[1], data[2]);
+        return HAL_ERROR;
+    }
+
+    /* Write the updated identification page */
+    ret = HAL_I2C_Mem_Write(hi2c, M24C02_ID_ADDRESS, 0x00, I2C_MEMADD_SIZE_8BIT,
+        (uint8_t *)data, M24C02_PAGE_SIZE, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        log_e("HAL_I2C_Mem_Write error: %d", ret);
     }
 
     return ret;
