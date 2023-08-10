@@ -633,6 +633,7 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
                 contrast_mode = sub_option - 1;
                 if (contrast_mode != enlarger_control->contrast_mode && contrast_mode <= ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
                     enlarger_control->contrast_mode = contrast_mode;
+                    enlarger_config_set_contrast_defaults(enlarger_control);
                     config_dirty = true;
                 }
             } else if (sub_option == UINT8_MAX) {

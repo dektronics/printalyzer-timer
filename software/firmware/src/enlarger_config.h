@@ -145,6 +145,14 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
 void enlarger_config_set_defaults(enlarger_config_t *config);
 
 /**
+ * Set default values for the DMX contrast control section of the enlarger configuration.
+ *
+ * Must call 'enlarger_config_recalculate()' afterwards to ensure that
+ * the half-grades are set correctly.
+ */
+void enlarger_config_set_contrast_defaults(enlarger_control_t *control);
+
+/**
  * This fills in portions of the enlarger configuration that are not saved,
  * and are derived from other values, such as half-grade contrast brightness
  * settings.

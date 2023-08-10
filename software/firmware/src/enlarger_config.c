@@ -130,18 +130,48 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
     config->control.contrast_mode = ENLARGER_CONTRAST_MODE_WHITE;
     config->control.focus_value = UINT8_MAX;
     config->control.safe_value = UINT8_MAX;
-    for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
-        config->control.grade_values[i].channel_red = UINT8_MAX;
-        config->control.grade_values[i].channel_green = UINT8_MAX;
-        config->control.grade_values[i].channel_blue = UINT8_MAX;
-        config->control.grade_values[i].channel_white = UINT8_MAX;
-    }
+    enlarger_config_set_contrast_defaults(&config->control);
 
     config->timing.turn_on_delay = 40;
     config->timing.turn_off_delay = 10;
     config->timing.color_temperature = 3000;
 
     enlarger_config_recalculate(config);
+}
+
+void enlarger_config_set_contrast_defaults(enlarger_control_t *control)
+{
+    if (!control) { return; }
+
+    if (control->contrast_mode == ENLARGER_CONTRAST_MODE_GREEN_BLUE) {
+        const uint16_t max_val = control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
+
+        for (size_t i = 0; i < CONTRAST_WHOLE_GRADE_COUNT; i++) {
+            const uint8_t grade = (uint8_t)CONTRAST_WHOLE_GRADES[i];
+            control->grade_values[grade].channel_red = 0;
+            control->grade_values[grade].channel_white = 0;
+
+            if (i == 0) {
+                control->grade_values[grade].channel_green = max_val;
+                control->grade_values[grade].channel_blue = 0;
+            } else if (i == CONTRAST_WHOLE_GRADE_COUNT - 1) {
+                control->grade_values[grade].channel_green = 0;
+                control->grade_values[grade].channel_blue = max_val;
+            } else {
+                float green_val = ((float)grade * (-1.0F * max_val / ((float)CONTRAST_GRADE_MAX - 1.0F))) + max_val;
+                float blue_val = (float)grade * (max_val / ((float)CONTRAST_GRADE_MAX - 1.0F));
+                control->grade_values[grade].channel_green = lroundf(green_val);
+                control->grade_values[grade].channel_blue = lroundf(blue_val);
+            }
+        }
+    } else {
+        for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
+            control->grade_values[i].channel_red = UINT8_MAX;
+            control->grade_values[i].channel_green = UINT8_MAX;
+            control->grade_values[i].channel_blue = UINT8_MAX;
+            control->grade_values[i].channel_white = UINT8_MAX;
+        }
+    }
 }
 
 void enlarger_config_recalculate(enlarger_config_t *config)
