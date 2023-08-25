@@ -842,47 +842,31 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
                 /* Increment active row with rollover */
                 const int amount = (keypad_event.key == KEYPAD_ENCODER_CW) ? keypad_event.count : 1;
                 if (row == 0) {
-                    green_val = (green_val + amount) % (max_val + 1);
+                    green_val = value_adjust_with_rollover_u16(green_val, amount, 0, max_val);
                 } else if (row == 1) {
-                    blue_val = (blue_val + amount) % (max_val + 1);
+                    blue_val = value_adjust_with_rollover_u16(blue_val, amount, 0, max_val);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
                 /* Decrement active row with rollover */
-                const int amount = (keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1;
+                const int amount = -1 * ((keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1);
                 if (row == 0) {
-                    green_val = (green_val + ((max_val + 1) - amount)) % (max_val + 1);
+                    green_val = value_adjust_with_rollover_u16(green_val, amount, 0, max_val);
                 } else if (row == 1) {
-                    blue_val = (blue_val + ((max_val + 1) - amount)) % (max_val + 1);
+                    blue_val = value_adjust_with_rollover_u16(blue_val, amount, 0, max_val);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 /* Skip-increment active row */
                 if (row == 0) {
-                    if (green_val > max_val - 10) {
-                        green_val = max_val;
-                    } else {
-                        green_val += 10;
-                    }
+                    green_val = value_adjust_with_rollover_u16(green_val, 10, 0, max_val);
                 } else if (row == 1) {
-                    if (blue_val > max_val - 10) {
-                        blue_val = max_val;
-                    } else {
-                        blue_val += 10;
-                    }
+                    blue_val = value_adjust_with_rollover_u16(blue_val, 10, 0, max_val);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 /* Skip-decrement active row */
                 if (row == 0) {
-                    if (green_val < 10) {
-                        green_val = 0;
-                    } else {
-                        green_val -= 10;
-                    }
+                    green_val = value_adjust_with_rollover_u16(green_val, -10, 0, max_val);
                 } else if (row == 1) {
-                    if (blue_val < 10) {
-                        blue_val = 0;
-                    } else {
-                        blue_val -= 10;
-                    }
+                    blue_val = value_adjust_with_rollover_u16(blue_val, -10, 0, max_val);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
                 /* Toggle active row */
@@ -967,25 +951,17 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
                 /* Increment active row with rollover */
                 const int amount = (keypad_event.key == KEYPAD_ENCODER_CW) ? keypad_event.count : 1;
-                row_val[row] = (row_val[row] + amount) % (max_val + 1);
+                row_val[row] = value_adjust_with_rollover_u16(row_val[row], amount, 0, max_val);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
                 /* Decrement active row with rollover */
-                const int amount = (keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1;
-                row_val[row] = (row_val[row] + ((max_val + 1) - amount)) % (max_val + 1);
+                const int amount = -1 * ((keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1);
+                row_val[row] = value_adjust_with_rollover_u16(row_val[row], amount, 0, max_val);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 /* Skip-increment active row */
-                if (row_val[row] > max_val - 10) {
-                    row_val[row] = max_val;
-                } else {
-                    row_val[row] += 10;
-                }
+                row_val[row] = value_adjust_with_rollover_u16(row_val[row], 10, 0, max_val);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 /* Skip-decrement active row */
-                if (row_val[row] < 10) {
-                    row_val[row] = 0;
-                } else {
-                    row_val[row] -= 10;
-                }
+                row_val[row] = value_adjust_with_rollover_u16(row_val[row], -10, 0, max_val);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
                 /* Toggle active row */
                 row++;

@@ -17,8 +17,6 @@
 #include "display_internal.h"
 #include "keypad.h"
 
-#define MENU_KEY_POLL_MS 100
-
 static u8g2_t u8g2;
 
 osMutexId_t display_mutex;
@@ -45,8 +43,6 @@ static void display_draw_density_placeholder();
 static void display_draw_counter_time(uint16_t seconds, uint16_t milliseconds, uint8_t fraction_digits);
 static void display_draw_counter_time_small(u8g2_uint_t x2, u8g2_uint_t y1, const display_exposure_timer_t *time_elements);
 static void display_prepare_menu_font();
-
-static uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle)
 {
@@ -1917,106 +1913,6 @@ uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
     } else {
         return (uint8_t)(result & 0x00FF);
     }
-}
-
-uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
-{
-    uint16_t result = 0;
-
-    // If we were called via a function that is holding the display mutex,
-    // then release that mutex while blocked on the keypad queue.
-    osStatus_t mutex_released = osMutexRelease(display_mutex);
-
-    int timeout;
-    if (params & DISPLAY_MENU_INPUT_POLL) {
-        timeout = MENU_KEY_POLL_MS;
-    } else {
-        timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
-    }
-
-    keypad_event_t event;
-    HAL_StatusTypeDef ret = keypad_wait_for_event(&event, timeout);
-
-    if (mutex_released == osOK) {
-        osMutexAcquire(display_mutex, portMAX_DELAY);
-    }
-
-    if (ret == HAL_OK) {
-        if (event.pressed) {
-            // Button actions that stay within the menu are handled on
-            // the press event
-            keypad_key_t keypad_key;
-            if (event.key == KEYPAD_USB_KEYBOARD) {
-                keypad_key = keypad_usb_get_keypad_equivalent(&event);
-            } else {
-                keypad_key = event.key;
-            }
-            switch (keypad_key) {
-            case KEYPAD_DEC_CONTRAST:
-                result = U8X8_MSG_GPIO_MENU_PREV;
-                break;
-            case KEYPAD_INC_CONTRAST:
-                result = U8X8_MSG_GPIO_MENU_NEXT;
-                break;
-            case KEYPAD_INC_EXPOSURE:
-                result = U8X8_MSG_GPIO_MENU_UP;
-                break;
-            case KEYPAD_DEC_EXPOSURE:
-                result = U8X8_MSG_GPIO_MENU_DOWN;
-                break;
-            default:
-                break;
-            }
-        } else {
-            // Button actions that leave the menu, such as accept and cancel
-            // are handled on the release event. This is to prevent side
-            // effects that can occur from other components receiving
-            // release events for these keys.
-            if (((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && event.key == KEYPAD_MENU)
-                || ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && event.key == KEYPAD_ADD_ADJUSTMENT)
-                || ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && event.key == KEYPAD_TEST_STRIP)
-                || ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && event.key == KEYPAD_ENCODER)) {
-                result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if (event.key == KEYPAD_CANCEL) {
-                result = U8X8_MSG_GPIO_MENU_HOME;
-            }
-        }
-
-        // Some USB keys have mappings that don't make sense in the context
-        // of the above logic, or that can't easily be done generically.
-        if (result == 0 && event.key == KEYPAD_USB_KEYBOARD) {
-            uint8_t keycode = keypad_usb_get_keycode(&event);
-            char keychar = keypad_usb_get_ascii(&event);
-
-            if ((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && keychar == '\n') {
-                result = ((uint16_t)KEYPAD_MENU << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && keychar == '+') {
-                result = ((uint16_t)KEYPAD_ADD_ADJUSTMENT << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && keychar == '*') {
-                result = ((uint16_t)KEYPAD_TEST_STRIP << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && keychar == '\t') {
-                result = ((uint16_t)KEYPAD_ENCODER << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if (keycode == 0x29 /* KEY_ESCAPE */) {
-                result = U8X8_MSG_GPIO_MENU_HOME;
-            } else if ((params & DISPLAY_MENU_INPUT_ASCII) != 0) {
-                if ((keychar >= 32 && keychar < 127) || keychar == '\n' || keychar == '\t') {
-                    // Handle normally printable characters that are correctly mapped
-                    result = ((uint16_t)keychar << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
-                } else if (keycode == 0x2A /* KEY_BACKSPACE */ || keycode == 0xBB /* KEY_KEYPAD_BACKSPACE */) {
-                    result = ((uint16_t)'\b' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
-                } else if (keycode == 0x4C /* KEY_DELETE */) {
-                    result = ((uint16_t)'\x7F' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
-                }
-            }
-        }
-    } else if (ret == HAL_TIMEOUT) {
-        if (params & DISPLAY_MENU_INPUT_POLL) {
-            result = 0;
-        } else {
-            result = UINT16_MAX;
-        }
-    }
-    return result;
 }
 
 void display_prepare_menu_font()

@@ -242,6 +242,50 @@ void conv_u16_array(uint8_t *dst, uint16_t src)
     *(dst + 1) = (uint8_t)(src & 0x00FF);
 }
 
+uint8_t value_adjust_with_rollover_u8(uint8_t value, int8_t increment, uint8_t lower_bound, uint8_t upper_bound)
+{
+    uint32_t temp_value = value - lower_bound;
+    uint32_t temp_upper = upper_bound - lower_bound;
+
+    if (lower_bound > upper_bound) {
+        return value;
+    } else if (value < lower_bound) {
+        return lower_bound;
+    } else if (value > upper_bound) {
+        return upper_bound;
+    } else if (increment > 0) {
+        temp_value = (temp_value + increment) % (temp_upper + 1);
+        return (uint8_t)(temp_value + lower_bound);
+    } else if (increment < 0) {
+        temp_value = (temp_value + ((temp_upper + 1) + increment)) % (temp_upper + 1);
+        return (uint8_t)(temp_value + lower_bound);
+    } else {
+        return value;
+    }
+}
+
+uint16_t value_adjust_with_rollover_u16(uint16_t value, int16_t increment, uint16_t lower_bound, uint16_t upper_bound)
+{
+    uint32_t temp_value = value - lower_bound;
+    uint32_t temp_upper = upper_bound - lower_bound;
+
+    if (lower_bound > upper_bound) {
+        return value;
+    } else if (value < lower_bound) {
+        return lower_bound;
+    } else if (value > upper_bound) {
+        return upper_bound;
+    } else if (increment > 0) {
+        temp_value = (temp_value + increment) % (temp_upper + 1);
+        return (uint16_t)(temp_value + lower_bound);
+    } else if (increment < 0) {
+        temp_value = (temp_value + ((temp_upper + 1) + increment)) % (temp_upper + 1);
+        return (uint16_t)(temp_value + lower_bound);
+    } else {
+        return value;
+    }
+}
+
 osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status)
 {
     switch (hal_status) {

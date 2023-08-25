@@ -7,7 +7,11 @@
 #include <stdio.h>
 #include <string.h>
 #include "display.h"
+#include "keypad.h"
 #include "u8g2.h"
+#include "util.h"
+
+#define MENU_KEY_POLL_MS 100
 
 #define MY_BORDER_SIZE 1
 
@@ -21,6 +25,112 @@ uint8_t u8g2_draw_button_line(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_
 
 static void display_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s, u8g2_uint_t list_width);
 static u8g2_uint_t display_draw_selection_list_line(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, uint8_t idx, const char *s, u8g2_uint_t list_width);
+
+uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
+{
+    uint16_t result = 0;
+
+    // If we were called via a function that is holding the display mutex,
+    // then release that mutex while blocked on the keypad queue.
+    osStatus_t mutex_released = osMutexRelease(display_mutex);
+
+    int timeout;
+    if (params & DISPLAY_MENU_INPUT_POLL) {
+        timeout = MENU_KEY_POLL_MS;
+    } else {
+        timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
+    }
+
+    keypad_event_t event;
+    HAL_StatusTypeDef ret = keypad_wait_for_event(&event, timeout);
+
+    if (mutex_released == osOK) {
+        osMutexAcquire(display_mutex, portMAX_DELAY);
+    }
+
+    if (ret == HAL_OK) {
+        if (event.pressed) {
+            // Button actions that stay within the menu are handled on
+            // the press event
+            keypad_key_t keypad_key;
+            if (event.key == KEYPAD_USB_KEYBOARD) {
+                keypad_key = keypad_usb_get_keypad_equivalent(&event);
+            } else {
+                keypad_key = event.key;
+            }
+            switch (keypad_key) {
+            case KEYPAD_DEC_CONTRAST:
+                result = U8X8_MSG_GPIO_MENU_PREV;
+                break;
+            case KEYPAD_INC_CONTRAST:
+                result = U8X8_MSG_GPIO_MENU_NEXT;
+                break;
+            case KEYPAD_INC_EXPOSURE:
+                result = U8X8_MSG_GPIO_MENU_UP;
+                break;
+            case KEYPAD_DEC_EXPOSURE:
+                result = U8X8_MSG_GPIO_MENU_DOWN;
+                break;
+            case KEYPAD_ENCODER_CW:
+                result = ((uint16_t)event.count << 8) | U8X8_MSG_GPIO_MENU_VALUE_INC;
+                break;
+            case KEYPAD_ENCODER_CCW:
+                result = ((uint16_t)event.count << 8) | U8X8_MSG_GPIO_MENU_VALUE_DEC;
+                break;
+            default:
+                break;
+            }
+        } else {
+            // Button actions that leave the menu, such as accept and cancel
+            // are handled on the release event. This is to prevent side
+            // effects that can occur from other components receiving
+            // release events for these keys.
+            if (((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && event.key == KEYPAD_MENU)
+                || ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && event.key == KEYPAD_ADD_ADJUSTMENT)
+                || ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && event.key == KEYPAD_TEST_STRIP)
+                || ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && event.key == KEYPAD_ENCODER)) {
+                result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if (event.key == KEYPAD_CANCEL) {
+                result = U8X8_MSG_GPIO_MENU_HOME;
+            }
+        }
+
+        // Some USB keys have mappings that don't make sense in the context
+        // of the above logic, or that can't easily be done generically.
+        if (result == 0 && event.key == KEYPAD_USB_KEYBOARD) {
+            uint8_t keycode = keypad_usb_get_keycode(&event);
+            char keychar = keypad_usb_get_ascii(&event);
+
+            if ((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && keychar == '\n') {
+                result = ((uint16_t)KEYPAD_MENU << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && keychar == '+') {
+                result = ((uint16_t)KEYPAD_ADD_ADJUSTMENT << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && keychar == '*') {
+                result = ((uint16_t)KEYPAD_TEST_STRIP << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && keychar == '\t') {
+                result = ((uint16_t)KEYPAD_ENCODER << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+            } else if (keycode == 0x29 /* KEY_ESCAPE */) {
+                result = U8X8_MSG_GPIO_MENU_HOME;
+            } else if ((params & DISPLAY_MENU_INPUT_ASCII) != 0) {
+                if ((keychar >= 32 && keychar < 127) || keychar == '\n' || keychar == '\t') {
+                    // Handle normally printable characters that are correctly mapped
+                    result = ((uint16_t)keychar << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                } else if (keycode == 0x2A /* KEY_BACKSPACE */ || keycode == 0xBB /* KEY_KEYPAD_BACKSPACE */) {
+                    result = ((uint16_t)'\b' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                } else if (keycode == 0x4C /* KEY_DELETE */) {
+                    result = ((uint16_t)'\x7F' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
+                }
+            }
+        }
+    } else if (ret == HAL_TIMEOUT) {
+        if (params & DISPLAY_MENU_INPUT_POLL) {
+            result = 0;
+        } else {
+            result = UINT16_MAX;
+        }
+    }
+    return result;
+}
 
 void display_UserInterfaceStaticList(u8g2_t *u8g2, const char *title, const char *list)
 {
@@ -225,6 +335,7 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
     display_input_value_state_t state;
     uint8_t local_value = *value;
     uint8_t event;
+    uint8_t count;
 
     display_input_value_setup(&state, u8g2, title, msg, prefix, digits, postfix);
 
@@ -233,25 +344,28 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
         display_input_value_render(&state, u8g2, u8x8_u8toa(local_value, digits));
 
         for (;;) {
-            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            if (event_result == UINT16_MAX) {
+                menu_event_timeout = true;
+                event = U8X8_MSG_GPIO_MENU_HOME;
+                count = 0;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+                count = (uint8_t)((event_result & 0xFF00) >> 8);
+            }
+
             if (event == U8X8_MSG_GPIO_MENU_SELECT) {
                 *value = local_value;
                 return 1;
             } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
-            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_UP) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    local_value++;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int8_t amount = (event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                local_value = value_adjust_with_rollover_u8(local_value, amount, low, high);
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    local_value--;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int8_t amount = -1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                local_value = value_adjust_with_rollover_u8(local_value, amount, low, high);
                 break;
             }
         }
@@ -267,6 +381,7 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
     display_input_value_state_t state;
     uint16_t local_value = *value;
     uint8_t event;
+    uint8_t count;
 
     display_input_value_setup(&state, u8g2, title, msg, prefix, digits, postfix);
 
@@ -275,47 +390,34 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
         display_input_value_render(&state, u8g2, display_u16toa(local_value, digits));
 
         for(;;) {
-            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            if (event_result == UINT16_MAX) {
+                menu_event_timeout = true;
+                event = U8X8_MSG_GPIO_MENU_HOME;
+                count = 0;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+                count = (uint8_t)((event_result & 0xFF00) >> 8);
+            }
+
             if (event == U8X8_MSG_GPIO_MENU_SELECT) {
                 *value = local_value;
                 return 1;
             } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
-            } else if (event == U8X8_MSG_GPIO_MENU_UP) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    local_value++;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int8_t amount = (event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    if (local_value > high - 10) {
-                        local_value = high;
-                    } else {
-                        local_value += 10;
-                    }
-                }
+                local_value = value_adjust_with_rollover_u16(local_value, 10, low, high);
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_DOWN) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    local_value--;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int8_t amount = -1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_PREV) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    if (local_value < low + 10) {
-                        local_value = low;
-                    } else {
-                        local_value -= 10;
-                    }
-                }
+                local_value = value_adjust_with_rollover_u16(local_value, -10, low, high);
                 break;
             }
         }
@@ -365,14 +467,24 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
 
         for(;;) {
             uint8_t event_action;
+            uint8_t count;
             if (event_callback) {
                 uint16_t result = event_callback(u8g2_GetU8x8(u8g2), params);
                 if (result == UINT16_MAX) {
                     return result;
                 }
                 event_action = (uint8_t)(result & 0x00FF);
+                count = (uint8_t)((result & 0xFF00) >> 8);
             } else {
-                event_action = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+                uint16_t result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+                if (result == UINT16_MAX) {
+                    menu_event_timeout = true;
+                    event_action = U8X8_MSG_GPIO_MENU_HOME;
+                    count = 0;
+                } else {
+                    event_action = (uint8_t)(result & 0x00FF);
+                    count = (uint8_t)((result & 0xFF00) >> 8);
+                }
             }
 
             if (event_action == U8X8_MSG_GPIO_MENU_SELECT) {
@@ -380,41 +492,19 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 return 1;
             } else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
-            } else if (event_action == U8X8_MSG_GPIO_MENU_UP) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    local_value++;
-                }
+            } else if (event_action == U8X8_MSG_GPIO_MENU_UP || event_action == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int8_t amount = (event_action == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event_action == U8X8_MSG_GPIO_MENU_NEXT) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    if (local_value > high - 10) {
-                        local_value = high;
-                    } else {
-                        local_value += 10;
-                    }
-                }
+                local_value = value_adjust_with_rollover_u16(local_value, 10, low, high);
                 break;
-            } else if (event_action == U8X8_MSG_GPIO_MENU_DOWN) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    local_value--;
-                }
+            } else if (event_action == U8X8_MSG_GPIO_MENU_DOWN || event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int8_t amount = -1 * ((event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event_action == U8X8_MSG_GPIO_MENU_PREV) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    if (local_value < low + 10) {
-                        local_value = low;
-                    } else {
-                        local_value -= 10;
-                    }
-                }
+                local_value = value_adjust_with_rollover_u16(local_value, -10, low, high);
                 break;
             } else {
                 if (data_callback) {
@@ -439,6 +529,7 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
     display_input_value_state_t state;
     uint8_t local_value = *value;
     uint8_t event;
+    uint8_t count;
 
     display_input_value_setup(&state, u8g2, title, msg, prefix, digits, postfix);
 
@@ -447,30 +538,33 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
         display_input_value_render(&state, u8g2, u8x8_u8toa(local_value, digits));
 
         for(;;) {
-            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            if (event_result == UINT16_MAX) {
+                menu_event_timeout = true;
+                event = U8X8_MSG_GPIO_MENU_HOME;
+                count = 0;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+                count = (uint8_t)((event_result & 0xFF00) >> 8);
+            }
+
             if (event == U8X8_MSG_GPIO_MENU_SELECT) {
                 *value = local_value;
                 return 1;
             } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
-            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_UP) {
-                if (local_value >= high) {
-                    local_value = low;
-                } else {
-                    local_value++;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int8_t amount = (event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                local_value = value_adjust_with_rollover_u8(local_value, amount, low, high);
                 if (callback) {
                     osMutexRelease(display_mutex);
                     callback(local_value, user_data);
                     osMutexAcquire(display_mutex, portMAX_DELAY);
                 }
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN) {
-                if (local_value <= low) {
-                    local_value = high;
-                } else {
-                    local_value--;
-                }
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int8_t amount = -1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                local_value = value_adjust_with_rollover_u8(local_value, amount, low, high);
                 if (callback) {
                     osMutexRelease(display_mutex);
                     callback(local_value, user_data);

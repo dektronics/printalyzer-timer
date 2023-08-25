@@ -569,7 +569,7 @@ void exposure_channel_increase(exposure_state_t *state, int index, uint8_t amoun
         state->channel_values[index] = (uint16_t)((state->channel_values[index] + amount) % (max_val + 1));
     } else {
         if (state->channel_values[0] == state->channel_values[1] && state->channel_values[0] == state->channel_values[2]) {
-            state->channel_values[0] = (uint16_t)((state->channel_values[0] + amount) % (max_val + 1));
+            state->channel_values[0] = value_adjust_with_rollover_u16(state->channel_values[0], amount, 0, max_val);
             state->channel_values[1] = state->channel_values[0];
             state->channel_values[2] = state->channel_values[0];
         } else {
@@ -599,7 +599,7 @@ void exposure_channel_decrease(exposure_state_t *state, int index, uint8_t amoun
         state->channel_values[index] = (uint16_t)((state->channel_values[index] + ((max_val + 1) - amount)) % (max_val + 1));
     } else {
         if (state->channel_values[0] == state->channel_values[1] && state->channel_values[0] == state->channel_values[2]) {
-            state->channel_values[0] = (uint16_t)((state->channel_values[0] + ((max_val + 1) - amount)) % (max_val + 1));
+            state->channel_values[0] = value_adjust_with_rollover_u16(state->channel_values[0], -1 * (int16_t)amount, 0, max_val);
             state->channel_values[1] = state->channel_values[0];
             state->channel_values[2] = state->channel_values[0];
         } else {

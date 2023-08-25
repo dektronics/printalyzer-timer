@@ -13,6 +13,10 @@ extern bool menu_event_timeout;
  * as the built-in ones are offset by 64.
  */
 #define U8X8_MSG_GPIO_MENU_INPUT_ASCII 1
+#define U8X8_MSG_GPIO_MENU_VALUE_INC   2
+#define U8X8_MSG_GPIO_MENU_VALUE_DEC   3
+
+uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params);
 
 /*
  * These functions are derived from various u8g2 library functions,
