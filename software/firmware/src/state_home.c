@@ -255,7 +255,9 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                     state_controller_set_enlarger_focus(controller, true);
                     state_controller_start_focus_timeout(controller);
-                    state_home_start_meter_probe();
+                    if (mode != EXPOSURE_MODE_PRINTING_COLOR) {
+                        state_home_start_meter_probe();
+                    }
                 } else {
                     log_i("Focus mode disabled");
                     state_controller_set_enlarger_focus(controller, false);
@@ -383,7 +385,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     if (keypad_event.pressed || keypad_event.repeated) {
                         state->test_strip_repeat++;
                     } else {
-                        if (state->test_strip_repeat > 2 && (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR)) {
+                        if (state->test_strip_repeat > 2 && mode == EXPOSURE_MODE_PRINTING_BW) {
                             state_home_select_paper_profile(controller);
                         } else {
                             state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
@@ -421,7 +423,8 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     state->display_dirty = true;
                     state->cancel_repeat = 0;
                 }
-            } else if (keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
+            } else if (mode != EXPOSURE_MODE_PRINTING_COLOR
+                && keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
                 && state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;

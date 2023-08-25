@@ -17,12 +17,17 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 {
     const exposure_mode_t mode = exposure_get_mode(exposure);
 
-    elements->tone_graph = exposure_get_tone_graph(exposure);
+    if (mode == EXPOSURE_MODE_PRINTING_BW) {
+        elements->tone_graph = exposure_get_tone_graph(exposure);
 
-    int paper_index = exposure_get_active_paper_profile_index(exposure);
-    if (paper_index >= 0) {
-        elements->paper_profile_num = paper_index + 1;
+        int paper_index = exposure_get_active_paper_profile_index(exposure);
+        if (paper_index >= 0) {
+            elements->paper_profile_num = paper_index + 1;
+        } else {
+            elements->paper_profile_num = 0;
+        }
     } else {
+        elements->tone_graph = 0;
         elements->paper_profile_num = 0;
     }
 
