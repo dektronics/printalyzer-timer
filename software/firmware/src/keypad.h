@@ -39,6 +39,7 @@ typedef struct {
     bool pressed;
     bool repeated;
     uint16_t keypad_state;
+    uint8_t count;
 } keypad_event_t;
 
 typedef void (*keypad_blackout_callback_t)(bool enabled, void *user_data);

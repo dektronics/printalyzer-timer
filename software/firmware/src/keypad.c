@@ -46,6 +46,18 @@ static const osMessageQueueAttr_t keypad_event_queue_attributes = {
     .name = "keypad_event_queue"
 };
 
+static osMessageQueueId_t keypad_encoder_event_queue = NULL;
+static const osMessageQueueAttr_t keypad_encoder_event_queue_attributes = {
+    .name = "keypad_encoder_event_queue"
+};
+
+static osMutexId_t keypad_event_mutex;
+static const osMutexAttr_t keypad_event_mutex_attributes = {
+    .name = "keypad_event_mutex"
+};
+
+static QueueSetHandle_t keypad_event_queue_set = NULL;
+
 /* Currently known state of all keypad buttons */
 static uint16_t button_state = 0;
 
@@ -112,6 +124,27 @@ void task_keypad_run(void *argument)
         log_e("Unable to create event queue");
         return;
     }
+
+    keypad_encoder_event_queue = osMessageQueueNew(1, sizeof(keypad_event_t), &keypad_encoder_event_queue_attributes);
+    if (!keypad_event_queue) {
+        log_e("Unable to create encoder event queue");
+        return;
+    }
+
+    keypad_event_mutex = osMutexNew(&keypad_event_mutex_attributes);
+    if (!keypad_event_mutex) {
+        log_e("Unable to create event mutex");
+        return;
+    }
+
+    keypad_event_queue_set = xQueueCreateSet(21);
+    if (!keypad_event_queue_set) {
+        log_e("Unable to create event queue set");
+        return;
+    }
+
+    xQueueAddToSet(keypad_event_queue, keypad_event_queue_set);
+    xQueueAddToSet(keypad_encoder_event_queue, keypad_event_queue_set);
 
     /* Clear the button state */
     button_state = 0;
@@ -261,13 +294,57 @@ HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
         return HAL_ERROR;
     }
 
-    osMessageQueuePut(keypad_event_queue, event, 0, 0);
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
+
+    if (event->key == KEYPAD_ENCODER_CW || event->key == KEYPAD_ENCODER_CCW) {
+        /* Extract the count as a signed value from the previous event */
+        keypad_event_t old_event = {0};
+        int encoder_count = 0;
+        if (xQueuePeek(keypad_encoder_event_queue, &old_event, 0) == pdTRUE) {
+            if (old_event.key == KEYPAD_ENCODER_CW) {
+                encoder_count = old_event.count;
+            } else if (old_event.key == KEYPAD_ENCODER_CCW) {
+                encoder_count = -1 * old_event.count;
+            }
+        }
+
+        /* Update the count based on the current event */
+        if (event->key == KEYPAD_ENCODER_CW) {
+            encoder_count++;
+        } else {
+            encoder_count--;
+        }
+
+        /* Generate a new event based on the new count */
+        if (encoder_count == 0) {
+            osMessageQueueReset(keypad_encoder_event_queue);
+        } else {
+            keypad_event_t updated_event = {0};
+            updated_event.pressed = true;
+            if (encoder_count > 0) {
+                updated_event.key = KEYPAD_ENCODER_CW;
+                updated_event.count = MIN(UINT8_MAX, encoder_count);
+            } else {
+                updated_event.key = KEYPAD_ENCODER_CCW;
+                updated_event.count = MIN(UINT8_MAX, -1 * encoder_count);
+            }
+            xQueueOverwrite(keypad_encoder_event_queue, &updated_event);
+        }
+    } else {
+        osMessageQueuePut(keypad_event_queue, event, 0, 0);
+    }
+
+    osMutexRelease(keypad_event_mutex);
+
     return HAL_OK;
 }
 
 HAL_StatusTypeDef keypad_clear_events()
 {
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueueReset(keypad_event_queue);
+    osMessageQueueReset(keypad_encoder_event_queue);
+    osMutexRelease(keypad_event_mutex);
     return HAL_OK;
 }
 
@@ -275,23 +352,35 @@ HAL_StatusTypeDef keypad_flush_events()
 {
     keypad_event_t event;
     bzero(&event, sizeof(keypad_event_t));
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueueReset(keypad_event_queue);
+    osMessageQueueReset(keypad_encoder_event_queue);
     osMessageQueuePut(keypad_event_queue, &event, 0, 0);
+    osMutexRelease(keypad_event_mutex);
     return HAL_OK;
 }
 
 HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait)
 {
+    HAL_StatusTypeDef ret = HAL_OK;
     TickType_t ticks = msecs_to_wait < 0 ? portMAX_DELAY : (msecs_to_wait / portTICK_RATE_MS);
 
-    if (osMessageQueueGet(keypad_event_queue, event, NULL, ticks) != osOK) {
-        if (msecs_to_wait > 0) {
-            return HAL_TIMEOUT;
-        } else {
+    QueueSetMemberHandle_t queue = xQueueSelectFromSet(keypad_event_queue_set, ticks);
+
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
+    if (queue == keypad_event_queue) {
+        if (osMessageQueueGet(keypad_event_queue, event, NULL, 0) != osOK) {
             bzero(event, sizeof(keypad_event_t));
         }
+    } else if (queue == keypad_encoder_event_queue) {
+        if (osMessageQueueGet(keypad_encoder_event_queue, event, NULL, 0) != osOK) {
+            bzero(event, sizeof(keypad_event_t));
+        }
+    } else {
+        ret = HAL_TIMEOUT;
     }
-    return HAL_OK;
+    osMutexRelease(keypad_event_mutex);
+    return ret;
 }
 
 HAL_StatusTypeDef keypad_int_event_handler()
@@ -437,7 +526,9 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
     };
     log_d("Key event: key=%d, pressed=%d, state=%04X", keycode, pressed, button_state);
 
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
+    osMutexRelease(keypad_event_mutex);
 }
 
 void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
@@ -470,7 +561,9 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
     };
     log_d("Key event: key=%d, pressed=1, state=%04X (repeat)", keycode, button_state);
 
+    osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueuePut(keypad_event_queue, &keypad_event, 0, 0);
+    osMutexRelease(keypad_event_mutex);
 }
 
 void keypad_button_repeat_timer_callback(TimerHandle_t xTimer)
@@ -484,6 +577,7 @@ void keypad_button_repeat_timer_callback(TimerHandle_t xTimer)
         .ticks = ticks,
         .repeated = true
     };
+
     osMessageQueuePut(keypad_raw_event_queue, &raw_event, 0, 0);
 }
 

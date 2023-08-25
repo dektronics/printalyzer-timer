@@ -840,21 +840,19 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
                 /* Increment active row with rollover */
+                const int amount = (keypad_event.key == KEYPAD_ENCODER_CW) ? keypad_event.count : 1;
                 if (row == 0) {
-                    if (green_val < max_val) { green_val++; }
-                    else { green_val = 0; }
+                    green_val = (green_val + amount) % (max_val + 1);
                 } else if (row == 1) {
-                    if (blue_val < max_val) { blue_val++; }
-                    else { blue_val = 0; }
+                    blue_val = (blue_val + amount) % (max_val + 1);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
                 /* Decrement active row with rollover */
+                const int amount = (keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1;
                 if (row == 0) {
-                    if (green_val > 0) { green_val--; }
-                    else { green_val = max_val; }
+                    green_val = (green_val + ((max_val + 1) - amount)) % (max_val + 1);
                 } else if (row == 1) {
-                    if (blue_val > 0) { blue_val--; }
-                    else { blue_val = max_val; }
+                    blue_val = (blue_val + ((max_val + 1) - amount)) % (max_val + 1);
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 /* Skip-increment active row */
@@ -968,12 +966,12 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
                 /* Increment active row with rollover */
-                if (row_val[row] < max_val) { row_val[row]++; }
-                else { row_val[row] = 0; }
+                const int amount = (keypad_event.key == KEYPAD_ENCODER_CW) ? keypad_event.count : 1;
+                row_val[row] = (row_val[row] + amount) % (max_val + 1);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CCW) {
                 /* Decrement active row with rollover */
-                if (row_val[row] > 0) { row_val[row]--; }
-                else { row_val[row] = max_val; }
+                const int amount = (keypad_event.key == KEYPAD_ENCODER_CCW) ? keypad_event.count : 1;
+                row_val[row] = (row_val[row] + ((max_val + 1) - amount)) % (max_val + 1);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 /* Skip-increment active row */
                 if (row_val[row] > max_val - 10) {

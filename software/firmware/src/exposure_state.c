@@ -559,44 +559,62 @@ void exposure_set_channel_default_value(exposure_state_t *state, int index, uint
     }
 }
 
-void exposure_channel_increase(exposure_state_t *state, int index)
+void exposure_channel_increase(exposure_state_t *state, int index, uint8_t amount)
 {
-    if (!state) { return; }
+    if (!state || amount == 0) { return; }
 
-    const uint16_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
+    const uint32_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
 
     if (index < 3) {
-        if (state->channel_values[index] < max_val) {
-            state->channel_values[index]++;
-        } else {
-            state->channel_values[index] = 0;
-        }
+        state->channel_values[index] = (uint16_t)((state->channel_values[index] + amount) % (max_val + 1));
     } else {
-        for (size_t i = 0; i < 3; i++) {
-            if (state->channel_values[i] < max_val) {
-                state->channel_values[i]++;
+        if (state->channel_values[0] == state->channel_values[1] && state->channel_values[0] == state->channel_values[2]) {
+            state->channel_values[0] = (uint16_t)((state->channel_values[0] + amount) % (max_val + 1));
+            state->channel_values[1] = state->channel_values[0];
+            state->channel_values[2] = state->channel_values[0];
+        } else {
+            size_t biggest = 0;
+            if (state->channel_values[1] > state->channel_values[0]) {
+                biggest = 1;
             }
+            if (state->channel_values[2] > state->channel_values[1]) {
+                biggest = 2;
+            }
+            amount = MIN(amount, max_val - state->channel_values[biggest]);
+
+            state->channel_values[0] += amount;
+            state->channel_values[1] += amount;
+            state->channel_values[2] += amount;
         }
     }
 }
 
-void exposure_channel_decrease(exposure_state_t *state, int index)
+void exposure_channel_decrease(exposure_state_t *state, int index, uint8_t amount)
 {
-    if (!state) { return; }
+    if (!state || amount == 0) { return; }
 
     const uint16_t max_val = state->channel_wide_mode ? UINT16_MAX : UINT8_MAX;
 
     if (index < 3) {
-        if (state->channel_values[index] > 0) {
-            state->channel_values[index]--;
-        } else {
-            state->channel_values[index] = max_val;
-        }
+        state->channel_values[index] = (uint16_t)((state->channel_values[index] + ((max_val + 1) - amount)) % (max_val + 1));
     } else {
-        for (size_t i = 0; i < 3; i++) {
-            if (state->channel_values[i] > 0) {
-                state->channel_values[i]--;
+        if (state->channel_values[0] == state->channel_values[1] && state->channel_values[0] == state->channel_values[2]) {
+            state->channel_values[0] = (uint16_t)((state->channel_values[0] + ((max_val + 1) - amount)) % (max_val + 1));
+            state->channel_values[1] = state->channel_values[0];
+            state->channel_values[2] = state->channel_values[0];
+        } else {
+            size_t smallest = 0;
+            if (state->channel_values[1] < state->channel_values[0]) {
+                smallest = 1;
             }
+            if (state->channel_values[2] < state->channel_values[1]) {
+                smallest = 2;
+            }
+            amount = MIN(amount, state->channel_values[smallest]);
+
+            state->channel_values[0] -= amount;
+            state->channel_values[1] -= amount;
+            state->channel_values[2] -= amount;
         }
     }
 }

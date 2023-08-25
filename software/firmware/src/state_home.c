@@ -270,7 +270,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     if (state->highlight_element == 0) {
                         exposure_adj_increase(exposure_state);
                     } else if (state->highlight_element < 5) {
-                        exposure_channel_increase(exposure_state, state->highlight_element - 1);
+                        exposure_channel_increase(exposure_state, state->highlight_element - 1, 1);
                     }
                     state->display_dirty = true;
                 } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
@@ -282,7 +282,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                     if (state->highlight_element == 0) {
                         exposure_adj_decrease(exposure_state);
                     } else if (state->highlight_element < 5) {
-                        exposure_channel_decrease(exposure_state, state->highlight_element - 1);
+                        exposure_channel_decrease(exposure_state, state->highlight_element - 1, 1);
                     }
                     state->display_dirty = true;
                 } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
@@ -345,12 +345,12 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                 state->display_dirty = true;
             } else if (keypad_event.key == KEYPAD_ENCODER_CW) {
                 if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
-                    exposure_channel_increase(exposure_state, state->highlight_element - 1);
+                    exposure_channel_increase(exposure_state, state->highlight_element - 1, keypad_event.count);
                     state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
                 if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
-                    exposure_channel_decrease(exposure_state, state->highlight_element - 1);
+                    exposure_channel_decrease(exposure_state, state->highlight_element - 1, keypad_event.count);
                     state->display_dirty = true;
                 }
             } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
@@ -791,11 +791,11 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_event.key == KEYPAD_ENCODER_CW) {
             if (state->working_value <= state->max_value) {
-                state->working_value++;
+                state->working_value = MIN(state->working_value + keypad_event.count, state->max_value);
             }
         } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
             if (state->working_value >= state->min_value) {
-                state->working_value--;
+                state->working_value = MAX(state->working_value - keypad_event.count, state->min_value);
             }
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
             state->value_accepted = true;
@@ -849,27 +849,33 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_event.key == KEYPAD_ENCODER_CW) {
-            if (state->working_value < 10000) {
-                state->working_value += 10;
-                if (state->working_value > 10000) { state->working_value = 10000; }
-            } else if (state->working_value < 100000) {
-                state->working_value += 100;
-                if (state->working_value > 100000) { state->working_value = 100000; }
-            } else if (state->working_value < 999000) {
-                state->working_value += 1000;
-                if (state->working_value > 999000) { state->working_value = 999000; }
-            }
+            do {
+                if (state->working_value < 10000) {
+                    state->working_value += 10;
+                    if (state->working_value > 10000) { state->working_value = 10000; }
+                } else if (state->working_value < 100000) {
+                    state->working_value += 100;
+                    if (state->working_value > 100000) { state->working_value = 100000; }
+                } else if (state->working_value < 999000) {
+                    state->working_value += 1000;
+                    if (state->working_value > 999000) { state->working_value = 999000; }
+                }
+                keypad_event.count--;
+            } while (keypad_event.count > 0);
         } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
-            if (state->working_value <= 10000) {
-                state->working_value -= 10;
-                if (state->working_value < 10 || state->working_value > 1000000) { state->working_value = 10; }
-            } else if (state->working_value <= 100000) {
-                state->working_value -= 100;
-                if (state->working_value < 10000) { state->working_value = 10000; }
-            } else if (state->working_value <= 999000) {
-                state->working_value -= 1000;
-                if (state->working_value < 100000) { state->working_value = 100000; }
-            }
+            do {
+                if (state->working_value <= 10000) {
+                    state->working_value -= 10;
+                    if (state->working_value < 10 || state->working_value > 1000000) { state->working_value = 10; }
+                } else if (state->working_value <= 100000) {
+                    state->working_value -= 100;
+                    if (state->working_value < 10000) { state->working_value = 10000; }
+                } else if (state->working_value <= 999000) {
+                    state->working_value -= 1000;
+                    if (state->working_value < 100000) { state->working_value = 100000; }
+                }
+                keypad_event.count--;
+            } while (keypad_event.count > 0);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
             if (state->working_value < 10000) {
                 state->working_value += 100;

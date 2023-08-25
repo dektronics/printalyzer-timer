@@ -105,8 +105,8 @@ void exposure_contrast_decrease(exposure_state_t *state);
 
 uint16_t exposure_get_channel_value(const exposure_state_t *state, int index);
 void exposure_set_channel_default_value(exposure_state_t *state, int index, uint16_t value);
-void exposure_channel_increase(exposure_state_t *state, int index);
-void exposure_channel_decrease(exposure_state_t *state, int index);
+void exposure_channel_increase(exposure_state_t *state, int index, uint8_t amount);
+void exposure_channel_decrease(exposure_state_t *state, int index, uint8_t amount);
 bool exposure_get_channel_wide_mode(const exposure_state_t *state);
 void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode);
 
