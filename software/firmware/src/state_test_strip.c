@@ -117,6 +117,21 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
                 exposure_get_test_strip_patch_pev(exposure_state, state->exposure_patch_min + i);
         }
     }
+
+    /* Iterate across all patch times and mark those that are too short */
+    state->elements.invalid_patches = 0;
+    float min_exposure_time = exposure_get_min_exposure_time(exposure_state);
+    for (int i = 0; i < state->exposure_patch_count; i++) {
+        float patch_time;
+        if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+            patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + i);
+        } else {
+            patch_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min, i);
+        }
+        if ((min_exposure_time > 0) && (patch_time < min_exposure_time)) {
+            state->elements.invalid_patches |= (1 << (state->exposure_patch_count - i - 1));
+        }
+    }
 }
 
 bool state_test_strip_process(state_t *state_base, state_controller_t *controller)
@@ -142,6 +157,7 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
             state->elements.covered_patches |= (1 << (state->exposure_patch_count - i - 1));
         }
     }
+
     uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
 
     convert_exposure_to_display_timer(&(state->elements.time_elements), patch_time_ms);

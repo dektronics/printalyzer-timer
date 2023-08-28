@@ -1191,6 +1191,8 @@ void display_redraw_adjustment_exposure_timer(const display_exposure_timer_t *ti
 
 void display_draw_test_strip_elements(const display_test_strip_elements_t *elements)
 {
+    asset_info_t asset;
+
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
@@ -1202,7 +1204,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
     u8g2_SetFontDirection(&u8g2, 0);
     u8g2_SetFontPosBaseline(&u8g2);
 
-    // Draw test strip grid
+    /* Draw test strip grid */
     u8g2_uint_t x;
     u8g2_uint_t y = 13;
     if (elements->patches == DISPLAY_PATCHES_5) {
@@ -1225,7 +1227,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
         }
     }
 
-    // Draw each test strip patch
+    /* Draw each test strip patch */
     if (elements->patches == DISPLAY_PATCHES_5) {
         x = 2;
         for (int i = 0; i < 5; i++) {
@@ -1236,10 +1238,20 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
             }
 
             if (elements->patch_cal_values[i] > 0) {
-                u8g2_SetFontDirection(&u8g2, 3);
-                u8g2_DrawUTF8(&u8g2, x + 19, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
-                u8g2_SetFontDirection(&u8g2, 0);
+                if (elements->invalid_patches & (1 << (6 - i))) {
+                    display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
+                    u8g2_DrawXBM(&u8g2, x + 5, y + 5, asset.width, asset.height, asset.bits);
+                } else {
+                    u8g2_SetFontDirection(&u8g2, 3);
+                    u8g2_DrawUTF8(&u8g2, x + 19, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                    u8g2_SetFontDirection(&u8g2, 0);
+                }
                 y += 19;
+            } else {
+                if (elements->invalid_patches & (1 << (6 - i))) {
+                    display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
+                    u8g2_DrawXBM(&u8g2, x + 5, y + 30, asset.width, asset.height, asset.bits);
+                }
             }
 
             switch (i) {
@@ -1275,10 +1287,20 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
             }
 
             if (elements->patch_cal_values[i] > 0) {
-                u8g2_SetFontDirection(&u8g2, 3);
-                u8g2_DrawUTF8(&u8g2, x + 15, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
-                u8g2_SetFontDirection(&u8g2, 0);
+                if (elements->invalid_patches & (1 << (6 - i))) {
+                    display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
+                    u8g2_DrawXBM(&u8g2, x + 1, y + 5, asset.width, asset.height, asset.bits);
+                } else {
+                    u8g2_SetFontDirection(&u8g2, 3);
+                    u8g2_DrawUTF8(&u8g2, x + 15, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                    u8g2_SetFontDirection(&u8g2, 0);
+                }
                 y += 19;
+            } else {
+                if (elements->invalid_patches & (1 << (6 - i))) {
+                    display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
+                    u8g2_DrawXBM(&u8g2, x + 1, y + 30, asset.width, asset.height, asset.bits);
+                }
             }
 
             switch (i) {
@@ -1312,7 +1334,7 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
         }
     }
 
-    // Draw title text
+    /* Draw title text */
     x = 166;
     y = 11 + u8g2_GetAscent(&u8g2);
     u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
@@ -1324,14 +1346,13 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
         u8g2_DrawUTF8Line(&u8g2, x, y, u8g2_GetDisplayWidth(&u8g2) - x, elements->title2, 0, 0);
     }
 
-    // Draw timer icon
+    /* Draw timer icon */
     x = 165;
     y = 35;
-    asset_info_t asset;
     display_asset_get(&asset, ASSET_TIMER_ICON_24);
     u8g2_DrawXBM(&u8g2, x, y, asset.width, asset.height, asset.bits);
 
-    // Draw timer
+    /* Draw timer */
     x = 251;
     y = 34;
     display_draw_counter_time_small(x, y, &(elements->time_elements));

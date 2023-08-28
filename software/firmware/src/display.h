@@ -86,6 +86,7 @@ typedef struct __display_main_calibration_elements_t {
 typedef struct {
     display_patches_t patches;
     uint8_t covered_patches;
+    uint8_t invalid_patches;
     uint16_t patch_cal_values[7];
     const char *title1;
     const char *title2;
