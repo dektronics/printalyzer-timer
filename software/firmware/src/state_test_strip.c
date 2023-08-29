@@ -17,6 +17,7 @@
 #include "enlarger_control.h"
 #include "exposure_timer.h"
 #include "settings.h"
+#include "buzzer.h"
 
 typedef struct {
     state_t base;
@@ -26,6 +27,7 @@ typedef struct {
     teststrip_mode_t teststrip_mode;
     int exposure_patch_min;
     unsigned int exposure_patch_count;
+    unsigned int exposure_patch_offset;
     unsigned int patches_covered;
     display_test_strip_elements_t elements;
 } state_test_strip_t;
@@ -59,6 +61,7 @@ void state_test_strip_entry(state_t *state_base, state_controller_t *controller,
     state->teststrip_mode = settings_get_teststrip_mode();
     state->exposure_patch_min = 0;
     state->exposure_patch_count = 0;
+    state->exposure_patch_offset = 0;
     state->patches_covered = 0;
     memset(&state->elements, 0, sizeof(display_test_strip_elements_t));
 
@@ -121,16 +124,43 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
     /* Iterate across all patch times and mark those that are too short */
     state->elements.invalid_patches = 0;
     float min_exposure_time = exposure_get_min_exposure_time(exposure_state);
-    for (int i = 0; i < state->exposure_patch_count; i++) {
-        float patch_time;
-        if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
-            patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + i);
-        } else {
-            patch_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min, i);
+    if (!(min_exposure_time > 0)) { return; }
+
+    /* Find the valid patch offset to deal with short exposure times */
+    unsigned int patch_offset = 0;
+    if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+        /* In separate mode, just block off invalid patches */
+        for (int i = 0; i < state->exposure_patch_count; i++) {
+            float patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + i);
+            if (patch_time < min_exposure_time) {
+                state->elements.invalid_patches |= (1 << (state->exposure_patch_count - i - 1));
+                patch_offset = i + 1;
+            }
         }
-        if ((min_exposure_time > 0) && (patch_time < min_exposure_time)) {
+    } else {
+        /* In incremental mode, adjust the minimum patch */
+        for (unsigned int i = 0; i < state->exposure_patch_count; i++) {
+            float base_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min + i, 0);
+            float patch_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min + i, 1);
+            if (base_time > min_exposure_time && ((i == state->exposure_patch_count - 1) || (patch_time > min_exposure_time))) {
+                break;
+            }
+            patch_offset = i + 1;
+        }
+    }
+
+    if (patch_offset >= state->exposure_patch_count) {
+        log_w("All test strip times are too short: min_time=%f", min_exposure_time);
+        //TODO disable test strip
+        state->elements.invalid_patches = 0xFF;
+        state->patches_covered = state->exposure_patch_count;
+    } else if (patch_offset > 0) {
+        log_w("Starting strip on patch: %d, min_time=%f", state->exposure_patch_min + patch_offset, min_exposure_time);
+        for (int i = 0; i < patch_offset; i++) {
             state->elements.invalid_patches |= (1 << (state->exposure_patch_count - i - 1));
         }
+        state->exposure_patch_offset = patch_offset;
+        state->patches_covered = patch_offset;
     }
 }
 
@@ -144,13 +174,19 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
 
     bool canceled = false;
     float patch_time;
-    if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+    if (state->patches_covered == state->exposure_patch_count) {
+        patch_time = exposure_get_test_strip_time_complete(exposure_state, 0);
+        state->elements.covered_patches = 0xFF;
+        canceled = true;
+    } else if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
         patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + state->patches_covered);
 
         state->elements.covered_patches = 0xFF;
         state->elements.covered_patches ^= (1 << (state->exposure_patch_count - state->patches_covered - 1));
     } else {
-        patch_time = exposure_get_test_strip_time_incremental(exposure_state, state->exposure_patch_min, state->patches_covered);
+        patch_time = exposure_get_test_strip_time_incremental(exposure_state,
+            state->exposure_patch_min + state->exposure_patch_offset,
+            state->patches_covered - state->exposure_patch_offset);
 
         state->elements.covered_patches = 0;
         for (int i = 0; i < state->patches_covered; i++) {
@@ -163,6 +199,30 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     convert_exposure_to_display_timer(&(state->elements.time_elements), patch_time_ms);
 
     display_draw_test_strip_elements(&state->elements);
+
+    /* Abort if the test strip can't be created */
+    if (canceled) {
+        buzzer_volume_t current_volume = buzzer_get_volume();
+        pam8904e_freq_t current_frequency = buzzer_get_frequency();
+        buzzer_set_volume(settings_get_buzzer_volume());
+
+        /* This is the same beep sequence as an aborted exposure */
+        buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(450));
+
+        buzzer_set_volume(current_volume);
+        buzzer_set_frequency(current_frequency);
+
+        state_controller_set_next_state(controller, STATE_HOME, 0);
+        return true;
+    }
 
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
