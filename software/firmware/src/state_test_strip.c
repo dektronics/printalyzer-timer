@@ -151,7 +151,6 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
 
     if (patch_offset >= state->exposure_patch_count) {
         log_w("All test strip times are too short: min_time=%f", min_exposure_time);
-        //TODO disable test strip
         state->elements.invalid_patches = 0xFF;
         state->patches_covered = state->exposure_patch_count;
     } else if (patch_offset > 0) {
