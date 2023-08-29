@@ -243,6 +243,25 @@ osStatus_t meter_probe_control_start()
     do {
         /* Read the meter probe's settings memory */
         ret = meter_probe_settings_init(&meter_probe_settings, &hi2c2);
+
+        /* If the first I2C operation since power-up fails, try reinitializing the I2C bus */
+        if (ret == HAL_BUSY) {
+            ret = HAL_I2C_DeInit(&hi2c2);
+            if (ret != HAL_OK) {
+                log_w("Unable to de-init I2C");
+                break;
+            }
+
+            ret = HAL_I2C_Init(&hi2c2);
+            if (ret != HAL_OK) {
+                log_w("Unable to re-init I2C");
+                break;
+            }
+
+            /* Now retry the operation */
+            ret = meter_probe_settings_init(&meter_probe_settings, &hi2c2);
+        }
+
         if (ret != HAL_OK) {
             break;
         }
