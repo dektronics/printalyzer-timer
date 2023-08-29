@@ -482,7 +482,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
         rising_threshold = 2;
     }
 
-    uint16_t falling_threshold = roundf(stats_off->mean + stats_off->stddev);
+    uint16_t falling_threshold = lroundf(stats_off->mean + stats_off->stddev);
     if (falling_threshold < 2) {
         falling_threshold = 2;
     }
@@ -515,9 +515,9 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
      */
     uint32_t enlarger_on_threshold;
     if ((stats_on->mean / stats_on->stddev) < 0.01F) {
-        enlarger_on_threshold = (uint32_t)roundf(stats_on->mean - (stats_on->mean * 0.01F));
+        enlarger_on_threshold = (uint32_t)lroundf(stats_on->mean - (stats_on->mean * 0.01F));
     } else {
-        enlarger_on_threshold = (uint32_t)roundf(stats_on->mean - stats_on->stddev);
+        enlarger_on_threshold = (uint32_t)lroundf(stats_on->mean - stats_on->stddev);
     }
 
 
@@ -689,13 +689,13 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
     timing_profile->rise_time = (time_rise_end - time_rise_start) / portTICK_PERIOD_MS;
 
     float rise_scale_factor = (float)integrated_rise / (stats_on->mean * rise_counts);
-    timing_profile->rise_time_equiv = roundf(timing_profile->rise_time * rise_scale_factor);
+    timing_profile->rise_time_equiv = lroundf(timing_profile->rise_time * rise_scale_factor);
 
     timing_profile->turn_off_delay = (time_fall_start - time_relay_off) / portTICK_PERIOD_MS;
     timing_profile->fall_time = (time_fall_end - time_fall_start) / portTICK_PERIOD_MS;
 
     float fall_scale_factor = (float)integrated_fall / (stats_on->mean * fall_counts);
-    timing_profile->fall_time_equiv = roundf(timing_profile->fall_time * fall_scale_factor);
+    timing_profile->fall_time_equiv = lroundf(timing_profile->fall_time * fall_scale_factor);
 
     log_i("Relay on delay: %ldms", timing_profile->turn_on_delay);
     log_i("Rise time: %ldms (full_equiv=%ldms, counts=%ld)", timing_profile->rise_time, timing_profile->rise_time_equiv, rise_counts);

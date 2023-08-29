@@ -79,7 +79,7 @@ void convert_exposure_to_display_densitometer(display_main_densitometer_elements
         float fractional;
         fractional = modff(density, &whole);
         elements->density_whole = whole;
-        elements->density_fractional = round_to_10(roundf(fractional * 1000.0f));
+        elements->density_fractional = round_to_10(lroundf(fractional * 1000.0f));
         elements->fraction_digits = 2;
     }
 }
@@ -103,7 +103,7 @@ void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements,
     float fractional;
     fractional = modff(exposure_time, &seconds);
     elements->time_seconds = seconds;
-    elements->time_milliseconds = round_to_10(roundf(fractional * 1000.0f));
+    elements->time_milliseconds = round_to_10(lroundf(fractional * 1000.0f));
 
     if (exposure_time < 10) {
         elements->fraction_digits = 2;
@@ -144,7 +144,7 @@ uint32_t round_to_10(uint32_t n)
 
 uint32_t rounded_exposure_time_ms(float seconds)
 {
-    uint32_t milliseconds = (uint32_t)(roundf(seconds * 1000.0f));
+    uint32_t milliseconds = lroundf(seconds * 1000.0f);
     if (milliseconds > 1000000) {
         milliseconds = 1000000;
     }
