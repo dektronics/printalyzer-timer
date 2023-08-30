@@ -18,6 +18,7 @@
 
 #include "menu_settings.h"
 #include "menu_enlarger.h"
+#include "menu_safelight.h"
 #include "menu_paper.h"
 #include "menu_step_wedge.h"
 #include "menu_import_export.h"
@@ -37,6 +38,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "Main Menu", option,
                 "Settings\n"
                 "Enlarger Configuration\n"
+                "Safelight Configuration\n"
                 "Paper Profiles\n"
                 "Step Wedge Properties\n"
                 "Import / Export\n"
@@ -48,14 +50,16 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 2) {
             menu_result = menu_enlarger_configs(controller);
         } else if (option == 3) {
-            menu_result = menu_paper_profiles(controller);
+            menu_result = menu_safelight_config();
         } else if (option == 4) {
-            menu_result = menu_step_wedge();
+            menu_result = menu_paper_profiles(controller);
         } else if (option == 5) {
-            menu_result = menu_import_export(controller);
+            menu_result = menu_step_wedge();
         } else if (option == 6) {
-            menu_result = menu_diagnostics();
+            menu_result = menu_import_export(controller);
         } else if (option == 7) {
+            menu_result = menu_diagnostics();
+        } else if (option == 8) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
