@@ -87,6 +87,7 @@ static bool meter_probe_sensor_single_shot = false;
 static bool meter_probe_has_sensor_settings = false;
 static meter_probe_settings_handle_t meter_probe_settings = {0};
 static meter_probe_settings_tsl2585_t sensor_settings = {0};
+static uint8_t sensor_device_id[3];
 static tsl2585_config_t sensor_config = {0};
 
 /* Queue for meter probe control events */
@@ -287,7 +288,7 @@ osStatus_t meter_probe_control_start()
          * This routine should complete with the sensor in a disabled
          * state.
          */
-        ret = tsl2585_init(&hi2c2);
+        ret = tsl2585_init(&hi2c2, sensor_device_id);
         if (ret != HAL_OK) {
             break;
         }
@@ -332,6 +333,43 @@ osStatus_t meter_probe_control_stop()
     memset(&meter_probe_settings, 0, sizeof(meter_probe_settings_handle_t));
     memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
     meter_probe_has_sensor_settings = false;
+
+    return osOK;
+}
+
+osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info)
+{
+    if (!info) { return osErrorParameter; }
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    memset(info, 0, sizeof(meter_probe_device_info_t));
+
+    info->type = meter_probe_settings.type;
+    info->revision = meter_probe_settings.probe_revision;
+    info->serial = meter_probe_settings.probe_serial;
+    memcpy(info->sensor_id, sensor_device_id, 3);
+    memcpy(info->memory_id, meter_probe_settings.memory_id, 3);
+
+    return osOK;
+}
+
+bool meter_probe_has_settings()
+{
+    if (!meter_probe_initialized || !meter_probe_started) { return false; }
+    return meter_probe_has_sensor_settings;
+}
+
+osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
+{
+    if (!settings) { return osErrorParameter; }
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    memset(settings, 0, sizeof(meter_probe_settings_t));
+
+    settings->type = meter_probe_settings.type;
+    if (settings->type == METER_PROBE_TYPE_TSL2585 && meter_probe_has_sensor_settings) {
+        memcpy(&settings->settings_tsl2585, &sensor_settings, sizeof(meter_probe_settings_tsl2585_t));
+    }
 
     return osOK;
 }

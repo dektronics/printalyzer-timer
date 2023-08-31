@@ -15,6 +15,9 @@ typedef struct __meter_probe_settings_handle_t {
     I2C_HandleTypeDef *hi2c;
     bool initialized;
     meter_probe_type_t type;
+    int probe_revision;
+    int probe_serial;
+    uint8_t memory_id[3];
 } meter_probe_settings_handle_t;
 
 typedef struct {

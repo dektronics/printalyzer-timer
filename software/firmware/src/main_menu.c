@@ -22,6 +22,7 @@
 #include "menu_paper.h"
 #include "menu_step_wedge.h"
 #include "menu_import_export.h"
+#include "menu_meter_probe.h"
 #include "menu_diagnostics.h"
 
 static menu_result_t menu_about();
@@ -42,6 +43,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "Paper Profiles\n"
                 "Step Wedge Properties\n"
                 "Import / Export\n"
+                "Meter Probe\n"
                 "Diagnostics\n"
                 "About");
 
@@ -58,8 +60,10 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 6) {
             menu_result = menu_import_export(controller);
         } else if (option == 7) {
-            menu_result = menu_diagnostics();
+            menu_result = menu_meter_probe();
         } else if (option == 8) {
+            menu_result = menu_diagnostics();
+        } else if (option == 9) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;

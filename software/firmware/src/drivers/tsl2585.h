@@ -82,7 +82,7 @@ typedef enum {
 #define TSL2585_ALS_DATA1_SCALED_STATUS 0x02 /*< Indicates if ALS data1 needs to be multiplied */
 #define TSL2585_ALS_DATA2_SCALED_STATUS 0x01 /*< Indicates if ALS data2 needs to be multiplied */
 
-HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c, uint8_t *sensor_id);
 
 HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
 HAL_StatusTypeDef tsl2585_enable(I2C_HandleTypeDef *hi2c);

@@ -16,6 +16,20 @@
 #include <cmsis_os.h>
 
 #include "tsl2585.h"
+#include "meter_probe_settings.h"
+
+typedef struct {
+    meter_probe_type_t type;
+    int revision;
+    int serial;
+    uint8_t sensor_id[3];
+    uint8_t memory_id[3];
+} meter_probe_device_info_t;
+
+typedef struct {
+    meter_probe_type_t type;
+    meter_probe_settings_tsl2585_t settings_tsl2585;
+} meter_probe_settings_t;
 
 typedef enum {
     METER_READING_OK = 0,
@@ -65,8 +79,6 @@ bool meter_probe_is_started();
  * various initialization functions to ensure that the meter probe is
  * connected and ready for use. It will not start the sensor's integration
  * cycle.
- *
- * @return
  */
 osStatus_t meter_probe_start();
 
@@ -74,6 +86,36 @@ osStatus_t meter_probe_start();
  * Power down the meter probe.
  */
 osStatus_t meter_probe_stop();
+
+/**
+ * Get the meter probe device info.
+ *
+ * The meter probe must be started for this function to work.
+ *
+ * @return osOK if data was returned
+ */
+osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info);
+
+/**
+ * Get whether meter probe settings were successfully loaded.
+ *
+ * The meter probe must be started for this function to work,
+ * or it will return false.
+ *
+ * @return True if settings are available, false if settings are unavailable.
+ */
+bool meter_probe_has_settings();
+
+/**
+ * Get the meter probe settings.
+ *
+ * The meter probe must be started for this function to work.
+ * If settings were not loaded, then this function will return
+ * empty data.
+ *
+ * @return osOK if data was returned
+ */
+osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings);
 
 /**
  * Enable the meter probe sensor.

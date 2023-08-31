@@ -169,7 +169,7 @@ static const uint8_t TSL2585_ADDRESS = 0x39 << 1; // Use 8-bit address
 #define TSL2585_MEAS_MODE0_MEASUREMENT_SEQUENCER_SINGLE_SHOT_MODE 0x20
 #define TSL2585_MEAS_MODE0_MOD_FIFO_ALS_STATUS_WRITE_ENABLE 0x10
 
-HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
+HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c, uint8_t *sensor_id)
 {
     HAL_StatusTypeDef ret;
     uint8_t data;
@@ -182,6 +182,7 @@ HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
     }
 
     log_i("Device ID: %02X", data);
+    if (sensor_id) { sensor_id[0] = data; }
 
     if (data != 0x5C) {
         log_e("Invalid Device ID");
@@ -194,13 +195,15 @@ HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c)
     }
 
     log_i("Revision ID: %02X", data);
+    if (sensor_id) { sensor_id[1] = data; }
 
     ret = HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_AUX_ID, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    log_i("Aux ID: %02X", data);
+    log_i("Aux ID: %02X", data & 0x0F);
+    if (sensor_id) { sensor_id[2] = data & 0x0F; }
 
     ret = HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {

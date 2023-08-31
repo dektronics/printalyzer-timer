@@ -67,6 +67,9 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         handle->hi2c = hi2c;
         handle->initialized = true;
         handle->type = METER_PROBE_TYPE_TSL2585;
+        handle->probe_revision = 1;
+        handle->probe_serial = 0;
+        memcpy(handle->memory_id, id_data, 3);
     } while (0);
 
     return ret;
