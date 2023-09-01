@@ -118,6 +118,17 @@ bool meter_probe_has_settings();
 osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings);
 
 /**
+ * Set the meter probe settings.
+ *
+ * The meter probe must be started for this function to work, with
+ * the sensor in a disabled state. After calling this function,
+ * the meter probe should be restarted to activate the new settings.
+ *
+ * @return osOK if the settings were successfully stored
+ */
+osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings);
+
+/**
  * Enable the meter probe sensor.
  *
  * In the normal enabled mode, the sensor will continuously run its

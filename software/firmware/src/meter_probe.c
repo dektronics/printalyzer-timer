@@ -374,6 +374,25 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
     return osOK;
 }
 
+osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
+{
+    if (!settings) { return osErrorParameter; }
+    if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
+
+    if (settings->type != meter_probe_settings.type) {
+        log_w("Invalid settings device type");
+        return osErrorParameter;
+    }
+
+    if (settings->type == METER_PROBE_TYPE_TSL2585) {
+        HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&meter_probe_settings, &settings->settings_tsl2585);
+        return hal_to_os_status(ret);
+    } else {
+        log_w("Unsupported settings type");
+        return osError;
+    }
+}
+
 osStatus_t meter_probe_sensor_enable()
 {
     if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }

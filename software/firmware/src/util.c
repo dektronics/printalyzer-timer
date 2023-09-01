@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #include "display.h"
 #include "enlarger_config.h"
@@ -319,4 +320,56 @@ HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status)
     default:
         return HAL_ERROR;
     }
+}
+
+static const char* const VALID_NONALPHA_CHARS = "!#$%&'()-@^_`{}~+,;=[]";
+
+bool scrub_export_filename(char *filename, const char *ext)
+{
+    char buf[32];
+    size_t len;
+    char ch;
+    char *p;
+    bool changed = false;
+
+    /* Copy the filename to a working buffer, keeping only legal characters */
+    len = MIN(strlen(filename), 30);
+    memset(buf, 0, sizeof(buf));
+    p = buf;
+    for (size_t i = 0; i < len; i++) {
+        ch = filename[i];
+        if (isalnum(ch) || ch == ' ' || ch == '.' || ch > 0x80
+            || strchr(VALID_NONALPHA_CHARS, ch)) {
+            *p = ch;
+            p++;
+        }
+    }
+
+    /* Trim any trailing dots or spaces */
+    while (p > buf && (*(p - 1) == '.' || *(p - 1) == ' ')) { p--; *p = '\0'; }
+
+    /* Strip the file extension */
+    p = strrchr(buf, '.');
+    if (p && p > buf) {
+        *p = '\0';
+    }
+
+    /* Truncate the name */
+    buf[31] = '\0';
+    buf[30] = '\0';
+    buf[29] = '\0';
+    buf[28] = '\0';
+    buf[27] = '\0';
+    buf[26] = '\0';
+
+    /* Make sure the file ends in the correct extension */
+    strcat(buf, ext);
+
+    /* If the file actually changed, copy back and take note */
+    if (strcmp(filename, buf) != 0) {
+        strcpy(filename, buf);
+        changed = true;
+    }
+
+    return changed;
 }

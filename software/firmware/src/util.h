@@ -146,4 +146,13 @@ uint16_t value_adjust_with_rollover_u16(uint16_t value, int16_t increment, uint1
 osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status);
 HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status);
 
+/**
+ * Scrub a user-provided file name to ensure it meets requirements.
+ *
+ * @param filename The filename to scrub
+ * @param file extension (e.g. ".dat")
+ * @return True if the filename was modified
+ */
+bool scrub_export_filename(char *filename, const char *ext);
+
 #endif /* UTIL_H */

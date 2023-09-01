@@ -17,6 +17,7 @@
 #include "usb_host.h"
 #include "core_json.h"
 #include "util.h"
+#include "json_util.h"
 #include "file_picker.h"
 #include "app_descriptor.h"
 
@@ -54,9 +55,6 @@ static bool parse_section_paper(const char *buf, size_t len, paper_profile_t *pr
 static void parse_section_paper_grades(const char *buf, size_t len, paper_profile_t *profile);
 static void parse_section_paper_grade_entry(const char *buf, size_t len, paper_profile_grade_t *grade);
 static bool import_section_step_wedge(const char *buf, size_t len);
-static int json_count_elements(const char *buf, size_t len);
-static int json_parse_int(const char *buf, size_t len, int def_value);
-static float json_parse_float(const char *buf, size_t len, float def_value);
 
 static menu_result_t menu_export_config();
 static bool export_config_file(const char *filename);
@@ -65,10 +63,6 @@ static bool write_section_config(FIL *fp);
 static bool write_section_enlargers(FIL *fp);
 static bool write_section_papers(FIL *fp);
 static bool write_section_step_wedge(FIL *fp);
-static void json_write_string(FIL *fp, int indent, const char *key, const char *val, bool has_more);
-static void json_write_int(FIL *fp, int indent, const char *key, int val, bool has_more);
-static void json_write_float02(FIL *fp, int indent, const char *key, float val, bool has_more);
-static bool scrub_export_filename(char *filename);
 
 menu_result_t menu_import_export(state_controller_t *controller)
 {
@@ -899,67 +893,6 @@ bool import_section_step_wedge(const char *buf, size_t len)
     return true;
 }
 
-int json_count_elements(const char *buf, size_t len)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-    int count = 0;
-
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess) {
-        count++;
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    return count;
-}
-
-int json_parse_int(const char *buf, size_t len, int def_value)
-{
-    char num_buf[12];
-    char *endptr;
-    long result;
-
-    if (!buf || len == 0 || len > sizeof(num_buf) - 1) {
-        return def_value;
-    }
-
-    memset(num_buf, 0, sizeof(num_buf));
-    memcpy(num_buf, buf, len);
-
-    errno = 0;
-    result = strtol(num_buf, &endptr, 10);
-    if (endptr == num_buf || *endptr != '\0' ||
-        ((result == LONG_MIN || result == LONG_MAX) && errno == ERANGE)) {
-        result = def_value;
-    }
-    return result;
-}
-
-float json_parse_float(const char *buf, size_t len, float def_value)
-{
-    char num_buf[32];
-    char *endptr;
-    float result;
-
-    if (!buf || len == 0 || len > sizeof(num_buf) - 1) {
-        return def_value;
-    }
-
-    memset(num_buf, 0, sizeof(num_buf));
-    memcpy(num_buf, buf, len);
-
-    errno = 0;
-    result = strtof(num_buf, &endptr);
-    if (endptr == num_buf || *endptr != '\0' ||
-        ((result == -HUGE_VALF || result == HUGE_VALF) && errno == ERANGE)) {
-        result = def_value;
-    }
-    return result;
-}
-
 menu_result_t menu_export_config()
 {
     char buf[256];
@@ -985,7 +918,7 @@ menu_result_t menu_export_config()
         if (display_input_text("Configuration File Name", filename, sizeof(filename)) == 0) {
             return MENU_OK;
         }
-    } while (scrub_export_filename(filename));
+    } while (scrub_export_filename(filename, ".dat"));
 
     if (export_config_file(filename)) {
         sprintf(buf,
@@ -1190,102 +1123,4 @@ bool write_section_step_wedge(FIL *fp)
 
     step_wedge_free(wedge);
     return true;
-}
-
-void json_write_string(FIL *fp, int indent, const char *key, const char *val, bool has_more)
-{
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
-    f_printf(fp, "\"%s\": \"%s\"", key, val);
-
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
-}
-
-void json_write_int(FIL *fp, int indent, const char *key, int val, bool has_more)
-{
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
-    f_printf(fp, "\"%s\": %d", key, val);
-
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
-}
-
-void json_write_float02(FIL *fp, int indent, const char *key, float val, bool has_more)
-{
-    char buf[32];
-    if (!is_valid_number(val)) {
-        sprintf(buf, "null");
-    } else {
-        sprintf(buf, "%0.2f", val);
-    }
-
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
-    f_printf(fp, "\"%s\": %s", key, buf);
-
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
-}
-
-static const char* const VALID_NONALPHA_CHARS = "!#$%&'()-@^_`{}~+,;=[]";
-
-bool scrub_export_filename(char *filename)
-{
-    char buf[32];
-    size_t len;
-    char ch;
-    char *p;
-    bool changed = false;
-
-    /* Copy the filename to a working buffer, keeping only legal characters */
-    len = MIN(strlen(filename), 30);
-    memset(buf, 0, sizeof(buf));
-    p = buf;
-    for (size_t i = 0; i < len; i++) {
-        ch = filename[i];
-        if (isalnum(ch) || ch == ' ' || ch == '.' || ch > 0x80
-            || strchr(VALID_NONALPHA_CHARS, ch)) {
-            *p = ch;
-            p++;
-        }
-    }
-
-    /* Trim any trailing dots or spaces */
-    while (p > buf && (*(p - 1) == '.' || *(p - 1) == ' ')) { p--; *p = '\0'; }
-
-    /* Strip the file extension */
-    p = strrchr(buf, '.');
-    if (p && p > buf) {
-        *p = '\0';
-    }
-
-    /* Truncate the name */
-    buf[31] = '\0';
-    buf[30] = '\0';
-    buf[29] = '\0';
-    buf[28] = '\0';
-    buf[27] = '\0';
-    buf[26] = '\0';
-
-    /* Make sure the file ends in the correct extension */
-    strcat(buf, ".dat");
-
-    /* If the file actually changed, copy back and take note */
-    if (strcmp(filename, buf) != 0) {
-        strcpy(filename, buf);
-        changed = true;
-    }
-
-    return changed;
 }
