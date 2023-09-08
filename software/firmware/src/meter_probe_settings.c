@@ -13,6 +13,12 @@ extern CRC_HandleTypeDef hcrc;
 
 #define LATEST_CAL_TSL2585_VERSION 1
 
+#define ID_MEMORY_ID             0 /* 3B */
+#define ID_PROBE_TYPE            3 /* 1B (uint8_t) */
+#define ID_PROBE_REVISION        4 /* 1B (uint8_t) */
+#define ID_PROBE_RESERVED0       5 /* 7B (for page alignment) */
+#define ID_PROBE_SERIAL         12 /* 4B (uint32_t) */
+
 #define PAGE_CAL               0x000UL
 #define PAGE_CAL_SIZE          (128UL)
 #define CAL_TSL2585_VERSION      0 /* 4B (uint32_t) */
@@ -55,21 +61,15 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
             break;
         }
 
-        /*
-         * TODO: Read probe type info out of the rest of the ID page
-         * Can't do this until the ID data format is standardized,
-         * and a way to program it is implemented.
-         *
-         * For now we'll just assume that if we got to this point,
-         * then a meter probe with a TSL2585 sensor is attached.
-         */
-
         handle->hi2c = hi2c;
+
+        /* Read the probe type information out of the rest of the ID page */
+        memcpy(handle->id.memory_id, id_data, 3);
+        handle->id.probe_type = id_data[ID_PROBE_TYPE];
+        handle->id.probe_revision = id_data[ID_PROBE_REVISION];
+        handle->id.probe_serial = copy_to_u32(id_data + ID_PROBE_SERIAL);
+
         handle->initialized = true;
-        handle->type = METER_PROBE_TYPE_TSL2585;
-        handle->probe_revision = 1;
-        handle->probe_serial = 0;
-        memcpy(handle->memory_id, id_data, 3);
     } while (0);
 
     return ret;
@@ -99,7 +99,7 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
 {
     HAL_StatusTypeDef ret = HAL_OK;
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
-    if (!handle->initialized || handle->type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
 
     uint8_t data[PAGE_CAL_SIZE];
     uint32_t version;
@@ -154,7 +154,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
 {
     HAL_StatusTypeDef ret = HAL_OK;
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
-    if (!handle->initialized || handle->type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
 
     /* Prepare an empty buffer */
     uint8_t data[PAGE_CAL_SIZE];

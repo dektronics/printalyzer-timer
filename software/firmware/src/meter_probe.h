@@ -19,11 +19,8 @@
 #include "meter_probe_settings.h"
 
 typedef struct {
-    meter_probe_type_t type;
-    int revision;
-    int serial;
+    meter_probe_id_t probe_id;
     uint8_t sensor_id[3];
-    uint8_t memory_id[3];
 } meter_probe_device_info_t;
 
 typedef struct {

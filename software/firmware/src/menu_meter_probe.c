@@ -102,14 +102,14 @@ menu_result_t meter_probe_device_info()
 
     do {
         size_t offset = 0;
-        offset += menu_build_padded_format_row(buf + offset, "Revision", "%d", info.revision);
-        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%03d", info.serial);
-        offset += menu_build_padded_str_row(buf + offset, "Sensor Type",
-            ((info.type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "Unknown"));
+        offset += menu_build_padded_str_row(buf + offset, "Probe Type",
+            ((info.probe_id.probe_type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "Unknown"));
+        offset += menu_build_padded_format_row(buf + offset, "Revision", "%d", info.probe_id.probe_revision);
+        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%03d", info.probe_id.probe_serial);
         offset += menu_build_padded_format_row(buf + offset, "Sensor ID", "%02X%02X%02X",
             info.sensor_id[0], info.sensor_id[1], info.sensor_id[2]);
         offset += menu_build_padded_format_row(buf + offset, "Memory ID", "%02X%02X%02X",
-            info.memory_id[0], info.memory_id[1], info.memory_id[2]);
+            info.probe_id.memory_id[0], info.probe_id.memory_id[1], info.probe_id.memory_id[2]);
         offset += menu_build_padded_str_row(buf + offset, "Calibration",
             (has_settings ? "Loaded" : "Missing"));
         buf[offset - 1] = '\0';
@@ -202,7 +202,7 @@ menu_result_t meter_probe_sensor_calibration_import()
         return MENU_OK;
     }
 
-    imported_settings.type = info.type;
+    imported_settings.type = info.probe_id.probe_type;
 
     option = file_picker_show("Select Calibration File", path_buf, sizeof(path_buf));
     if (option == MENU_TIMEOUT) {
@@ -402,7 +402,7 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
         } else if (strncmp("device", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
             has_device = (strncasecmp(pair.value, "Printalyzer Meter Probe", pair.valueLength) == 0);
         } else if (strncmp("type", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
-            if (info->type == METER_PROBE_TYPE_TSL2585) {
+            if (info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) {
                 has_type_match = (strncmp(pair.value, "TSL2585", pair.valueLength) == 0);
             }
         } else if (strncmp("revision", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
@@ -427,7 +427,7 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
         return false;
     }
 
-    if (revision != info->revision) {
+    if (revision != info->probe_id.probe_revision) {
         log_w("Device revision mismatch");
         return false;
     }
@@ -534,7 +534,7 @@ menu_result_t meter_probe_sensor_calibration_export()
         return MENU_OK;
     }
 
-    if (info.type != METER_PROBE_TYPE_TSL2585 || !meter_probe_has_settings()) {
+    if (info.probe_id.probe_type != METER_PROBE_TYPE_TSL2585 || !meter_probe_has_settings()) {
         return MENU_OK;
     }
 
@@ -547,7 +547,7 @@ menu_result_t meter_probe_sensor_calibration_export()
         return MENU_OK;
     }
 
-    sprintf(filename, "mp-cal-%03d.dat", info.serial);
+    sprintf(filename, "mp-cal-%03ld.dat", info.probe_id.probe_serial);
     do {
         if (display_input_text("Calibration File Name", filename, sizeof(filename)) == 0) {
             return MENU_OK;
@@ -617,9 +617,9 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
     f_printf(fp, "  \"header\": {\n");
     json_write_int(fp, 4, "version", HEADER_EXPORT_VERSION, true);
     json_write_string(fp, 4, "device", "Printalyzer Meter Probe", true);
-    json_write_string(fp, 4, "type", ((info->type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "unknown"), true);
-    json_write_int(fp, 4, "revision", info->revision, true);
-    json_write_int(fp, 4, "serial", info->serial, false);
+    json_write_string(fp, 4, "type", ((info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "unknown"), true);
+    json_write_int(fp, 4, "revision", info->probe_id.probe_revision, true);
+    json_write_int(fp, 4, "serial", info->probe_id.probe_serial, false);
     f_printf(fp, "\n  }");
     return true;
 }

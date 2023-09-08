@@ -85,7 +85,7 @@ static bool meter_probe_sensor_enabled = false;
 static bool meter_probe_sensor_single_shot = false;
 
 static bool meter_probe_has_sensor_settings = false;
-static meter_probe_settings_handle_t meter_probe_settings = {0};
+static meter_probe_settings_handle_t probe_settings_handle = {0};
 static meter_probe_settings_tsl2585_t sensor_settings = {0};
 static uint8_t sensor_device_id[3];
 static tsl2585_config_t sensor_config = {0};
@@ -243,7 +243,7 @@ osStatus_t meter_probe_control_start()
 
     do {
         /* Read the meter probe's settings memory */
-        ret = meter_probe_settings_init(&meter_probe_settings, &hi2c2);
+        ret = meter_probe_settings_init(&probe_settings_handle, &hi2c2);
 
         /* If the first I2C operation since power-up fails, try reinitializing the I2C bus */
         if (ret == HAL_BUSY) {
@@ -260,21 +260,26 @@ osStatus_t meter_probe_control_start()
             }
 
             /* Now retry the operation */
-            ret = meter_probe_settings_init(&meter_probe_settings, &hi2c2);
+            ret = meter_probe_settings_init(&probe_settings_handle, &hi2c2);
         }
 
         if (ret != HAL_OK) {
             break;
         }
 
-        if (meter_probe_settings.type != METER_PROBE_TYPE_TSL2585) {
+        log_i("Meter probe: type=%d, rev=%d, serial=%ld",
+            probe_settings_handle.id.probe_type,
+            probe_settings_handle.id.probe_revision,
+            probe_settings_handle.id.probe_serial);
+
+        if (probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2585) {
             log_w("Unknown meter probe type");
             ret = HAL_ERROR;
             break;
         }
 
         /* Read the settings for the current sensor type */
-        ret = meter_probe_settings_get_tsl2585(&meter_probe_settings, &sensor_settings);
+        ret = meter_probe_settings_get_tsl2585(&probe_settings_handle, &sensor_settings);
         if (ret == HAL_OK) {
             meter_probe_has_sensor_settings = true;
         } else {
@@ -330,7 +335,7 @@ osStatus_t meter_probe_control_stop()
     meter_probe_sensor_enabled = false;
 
     /* Clear the settings */
-    memset(&meter_probe_settings, 0, sizeof(meter_probe_settings_handle_t));
+    memset(&probe_settings_handle, 0, sizeof(meter_probe_settings_handle_t));
     memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
     meter_probe_has_sensor_settings = false;
 
@@ -344,11 +349,8 @@ osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info)
 
     memset(info, 0, sizeof(meter_probe_device_info_t));
 
-    info->type = meter_probe_settings.type;
-    info->revision = meter_probe_settings.probe_revision;
-    info->serial = meter_probe_settings.probe_serial;
+    memcpy(&info->probe_id, &probe_settings_handle.id, sizeof(meter_probe_id_t));
     memcpy(info->sensor_id, sensor_device_id, 3);
-    memcpy(info->memory_id, meter_probe_settings.memory_id, 3);
 
     return osOK;
 }
@@ -366,7 +368,7 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
 
     memset(settings, 0, sizeof(meter_probe_settings_t));
 
-    settings->type = meter_probe_settings.type;
+    settings->type = probe_settings_handle.id.probe_type;
     if (settings->type == METER_PROBE_TYPE_TSL2585 && meter_probe_has_sensor_settings) {
         memcpy(&settings->settings_tsl2585, &sensor_settings, sizeof(meter_probe_settings_tsl2585_t));
     }
@@ -379,13 +381,13 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
     if (!settings) { return osErrorParameter; }
     if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
 
-    if (settings->type != meter_probe_settings.type) {
+    if (settings->type != probe_settings_handle.id.probe_type) {
         log_w("Invalid settings device type");
         return osErrorParameter;
     }
 
     if (settings->type == METER_PROBE_TYPE_TSL2585) {
-        HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&meter_probe_settings, &settings->settings_tsl2585);
+        HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&probe_settings_handle, &settings->settings_tsl2585);
         return hal_to_os_status(ret);
     } else {
         log_w("Unsupported settings type");

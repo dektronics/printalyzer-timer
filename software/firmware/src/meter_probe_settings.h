@@ -11,16 +11,20 @@ typedef enum {
     METER_PROBE_TYPE_TSL2585
 } meter_probe_type_t;
 
+typedef struct __meter_probe_id_t {
+    uint8_t memory_id[3];
+    meter_probe_type_t probe_type;
+    uint8_t probe_revision;
+    uint32_t probe_serial;
+} meter_probe_id_t;
+
 typedef struct __meter_probe_settings_handle_t {
     I2C_HandleTypeDef *hi2c;
     bool initialized;
-    meter_probe_type_t type;
-    int probe_revision;
-    int probe_serial;
-    uint8_t memory_id[3];
+    meter_probe_id_t id;
 } meter_probe_settings_handle_t;
 
-typedef struct {
+typedef struct __meter_probe_settings_tsl2585_gain_cal_t {
     float slope;
     float offset;
 } meter_probe_settings_tsl2585_gain_cal_t;
