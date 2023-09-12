@@ -2,7 +2,7 @@
 
 ![Printalyzer Logo](https://github.com/dkonigsberg/printalyzer/blob/master/docs/images/printalyzer-logo.png?raw=true)
 
-![Main Unit Rendering](https://github.com/dkonigsberg/printalyzer/blob/master/docs/images/main-unit-rendering.png?raw=true)
+![Main Unit Rendering](https://github.com/dkonigsberg/printalyzer/blob/master/docs/images/main-unit-photo.png?raw=true)
 
 ## Introduction
 
@@ -14,6 +14,9 @@ A good overview of the project can be found in these blog posts:
 
 Videos demonstrating the project are here:
 * [Introducing the Printalyzer](https://youtu.be/2FPqqqVILP8)
+
+The eventual goal of this project is to be available as a complete product available here:
+* [Printalyzer Enlarging Timer](https://www.dektronics.com/printalyzer-enlarging-timer)
 
 Note: This project is currently a work-in-progress, so expect the hardware and software to be continuously evolving.  The last functional version of this repository, using the revision A prototype hardware, was
 'main-board-rev-a-186-g9bce418'.
