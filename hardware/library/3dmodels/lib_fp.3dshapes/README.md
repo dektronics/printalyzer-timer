@@ -234,3 +234,7 @@ this directory's `.gitignore` file.
 ### AMS\_TSL2585
 * Status: Included
 * Source: Created for project using Autodesk Fusion 360
+
+### RAC10E-SK\_277
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://recom-power.com/en/products/ac-dc-power-supplies/ac-dc-pcb-mounted/rec-p-RAC10E-12SK!s277.html>
