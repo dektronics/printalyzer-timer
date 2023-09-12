@@ -238,3 +238,7 @@ this directory's `.gitignore` file.
 ### RAC10E-SK\_277
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://recom-power.com/en/products/ac-dc-power-supplies/ac-dc-pcb-mounted/rec-p-RAC10E-12SK!s277.html>
+
+### SW-PEC11L-4220F-S0015
+* Status: Included
+* Source: GrabCAD <https://grabcad.com/library/bourns-pec-encoder-series-1>
