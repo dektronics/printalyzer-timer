@@ -286,7 +286,7 @@ HAL_StatusTypeDef tsl2585_clear_sleep_after_interrupt(I2C_HandleTypeDef *hi2c)
 HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mods)
 {
     /* Mask bits [2:0] and invert since asserting disables the modulators */
-    uint8_t data = ~((uint8_t)mods) & 0x03;
+    uint8_t data = ~((uint8_t)mods) & 0x07;
 
     HAL_StatusTypeDef ret = HAL_I2C_Mem_Write(hi2c, TSL2585_ADDRESS,
         TSL2585_MOD_CHANNEL_CTRL, I2C_MEMADD_SIZE_8BIT,
