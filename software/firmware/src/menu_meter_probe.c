@@ -684,10 +684,10 @@ menu_result_t meter_probe_diagnostics()
     illum_controller_refresh();
     enlarger_control_set_state_off(&(enlarger_config.control), false);
 
-    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 716, 100) == osOK) {
+    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 719, 99) == osOK) {
         gain = TSL2585_GAIN_256X;
-        sample_time = 716;
-        sample_count = 100;
+        sample_time = 719;
+        sample_count = 99;
     }
 
     for (;;) {

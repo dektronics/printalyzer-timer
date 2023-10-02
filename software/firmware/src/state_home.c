@@ -514,9 +514,9 @@ void state_home_select_paper_profile(state_controller_t *controller)
 
 void state_home_start_meter_probe()
 {
-    /* Start with an integration time of 100.58ms */
-    static uint16_t sample_time = 716;
-    static uint16_t sample_count = 100;
+    /* Start with an integration time of 100ms */
+    static uint16_t sample_time = 719;
+    static uint16_t sample_count = 99;
 
     if (meter_probe_start() == osOK) {
         meter_probe_sensor_set_config(TSL2585_GAIN_256X, sample_time, sample_count);
