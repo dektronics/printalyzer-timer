@@ -40,3 +40,8 @@ HAL_StatusTypeDef stp16cpc26_set_brightness(stp16cpc26_handle_t *handle, uint16_
 
     return ret;
 }
+
+uint16_t stp16cpc26_get_max_brightness(stp16cpc26_handle_t *handle)
+{
+    return __HAL_TIM_GET_AUTORELOAD(handle->oe_tim);
+}
