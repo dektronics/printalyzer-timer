@@ -61,6 +61,9 @@ menu_result_t menu_meter_probe()
         return menu_result;
     }
 
+    /* Enable oscillator calibration */
+    meter_probe_sensor_enable_osc_calibration();
+
     /* Show the meter probe menu */
     do {
         option = display_selection_list(
@@ -82,6 +85,7 @@ menu_result_t menu_meter_probe()
 
     /* Stop the meter probe before returning */
     meter_probe_sensor_disable();
+    meter_probe_sensor_disable_osc_calibration();
     meter_probe_stop();
 
     return menu_result;
@@ -672,6 +676,10 @@ menu_result_t meter_probe_diagnostics()
     meter_probe_sensor_reading_t reading = {0};
     keypad_event_t keypad_event;
     bool key_changed = false;
+    uint32_t elapsed_tick_buf[10] = {0};
+    bool elapsed_tick_buf_full = false;
+    size_t elapsed_tick_buf_pos = 0;
+    const size_t elapsed_tick_buf_len = sizeof(elapsed_tick_buf) / sizeof(uint32_t);
 
     /* Load active enlarger config */
     uint8_t config_index = settings_get_default_enlarger_config_index();
@@ -779,6 +787,10 @@ menu_result_t meter_probe_diagnostics()
         }
 
         if (config_changed) {
+            memset(elapsed_tick_buf, 0, sizeof(elapsed_tick_buf));
+            elapsed_tick_buf_full = false;
+            elapsed_tick_buf_pos = 0;
+
             if (meter_probe_sensor_set_config(gain, sample_time, sample_count) == osOK) {
                 config_changed = false;
             }
@@ -800,19 +812,38 @@ menu_result_t meter_probe_diagnostics()
             const float basic_result = meter_probe_basic_result(&reading);
             const float atime = tsl2585_integration_time_ms(reading.sample_time, reading.sample_count);
             const float lux_result = meter_probe_lux_result(&reading);
+            float elapsed_tick_avg = 0;
+
+            if (reading.elapsed_ticks < atime * 2) {
+                /* Track the moving average of measured integration time */
+                elapsed_tick_buf[elapsed_tick_buf_pos] = reading.elapsed_ticks;
+                elapsed_tick_buf_pos++;
+
+                float elapsed_tick_sum = 0;
+                size_t elapsed_tick_sum_len = (elapsed_tick_buf_full ? elapsed_tick_buf_len : elapsed_tick_buf_pos);
+                for (size_t i = 0; i < elapsed_tick_sum_len; i++) {
+                    elapsed_tick_sum += elapsed_tick_buf[i];
+                }
+                elapsed_tick_avg = elapsed_tick_sum / elapsed_tick_sum_len;
+
+                if (elapsed_tick_buf_pos >= elapsed_tick_buf_len) {
+                    elapsed_tick_buf_full = true;
+                    elapsed_tick_buf_pos = 0;
+                }
+            }
 
             if (reading.result_status == METER_SENSOR_RESULT_VALID) {
                 sprintf(buf,
                     "TSL2585 (%s, %.2fms)\n"
                     "Data: %ld [%d]\n"
                     "Basic: %f, Lux: %f\n"
-                    "[%s][%s]\n"
+                    "[%s][%s] {%.2f}\n"
                     "%s",
                     tsl2585_gain_str(reading.gain), atime,
                     scaled_result, reading.raw_result,
                     basic_result, lux_result,
                     (enlarger_enabled ? "**" : "--"),
-                    (agc_enabled ? "AGC" : "---"),
+                    (agc_enabled ? "AGC" : "---"), elapsed_tick_avg,
                     (single_shot ? "Single Shot" : "Continuous"));
             } else {
                 const char *status_str;

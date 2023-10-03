@@ -16,6 +16,8 @@
 #include "tsl2585.h"
 #include "util.h"
 
+extern TIM_HandleTypeDef htim3;
+
 /**
  * Meter probe control event types.
  */
@@ -89,6 +91,8 @@ static meter_probe_settings_handle_t probe_settings_handle = {0};
 static meter_probe_settings_tsl2585_t sensor_settings = {0};
 static uint8_t sensor_device_id[3];
 static tsl2585_config_t sensor_config = {0};
+static bool sensor_osc_calibration_enabled = false;
+static uint32_t last_aint_ticks = 0;
 
 /* Queue for meter probe control events */
 static osMessageQueueId_t meter_probe_control_queue = NULL;
@@ -118,6 +122,14 @@ static osStatus_t meter_probe_control_sensor_enable_agc(const sensor_control_agc
 static osStatus_t meter_probe_control_sensor_disable_agc();
 static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
+
+static HAL_StatusTypeDef sensor_osc_calibration();
+static void sensor_int_timer_output_init();
+static void sensor_int_timer_output_start();
+static void sensor_int_timer_output_stop();
+static void sensor_int_gpio_exti_input();
+static void sensor_int_gpio_exti_enable();
+static void sensor_int_gpio_exti_disable();
 
 static HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading);
 
@@ -395,6 +407,30 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
     }
 }
 
+osStatus_t meter_probe_sensor_enable_osc_calibration()
+{
+    if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
+
+    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+        sensor_osc_calibration_enabled = true;
+        return osOK;
+    } else {
+        return osErrorParameter;
+    }
+}
+
+osStatus_t meter_probe_sensor_disable_osc_calibration()
+{
+    if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
+
+    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+        sensor_osc_calibration_enabled = false;
+        return osOK;
+    } else {
+        return osErrorParameter;
+    }
+}
+
 osStatus_t meter_probe_sensor_enable()
 {
     if (!meter_probe_initialized || !meter_probe_started || meter_probe_sensor_enabled) { return osErrorResource; }
@@ -428,6 +464,9 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
     HAL_StatusTypeDef ret = HAL_OK;
 
     log_d("meter_probe_control_sensor_enable: %s", single_shot ? "single_shot" : "continuous");
+
+    /* Disable handling of sensor interrupts */
+    sensor_int_gpio_exti_disable();
 
     do {
         /* Query the initial state of the sensor */
@@ -512,6 +551,16 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
             break;
         }
 
+        if (sensor_osc_calibration_enabled) {
+            ret = sensor_osc_calibration();
+            if (ret != HAL_OK) {
+                break;
+            }
+        }
+
+        /* Enable handling of sensor interrupts */
+        sensor_int_gpio_exti_enable();
+
         /* Enable the sensor (ALS Enable and Power ON) */
         ret = tsl2585_enable(&hi2c2);
         if (ret != HAL_OK) {
@@ -526,6 +575,134 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
     } while (0);
 
     return hal_to_os_status(ret);
+}
+
+HAL_StatusTypeDef sensor_osc_calibration()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t status3 = 0;
+    uint16_t vsync_period = 0;
+
+    log_d("TSL2585 oscillator calibration");
+
+    do {
+        /* Set VSYNC period target */
+        ret = tsl2585_set_vsync_period_target(&hi2c2, 720, true); /* 1000Hz */
+        if (ret != HAL_OK) { break; }
+
+        /* Configure sensor interrupt pin as an input */
+        ret = tsl2585_set_vsync_gpio_int(&hi2c2, TSL2585_GPIO_INT_INT_IN_EN | TSL2585_GPIO_INT_VSYNC_GPIO_OUT);
+        if (ret != HAL_OK) { break; }
+
+        /* Set calibration mode and configure sensor to use the interrupt pin for VSYNC */
+        ret = tsl2585_set_vsync_cfg(&hi2c2, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_SELECT);
+        if (ret != HAL_OK) { break; }
+
+        /* Reconfigure SENSOR_INT as a PWM output */
+        sensor_int_timer_output_init();
+
+        /* Start PWM output on SENSOR_INT for VSYNC */
+        sensor_int_timer_output_start();
+
+        /* Short delay for output to stabilize */
+        osDelay(5);
+
+        /* Power on the sensor (PON only) */
+        tsl2585_set_enable(&hi2c2, TSL2585_ENABLE_PON);
+        if (ret != HAL_OK) { break; }
+
+        /* Poll STATUS3 until calibration is complete */
+        uint32_t poll_start = osKernelGetTickCount();
+        do {
+            ret = tsl2585_get_status3(&hi2c2, &status3);
+            if (ret != HAL_OK) { break; }
+
+            if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) != 0) { break; }
+            osThreadYield();
+        } while (ret == HAL_OK && (osKernelGetTickCount() - poll_start) < pdMS_TO_TICKS(1000));
+
+        if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) == 0) {
+            log_w("VSYNC calibration timeout");
+            ret = HAL_TIMEOUT;
+            break;
+        }
+
+        ret = tsl2585_get_vsync_period(&hi2c2, &vsync_period);
+        if (ret != HAL_OK) { break; }
+
+        log_d("VSYNC_PERIOD=%d (%f Hz)", vsync_period, (1.0F/(vsync_period * 1.388889F))*1000000.0F);
+    } while (0);
+
+    /* Stop PWM output on SENSOR_INT for VSYNC */
+    sensor_int_timer_output_stop();
+
+    /* Reinitialize the INT pin as an input */
+    sensor_int_gpio_exti_input();
+
+    /* Try to reconfigure the sensor pins regardless of results */
+    do {
+        /* Reconfigure the INT pin of the sensor back to its default */
+        ret = tsl2585_set_vsync_gpio_int(&hi2c2, TSL2585_GPIO_INT_VSYNC_GPIO_OUT);
+        if (ret != HAL_OK) { break; }
+
+        /* Reconfigure the VSYNC of the sensor back to its default */
+        ret = tsl2585_set_vsync_cfg(&hi2c2, 0x00);
+        if (ret != HAL_OK) { break; }
+    } while (0);
+
+    /* Disable the sensor in case of failure */
+    if (ret != HAL_OK) {
+        log_w("VSYNC calibration failed");
+        tsl2585_disable(&hi2c2);
+    }
+
+    return ret;
+}
+
+void sensor_int_timer_output_init()
+{
+    /* Reconfigure SENSOR_INT as a PWM output driven by TIM3/CH4 */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = SENSOR_INT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
+    HAL_GPIO_Init(SENSOR_INT_GPIO_Port, &GPIO_InitStruct);
+}
+
+void sensor_int_timer_output_start()
+{
+    /* Start PWM output on SENSOR_INT */
+    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
+}
+
+void sensor_int_timer_output_stop()
+{
+    /* Stop PWM output on SENSOR_INT */
+    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
+}
+
+void sensor_int_gpio_exti_input()
+{
+    /* Reconfigure SENSOR_INT as its default mode as an EXTI input */
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = SENSOR_INT_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}
+
+void sensor_int_gpio_exti_enable()
+{
+    /* Enable interrupts from the SENSOR_INT pin */
+    HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+}
+
+void sensor_int_gpio_exti_disable()
+{
+    /* Disable interrupts from the SENSOR_INT pin */
+    HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 }
 
 osStatus_t meter_probe_sensor_disable()
@@ -891,6 +1068,9 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
 #endif
 
         if ((status & TSL2585_STATUS_AINT) != 0) {
+            uint32_t elapsed_ticks = params->ticks - last_aint_ticks;
+            last_aint_ticks = params->ticks;
+
             uint8_t status2 = 0;
             ret = tsl2585_get_status2(&hi2c2, &status2);
             if (ret != HAL_OK) { break; }
@@ -927,6 +1107,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
                     reading.sample_time = sensor_config.sample_time;
                     reading.sample_count = sensor_config.sample_count;
                     reading.ticks = params->ticks;
+                    reading.elapsed_ticks = elapsed_ticks;
 
                     has_reading = true;
                 } else {

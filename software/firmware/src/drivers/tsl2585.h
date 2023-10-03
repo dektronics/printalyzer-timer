@@ -67,6 +67,15 @@ typedef enum {
 #define TSL2585_STATUS2_MOD_ANALOG_SATURATION1 0x02 /*!< ALS Analog Saturation of modulator 1 */
 #define TSL2585_STATUS2_MOD_ANALOG_SATURATION0 0x01 /*!< ALS Analog Saturation of modulator 0 */
 
+/* STATUS3 register values */
+#define TSL2585_STATUS3_AINT_HYST_STATE_VALID 0x80 /*!< Indicates that the ALS interrupt hysteresis state is valid */
+#define TSL2585_STATUS3_AINT_HYST_STATE_RD    0x40 /*!< Indicates the state in the hysteresis defined with AINT_AILT and AINT_AIHT */
+#define TSL2585_STATUS3_AINT_AIHT             0x20 /*!< ALS Interrupt High */
+#define TSL2585_STATUS3_AINT_AILT             0x10 /*!< ALS Interrupt Low */
+#define TSL2585_STATUS3_VSYNC_LOST            0x08 /*!< Indicates that synchronization is out of sync with clock provided at the VSYNC pin */
+#define TSL2585_STATUS3_OSC_CALIB_SATURATION  0x02 /*!< Indicates that oscillator calibration is out of range */
+#define TSL2585_STATUS3_OSC_CALIB_FINISHED    0x01 /*!< Indicates that oscillator calibration is finished */
+
 /* STATUS4 register values */
 #define TSL2585_STATUS4_MOD_SAMPLE_TRIGGER_ERROR 0x08 /*!< Measured data is corrupted */
 #define TSL2585_STATUS4_MOD_TRIGGER_ERROR        0x04 /*!< WTIME is too short for the programmed configuration */
@@ -81,6 +90,23 @@ typedef enum {
 #define TSL2585_ALS_DATA0_SCALED_STATUS 0x04 /*< Indicates if ALS data0 needs to be multiplied */
 #define TSL2585_ALS_DATA1_SCALED_STATUS 0x02 /*< Indicates if ALS data1 needs to be multiplied */
 #define TSL2585_ALS_DATA2_SCALED_STATUS 0x01 /*< Indicates if ALS data2 needs to be multiplied */
+
+/* VSYNC_CFG register values */
+#define TSL2585_VSYNC_CFG_OSC_CALIB_DISABLED  0x00 /*!< Oscillator calibration disabled */
+#define TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON 0x40 /*!< Oscillator calibration after PON */
+#define TSL2585_VSYNC_CFG_OSC_CALIB_ALWAYS    0x80 /*!< Oscillator calibration always on */
+#define TSL2585_VSYNC_CFG_VSYNC_MODE          0x04 /*!< Select trigger signal (0=VSYNC/GPIO/INT, 1=SW_VSYNC_TRIGGER) */
+#define TSL2585_VSYNC_CFG_VSYNC_SELECT        0x02 /*!< Select trigger pin (0=VSYNC/GPIO, 1=INT) */
+#define TSL2585_VSYNC_CFG_VSYNC_INVERT        0x01 /*!< If set to "1" the VSYNC input signal is inverted */
+
+/* VSYNC_GPIO_INT register values */
+#define TSL2585_GPIO_INT_INT_INVERT        0x40 /*!< Set to invert the INT pin output */
+#define TSL2585_GPIO_INT_INT_IN_EN         0x20 /*!< Set to configure the INT pin as input */
+#define TSL2585_GPIO_INT_INT_IN            0x10 /*!< External HIGH or LOW value applied to INT pin */
+#define TSL2585_GPIO_INT_VSYNC_GPIO_INVERT 0x08 /*!< Set to invert the VSYNC/GPIO output */
+#define TSL2585_GPIO_INT_VSYNC_GPIO_IN_EN  0x04 /*!< Set to configure the VSYNC/GPIO pin as input */
+#define TSL2585_GPIO_INT_VSYNC_GPIO_OUT    0x02 /*!< Set the VSYNC/GPIO pin HI or LOW */
+#define TSL2585_GPIO_INT_VSYNC_GPIO_IN     0x01 /*!< External HIGH or LOW value applied to the VSYNC/GPIO pin */
 
 HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c, uint8_t *sensor_id);
 
@@ -118,6 +144,14 @@ HAL_StatusTypeDef tsl2585_set_agc_calibration(I2C_HandleTypeDef *hi2c, bool enab
 
 HAL_StatusTypeDef tsl2585_get_single_shot_mode(I2C_HandleTypeDef *hi2c, bool *enabled);
 HAL_StatusTypeDef tsl2585_set_single_shot_mode(I2C_HandleTypeDef *hi2c, bool enabled);
+
+HAL_StatusTypeDef tsl2585_get_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t *period);
+HAL_StatusTypeDef tsl2585_set_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t period);
+
+HAL_StatusTypeDef tsl2585_set_vsync_period_target(I2C_HandleTypeDef *hi2c, uint16_t period_target, bool use_fast_timing);
+
+HAL_StatusTypeDef tsl2585_set_vsync_cfg(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_set_vsync_gpio_int(I2C_HandleTypeDef *hi2c, uint8_t value);
 
 /**
  * Get the number of samples in an AGC measurement cycle.
