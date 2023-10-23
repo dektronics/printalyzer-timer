@@ -19,10 +19,23 @@ typedef enum {
 } tsl2585_modulator_t;
 
 typedef enum {
-    TSL2585_STEP0 = 0,
-    TSL2585_STEP1,
-    TSL2585_STEP2
+    TSL2585_STEP0 = 0x01,
+    TSL2585_STEP1 = 0x02,
+    TSL2585_STEP2 = 0x04,
+    TSL2585_STEP3 = 0x08,
+    TSL2585_STEPS_NONE = 0x00,
+    TSL2585_STEPS_ALL = 0x0F
 } tsl2585_step_t;
+
+typedef enum {
+    TSL2585_PHD_0 = 0, /*!< IR */
+    TSL2585_PHD_1,     /*!< Photopic */
+    TSL2585_PHD_2,     /*!< IR */
+    TSL2585_PHD_3,     /*!< UV-A */
+    TSL2585_PHD_4,     /*!< UV-A */
+    TSL2585_PHD_5,     /*!< Photopic */
+    TSL2585_PHD_MAX
+} tsl2585_photodiode_t;
 
 typedef enum {
     TSL2585_GAIN_0_5X  = 0,
@@ -41,6 +54,18 @@ typedef enum {
     TSL2585_GAIN_4096X = 13,
     TSL2585_GAIN_MAX   = 14
 } tsl2585_gain_t;
+
+typedef struct {
+    bool overflow;
+    bool underflow;
+    uint16_t level;
+} tsl2585_fifo_status_t;
+
+typedef enum {
+    TSL2585_ALS_FIFO_16BIT = 0x00,
+    TSL2585_ALS_FIFO_24BIT = 0x01,
+    TSL2585_ALS_FIFO_32BIT = 0x03
+} tsl2585_als_fifo_data_format_t;
 
 /* ENABLE register values */
 #define TSL2585_ENABLE_FDEN 0x40 /*!< Flicker detection enable */
@@ -110,6 +135,7 @@ typedef enum {
 
 HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c, uint8_t *sensor_id);
 
+HAL_StatusTypeDef tsl2585_get_enable(I2C_HandleTypeDef *hi2c, uint8_t *value);
 HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
 HAL_StatusTypeDef tsl2585_enable(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c);
@@ -118,6 +144,8 @@ HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t 
 
 HAL_StatusTypeDef tsl2585_set_sleep_after_interrupt(I2C_HandleTypeDef *hi2c, bool enabled);
 
+HAL_StatusTypeDef tsl2585_soft_reset(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef tsl2585_clear_fifo(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef tsl2585_clear_sleep_after_interrupt(I2C_HandleTypeDef *hi2c);
 
 HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mods);
@@ -130,11 +158,36 @@ HAL_StatusTypeDef tsl2585_get_status3(I2C_HandleTypeDef *hi2c, uint8_t *status);
 HAL_StatusTypeDef tsl2585_get_status4(I2C_HandleTypeDef *hi2c, uint8_t *status);
 HAL_StatusTypeDef tsl2585_get_status5(I2C_HandleTypeDef *hi2c, uint8_t *status);
 
+HAL_StatusTypeDef tsl2585_set_mod_gain_table_select(I2C_HandleTypeDef *hi2c, bool alternate);
+
 HAL_StatusTypeDef tsl2585_get_max_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_gain_t *gain);
 HAL_StatusTypeDef tsl2585_set_max_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_gain_t gain);
 
 HAL_StatusTypeDef tsl2585_get_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t *gain);
 HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t gain);
+
+/**
+ * Gets whether residual measurement shall be performed on the selected modulator
+ *
+ * @param mod Modulator to configure residual measurement on
+ * @param steps Mask of sequencer steps residual measurement is enabled for
+ */
+HAL_StatusTypeDef tsl2585_get_mod_residual_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t *steps);
+
+/**
+ * Sets whether residual measurement shall be performed on the selected modulator
+ *
+ * @param mod Modulator to configure residual measurement on
+ * @param steps Mask of sequencer steps to enable residual measurement for
+ */
+HAL_StatusTypeDef tsl2585_set_mod_residual_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t steps);
+
+HAL_StatusTypeDef tsl2585_set_mod_photodiode_smux(I2C_HandleTypeDef *hi2c,
+    tsl2585_step_t step, const tsl2585_modulator_t phd_mod[static TSL2585_PHD_MAX]);
+
+HAL_StatusTypeDef tsl2585_get_uv_calibration(I2C_HandleTypeDef *hi2c, uint8_t *value);
+
+HAL_StatusTypeDef tsl2585_set_mod_idac_range(I2C_HandleTypeDef *hi2c, uint8_t value);
 
 HAL_StatusTypeDef tsl2585_get_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t *iteration);
 HAL_StatusTypeDef tsl2585_set_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t iteration);
@@ -226,12 +279,30 @@ HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(I2C_HandleTypeDef *hi2c,
 HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t value);
 
 HAL_StatusTypeDef tsl2585_get_als_status(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_als_status2(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_als_status3(I2C_HandleTypeDef *hi2c, uint8_t *status);
+
 HAL_StatusTypeDef tsl2585_get_als_scale(I2C_HandleTypeDef *hi2c, uint8_t *scale);
+HAL_StatusTypeDef tsl2585_set_als_scale(I2C_HandleTypeDef *hi2c, uint8_t scale);
+
+HAL_StatusTypeDef tsl2585_get_fifo_als_status_write_enable(I2C_HandleTypeDef *hi2c, bool *enable);
+HAL_StatusTypeDef tsl2585_set_fifo_als_status_write_enable(I2C_HandleTypeDef *hi2c, bool enable);
+
+HAL_StatusTypeDef tsl2585_get_fifo_als_data_format(I2C_HandleTypeDef *hi2c, tsl2585_als_fifo_data_format_t *format);
+HAL_StatusTypeDef tsl2585_set_fifo_als_data_format(I2C_HandleTypeDef *hi2c, tsl2585_als_fifo_data_format_t format);
+
 HAL_StatusTypeDef tsl2585_get_als_msb_position(I2C_HandleTypeDef *hi2c, uint8_t *position);
+HAL_StatusTypeDef tsl2585_set_als_msb_position(I2C_HandleTypeDef *hi2c, uint8_t position);
 
 HAL_StatusTypeDef tsl2585_get_als_data0(I2C_HandleTypeDef *hi2c, uint16_t *data);
 HAL_StatusTypeDef tsl2585_get_als_data1(I2C_HandleTypeDef *hi2c, uint16_t *data);
 HAL_StatusTypeDef tsl2585_get_als_data2(I2C_HandleTypeDef *hi2c, uint16_t *data);
+
+HAL_StatusTypeDef tsl2585_set_fifo_data_write_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, bool enable);
+
+HAL_StatusTypeDef tsl2585_get_fifo_status(I2C_HandleTypeDef *hi2c, tsl2585_fifo_status_t *status);
+
+HAL_StatusTypeDef tsl2585_read_fifo(I2C_HandleTypeDef *hi2c, uint8_t *data, uint16_t len);
 
 const char* tsl2585_gain_str(tsl2585_gain_t gain);
 float tsl2585_gain_value(tsl2585_gain_t gain);

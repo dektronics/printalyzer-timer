@@ -360,7 +360,10 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     enlarger_control_set_state_focus(enlarger_control, true);
 
     log_i("Activating light sensor with AGC");
-    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+    if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_set_integration(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (meter_probe_sensor_enable_agc(SENSOR_NUM_SAMPLES) != osOK) {
@@ -396,7 +399,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     if (meter_probe_sensor_disable_agc() != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_config(sensor_gain, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+    if (meter_probe_sensor_set_gain(sensor_gain) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
 

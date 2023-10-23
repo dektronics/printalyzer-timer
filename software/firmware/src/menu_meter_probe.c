@@ -666,7 +666,8 @@ menu_result_t meter_probe_diagnostics()
     bool sensor_initialized = false;
     bool sensor_error = false;
     bool enlarger_enabled = false;
-    bool config_changed = false;
+    bool gain_changed = false;
+    bool time_changed = false;
     bool agc_changed = false;
     tsl2585_gain_t gain = 0;
     uint16_t sample_time = 0;
@@ -692,8 +693,11 @@ menu_result_t meter_probe_diagnostics()
     illum_controller_refresh();
     enlarger_control_set_state_off(&(enlarger_config.control), false);
 
-    if (meter_probe_sensor_set_config(TSL2585_GAIN_256X, 719, 99) == osOK) {
+    if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) == osOK) {
         gain = TSL2585_GAIN_256X;
+    }
+
+    if (meter_probe_sensor_set_integration(719, 99) == osOK) {
         sample_time = 719;
         sample_count = 99;
     }
@@ -726,28 +730,28 @@ menu_result_t meter_probe_diagnostics()
                 if (sensor_initialized && !sensor_error) {
                     if (gain > TSL2585_GAIN_0_5X) {
                         gain--;
-                        config_changed = true;
+                        gain_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (sensor_initialized && !sensor_error) {
                     if (gain < TSL2585_GAIN_4096X) {
                         gain++;
-                        config_changed = true;
+                        gain_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
                     if (sample_count > 10) {
                         sample_count -= 10;
-                        config_changed = true;
+                        time_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
                     if (sample_count < (2047 - 10)) {
                         sample_count += 10;
-                        config_changed = true;
+                        time_changed = true;
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
@@ -786,13 +790,21 @@ menu_result_t meter_probe_diagnostics()
             }
         }
 
-        if (config_changed) {
+        if (gain_changed || time_changed) {
             memset(elapsed_tick_buf, 0, sizeof(elapsed_tick_buf));
             elapsed_tick_buf_full = false;
             elapsed_tick_buf_pos = 0;
 
-            if (meter_probe_sensor_set_config(gain, sample_time, sample_count) == osOK) {
-                config_changed = false;
+            if (gain_changed) {
+                if (meter_probe_sensor_set_gain(gain) == osOK) {
+                    gain_changed = false;
+                }
+            }
+
+            if (time_changed) {
+                if (meter_probe_sensor_set_integration(sample_time, sample_count) == osOK) {
+                    time_changed = false;
+                }
             }
         }
         if (agc_changed) {

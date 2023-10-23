@@ -165,19 +165,23 @@ osStatus_t meter_probe_sensor_enable_single_shot();
 osStatus_t meter_probe_sensor_disable();
 
 /**
- * Set the meter probe sensor's gain and integration time
+ * Set the meter probe sensor's gain
  *
- * These settings are specific to the TSL2585 sensor in the current
- * meter probe.
+ * @param gain Sensor ADC gain
+ */
+osStatus_t meter_probe_sensor_set_gain(tsl2585_gain_t gain);
+
+/**
+ * Set the meter probe sensor's integration time
+ *
  * The sample time and count are combined to form the integration time,
  * according to the following formula:
  * TIME(μs) = (sample_count + 1) * (sample_time + 1) * 1.388889μs
  *
- * @param gain Sensor ADC gain
  * @param sample_time Duration of each sample in an integration cycle
  * @param sample_count Number of samples in an integration cycle
  */
-osStatus_t meter_probe_sensor_set_config(tsl2585_gain_t gain, uint16_t sample_time, uint16_t sample_count);
+osStatus_t meter_probe_sensor_set_integration(uint16_t sample_time, uint16_t sample_count);
 
 /**
  * Enable the meter probe sensor's AGC function
