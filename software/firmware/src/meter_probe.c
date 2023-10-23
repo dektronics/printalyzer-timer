@@ -87,6 +87,16 @@ typedef struct {
     bool discard_next_reading;
 } tsl2585_state_t;
 
+/**
+ * Modulator data read out of the FIFO
+ */
+typedef struct {
+    uint8_t als_status;
+    uint8_t als_status2;
+    uint8_t als_status3;
+    uint32_t als_data0;
+} tsl2585_fifo_data_t;
+
 /* Global I2C handle for the meter probe */
 extern I2C_HandleTypeDef hi2c2;
 
@@ -144,7 +154,7 @@ static void sensor_int_gpio_exti_input();
 static void sensor_int_gpio_exti_enable();
 static void sensor_int_gpio_exti_disable();
 
-static HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading);
+static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data);
 
 void task_meter_probe_run(void *argument)
 {
@@ -517,10 +527,45 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         }
 
         /* Put the sensor into a known initial state */
-        ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
+
+        /* Enable writing of ALS status to the FIFO */
+        ret = tsl2585_set_fifo_als_status_write_enable(&hi2c2, true);
         if (ret != HAL_OK) { break; }
 
-        ret = tsl2585_set_max_mod_gain(&hi2c2, TSL2585_GAIN_4096X);
+        /* Enable writing of results to the FIFO */
+        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD0, true);
+        if (ret != HAL_OK) { break; }
+        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD1, false);
+        if (ret != HAL_OK) { break; }
+        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD2, false);
+        if (ret != HAL_OK) { break; }
+
+        /* Set FIFO data format to 32-bits */
+        ret = tsl2585_set_fifo_als_data_format(&hi2c2, TSL2585_ALS_FIFO_32BIT);
+        if (ret != HAL_OK) { break; }
+
+        /* Set MSB position for full 26-bit result */
+        ret = tsl2585_set_als_msb_position(&hi2c2, 6);
+        if (ret != HAL_OK) { break; }
+
+        /* Make sure residuals are enabled */
+        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD0, TSL2585_STEPS_ALL);
+        if (ret != HAL_OK) { break; }
+        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD1, TSL2585_STEPS_ALL);
+        if (ret != HAL_OK) { break; }
+        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD2, TSL2585_STEPS_ALL);
+        if (ret != HAL_OK) { break; }
+
+        /* Select alternate gain table, which caps gain at 256x but gives us more residual bits */
+        ret = tsl2585_set_mod_gain_table_select(&hi2c2, true);
+        if (ret != HAL_OK) { break; }
+
+        /* Set maximum gain to 256x per app note on residual measurement */
+        ret = tsl2585_set_max_mod_gain(&hi2c2, TSL2585_GAIN_256X);
+        if (ret != HAL_OK) { break; }
+
+        /* Enable modulator */
+        ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
         if (ret != HAL_OK) { break; }
 
         /* Enable internal calibration on every sequencer round */
@@ -1063,23 +1108,19 @@ meter_probe_result_t meter_probe_measure(float *lux)
     return result;
 }
 
-uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_reading)
-{
-    if (!sensor_reading) { return 0; }
-    return (uint32_t)sensor_reading->raw_result * (uint32_t)sensor_reading->scale;
-}
-
 float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!sensor_reading) { return NAN; }
 
-    const uint32_t scaled_value = meter_probe_scaled_result(sensor_reading);
-    const float atime = tsl2585_integration_time_ms(sensor_reading->sample_time, sensor_reading->sample_count);
-    const float gain_val = tsl2585_gain_value(sensor_reading->gain);
+    const float atime_ms = tsl2585_integration_time_ms(sensor_reading->sample_time, sensor_reading->sample_count);
+    const float als_gain = tsl2585_gain_value(sensor_reading->gain);
 
-    if (!is_valid_number(atime) || !is_valid_number(gain_val)) { return NAN; }
+    if (!is_valid_number(atime_ms) || !is_valid_number(als_gain)) { return NAN; }
 
-    return (float)scaled_value / (atime * gain_val);
+    /* Divide to get numbers in a similar range as previous sensors */
+    float als_reading = (float)sensor_reading->als_data / 16.0F;
+
+    return als_reading / (atime_ms * als_gain);
 }
 
 float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
@@ -1137,6 +1178,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         if (ret != HAL_OK) { break; }
 
 #if 0
+        /* Log interrupt flags */
         log_d("MINT=%d, AINT=%d, FINT=%d, SINT=%d",
             (status & TSL2585_STATUS_MINT) != 0,
             (status & TSL2585_STATUS_AINT) != 0,
@@ -1148,62 +1190,55 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
             uint32_t elapsed_ticks = params->ticks - last_aint_ticks;
             last_aint_ticks = params->ticks;
 
-            uint8_t status2 = 0;
-            ret = tsl2585_get_status2(&hi2c2, &status2);
+            tsl2585_fifo_data_t fifo_data;
+
+            ret = sensor_control_read_fifo(&fifo_data);
             if (ret != HAL_OK) { break; }
 
+            if ((fifo_data.als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0) {
 #if 0
-            log_d("STATUS2=0x%02X", status2);
+                log_d("TSL2585: [analog saturation]");
 #endif
-
-            if ((status2 & TSL2585_STATUS2_ALS_DATA_VALID) != 0) {
-                if ((status2 & TSL2585_STATUS2_MOD_ANALOG_SATURATION0) != 0) {
-                    log_d("TSL2585: [analog saturation]");
-                    reading.raw_result = UINT16_MAX;
-                    reading.result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
-
-                } else if ((status2 & TSL2585_STATUS2_ALS_DIGITAL_SATURATION) != 0) {
-                    log_d("TSL2585: [digital saturation]");
-                    reading.raw_result = UINT16_MAX;
-                    reading.result_status = METER_SENSOR_RESULT_SATURATED_DIGITAL;
-                } else {
-                    /* Get the sensor reading */
-                    ret = meter_probe_sensor_read_als(&reading);
-                    if (ret != HAL_OK) { break; }
-                }
+                reading.als_data = UINT32_MAX;
+                reading.gain = sensor_state.gain[0];
+                reading.result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
+            } else {
+                tsl2585_gain_t als_gain = (fifo_data.als_status2 & 0x0F);
 
                 /* If AGC is enabled, then update the configured gain value */
                 if (sensor_state.agc_enabled) {
-                    ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &sensor_state.gain[0]);
-                    if (ret != HAL_OK) { break; }
+                    sensor_state.gain[0] = als_gain;
                 }
 
-                if (!sensor_state.discard_next_reading) {
-                    /* Fill out other reading fields */
-                    reading.gain = sensor_state.gain[0];
-                    reading.sample_time = sensor_state.sample_time;
-                    reading.sample_count = sensor_state.sample_count;
-                    reading.ticks = params->ticks;
-                    reading.elapsed_ticks = elapsed_ticks;
+                reading.als_data = fifo_data.als_data0;
+                reading.gain = als_gain;
+                reading.result_status = METER_SENSOR_RESULT_VALID;
+            }
 
-                    has_reading = true;
-                } else {
-                    sensor_state.discard_next_reading = false;
-                }
+            if (!sensor_state.discard_next_reading) {
+                /* Fill out other reading fields */
+                reading.sample_time = sensor_state.sample_time;
+                reading.sample_count = sensor_state.sample_count;
+                reading.ticks = params->ticks;
+                reading.elapsed_ticks = elapsed_ticks;
 
-                /*
-                 * If AGC was just disabled, then reset the gain to its last
-                 * known value and ignore the reading. This is necessary because
-                 * disabling AGC on its own seems to reset the gain to a low
-                 * default, and attempting to set it immediately after setting
-                 * the registers to disable AGC does not seem to take.
-                 */
-                if (sensor_state.agc_disabled_reset_gain) {
-                    ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
-                    if (ret != HAL_OK) { break; }
-                    sensor_state.agc_disabled_reset_gain = false;
-                    sensor_state.discard_next_reading = true;
-                }
+                has_reading = true;
+            } else {
+                sensor_state.discard_next_reading = false;
+            }
+
+            /*
+             * If AGC was just disabled, then reset the gain to its last
+             * known value and ignore the reading. This is necessary because
+             * disabling AGC on its own seems to reset the gain to a low
+             * default, and attempting to set it immediately after setting
+             * the registers to disable AGC does not seem to take.
+             */
+            if (sensor_state.agc_disabled_reset_gain) {
+                ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
+                if (ret != HAL_OK) { break; }
+                sensor_state.agc_disabled_reset_gain = false;
+                sensor_state.discard_next_reading = true;
             }
         }
 
@@ -1228,6 +1263,12 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     vTaskPrioritySet(current_task_handle, current_task_priority);
 
     if (has_reading) {
+#if 0
+        log_d("TSL2585: MOD0=%lu, Gain=[%s], Time=%.2fms",
+            reading.als_data, tsl2585_gain_str(reading.gain),
+            tsl2585_integration_time_ms(sensor_state.sample_time, sensor_state.sample_count));
+#endif
+
         QueueHandle_t queue = (QueueHandle_t)sensor_reading_queue;
         xQueueOverwrite(queue, &reading);
     }
@@ -1235,55 +1276,43 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     return hal_to_os_status(ret);
 }
 
-HAL_StatusTypeDef meter_probe_sensor_read_als(meter_probe_sensor_reading_t *reading)
+HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
 {
-    HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t als_status = 0;
-    uint16_t als_data0 = 0;
-    uint8_t asat = 0;
-    uint8_t scale = 0;
-    uint16_t scale_value = 1;
+    HAL_StatusTypeDef ret;
+    tsl2585_fifo_status_t fifo_status;
+    uint8_t data[7];
+    const uint8_t data_size = 7;
 
     do {
-        ret = tsl2585_get_als_status(&hi2c2, &als_status);
+        ret = tsl2585_get_fifo_status(&hi2c2, &fifo_status);
         if (ret != HAL_OK) { break; }
 
-        asat = (als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0;
+#if 0
+        log_d("FIFO_STATUS: OVERFLOW=%d, UNDERFLOW=%d, LEVEL=%d", fifo_status.overflow, fifo_status.underflow, fifo_status.level);
+#endif
 
-        ret = tsl2585_get_als_data0(&hi2c2, &als_data0);
-        if (ret != HAL_OK) { break; }
-
-        ret = tsl2585_get_als_scale(&hi2c2, &scale);
-        if (ret != HAL_OK) { break; }
-
-        if ((als_status & TSL2585_ALS_DATA0_SCALED_STATUS) == 0) {
-            /* Need to scale value: 2^(ALS_SCALED) */
-            uint16_t base = 2;
-            for (;;) {
-                if (scale & 1) {
-                    scale_value *= base;
-                }
-                scale >>= 1;
-                if (!scale) { break; }
-                base *= base;
-            }
+        if (fifo_status.level != data_size) {
+            log_w("Unexpected size of data in FIFO: %d != %d", fifo_status.level, data_size);
+            ret = HAL_ERROR;
+            break;
         }
 
-        if (asat) {
-#if 0
-            log_d("TSL2585: [saturated]");
-#endif
-            reading->result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
-        } else {
-#if 0
-            log_d("TSL2585: %d", raw_result);
-#endif
-            reading->result_status = METER_SENSOR_RESULT_VALID;
-        }
+        ret = tsl2585_read_fifo(&hi2c2, data, data_size);
+        if (ret != HAL_OK) { break; }
 
-        reading->raw_result = als_data0;
-        reading->scale = scale_value;
+        if (fifo_data) {
+            fifo_data->als_data0 =
+                (uint32_t)data[3] << 24
+                | (uint32_t)data[2] << 16
+                | (uint32_t)data[1] << 8
+                | (uint32_t)data[0];
+
+            fifo_data->als_status = data[4];
+            fifo_data->als_status2 = data[5];
+            fifo_data->als_status3 = data[6];
+        }
     } while (0);
 
     return ret;
+
 }

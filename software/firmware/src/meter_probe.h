@@ -44,8 +44,7 @@ typedef enum {
 } meter_probe_sensor_result_t;
 
 typedef struct {
-    uint16_t raw_result;   /*!< Raw sensor reading */
-    uint16_t scale;        /*!< Scale factor for the raw result */
+    uint32_t als_data;     /*!< Full ALS sensor reading */
     meter_probe_sensor_result_t result_status; /*!< Sensor result status. */
     tsl2585_gain_t gain;   /*!< Sensor ADC gain */
     uint16_t sample_time;  /*!< Sensor integration sample time */
@@ -234,13 +233,6 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *rea
  * interface, and returns the result of the lux calculation.
  */
 meter_probe_result_t meter_probe_measure(float *lux);
-
-/**
- * Get the raw result with the scaling factor applied.
- * @param sensor_reading Sensor reading data
- * @return Scaled raw result
- */
-uint32_t meter_probe_scaled_result(const meter_probe_sensor_reading_t *sensor_reading);
 
 /**
  * Get the result in a gain and integration time adjusted format.

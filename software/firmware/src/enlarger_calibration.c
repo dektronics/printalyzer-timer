@@ -387,7 +387,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
         return CALIBRATION_SENSOR_SATURATED;
     }
 
-    if (meter_probe_scaled_result(&sensor_reading) < SENSOR_ZERO_THRESHOLD) {
+    if (sensor_reading.als_data < SENSOR_ZERO_THRESHOLD) {
         log_w("Could not find a gain setting with a reading above the zero threshold");
         return CALIBRATION_ZERO_READING;
     }
@@ -411,7 +411,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = meter_probe_scaled_result(&sensor_reading);
+        readings[i] = sensor_reading.als_data;
     }
 
     /* Turn the enlarger off */
@@ -437,7 +437,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = meter_probe_scaled_result(&sensor_reading);
+        readings[i] = sensor_reading.als_data;
         sensor_times[i] = sensor_reading.ticks - last_sensor_ticks;
         last_sensor_ticks = sensor_reading.ticks;
     }
@@ -562,7 +562,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Break if the reading exceeds the rising threshold */
-            if (meter_probe_scaled_result(&sensor_reading) > rising_threshold) {
+            if (sensor_reading.als_data > rising_threshold) {
                 time_rise_start = time_reading;
                 break;
             }
@@ -589,11 +589,11 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Integrate all readings during the rise period */
-            integrated_rise += meter_probe_scaled_result(&sensor_reading);
+            integrated_rise += sensor_reading.als_data;
             rise_counts++;
 
             /* Break once we've reached the fully-on state */
-            if (meter_probe_scaled_result(&sensor_reading) >= enlarger_on_threshold) {
+            if (sensor_reading.als_data >= enlarger_on_threshold) {
                 time_rise_end = time_reading;
                 break;
             }
@@ -634,7 +634,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Break if the reading falls below the fully-on threshold */
-            if (meter_probe_scaled_result(&sensor_reading) < stats_on->min) {
+            if (sensor_reading.als_data < stats_on->min) {
                 time_fall_start = time_reading;
                 break;
             }
@@ -659,11 +659,11 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Integrate all readings during the fall period */
-            integrated_fall += meter_probe_scaled_result(&sensor_reading);
+            integrated_fall += sensor_reading.als_data;
             fall_counts++;
 
             /* Break once we've reached the fully-off state */
-            if (meter_probe_scaled_result(&sensor_reading) < falling_threshold) {
+            if (sensor_reading.als_data < falling_threshold) {
                 time_fall_end = time_reading;
                 break;
             }
