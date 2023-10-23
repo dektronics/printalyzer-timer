@@ -627,6 +627,7 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller_set_enlarger_focus(controller, false);
             state_controller_stop_focus_timeout(controller);
+            state_home_stop_meter_probe();
         }
     }
 }
