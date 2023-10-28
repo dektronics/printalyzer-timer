@@ -6,3 +6,9 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+# Local dictionary updates
+dictionaries/
+# Code inspection settings
+inspectionProfiles/
+# Other configuration files
+perl5local.xml
