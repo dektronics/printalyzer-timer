@@ -3,3 +3,4 @@ Debug/
 Release/
 .settings/*
 *.launch
+cmake-build-*
