@@ -63,7 +63,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
     if (burn_dodge_entry && burn_dodge_entry->numerator < 0) {
         float adj_stops = (float)burn_dodge_entry->numerator / (float)burn_dodge_entry->denominator;
         float adj_time = exposure_get_exposure_time(exposure_state) * powf(2.0f, adj_stops);
-        float dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
+        float dodge_time = fabsf(exposure_get_exposure_time(exposure_state) - adj_time);
         adjusted_exposure_time -= dodge_time;
         if (adjusted_exposure_time < 0) { adjusted_exposure_time = 0; }
         log_i("Exposure time reduced by %.2fs due to dodge", dodge_time);
@@ -186,7 +186,7 @@ bool state_timer_burn_dodge_exposure(exposure_state_t *exposure_state, const enl
     float burn_dodge_time = 0;
     if (entry->numerator < 0) {
         /* Dodge adjustment */
-        burn_dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
+        burn_dodge_time = fabsf(exposure_get_exposure_time(exposure_state) - adj_time);
     } else {
         /* Burn adjustment */
         burn_dodge_time = adj_time - exposure_get_exposure_time(exposure_state);

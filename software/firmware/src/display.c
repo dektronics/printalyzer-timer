@@ -1,7 +1,6 @@
 #include "display.h"
 
 #include <FreeRTOS.h>
-#include <semphr.h>
 #include <cmsis_os.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1160,7 +1159,6 @@ void display_draw_adjustment_exposure_elements(const display_adjustment_exposure
         elements->time_elements.fraction_digits);
 
     if (elements->time_too_short) {
-        asset_info_t asset;
         display_asset_get(&asset, ASSET_TIMER_OFF_ICON_24);
         u8g2_DrawXBM(&u8g2, 106, 10, asset.width, asset.height, asset.bits);
     }
@@ -1520,7 +1518,7 @@ uint16_t display_selection_list_params(const char *title, uint8_t start_pos, con
     return option;
 }
 
-uint8_t display_message_graph(const char *title, const char *list, const char *buttons, uint8_t *graph_points, size_t graph_size)
+uint8_t display_message_graph(const char *title, const char *list, const char *buttons, const uint8_t *graph_points, size_t graph_size)
 {
     int8_t result = -1;
 

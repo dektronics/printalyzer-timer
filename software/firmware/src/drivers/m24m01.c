@@ -129,7 +129,7 @@ HAL_StatusTypeDef m24m01_write_page(I2C_HandleTypeDef *hi2c, uint32_t address, c
     }
 
     uint8_t page_offset = (uint8_t)(mem_addr & 0x00FF);
-    if (data_len > 0x100 - page_offset) {
+    if (data_len > 0x100U - page_offset) {
         log_e("Buffer exceeds page boundary: 0x%05lX+%d > 0x%05lX",
             address, data_len, ((address & 0x1FF00) + 0xFF));
         return HAL_ERROR;

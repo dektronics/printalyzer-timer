@@ -715,9 +715,6 @@ bool settings_validate_safelight_config(const safelight_config_t *safelight_conf
     if (!safelight_config->dmx_wide_mode && safelight_config->dmx_on_value > 0xFF) {
         return false;
     }
-    if (safelight_config->dmx_wide_mode && safelight_config->dmx_on_value > 0xFFFF) {
-        return false;
-    }
 
     return true;
 }

@@ -125,7 +125,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
             }
             time_too_short = (min_exposure_time > 0) && (burn_time < min_exposure_time);
         } else {
-            float dodge_time = fabs(exposure_get_exposure_time(exposure_state) - adj_time);
+            float dodge_time = fabsf(exposure_get_exposure_time(exposure_state) - adj_time);
             float adj_base_time = exposure_get_exposure_time(exposure_state) - dodge_time;
             sprintf(buf_adj_title1, "Dodge Area %d", state->working_index + 1);
             size_t offset = sprintf(buf_adj_title2, "-");

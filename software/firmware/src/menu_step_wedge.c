@@ -282,7 +282,7 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
             "*** Accept Changes ***\n"
             "*** Reset Values ***");
 
-        if (wedge->name && strlen(wedge->name) > 0) {
+        if (strlen(wedge->name) > 0) {
             option = display_selection_list(wedge->name, option, buf);
         } else {
             option = display_selection_list("Step Wedge Calibration", option, buf);
@@ -374,7 +374,7 @@ menu_result_t menu_step_wedge_show(const step_wedge_t *wedge)
     }
 
     uint8_t option;
-    if (wedge->name && strlen(wedge->name) > 0) {
+    if (strlen(wedge->name) > 0) {
         option = display_message(wedge->name, NULL, buf, " OK ");
     } else {
         option = display_message("Step Wedge", NULL, buf, " OK ");

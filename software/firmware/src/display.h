@@ -205,7 +205,7 @@ uint16_t display_selection_list_params(const char *title, uint8_t start_pos, con
  * and Y values ranging from 0 to 50. Any values in excess of these
  * ranges may be clipped or not drawn.
  */
-uint8_t display_message_graph(const char *title, const char *list, const char *buttons, uint8_t *graph_points, size_t graph_size);
+uint8_t display_message_graph(const char *title, const char *list, const char *buttons, const uint8_t *graph_points, size_t graph_size);
 
 void display_static_list(const char *title, const char *list);
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);

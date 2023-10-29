@@ -68,7 +68,7 @@ HAL_StatusTypeDef m24c02_write_buffer(I2C_HandleTypeDef *hi2c, uint8_t address, 
         return HAL_ERROR;
     }
 
-    if (data_len > 0xFF - address) {
+    if (data_len > 0xFFU - address) {
         log_e("Buffer exceeds memory boundary: 0x%05lX+%d > 0x%05lX",
             address, data_len, 0xFF - address);
         return HAL_ERROR;
@@ -100,7 +100,7 @@ HAL_StatusTypeDef m24c02_write_page(I2C_HandleTypeDef *hi2c, uint8_t address, co
     //FIXME Need to test the behavior of this code
 
     uint8_t page_offset = (uint8_t)(address & 0x0F);
-    if (data_len > 0x10 - page_offset) {
+    if (data_len > 0x10U - page_offset) {
         log_e("Buffer exceeds page boundary: 0x%05lX+%d > 0x%05lX",
             address, data_len, ((address & 0xF0) + 0x0F));
         return HAL_ERROR;

@@ -6,14 +6,14 @@
 #include "util.h"
 
 static const step_wedge_t stock_wedges[] = {
-    { "Stouffer T1015", 0.05, 0.15, 10 },
-    { "Stouffer T1415", 0.05, 0.15, 14 },
-    { "Stouffer T2115", 0.05, 0.15, 21 },
-    { "Stouffer T2120", 0.05, 0.20, 21 },
-    { "Stouffer T3110", 0.05, 0.10, 31 },
-    { "Stouffer T4105", 0.05, 0.05, 41 },
-    { "Stouffer T4110", 0.05, 0.10, 41 },
-    { "Kodak Step Tablet No.2", 0.05, 0.15, 21 }
+    { "Stouffer T1015", 0.05F, 0.15F, 10 },
+    { "Stouffer T1415", 0.05F, 0.15F, 14 },
+    { "Stouffer T2115", 0.05F, 0.15F, 21 },
+    { "Stouffer T2120", 0.05F, 0.20F, 21 },
+    { "Stouffer T3110", 0.05F, 0.10F, 31 },
+    { "Stouffer T4105", 0.05F, 0.05F, 41 },
+    { "Stouffer T4110", 0.05F, 0.10F, 41 },
+    { "Kodak Step Tablet No.2", 0.05F, 0.15F, 21 }
 };
 
 #define STOCK_WEDGES_SIZE 8

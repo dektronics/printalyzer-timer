@@ -72,7 +72,7 @@ typedef enum {
 } calibration_result_t;
 
 static calibration_result_t enlarger_calibration_start(enlarger_config_t *config);
-static void enlarger_calibration_preview_result(const enlarger_config_t *profile);
+static void enlarger_calibration_preview_result(const enlarger_config_t *config);
 static void enlarger_calibration_show_error(calibration_result_t result_error);
 static calibration_result_t calibration_collect_reference_stats(const enlarger_control_t *enlarger_control,
     reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_sensor);
@@ -214,7 +214,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
     float fall_time_sum = 0;
     float fall_time_equiv_sum = 0;
 
-    for (int i = 0; i < PROFILE_ITERATIONS; i++) {
+    for (unsigned int i = 0; i < PROFILE_ITERATIONS; i++) {
         char buf[64];
         enlarger_timing_t timing_profile_inc;
         log_i("Profile run %d...", i + 1);
@@ -407,7 +407,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     osDelay(50);
 
     log_i("Collecting data with enlarger on");
-    for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
+    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -433,7 +433,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     }
     last_sensor_ticks = sensor_reading.ticks;
 
-    for (int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
+    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
@@ -716,7 +716,7 @@ void calculate_reading_stats(reading_stats_t *stats, uint32_t *readings, size_t 
     uint32_t reading_max = 0;
     float reading_sum = 0;
 
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         reading_sum += readings[i];
         if (readings[i] > reading_max) {
             reading_max = readings[i];
@@ -728,7 +728,7 @@ void calculate_reading_stats(reading_stats_t *stats, uint32_t *readings, size_t 
     float reading_mean = reading_sum / len;
 
     float mean_dist_sum = 0;
-    for (int i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
         mean_dist_sum += powf(fabsf(readings[i] - reading_mean), 2);
     }
 

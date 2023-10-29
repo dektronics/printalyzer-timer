@@ -23,7 +23,7 @@ bool enlarger_config_is_valid(const enlarger_config_t *config)
     if (timing->turn_on_delay > UINT16_MAX
         || timing->rise_time > UINT16_MAX || timing->rise_time_equiv > UINT16_MAX
         || timing->turn_off_delay > UINT16_MAX
-        || timing->rise_time > UINT16_MAX || timing->rise_time_equiv > UINT16_MAX) {
+        || timing->fall_time > UINT16_MAX || timing->fall_time_equiv > UINT16_MAX) {
         return false;
     }
 

@@ -374,7 +374,7 @@ void main_task_enable_interrupts()
      * if they fire before everything else is initialized.
      *
      * Timer, UART, and DMA interrupts are still enabled earlier in the
-     * startup process, since the processes that lead them them being fired
+     * startup process, since the processes that lead them being fired
      * should depend on code that will not run until initialization is
      * complete.
      */

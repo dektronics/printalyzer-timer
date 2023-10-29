@@ -112,7 +112,7 @@ densitometer_result_t densitometer_parse_reading_heiland(densitometer_reading_t 
     }
 
     /* Clean up zero values */
-    if (fabs(val) < 0.001F) {
+    if (fabsf(val) < 0.001F) {
         val = 0.0F;
     }
 
@@ -172,7 +172,7 @@ densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *r
         }
 
         /* Clean up zero values */
-        if (fabs(val) < 0.001F) {
+        if (fabsf(val) < 0.001F) {
             val = 0.0F;
         }
 
@@ -300,7 +300,7 @@ densitometer_result_t densitometer_parse_reading_tobias(densitometer_reading_t *
     }
 
     /* Clean up zero values */
-    if (fabs(val) < 0.001F) {
+    if (fabsf(val) < 0.001F) {
         val = 0.0F;
     }
 
@@ -354,12 +354,12 @@ densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t
     }
 
     /* Permissively range check the number */
-    if (fabs(val) > 6.0F) {
+    if (fabsf(val) > 6.0F) {
         return DENSITOMETER_RESULT_INVALID;
     }
 
     /* Clean up zero values */
-    if (fabs(val) < 0.001F) {
+    if (fabsf(val) < 0.001F) {
         val = 0.0F;
     }
 

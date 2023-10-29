@@ -484,7 +484,7 @@ void state_home_select_paper_profile(state_controller_t *controller)
 
     offset = 0;
     for (size_t i = 0; i < profile_count; i++) {
-        if (profile_list[i].name && strlen(profile_list[i].name) > 0) {
+        if (strlen(profile_list[i].name) > 0) {
             sprintf(buf + offset, "%s %s",
                 ((i == profile_index) ? "-->" : "   "),
                 profile_list[i].name);

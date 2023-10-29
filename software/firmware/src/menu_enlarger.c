@@ -1322,7 +1322,7 @@ bool menu_enlarger_config_delete_prompt(const enlarger_config_t *config, uint8_t
 
     sprintf(buf_title, "Delete Configuration %d?", index + 1);
 
-    if (config->name && strlen(config->name) > 0) {
+    if (strlen(config->name) > 0) {
         sprintf(buf, "\n%s\n", config->name);
     } else {
         sprintf(buf, "\n\n\n");

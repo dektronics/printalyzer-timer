@@ -232,7 +232,7 @@ bool is_valid_number(float num)
     return isnormal(num) || fpclassify(num) == FP_ZERO;
 }
 
-uint16_t conv_array_u16(uint8_t *src)
+uint16_t conv_array_u16(const uint8_t *src)
 {
     return (uint16_t)(*src) << 8 | *(src + 1);
 }

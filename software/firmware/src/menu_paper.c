@@ -74,7 +74,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
         }
 
         for (size_t i = 0; i < profile_count; i++) {
-            if (profile_list[i].name && strlen(profile_list[i].name) > 0) {
+            if (strlen(profile_list[i].name) > 0) {
                 sprintf(buf + offset, "%c%02d%c %s",
                     (i == profile_default_index) ? '<' : '[',
                     i + 1,
@@ -362,7 +362,7 @@ bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t in
 
     sprintf(buf_title, "Delete Profile %d?", index + 1);
 
-    if (profile->name && strlen(profile->name) > 0) {
+    if (strlen(profile->name) > 0) {
         sprintf(buf, "\n%s\n", profile->name);
     } else {
         sprintf(buf, "\n\n\n");
@@ -936,7 +936,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
     /* Output X-axis is the full range of PEV values from min to max */
     float32_t *xq_pev_f32 = NULL;
 
-    /* Output Y-axis is the coresponding calculated density values */
+    /* Output Y-axis is the corresponding calculated density values */
     float32_t *yq_density_f32 = NULL;
 
     /* Output Y-axis scaled for the display graph */

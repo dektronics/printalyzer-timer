@@ -131,7 +131,7 @@ bool is_valid_number(float num);
  * @param src Pointer to the source array
  * @param val Output value
  */
-uint16_t conv_array_u16(uint8_t *src);
+uint16_t conv_array_u16(const uint8_t *src);
 
 /**
  * Convert a 16-bit unsigned integer into two adjacent 8-bit elements in an array

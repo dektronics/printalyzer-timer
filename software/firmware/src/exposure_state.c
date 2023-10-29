@@ -1004,7 +1004,7 @@ void exposure_recalculate_base_time(exposure_state_t *state)
     }
 
     /* Set the new base time, if changed */
-    if (fabs(state->base_time - target_time) >= 0.01F) {
+    if (fabsf(state->base_time - target_time) >= 0.01F) {
         log_d("Updating base time from meter reading: %.2f -> %.2f", state->base_time, target_time);
         state->base_time = target_time;
     }
