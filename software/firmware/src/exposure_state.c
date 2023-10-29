@@ -260,22 +260,30 @@ float exposure_get_exposure_time(const exposure_state_t *state)
 
 float exposure_get_relative_density(const exposure_state_t *state)
 {
+    float result;
     if (!state) { return NAN; }
 
     if (state->lux_reading_count == 0) {
-        return NAN;
+        result = NAN;
     } else if (state->lux_reading_count == 1) {
-        return 0.0F;
+        result = 0.0F;
     } else if (state->lux_reading_count == 2) {
-        if (isnormal(state->lux_readings[0]) && state->lux_readings[0] >= 0.01F
-            && isnormal(state->lux_readings[1]) && state->lux_readings[1] > state->lux_readings[0]) {
-            return log10f(state->lux_readings[1] / state->lux_readings[0]);
+        if (isnormal(state->lux_readings[0]) && state->lux_readings[0] >= 0.0001F
+            && isnormal(state->lux_readings[1]) && state->lux_readings[1] < state->lux_readings[0]) {
+            result = -1.0F * log10f(state->lux_readings[1] / state->lux_readings[0]);
         } else {
-            return 0.0F;
+            result = 0.0F;
         }
     } else {
-        return NAN;
+        result = NAN;
     }
+
+    /* Prevent negative results */
+    if (isnormal(result) && result < 0.0F) {
+        result = 0.0F;
+    }
+
+    return result;
 }
 
 int exposure_get_active_paper_profile_index(const exposure_state_t *state)
@@ -337,14 +345,14 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
             state->lux_readings[0] = lux;
             state->lux_reading_count = 1;
         } else if (state->lux_reading_count == 1) {
-            if (lux < state->lux_readings[0]) {
+            if (lux > state->lux_readings[0]) {
                 state->lux_readings[0] = lux;
             } else {
                 state->lux_readings[1] = lux;
                 state->lux_reading_count = 2;
             }
         } else {
-            if (lux < state->lux_readings[0]) {
+            if (lux > state->lux_readings[0]) {
                 state->lux_readings[0] = lux;
                 state->lux_readings[1] = NAN;
                 state->lux_reading_count = 1;
