@@ -140,6 +140,7 @@ HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
 HAL_StatusTypeDef tsl2585_enable(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c);
 
+HAL_StatusTypeDef tsl2585_get_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t *value);
 HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
 
 HAL_StatusTypeDef tsl2585_set_sleep_after_interrupt(I2C_HandleTypeDef *hi2c, bool enabled);

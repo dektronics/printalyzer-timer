@@ -95,6 +95,7 @@ typedef struct {
     uint8_t als_status2;
     uint8_t als_status3;
     uint32_t als_data0;
+    bool overflow;
 } tsl2585_fifo_data_t;
 
 /* Global I2C handle for the meter probe */
@@ -1195,7 +1196,11 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
             ret = sensor_control_read_fifo(&fifo_data);
             if (ret != HAL_OK) { break; }
 
-            if ((fifo_data.als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0) {
+            if (fifo_data.overflow) {
+                reading.als_data = UINT32_MAX;
+                reading.gain = sensor_state.gain[0];
+                reading.result_status = METER_SENSOR_RESULT_INVALID;
+            } else if ((fifo_data.als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0) {
 #if 0
                 log_d("TSL2585: [analog saturation]");
 #endif
@@ -1281,6 +1286,7 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
     HAL_StatusTypeDef ret;
     tsl2585_fifo_status_t fifo_status;
     uint8_t data[7];
+    uint8_t counter = 0;
     const uint8_t data_size = 7;
 
     do {
@@ -1291,16 +1297,40 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
         log_d("FIFO_STATUS: OVERFLOW=%d, UNDERFLOW=%d, LEVEL=%d", fifo_status.overflow, fifo_status.underflow, fifo_status.level);
 #endif
 
-        if (fifo_status.level != data_size) {
+        if (fifo_status.overflow) {
+            log_w("FIFO overflow, clearing");
+            ret = tsl2585_clear_fifo(&hi2c2);
+            if (ret != HAL_OK) { break; }
+
+            if (fifo_data) {
+                memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t));
+                fifo_data->overflow = true;
+            }
+
+            break;
+        } else if ((fifo_status.level % data_size) != 0) {
             log_w("Unexpected size of data in FIFO: %d != %d", fifo_status.level, data_size);
             ret = HAL_ERROR;
             break;
         }
 
-        ret = tsl2585_read_fifo(&hi2c2, data, data_size);
+        while (fifo_status.level >= data_size) {
+            ret = tsl2585_read_fifo(&hi2c2, data, data_size);
+            if (ret != HAL_OK) { break; }
+
+            ret = tsl2585_get_fifo_status(&hi2c2, &fifo_status);
+            if (ret != HAL_OK) { break; }
+
+            counter++;
+        }
         if (ret != HAL_OK) { break; }
 
+        if (counter > 1) {
+            log_w("Missed %d sensor read cycles", counter - 1);
+        }
+
         if (fifo_data) {
+            memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t));
             fifo_data->als_data0 =
                 (uint32_t)data[3] << 24
                 | (uint32_t)data[2] << 16
@@ -1314,5 +1344,4 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
     } while (0);
 
     return ret;
-
 }

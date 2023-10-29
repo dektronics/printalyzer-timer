@@ -275,6 +275,25 @@ HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c)
     return tsl2585_set_enable(hi2c, 0x00);
 }
 
+HAL_StatusTypeDef tsl2585_get_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t *value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  HAL_I2C_Mem_Read(hi2c, TSL2585_ADDRESS,
+        TSL2585_INTENAB, I2C_MEMADD_SIZE_8BIT,
+        &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (value) {
+        *value = data & 0x8D; /* Mask bits 7,3,2,0 */
+    }
+
+    return HAL_OK;
+}
+
 HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t value)
 {
     uint8_t data = value & 0x8D; /* Mask bits 7,3,2,0 */
