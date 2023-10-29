@@ -20,10 +20,6 @@ set(CMAKE_SIZE arm-none-eabi-size)
 # Skip link step during compiler validation
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-# Set linker output suffixes
-set (CMAKE_EXECUTABLE_SUFFIX ".elf")
-set (CMAKE_STATIC_LIBRARY_SUFFIX ".a")
-
 # Specify compiler variables
 set (RUNTIME_LIBRARY "--specs=nano.specs")
 set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
@@ -72,6 +68,11 @@ string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
 
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 enable_language(C ASM)
+
+# Set linker output suffixes
+set (CMAKE_EXECUTABLE_SUFFIX ".elf")
+set (CMAKE_STATIC_LIBRARY_SUFFIX ".a")
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)

@@ -12,8 +12,8 @@ GetOptions('size=s' => \$size_command);
 my $elf_file = $ARGV[0] or die "Missing ELF file parameter\n";
 
 # Run "size" two ways to collect all the information
-my $size_output_sum = `$size_command -B -d $elf_file`;
-my $size_output_sec = `$size_command -A -d $elf_file`;
+my $size_output_sum = `"$size_command" -B -d "$elf_file"`;
+my $size_output_sec = `"$size_command" -A -d "$elf_file"`;
 
 # Parse the total FLASH size out of the Berkeley format
 my @sizes = $size_output_sum =~ /^\s*(\d+)\s+(\d+)\s+/m;
