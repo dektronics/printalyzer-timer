@@ -623,7 +623,7 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
     json_write_string(fp, 4, "device", "Printalyzer Meter Probe", true);
     json_write_string(fp, 4, "type", ((info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "unknown"), true);
     json_write_int(fp, 4, "revision", info->probe_id.probe_revision, true);
-    json_write_int(fp, 4, "serial", info->probe_id.probe_serial, false);
+    json_write_int(fp, 4, "serial", (int)info->probe_id.probe_serial, false);
     f_printf(fp, "\n  }");
     return true;
 }
@@ -825,7 +825,7 @@ menu_result_t meter_probe_diagnostics()
             const float lux_result = meter_probe_lux_result(&reading);
             float elapsed_tick_avg = 0;
 
-            if (reading.elapsed_ticks < atime * 2) {
+            if (reading.elapsed_ticks < lroundf(atime * 2)) {
                 /* Track the moving average of measured integration time */
                 elapsed_tick_buf[elapsed_tick_buf_pos] = reading.elapsed_ticks;
                 elapsed_tick_buf_pos++;
@@ -833,9 +833,9 @@ menu_result_t meter_probe_diagnostics()
                 float elapsed_tick_sum = 0;
                 size_t elapsed_tick_sum_len = (elapsed_tick_buf_full ? elapsed_tick_buf_len : elapsed_tick_buf_pos);
                 for (size_t i = 0; i < elapsed_tick_sum_len; i++) {
-                    elapsed_tick_sum += elapsed_tick_buf[i];
+                    elapsed_tick_sum += (float)elapsed_tick_buf[i];
                 }
-                elapsed_tick_avg = elapsed_tick_sum / elapsed_tick_sum_len;
+                elapsed_tick_avg = elapsed_tick_sum / (float)elapsed_tick_sum_len;
 
                 if (elapsed_tick_buf_pos >= elapsed_tick_buf_len) {
                     elapsed_tick_buf_full = true;

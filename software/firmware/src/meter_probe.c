@@ -1026,8 +1026,14 @@ osStatus_t meter_probe_control_sensor_trigger_next_reading()
     log_d("meter_probe_control_sensor_trigger_next_reading");
 
     if (!sensor_state.sai_active) {
-        log_e("Integration cycle in progress");
-        return osErrorResource;
+        uint8_t status4 = 0;
+        tsl2585_get_status4(&hi2c2, &status4);
+        if ((status4 & TSL2585_STATUS4_SAI_ACTIVE) != 0) {
+            sensor_state.sai_active = true;
+        } else {
+            log_e("Integration cycle in progress");
+            return osErrorResource;
+        }
     }
 
     ret = tsl2585_clear_sleep_after_interrupt(&hi2c2);
