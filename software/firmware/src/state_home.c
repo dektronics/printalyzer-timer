@@ -10,6 +10,7 @@
 #include <elog.h>
 
 #include "keypad.h"
+#include "keypad_action.h"
 #include "display.h"
 #include "enlarger_config.h"
 #include "enlarger_control.h"
@@ -21,18 +22,32 @@
 #include "settings.h"
 #include "util.h"
 
+typedef enum {
+    ACTION_NONE = 0,
+    ACTION_TIMER,
+    ACTION_FOCUS,
+    ACTION_INC_EXPOSURE,
+    ACTION_DEC_EXPOSURE,
+    ACTION_INC_CONTRAST,
+    ACTION_DEC_CONTRAST,
+    ACTION_EDIT_ADJUSTMENT,
+    ACTION_LIST_ADJUSTMENTS,
+    ACTION_TEST_STRIP,
+    ACTION_SELECT_PROFILE,
+    ACTION_ADJUST_FINE,
+    ACTION_ADJUST_ABSOLUTE,
+    ACTION_MENU,
+    ACTION_CLEAR_READINGS,
+    ACTION_SET_DEFAULTS,
+    ACTION_TAKE_READING,
+    ACTION_ENCODER_DEC,
+    ACTION_ENCODER_INC,
+    ACTION_CHANGE_TIME_INCREMENT,
+    ACTION_CHANGE_MODE
+} state_home_actions_t;
+
 typedef struct {
     state_t base;
-    bool change_inc_pending;
-    bool change_inc_swallow_release_up;
-    bool change_inc_swallow_release_down;
-    bool change_mode_pending;
-    bool change_mode_swallow_release_left;
-    bool change_mode_swallow_release_right;
-    int encoder_repeat;
-    int test_strip_repeat;
-    int adjustment_repeat;
-    int cancel_repeat;
     uint32_t updated_tone_element;
     uint8_t highlight_element;
     bool display_dirty;
@@ -77,16 +92,6 @@ static state_home_t state_home_data = {
         .state_process = state_home_process,
         .state_exit = state_home_exit
     },
-    .change_inc_pending = false,
-    .change_inc_swallow_release_up = false,
-    .change_inc_swallow_release_down = false,
-    .change_mode_pending = false,
-    .change_mode_swallow_release_left = false,
-    .change_mode_swallow_release_right = false,
-    .encoder_repeat = 0,
-    .test_strip_repeat = 0,
-    .adjustment_repeat = 0,
-    .cancel_repeat = 0,
     .updated_tone_element = 0,
     .highlight_element = 0,
     .display_dirty = true
@@ -153,19 +158,28 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     const exposure_mode_t mode = exposure_get_mode(exposure_state);
     const bool has_color_mode = enlarger_config_has_rgb(enlarger);
 
-    state->change_inc_pending = false;
-    state->change_inc_swallow_release_up = false;
-    state->change_inc_swallow_release_down = false;
-    state->change_mode_pending = false;
-    state->change_mode_swallow_release_left = false;
-    state->change_mode_swallow_release_right = false;
-    state->encoder_repeat = 0;
-    state->test_strip_repeat = 0;
-    state->adjustment_repeat = 0;
-    state->cancel_repeat = 0;
     state->updated_tone_element = 0;
     state->highlight_element = 0;
     state->display_dirty = true;
+
+    /* Configure keypad actions */
+    keypad_action_clear();
+    keypad_action_add(KEYPAD_START, ACTION_TIMER, 0, true);
+    keypad_action_add(KEYPAD_FOOTSWITCH, ACTION_TIMER, 0, true);
+    keypad_action_add(KEYPAD_FOCUS, ACTION_FOCUS, 0, true);
+    keypad_action_add(KEYPAD_INC_EXPOSURE, ACTION_INC_EXPOSURE, 0, true);
+    keypad_action_add(KEYPAD_DEC_EXPOSURE, ACTION_DEC_EXPOSURE, 0, true);
+    keypad_action_add(KEYPAD_INC_CONTRAST, ACTION_INC_CONTRAST, 0, true);
+    keypad_action_add(KEYPAD_DEC_CONTRAST, ACTION_DEC_CONTRAST, 0, true);
+    keypad_action_add(KEYPAD_ADD_ADJUSTMENT, ACTION_EDIT_ADJUSTMENT, ACTION_LIST_ADJUSTMENTS, true);
+    keypad_action_add(KEYPAD_TEST_STRIP, ACTION_TEST_STRIP, ACTION_SELECT_PROFILE, true);
+    keypad_action_add(KEYPAD_ENCODER, ACTION_ADJUST_FINE, ACTION_ADJUST_ABSOLUTE, true);
+    keypad_action_add(KEYPAD_MENU, ACTION_MENU, 0, false);
+    keypad_action_add(KEYPAD_CANCEL, ACTION_CLEAR_READINGS, ACTION_SET_DEFAULTS, true);
+    keypad_action_add(KEYPAD_METER_PROBE, ACTION_TAKE_READING, 0, false);
+    keypad_action_add_encoder(ACTION_ENCODER_DEC, ACTION_ENCODER_INC);
+    keypad_action_add_combo(KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE, ACTION_CHANGE_TIME_INCREMENT);
+    keypad_action_add_combo(KEYPAD_INC_CONTRAST, KEYPAD_DEC_CONTRAST, ACTION_CHANGE_MODE);
 
     if (mode == EXPOSURE_MODE_PRINTING_COLOR && !has_color_mode) {
         exposure_set_mode(exposure_state, EXPOSURE_MODE_PRINTING_BW);
@@ -218,82 +232,62 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
         state->display_dirty = false;
     }
 
-    // Handle the next keypad event
-    keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
-        if (state->change_inc_pending) {
-            if (keypad_event.key == KEYPAD_INC_EXPOSURE && !keypad_event.pressed) {
-                state->change_inc_swallow_release_up = false;
-            } else if (keypad_event.key == KEYPAD_DEC_EXPOSURE && !keypad_event.pressed) {
-                state->change_inc_swallow_release_down = false;
+    /* Handle the next keypad action */
+    keypad_action_t keypad_action;
+    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
+        if (keypad_action.action_id == ACTION_CHANGE_TIME_INCREMENT) {
+            state_controller_set_next_state(controller, STATE_HOME_CHANGE_TIME_INCREMENT, 0);
+        } else if (keypad_action.action_id == ACTION_CHANGE_MODE) {
+            state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
+        } else if (keypad_action.action_id == ACTION_TIMER) {
+            if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                state_controller_set_next_state(controller, STATE_TIMER, 0);
             }
-
-            if (!state->change_inc_swallow_release_up && !state->change_inc_swallow_release_down) {
-                state->change_inc_pending = false;
-                state_controller_set_next_state(controller, STATE_HOME_CHANGE_TIME_INCREMENT, 0);
-            }
-        } else if (state->change_mode_pending) {
-            if (keypad_event.key == KEYPAD_INC_CONTRAST && !keypad_event.pressed) {
-                state->change_mode_swallow_release_right = false;
-            } else if (keypad_event.key == KEYPAD_DEC_CONTRAST && !keypad_event.pressed) {
-                state->change_mode_swallow_release_left = false;
-            }
-
-            if (!state->change_mode_swallow_release_right && !state->change_mode_swallow_release_left) {
-                state->change_mode_pending = false;
-                state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
-            }
-        } else {
-            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
-                || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-                if (mode != EXPOSURE_MODE_DENSITOMETER) {
-                    state_controller_set_next_state(controller, STATE_TIMER, 0);
+        } else if (keypad_action.action_id == ACTION_FOCUS) {
+            if (!state_controller_is_enlarger_focus(controller)) {
+                log_i("Focus mode enabled");
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
+                state_controller_set_enlarger_focus(controller, true);
+                state_controller_start_focus_timeout(controller);
+                if (mode != EXPOSURE_MODE_PRINTING_COLOR) {
+                    state_home_start_meter_probe();
                 }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                if (!state_controller_is_enlarger_focus(controller)) {
-                    log_i("Focus mode enabled");
-                    illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
-                    state_controller_set_enlarger_focus(controller, true);
-                    state_controller_start_focus_timeout(controller);
-                    if (mode != EXPOSURE_MODE_PRINTING_COLOR) {
-                        state_home_start_meter_probe();
-                    }
-                } else {
-                    log_i("Focus mode disabled");
-                    state_controller_set_enlarger_focus(controller, false);
-                    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-                    state_controller_stop_focus_timeout(controller);
-                    state_home_stop_meter_probe();
-                }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-                if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
-                    if (state->highlight_element == 0) {
-                        exposure_adj_increase(exposure_state);
-                    } else if (state->highlight_element < 5) {
-                        exposure_channel_increase(exposure_state, state->highlight_element - 1, 1);
-                    }
-                    state->display_dirty = true;
-                } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
+            } else {
+                log_i("Focus mode disabled");
+                state_controller_set_enlarger_focus(controller, false);
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+                state_controller_stop_focus_timeout(controller);
+                state_home_stop_meter_probe();
+            }
+        } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
+            if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                if (state->highlight_element == 0) {
                     exposure_adj_increase(exposure_state);
-                    state->display_dirty = true;
+                } else if (state->highlight_element < 5) {
+                    exposure_channel_increase(exposure_state, state->highlight_element - 1, 1);
                 }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-                if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
-                    if (state->highlight_element == 0) {
-                        exposure_adj_decrease(exposure_state);
-                    } else if (state->highlight_element < 5) {
-                        exposure_channel_decrease(exposure_state, state->highlight_element - 1, 1);
-                    }
-                    state->display_dirty = true;
-                } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                state->display_dirty = true;
+            } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                exposure_adj_increase(exposure_state);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_DEC_EXPOSURE) {
+            if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                if (state->highlight_element == 0) {
                     exposure_adj_decrease(exposure_state);
-                    state->display_dirty = true;
+                } else if (state->highlight_element < 5) {
+                    exposure_channel_decrease(exposure_state, state->highlight_element - 1, 1);
                 }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (mode == EXPOSURE_MODE_PRINTING_BW) {
-                    exposure_contrast_increase(exposure_state);
-                } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
-                    switch (state->highlight_element) {
+                state->display_dirty = true;
+            } else if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                exposure_adj_decrease(exposure_state);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_INC_CONTRAST) {
+            if (mode == EXPOSURE_MODE_PRINTING_BW) {
+                exposure_contrast_increase(exposure_state);
+            } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                switch (state->highlight_element) {
                     case 0:
                         state->highlight_element = 4;
                         break;
@@ -311,16 +305,16 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                         break;
                     default:
                         break;
-                    }
-                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
-                    exposure_calibration_pev_increase(exposure_state);
                 }
-                state->display_dirty = true;
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (mode == EXPOSURE_MODE_PRINTING_BW) {
-                    exposure_contrast_decrease(exposure_state);
-                } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
-                    switch (state->highlight_element) {
+            } else if (mode == EXPOSURE_MODE_CALIBRATION) {
+                exposure_calibration_pev_increase(exposure_state);
+            }
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_DEC_CONTRAST) {
+            if (mode == EXPOSURE_MODE_PRINTING_BW) {
+                exposure_contrast_decrease(exposure_state);
+            } else if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                switch (state->highlight_element) {
                     case 0:
                         state->highlight_element = 1;
                         break;
@@ -338,107 +332,81 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
                         break;
                     default:
                         break;
-                    }
-                } else if (mode == EXPOSURE_MODE_CALIBRATION) {
-                    exposure_calibration_pev_decrease(exposure_state);
                 }
+            } else if (mode == EXPOSURE_MODE_CALIBRATION) {
+                exposure_calibration_pev_decrease(exposure_state);
+            }
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_ENCODER_INC) {
+            if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
+                exposure_channel_increase(exposure_state, state->highlight_element - 1, keypad_action.count);
                 state->display_dirty = true;
-            } else if (keypad_event.key == KEYPAD_ENCODER_CW) {
-                if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
-                    exposure_channel_increase(exposure_state, state->highlight_element - 1, keypad_event.count);
-                    state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_ENCODER_DEC) {
+            if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
+                exposure_channel_decrease(exposure_state, state->highlight_element - 1, keypad_action.count);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_EDIT_ADJUSTMENT) {
+            if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
+                if (burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
+                    state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, burn_dodge_count);
                 }
-            } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
-                if (mode == EXPOSURE_MODE_PRINTING_COLOR && state->highlight_element > 0) {
-                    exposure_channel_decrease(exposure_state, state->highlight_element - 1, keypad_event.count);
-                    state->display_dirty = true;
+            } else if (mode == EXPOSURE_MODE_CALIBRATION) {
+                exposure_pev_preset_t preset = exposure_calibration_pev_get_preset(exposure_state);
+                if (preset == EXPOSURE_PEV_PRESET_BASE) {
+                    exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_STRIP);
+                } else if (preset == EXPOSURE_PEV_PRESET_STRIP) {
+                    exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_BASE);
                 }
-            } else if (keypad_event.key == KEYPAD_ADD_ADJUSTMENT) {
-                if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
-                    if (keypad_event.pressed || keypad_event.repeated) {
-                        state->adjustment_repeat++;
-                    } else {
-                        int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
-                        if (state->adjustment_repeat > 2) {
-                            if (burn_dodge_count > 0) {
-                                state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
-                            }
-                        } else {
-                            if (burn_dodge_count < EXPOSURE_BURN_DODGE_MAX) {
-                                state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, burn_dodge_count);
-                            }
-                        }
-                        state->adjustment_repeat = 0;
-                        state->display_dirty = true;
-                    }
-                } else if (mode == EXPOSURE_MODE_CALIBRATION && !keypad_event.pressed) {
-                    exposure_pev_preset_t preset = exposure_calibration_pev_get_preset(exposure_state);
-                    if (preset == EXPOSURE_PEV_PRESET_BASE) {
-                        exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_STRIP);
-                    } else if (preset == EXPOSURE_PEV_PRESET_STRIP) {
-                        exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_BASE);
-                    }
-                    state->display_dirty = true;
+            }
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_LIST_ADJUSTMENTS) {
+            if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
+                int burn_dodge_count = exposure_burn_dodge_count(exposure_state);
+                if (burn_dodge_count > 0) {
+                    state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
                 }
-            } else if (keypad_event.key == KEYPAD_TEST_STRIP) {
-                if (mode != EXPOSURE_MODE_DENSITOMETER) {
-                    if (keypad_event.pressed || keypad_event.repeated) {
-                        state->test_strip_repeat++;
-                    } else {
-                        if (state->test_strip_repeat > 2 && mode == EXPOSURE_MODE_PRINTING_BW) {
-                            state_home_select_paper_profile(controller);
-                        } else {
-                            state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
-                        }
-                        state->test_strip_repeat = 0;
-                        state->display_dirty = true;
-                    }
-                }
-            } else if (keypad_event.key == KEYPAD_ENCODER) {
-                if (mode != EXPOSURE_MODE_DENSITOMETER) {
-                    if (keypad_event.pressed || keypad_event.repeated) {
-                        state->encoder_repeat++;
-                    } else {
-                        if (state->encoder_repeat > 2) {
-                            state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
-                        } else {
-                            state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
-                        }
-                        state->encoder_repeat = 0;
-                        state->display_dirty = true;
-                    }
-                }
-            } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
-                state_controller_set_next_state(controller, STATE_MENU, 0);
-            } else if (keypad_event.key == KEYPAD_CANCEL) {
-                if (keypad_event.pressed || keypad_event.repeated) {
-                    state->cancel_repeat++;
-                } else {
-                    if (state->cancel_repeat > 2) {
-                        exposure_clear_meter_readings(exposure_state);
-                        exposure_state_defaults(exposure_state);
-                    } else {
-                        exposure_clear_meter_readings(exposure_state);
-                    }
-                    state->display_dirty = true;
-                    state->cancel_repeat = 0;
-                }
-            } else if (mode != EXPOSURE_MODE_PRINTING_COLOR
-                && keypad_event.key == KEYPAD_METER_PROBE && !keypad_event.pressed
+            }
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_TEST_STRIP) {
+            if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_SELECT_PROFILE) {
+            if (mode == EXPOSURE_MODE_PRINTING_BW) {
+                state_home_select_paper_profile(controller);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_ADJUST_FINE) {
+            if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_ADJUST_ABSOLUTE) {
+            if (mode != EXPOSURE_MODE_DENSITOMETER) {
+                state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
+                state->display_dirty = true;
+            }
+        } else if (keypad_action.action_id == ACTION_MENU) {
+            state_controller_set_next_state(controller, STATE_MENU, 0);
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_CLEAR_READINGS) {
+            exposure_clear_meter_readings(exposure_state);
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_SET_DEFAULTS) {
+            exposure_clear_meter_readings(exposure_state);
+            exposure_state_defaults(exposure_state);
+            state->display_dirty = true;
+        } else if (keypad_action.action_id == ACTION_TAKE_READING) {
+            if (mode != EXPOSURE_MODE_PRINTING_COLOR
                 && state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
-            } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_EXPOSURE, KEYPAD_DEC_EXPOSURE)) {
-                state->change_inc_pending = true;
-                state->change_inc_swallow_release_up = true;
-                state->change_inc_swallow_release_down = true;
-            } else if (keypad_is_key_combo_pressed(&keypad_event, KEYPAD_INC_CONTRAST, KEYPAD_DEC_CONTRAST)) {
-                state->change_mode_pending = true;
-                state->change_mode_swallow_release_left = true;
-                state->change_mode_swallow_release_right = true;
             }
         }
-
         return true;
     } else {
         return false;
