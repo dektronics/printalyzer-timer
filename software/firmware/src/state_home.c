@@ -750,8 +750,6 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     } else {
         return false;
     }
-
-    return true;
 }
 
 void state_home_change_mode_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)

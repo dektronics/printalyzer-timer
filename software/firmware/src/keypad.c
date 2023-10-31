@@ -479,7 +479,6 @@ HAL_StatusTypeDef keypad_int_event_handler()
 void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
 {
     /* Update the button state information */
-    TickType_t tick_duration = 0;
     uint8_t index = keypad_keycode_to_index(keycode);
     if (index < KEYPAD_INDEX_MAX) {
         uint16_t mask = 1 << index;
@@ -488,11 +487,6 @@ void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
         } else {
             button_state &= ~mask;
         }
-    }
-
-    /* Limit the max duration we can report */
-    if (tick_duration > UINT16_MAX) {
-        tick_duration = UINT16_MAX;
     }
 
     /* Handle keys that can repeat */
