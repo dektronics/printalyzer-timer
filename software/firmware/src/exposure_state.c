@@ -60,6 +60,8 @@ typedef struct __exposure_state_t {
     int adjustment_increment;
     float lux_readings[MAX_LUX_READINGS];
     int lux_reading_count;
+    float dens_reading_base;
+    float dens_reading_current;
     uint32_t calibration_pev;
     exposure_pev_preset_t calibration_pev_preset;
     int paper_profile_index;
@@ -139,12 +141,15 @@ void exposure_state_defaults(exposure_state_t *state)
         state->lux_readings[i] = NAN;
     }
     state->lux_reading_count = 0;
+    state->dens_reading_base = NAN;
+    state->dens_reading_current = NAN;
     state->calibration_pev = 0;
     state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
 
     for (size_t i = 0; i < 3; i++) {
         state->channel_values[i] = state->channel_default_values[i];
     }
+    exposure_recalculate(state);
 }
 
 exposure_mode_t exposure_get_mode(const exposure_state_t *state)
@@ -166,7 +171,7 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
         state->mode = mode;
 
         if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
-            // Reset the base exposure and light readings if entering printing or densitometer mode
+            /* Reset the base exposure and light readings if entering printing or densitometer mode */
             state->base_time = settings_get_default_exposure_time() / 1000.0f;
             state->adjusted_time = state->base_time;
             state->adjustment_value = 0;
@@ -176,12 +181,9 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
             }
             state->lux_reading_count = 0;
         } else if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
-            // Reset the base exposure
-            state->base_time = settings_get_default_exposure_time() / 1000.0f;
-            state->adjusted_time = state->base_time;
-            state->adjustment_value = 0;
+            /* Densitometer state should leave the rest of the exposure state alone */
 
-            // Select just the lowest light reading
+            /* Select the lowest light reading, if available, and make it the base value */
             float lowest_lux = NAN;
             for (int i = 0; i < state->lux_reading_count; i++) {
                 if (isnanf(lowest_lux) || state->lux_readings[i] < lowest_lux) {
@@ -189,22 +191,10 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
                 }
             }
 
-            for (int i = 0; i < MAX_LUX_READINGS; i++) {
-                state->lux_readings[i] = NAN;
-            }
-
-            if (!isnanf(lowest_lux)) {
-                state->lux_readings[0] = lowest_lux;
-                state->lux_reading_count = 1;
-            } else {
-                state->lux_reading_count = 0;
-            }
-
-            if (state->burn_dodge_count > 0) {
-                exposure_burn_dodge_delete_all(state);
-            }
+            state->dens_reading_base = lowest_lux;
+            state->dens_reading_current = NAN;
         } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
-            // Clear any burn/dodge adjustments if entering calibration mode
+            /* Clear any burn/dodge adjustments if entering calibration mode */
             if (state->burn_dodge_count > 0) {
                 exposure_burn_dodge_delete_all(state);
             }
@@ -217,6 +207,7 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
 void exposure_set_base_time(exposure_state_t *state, float value)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     if (value < 0.01f) {
         value = 0.01f;
@@ -232,6 +223,8 @@ void exposure_set_base_time(exposure_state_t *state, float value)
 void exposure_set_min_exposure_time(exposure_state_t *state, float value)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
+
     if (isnormal(value) && value > 0.01F) {
         state->min_exposure_time = value;
 
@@ -263,19 +256,15 @@ float exposure_get_relative_density(const exposure_state_t *state)
     float result;
     if (!state) { return NAN; }
 
-    if (state->lux_reading_count == 0) {
-        result = NAN;
-    } else if (state->lux_reading_count == 1) {
+    const bool base_valid = is_valid_number(state->dens_reading_base);
+    const bool current_valid = is_valid_number(state->dens_reading_current);
+
+    if (!base_valid) {
+        result =  NAN;
+    } else if (base_valid && !current_valid) {
         result = 0.0F;
-    } else if (state->lux_reading_count == 2) {
-        if (isnormal(state->lux_readings[0]) && state->lux_readings[0] >= 0.0001F
-            && isnormal(state->lux_readings[1]) && state->lux_readings[1] < state->lux_readings[0]) {
-            result = -1.0F * log10f(state->lux_readings[1] / state->lux_readings[0]);
-        } else {
-            result = 0.0F;
-        }
     } else {
-        result = NAN;
+        result = -1.0F * log10f(state->dens_reading_current / state->dens_reading_base);
     }
 
     /* Prevent negative results */
@@ -340,26 +329,10 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
         }
         exposure_recalculate_base_time(state);
     } else if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
-        //TODO consider using a tolerance when deciding to add/replace readings
-        if (state->lux_reading_count == 0) {
-            state->lux_readings[0] = lux;
-            state->lux_reading_count = 1;
-        } else if (state->lux_reading_count == 1) {
-            if (lux > state->lux_readings[0]) {
-                state->lux_readings[0] = lux;
-            } else {
-                state->lux_readings[1] = lux;
-                state->lux_reading_count = 2;
-            }
+        if (isnanf(state->dens_reading_base) || lux > state->dens_reading_base) {
+            state->dens_reading_base = lux;
         } else {
-            if (lux > state->lux_readings[0]) {
-                state->lux_readings[0] = lux;
-                state->lux_readings[1] = NAN;
-                state->lux_reading_count = 1;
-            } else {
-                state->lux_readings[1] = lux;
-                state->lux_reading_count = 2;
-            }
+            state->dens_reading_current = lux;
         }
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         float updated_base_time = exposure_base_time_for_calibration_pev(lux, exposure_pev_for_preset(state->calibration_pev_preset));
@@ -391,11 +364,17 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
 void exposure_clear_meter_readings(exposure_state_t *state)
 {
     if (!state) { return; }
-    for (int i = 0; i < MAX_LUX_READINGS; i++) {
-        state->lux_readings[i] = NAN;
+
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) {
+        state->dens_reading_base = NAN;
+        state->dens_reading_current = NAN;
+    } else {
+        for (int i = 0; i < MAX_LUX_READINGS; i++) {
+            state->lux_readings[i] = NAN;
+        }
+        state->lux_reading_count = 0;
+        exposure_recalculate(state);
     }
-    state->lux_reading_count = 0;
-    exposure_recalculate(state);
 }
 
 uint32_t exposure_get_tone_graph(const exposure_state_t *state)
@@ -444,6 +423,7 @@ uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
 void exposure_adj_increase(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     /* Clamp adjustment at +/- 12 stops */
     if (state->adjustment_value >= 144) { return; }
@@ -458,6 +438,7 @@ void exposure_adj_increase(exposure_state_t *state)
 void exposure_adj_decrease(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     /* Clamp adjustment at +/- 12 stops */
     if (state->adjustment_value <= -144) { return; }
@@ -478,6 +459,7 @@ int exposure_adj_get(const exposure_state_t *state)
 void exposure_adj_set(exposure_state_t *state, int value)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     /* Clamp adjustment at +/- 12 stops */
     if (value < -144 || value > 144) { return; }
@@ -488,7 +470,7 @@ void exposure_adj_set(exposure_state_t *state, int value)
 
 int exposure_adj_min(exposure_state_t *state)
 {
-    // Adjustment to current base time that gets close to 0.01 seconds
+    /* Adjustment to current base time that gets close to 0.01 seconds */
 
     if (!state || state->base_time <= 0) { return 0; }
 
@@ -503,7 +485,7 @@ int exposure_adj_min(exposure_state_t *state)
 
 int exposure_adj_max(exposure_state_t *state)
 {
-    // Adjustment to current base time that gets close to 999 seconds
+    /* Adjustment to current base time that gets close to 999 seconds */
 
     if (!state || state->base_time <= 0) { return 0; }
 
@@ -525,6 +507,7 @@ contrast_grade_t exposure_get_contrast_grade(const exposure_state_t *state)
 void exposure_contrast_increase(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     if (state->contrast_grade < CONTRAST_GRADE_5) {
         state->contrast_grade++;
@@ -537,6 +520,7 @@ void exposure_contrast_increase(exposure_state_t *state)
 void exposure_contrast_decrease(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     if (state->contrast_grade > CONTRAST_GRADE_00) {
         state->contrast_grade--;
@@ -727,6 +711,7 @@ int exposure_adj_increment_get(const exposure_state_t *state)
 void exposure_adj_increment_increase(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     switch (state->adjustment_increment) {
     case EXPOSURE_ADJ_SIXTH:
@@ -752,6 +737,7 @@ void exposure_adj_increment_increase(exposure_state_t *state)
 void exposure_adj_increment_decrease(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     switch (state->adjustment_increment) {
     case EXPOSURE_ADJ_TWELFTH:
@@ -816,6 +802,7 @@ const exposure_burn_dodge_t *exposure_burn_dodge_get(const exposure_state_t *sta
 void exposure_burn_dodge_set(exposure_state_t *state, const exposure_burn_dodge_t *entry, int index)
 {
     if (!state || !entry) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     if (index < 0 || index > MIN(state->burn_dodge_count, EXPOSURE_BURN_DODGE_MAX - 1)) {
         return;
@@ -830,6 +817,7 @@ void exposure_burn_dodge_set(exposure_state_t *state, const exposure_burn_dodge_
 void exposure_burn_dodge_delete(exposure_state_t *state, int index)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     if (index < 0 || index >= state->burn_dodge_count) {
         return;
@@ -848,6 +836,7 @@ void exposure_burn_dodge_delete(exposure_state_t *state, int index)
 void exposure_burn_dodge_delete_all(exposure_state_t *state)
 {
     if (!state) { return; }
+    if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
     for (int i = 0; i < EXPOSURE_BURN_DODGE_MAX; i++) {
         memset(&state->burn_dodge_entry[i], 0, sizeof(exposure_burn_dodge_t));
