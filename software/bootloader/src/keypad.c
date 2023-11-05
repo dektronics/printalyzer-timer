@@ -34,7 +34,6 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
         }
 
         const tca8418_pins_t pins_zero = { 0x00, 0x00, 0x00 };
-        const tca8418_pins_t pins_int = { 0x0F, 0xFF, 0x03 };
 
         /* Enable pull-ups on all GPIO pins */
         if ((ret = tca8418_gpio_pullup_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
@@ -47,7 +46,7 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
         }
 
         /* Set the event FIFO to disabled */
-        if ((ret = tca8418_gpi_event_mode(keypad_i2c, &pins_int)) != HAL_OK) {
+        if ((ret = tca8418_gpi_event_mode(keypad_i2c, &pins_zero)) != HAL_OK) {
             break;
         }
 
