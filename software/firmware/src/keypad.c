@@ -76,6 +76,9 @@ static void *blackout_callback_user_data = NULL;
 /* Current blackout state */
 static bool blackout_state = false;
 
+/* Current meter probe state */
+static bool meter_probe_enabled = false;
+
 /* Flag to track initialization state */
 static bool keypad_initialized = false;
 
@@ -193,6 +196,8 @@ HAL_StatusTypeDef keypad_controller_init()
 
         const tca8418_pins_t pins_zero = { 0x00, 0x00, 0x00 };
         const tca8418_pins_t pins_int = { 0x0F, 0xFF, 0x03 };
+        const tca8418_pins_t pins_fifo = { 0x07, 0xFF, 0x03 };
+        const tca8418_pins_t pins_level = { 0x0C, 0x00, 0x00 };
 
         /* Enable pull-ups on all GPIO pins */
         if ((ret = tca8418_gpio_pullup_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
@@ -204,13 +209,13 @@ HAL_StatusTypeDef keypad_controller_init()
             break;
         }
 
-        /* Set the event FIFO (disabled for now) */
-        if ((ret = tca8418_gpi_event_mode(keypad_i2c, &pins_int)) != HAL_OK) {
+        /* Set GPIO direction to input */
+        if ((ret = tca8418_gpio_data_direction(keypad_i2c, &pins_zero)) != HAL_OK) {
             break;
         }
 
-        /* Set GPIO direction to input */
-        if ((ret = tca8418_gpio_data_direction(keypad_i2c, &pins_zero)) != HAL_OK) {
+        /* Set the pin transition levels */
+        if ((ret = tca8418_gpio_interrupt_level(keypad_i2c, &pins_level)) != HAL_OK) {
             break;
         }
 
@@ -224,8 +229,18 @@ HAL_StatusTypeDef keypad_controller_init()
             break;
         }
 
+        /* Fix initial state based on which pins have the opposite default state */
+        pins_initial.rows ^= pins_level.rows;
+        pins_initial.cols_l ^= pins_level.cols_l;
+        pins_initial.cols_h ^= pins_level.cols_h;
+
         /* Enable debouncing for normal operation */
         if ((ret = tca8418_debounce_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
+            break;
+        }
+
+        /* Set the event FIFO */
+        if ((ret = tca8418_gpi_event_mode(keypad_i2c, &pins_fifo)) != HAL_OK) {
             break;
         }
 
@@ -285,6 +300,30 @@ void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *use
         const int index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
         blackout_state = (button_state & (1 << index)) != 0;
         callback(blackout_state, user_data);
+    }
+}
+
+void keypad_enable_meter_probe()
+{
+    if (!keypad_initialized) { return; }
+    if (meter_probe_enabled) { return; }
+
+    const tca8418_pins_t pins_fifo = { 0x0F, 0xFF, 0x03 };
+
+    if (tca8418_gpi_event_mode(keypad_i2c, &pins_fifo) == HAL_OK) {
+        meter_probe_enabled = true;
+    }
+}
+
+void keypad_disable_meter_probe()
+{
+    if (!keypad_initialized) { return; }
+    if (!meter_probe_enabled) { return; }
+
+    const tca8418_pins_t pins_fifo = { 0x07, 0xFF, 0x03 };
+
+    if (tca8418_gpi_event_mode(keypad_i2c, &pins_fifo) == HAL_OK) {
+        meter_probe_enabled = false;
     }
 }
 
@@ -434,6 +473,11 @@ HAL_StatusTypeDef keypad_int_event_handler()
             if (keycode == 0 && pressed == 0) {
                 /* Last key has been read, break the loop */
                 break;
+            }
+
+            /* Ignore meter probe events when the meter probe is not enabled */
+            if (keycode == KEYPAD_METER_PROBE && !meter_probe_enabled) {
+                continue;
             }
 
             /*

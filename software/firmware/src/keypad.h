@@ -63,6 +63,19 @@ void task_keypad_run(void *argument);
  */
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data);
 
+/**
+ * Enable handling of meter probe button events
+ *
+ * Due to how the meter probe interface is implemented, it should only
+ * be enabled when the meter probe power is turned on.
+ */
+void keypad_enable_meter_probe();
+
+/**
+ * Disable handling of meter probe button events.
+ */
+void keypad_disable_meter_probe();
+
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);
 HAL_StatusTypeDef keypad_clear_events();
 HAL_StatusTypeDef keypad_flush_events();

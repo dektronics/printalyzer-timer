@@ -100,6 +100,13 @@ HAL_StatusTypeDef tca8418_gpi_event_mode(I2C_HandleTypeDef *hi2c, const tca8418_
 HAL_StatusTypeDef tca8418_gpio_data_direction(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins);
 
 /**
+ * GPIO Edge/Level Detection.
+ * A bit value of '0' indicates that an interrupt will be trigger on a high-to-low transition
+ * A bit value of '1' indicates that an interrupt will be trigger on a low-to-high transition
+ */
+HAL_StatusTypeDef tca8418_gpio_interrupt_level(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins);
+
+/**
  * GPIO pull-up disable.
  * A bit value of '0' will enable the internal pull-up resistors.
  * A bit value of 1 will disable the internal pull-up resistors.

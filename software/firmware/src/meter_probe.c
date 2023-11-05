@@ -14,6 +14,7 @@
 #include "board_config.h"
 #include "meter_probe_settings.h"
 #include "tsl2585.h"
+#include "keypad.h"
 #include "util.h"
 
 extern TIM_HandleTypeDef htim3;
@@ -340,6 +341,9 @@ osStatus_t meter_probe_control_start()
 
         log_d("UV calibration value: %d", sensor_state.uv_calibration);
 
+        /* Enable the meter probe button */
+        keypad_enable_meter_probe();
+
         meter_probe_started = true;
     } while (0);
 
@@ -368,6 +372,9 @@ osStatus_t meter_probe_stop()
 osStatus_t meter_probe_control_stop()
 {
     log_d("meter_probe_control_stop");
+
+    /* Disable the meter probe button */
+    keypad_disable_meter_probe();
 
     /* Remove power from the meter probe port */
     HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
