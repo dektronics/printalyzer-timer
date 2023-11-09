@@ -24,13 +24,27 @@ typedef struct __meter_probe_settings_handle_t {
     meter_probe_id_t id;
 } meter_probe_settings_handle_t;
 
-typedef struct __meter_probe_settings_tsl2585_gain_cal_t {
-    float slope;
-    float offset;
-} meter_probe_settings_tsl2585_gain_cal_t;
+typedef struct __meter_probe_settings_tsl2585_cal_gain_t {
+    float values[TSL2585_GAIN_256X + 1];
+} meter_probe_settings_tsl2585_cal_gain_t;
+
+typedef struct __meter_probe_settings_tsl2585_cal_slope_t {
+    float b0;
+    float b1;
+    float b2;
+} meter_probe_settings_tsl2585_cal_slope_t;
+
+typedef struct __meter_probe_settings_tsl2585_cal_target_t {
+    float lux_low_ref;
+    float lux_low_reading;
+    float lux_high_ref;
+    float lux_high_reading;
+} meter_probe_settings_tsl2585_cal_target_t;
 
 typedef struct __meter_probe_settings_tsl2585_t {
-    meter_probe_settings_tsl2585_gain_cal_t gain_cal[TSL2585_GAIN_MAX];
+    meter_probe_settings_tsl2585_cal_gain_t cal_gain;
+    meter_probe_settings_tsl2585_cal_slope_t cal_slope;
+    meter_probe_settings_tsl2585_cal_target_t cal_target;
 } meter_probe_settings_tsl2585_t;
 
 /**
@@ -55,5 +69,8 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
 
 HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_handle_t *handle,
     const meter_probe_settings_tsl2585_t *settings_tsl2585);
+
+HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
+    const meter_probe_settings_tsl2585_cal_target_t *cal_target);
 
 #endif /* METER_PROBE_SETTINGS_H */

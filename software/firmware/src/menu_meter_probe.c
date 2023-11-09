@@ -33,9 +33,9 @@ static menu_result_t meter_probe_sensor_calibration();
 static menu_result_t meter_probe_sensor_calibration_import();
 static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
 static bool validate_section_header(const char *buf, size_t len, const meter_probe_device_info_t *info);
-static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
-static void parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_t *settings_tsl2585);
-static void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal);
+//static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
+//static void parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_t *settings_tsl2585);
+//static void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal);
 
 static menu_result_t meter_probe_sensor_calibration_export();
 static bool export_calibration_file(const char *filename, const meter_probe_device_info_t *info, const meter_probe_settings_t *settings);
@@ -147,12 +147,29 @@ menu_result_t meter_probe_sensor_calibration()
     do {
         size_t offset = 0;
 
-        for (tsl2585_gain_t gain = 0; gain < TSL2585_GAIN_MAX; gain++) {
+        for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
-                tsl2585_gain_str(gain), "%f][%f",
-                settings.settings_tsl2585.gain_cal[gain].slope,
-                settings.settings_tsl2585.gain_cal[gain].offset);
+                tsl2585_gain_str(gain), "%f",
+                settings.settings_tsl2585.cal_gain.values[gain]);
         }
+        offset += menu_build_padded_format_row(buf + offset,
+            "B0", "%f",
+            settings.settings_tsl2585.cal_slope.b0);
+        offset += menu_build_padded_format_row(buf + offset,
+            "B1", "%f",
+            settings.settings_tsl2585.cal_slope.b1);
+        offset += menu_build_padded_format_row(buf + offset,
+            "B2", "%f",
+            settings.settings_tsl2585.cal_slope.b2);
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "Lux low", "%.2f][%f",
+            settings.settings_tsl2585.cal_target.lux_low_ref,
+            settings.settings_tsl2585.cal_target.lux_low_reading);
+        offset += menu_build_padded_format_row(buf + offset,
+            "Lux high", "%.2f][%f",
+            settings.settings_tsl2585.cal_target.lux_high_ref,
+            settings.settings_tsl2585.cal_target.lux_high_reading);
 
         offset += sprintf(buf + offset, "*** Import from USB device ***\n");
         offset += sprintf(buf + offset, "*** Export to USB device ***");
@@ -366,10 +383,11 @@ bool import_calibration_file(const char *filename, const meter_probe_device_info
         while (status == JSONSuccess) {
             if (!pair.key) { continue; }
 
+#if 0
             if (strncmp("sensor_cal", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
                 has_valid_sensor_cal = import_section_sensor_cal(pair.value, pair.valueLength, settings);
             }
-
+#endif
             status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
         }
 
@@ -439,6 +457,7 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
     return true;
 }
 
+#if 0
 bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings)
 {
     JSONStatus_t status;
@@ -512,6 +531,7 @@ void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_prob
         status = JSON_Iterate(buf, len, &start, &next, &pair);
     }
 }
+#endif
 
 menu_result_t meter_probe_sensor_calibration_export()
 {
@@ -630,6 +650,7 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
 
 bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
 {
+#if 0
     char buf1[32];
     char buf2[32];
 
@@ -655,6 +676,7 @@ bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
     }
     f_printf(fp, "    ]\n");
     f_printf(fp, "  }");
+#endif
     return true;
 }
 

@@ -1,6 +1,7 @@
 #include "meter_probe_settings.h"
 
 #include <string.h>
+#include <math.h>
 
 #define LOG_TAG "meter_probe_settings"
 #include <elog.h>
@@ -21,23 +22,39 @@ extern CRC_HandleTypeDef hcrc;
 
 #define PAGE_CAL               0x000UL
 #define PAGE_CAL_SIZE          (128UL)
+
+/* TSL2585 Data Format Header (16B) */
 #define CAL_TSL2585_VERSION      0 /* 4B (uint32_t) */
-#define CAL_TSL2585_CRC          4 /* 4B (uint32_t) */
-#define CAL_TSL2585_RESERVED0    8 /* 8B (for page alignment) */
-#define CAL_TSL2585_GAIN_0_5X   16 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_1X     24 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_2X     32 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_4X     40 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_8X     48 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_16X    56 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_32X    64 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_64X    72 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_128X   80 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_256X   88 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_512X   96 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_1024X 104 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_2048X 112 /* 8B (float + float) */
-#define CAL_TSL2585_GAIN_4096X 120 /* 8B (float + float) */
+#define CAL_TSL2585_RESERVED0    4 /* 12B (for page alignment) */
+
+/* TSL2585 Gain Calibration (48B) */
+#define CAL_TSL2585_GAIN_0_5X   16 /* 4B (float) */
+#define CAL_TSL2585_GAIN_1X     20 /* 4B (float) */
+#define CAL_TSL2585_GAIN_2X     24 /* 4B (float) */
+#define CAL_TSL2585_GAIN_4X     28 /* 4B (float) */
+#define CAL_TSL2585_GAIN_8X     32 /* 4B (float) */
+#define CAL_TSL2585_GAIN_16X    36 /* 4B (float) */
+#define CAL_TSL2585_GAIN_32X    40 /* 4B (float) */
+#define CAL_TSL2585_GAIN_64X    44 /* 4B (float) */
+#define CAL_TSL2585_GAIN_128X   48 /* 4B (float) */
+#define CAL_TSL2585_GAIN_256X   52 /* 4B (float) */
+#define CAL_TSL2585_RESERVED1   56 /* 4B (for page alignment) */
+#define CAL_TSL2585_GAIN_CRC    60 /* 4B (uint32_t) */
+
+/* TSL2585 Slope Calibration (16B) */
+#define CAL_TSL2585_SLOPE_B0    64 /* 4B (float) */
+#define CAL_TSL2585_SLOPE_B1    68 /* 4B (float) */
+#define CAL_TSL2585_SLOPE_B2    72 /* 4B (float) */
+#define CAL_TSL2558_SLOPE_CRC   76 /* 4B (uint32_t) */
+
+/* TSL2585 Target Calibration (32B) */
+#define CAL_TSL2585_TARGET_LOW_REF      80 /* 4B (float) */
+#define CAL_TSL2585_TARGET_LOW_READING  84 /* 4B (float) */
+#define CAL_TSL2585_TARGET_HIGH_REF     88 /* 4B (float) */
+#define CAL_TSL2585_TARGET_HIGH_READING 92 /* 4B (float) */
+#define CAL_TSL2585_RESERVED2           96 /* 12B (for page alignment) */
+#define CAL_TSL2585_TARGET_CRC         108 /* 4B (uint32_t) */
+
 #define CAL_TSL2585_END        128
 
 HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, I2C_HandleTypeDef *hi2c)
@@ -113,37 +130,76 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     /* Get the version */
     version = copy_to_u32(data + CAL_TSL2585_VERSION);
 
-    /* Separate the CRC value and zero it in the buffer */
-    crc = copy_to_u32(data + CAL_TSL2585_CRC);
-    memset(data + CAL_TSL2585_CRC, 0, sizeof(uint32_t));
-
-    /* Calculate the CRC for the page */
-    calculated_crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)data, PAGE_CAL_SIZE / 4UL);
-    if (crc != calculated_crc) {
-        log_w("Invalid TSL2585 cal CRC: %08X != %08X", crc, calculated_crc);
-        return HAL_ERROR;
-    }
-
     if (version != LATEST_CAL_TSL2585_VERSION) {
         log_w("Unexpected TSL2585 cal version: %d != %d", version, LATEST_CAL_TSL2585_VERSION);
         return HAL_ERROR;
     }
 
-    //TODO Report version/CRC errors differently from normal I2C errors
+    memset(settings_tsl2585, 0, sizeof(meter_probe_settings_tsl2585_t));
 
-    /* Fill in the calibration data */
-    size_t offset = CAL_TSL2585_GAIN_0_5X;
-    for (size_t i = 0; i < TSL2585_GAIN_MAX; i++) {
-        if (offset > CAL_TSL2585_GAIN_4096X) {
-            /* This should not be possible */
-            log_w("Cal data overrun");
-            return HAL_ERROR;
+    /* Validate the gain data CRC */
+    crc = copy_to_u32(data + CAL_TSL2585_GAIN_CRC);
+    calculated_crc = HAL_CRC_Calculate(&hcrc,
+        (uint32_t *)(data + CAL_TSL2585_GAIN_0_5X),
+        (CAL_TSL2585_GAIN_CRC - CAL_TSL2585_GAIN_0_5X) / 4UL);
+    if (crc == calculated_crc) {
+        /* Parse the gain calibration data */
+        meter_probe_settings_tsl2585_cal_gain_t *cal_gain = &settings_tsl2585->cal_gain;
+        cal_gain->values[TSL2585_GAIN_0_5X] = copy_to_f32(data + CAL_TSL2585_GAIN_0_5X);
+        cal_gain->values[TSL2585_GAIN_1X] = copy_to_f32(data + CAL_TSL2585_GAIN_1X);
+        cal_gain->values[TSL2585_GAIN_2X] = copy_to_f32(data + CAL_TSL2585_GAIN_2X);
+        cal_gain->values[TSL2585_GAIN_4X] = copy_to_f32(data + CAL_TSL2585_GAIN_4X);
+        cal_gain->values[TSL2585_GAIN_8X] = copy_to_f32(data + CAL_TSL2585_GAIN_8X);
+        cal_gain->values[TSL2585_GAIN_16X] = copy_to_f32(data + CAL_TSL2585_GAIN_16X);
+        cal_gain->values[TSL2585_GAIN_32X] = copy_to_f32(data + CAL_TSL2585_GAIN_32X);
+        cal_gain->values[TSL2585_GAIN_64X] = copy_to_f32(data + CAL_TSL2585_GAIN_64X);
+        cal_gain->values[TSL2585_GAIN_128X] = copy_to_f32(data + CAL_TSL2585_GAIN_128X);
+        cal_gain->values[TSL2585_GAIN_256X] = copy_to_f32(data + CAL_TSL2585_GAIN_256X);
+    } else {
+        log_w("Invalid TSL2585 cal gain CRC: %08X != %08X", crc, calculated_crc);
+        for (size_t i = 0; i <= TSL2585_GAIN_256X; i++) {
+            settings_tsl2585->cal_gain.values[i] = NAN;
         }
+    }
 
-        settings_tsl2585->gain_cal[i].slope = copy_to_f32(data + offset);
-        offset += 4;
-        settings_tsl2585->gain_cal[i].offset = copy_to_f32(data + offset);
-        offset += 4;
+    /* Validate the slope data CRC */
+    crc = copy_to_u32(data + CAL_TSL2558_SLOPE_CRC);
+    calculated_crc = HAL_CRC_Calculate(&hcrc,
+        (uint32_t *)(data + CAL_TSL2585_SLOPE_B0),
+        (CAL_TSL2558_SLOPE_CRC - CAL_TSL2585_SLOPE_B0) / 4UL);
+    if (crc == calculated_crc) {
+        /* Parse the gain calibration data */
+        meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
+        cal_slope->b0 = copy_to_f32(data + CAL_TSL2585_SLOPE_B0);
+        cal_slope->b1 = copy_to_f32(data + CAL_TSL2585_SLOPE_B1);
+        cal_slope->b2 = copy_to_f32(data + CAL_TSL2585_SLOPE_B2);
+    } else {
+        log_w("Invalid TSL2585 cal slope CRC: %08X != %08X", crc, calculated_crc);
+        meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
+        cal_slope->b0 = NAN;
+        cal_slope->b1 = NAN;
+        cal_slope->b2 = NAN;
+    }
+
+    /* Validate the target data CRC */
+    crc = copy_to_u32(data + CAL_TSL2585_TARGET_CRC);
+    calculated_crc = HAL_CRC_Calculate(&hcrc,
+        (uint32_t *)(data + CAL_TSL2585_TARGET_LOW_REF),
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+    if (crc == calculated_crc) {
+        /* Parse the target calibration data */
+        meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+        cal_target->lux_low_ref = copy_to_f32(data + CAL_TSL2585_TARGET_LOW_REF);
+        cal_target->lux_low_reading = copy_to_f32(data + CAL_TSL2585_TARGET_LOW_READING);
+        cal_target->lux_high_ref = copy_to_f32(data + CAL_TSL2585_TARGET_HIGH_REF);
+        cal_target->lux_high_reading = copy_to_f32(data + CAL_TSL2585_TARGET_HIGH_READING);
+    } else {
+        log_w("Invalid TSL2585 cal target CRC: %08X != %08X", crc, calculated_crc);
+        meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+        cal_target->lux_low_ref = NAN;
+        cal_target->lux_low_reading = NAN;
+        cal_target->lux_high_ref = NAN;
+        cal_target->lux_high_reading = NAN;
     }
 
     return ret;
@@ -153,6 +209,8 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
     const meter_probe_settings_tsl2585_t *settings_tsl2585)
 {
     HAL_StatusTypeDef ret = HAL_OK;
+    uint32_t crc;
+
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
     if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
 
@@ -163,31 +221,89 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
     /* Set the version */
     copy_from_u32(data + CAL_TSL2585_VERSION, LATEST_CAL_TSL2585_VERSION);
 
-    /* Fill in the calibration data */
-    size_t offset = CAL_TSL2585_GAIN_0_5X;
-    for (size_t i = 0; i < TSL2585_GAIN_MAX; i++) {
-        if (offset > CAL_TSL2585_GAIN_4096X) {
-            /* This should not be possible */
-            log_w("Cal data overrun");
-            return HAL_ERROR;
-        }
-        copy_from_f32(data + offset, settings_tsl2585->gain_cal[i].slope);
-        offset += 4;
-        copy_from_f32(data + offset, settings_tsl2585->gain_cal[i].offset);
-        offset += 4;
-    }
+    /* Fill in the gain calibration data */
+    const meter_probe_settings_tsl2585_cal_gain_t *cal_gain = &settings_tsl2585->cal_gain;
+    copy_from_f32(data + CAL_TSL2585_GAIN_0_5X, cal_gain->values[TSL2585_GAIN_0_5X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_1X, cal_gain->values[TSL2585_GAIN_1X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_2X, cal_gain->values[TSL2585_GAIN_2X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_4X, cal_gain->values[TSL2585_GAIN_4X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_8X, cal_gain->values[TSL2585_GAIN_8X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_16X, cal_gain->values[TSL2585_GAIN_16X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_32X, cal_gain->values[TSL2585_GAIN_32X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_64X, cal_gain->values[TSL2585_GAIN_64X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_128X, cal_gain->values[TSL2585_GAIN_128X]);
+    copy_from_f32(data + CAL_TSL2585_GAIN_256X, cal_gain->values[TSL2585_GAIN_256X]);
 
-    /* Calculate the CRC, with its field zeroed, and populate the value */
-    uint32_t crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)data, PAGE_CAL_SIZE / 4UL);
-    copy_from_u32(data + CAL_TSL2585_CRC, crc);
+    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_GAIN_0_5X),
+        (CAL_TSL2585_GAIN_CRC - CAL_TSL2585_GAIN_0_5X) / 4UL);
+    copy_from_u32(data + CAL_TSL2585_GAIN_CRC, crc);
 
-    /* Write the non-header portions of the data buffer first */
-    ret = m24c02_write_buffer(handle->hi2c, PAGE_CAL + CAL_TSL2585_GAIN_0_5X,
-        data + M24C02_PAGE_SIZE, PAGE_CAL_SIZE - M24C02_PAGE_SIZE);
+    /* Fill in the slope calibration data */
+    const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
+    copy_from_f32(data + CAL_TSL2585_SLOPE_B0, cal_slope->b0);
+    copy_from_f32(data + CAL_TSL2585_SLOPE_B1, cal_slope->b1);
+    copy_from_f32(data + CAL_TSL2585_SLOPE_B2, cal_slope->b2);
+
+    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_SLOPE_B0),
+        (CAL_TSL2558_SLOPE_CRC - CAL_TSL2585_SLOPE_B0) / 4UL);
+    copy_from_u32(data + CAL_TSL2558_SLOPE_CRC, crc);
+
+    /* Fill in the target calibration data */
+    const meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+    copy_from_f32(data + CAL_TSL2585_TARGET_LOW_REF, cal_target->lux_low_ref);
+    copy_from_f32(data + CAL_TSL2585_TARGET_LOW_READING, cal_target->lux_low_reading);
+    copy_from_f32(data + CAL_TSL2585_TARGET_HIGH_REF, cal_target->lux_high_ref);
+    copy_from_f32(data + CAL_TSL2585_TARGET_HIGH_READING, cal_target->lux_high_reading);
+
+    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_TARGET_LOW_REF),
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+    copy_from_u32(data + CAL_TSL2585_TARGET_CRC, crc);
+
+    /* Write the whole data buffer */
+    ret = m24c02_write_buffer(handle->hi2c, PAGE_CAL, data, PAGE_CAL_SIZE);
     if (ret != HAL_OK) { return ret; }
 
-    /* Write the header last, so a failed write will ensure an invalid CRC */
-    ret = m24c02_write_page(handle->hi2c, PAGE_CAL, data, M24C02_PAGE_SIZE);
+    return ret;
+}
+
+HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
+    const meter_probe_settings_tsl2585_cal_target_t *cal_target)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) + 4];
+    const size_t offset = CAL_TSL2585_TARGET_LOW_REF;
+    uint32_t version;
+    uint32_t crc;
+
+    if (!handle || !cal_target) { return HAL_ERROR; }
+    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+
+    /* Read just the version */
+    ret = m24c02_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
+    if (ret != HAL_OK) { return ret; }
+
+    /* Parse and validate the version */
+    version = copy_to_u32(data);
+
+    if (version != LATEST_CAL_TSL2585_VERSION) {
+        log_w("Unexpected TSL2585 cal version: %d != %d", version, LATEST_CAL_TSL2585_VERSION);
+        return HAL_ERROR;
+    }
+
+    /* Fill in the target calibration data */
+    copy_from_f32(data + (CAL_TSL2585_TARGET_LOW_REF - offset), cal_target->lux_low_ref);
+    copy_from_f32(data + (CAL_TSL2585_TARGET_LOW_READING - offset), cal_target->lux_low_reading);
+    copy_from_f32(data + (CAL_TSL2585_TARGET_HIGH_REF - offset), cal_target->lux_high_ref);
+    copy_from_f32(data + (CAL_TSL2585_TARGET_HIGH_READING - offset), cal_target->lux_high_reading);
+
+    /* Calculate the target calibration data CRC */
+    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)data,
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+    copy_from_u32(data + (CAL_TSL2585_TARGET_CRC - offset), crc);
+
+    /* Write the data buffer */
+    ret = m24c02_write_buffer(handle->hi2c, offset, data, sizeof(data));
+    if (ret != HAL_OK) { return ret; }
 
     return ret;
 }

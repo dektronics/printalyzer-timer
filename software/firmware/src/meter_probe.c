@@ -1127,14 +1127,29 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
     if (!sensor_reading) { return NAN; }
 
     const float atime_ms = tsl2585_integration_time_ms(sensor_reading->sample_time, sensor_reading->sample_count);
-    const float als_gain = tsl2585_gain_value(sensor_reading->gain);
+
+    float als_gain;
+    if (sensor_reading->gain <= TSL2585_GAIN_256X) {
+        als_gain = sensor_settings.cal_gain.values[sensor_reading->gain];
+    } else {
+        als_gain = tsl2585_gain_value(sensor_reading->gain);
+    }
 
     if (!is_valid_number(atime_ms) || !is_valid_number(als_gain)) { return NAN; }
 
     /* Divide to get numbers in a similar range as previous sensors */
     float als_reading = (float)sensor_reading->als_data / 16.0F;
 
-    return als_reading / (atime_ms * als_gain);
+    /* Calculate the basic reading */
+    float basic_reading = als_reading / (atime_ms * als_gain);
+
+    /* Apply the slope correction */
+    const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &sensor_settings.cal_slope;
+    float l_reading = log10f(basic_reading);
+    float l_expected = cal_slope->b0 + (cal_slope->b1 * l_reading) + (cal_slope->b2 * powf(l_reading, 2.0F));
+    float corr_reading = powf(10.0F, l_expected);
+
+    return corr_reading;
 }
 
 float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
@@ -1143,8 +1158,8 @@ float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
     if (sensor_reading->gain >= TSL2585_GAIN_MAX) { return NAN; }
     if (!meter_probe_has_sensor_settings) { return NAN; }
 
-    const float slope = sensor_settings.gain_cal[sensor_reading->gain].slope;
-    const float offset = sensor_settings.gain_cal[sensor_reading->gain].offset;
+    const float slope = NAN; //sensor_settings.gain_cal[sensor_reading->gain].slope;
+    const float offset = NAN; //sensor_settings.gain_cal[sensor_reading->gain].offset;
     if (!is_valid_number(slope) || !is_valid_number(offset)) { return NAN; }
 
     const float basic_value = meter_probe_basic_result(sensor_reading);
