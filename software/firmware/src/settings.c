@@ -448,7 +448,7 @@ bool settings_init_config2(bool force_clear)
     settings_set_safelight_config_defaults(&setting_safelight_config);
 
     if (force_clear) {
-        if (settings_clear_config2() != HAL_OK) {
+        if (!settings_clear_config2()) {
             return false;
         }
     } else {
