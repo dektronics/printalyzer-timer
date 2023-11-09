@@ -47,13 +47,11 @@ extern CRC_HandleTypeDef hcrc;
 #define CAL_TSL2585_SLOPE_B2    72 /* 4B (float) */
 #define CAL_TSL2558_SLOPE_CRC   76 /* 4B (uint32_t) */
 
-/* TSL2585 Target Calibration (32B) */
-#define CAL_TSL2585_TARGET_LOW_REF      80 /* 4B (float) */
-#define CAL_TSL2585_TARGET_LOW_READING  84 /* 4B (float) */
-#define CAL_TSL2585_TARGET_HIGH_REF     88 /* 4B (float) */
-#define CAL_TSL2585_TARGET_HIGH_READING 92 /* 4B (float) */
-#define CAL_TSL2585_RESERVED2           96 /* 12B (for page alignment) */
-#define CAL_TSL2585_TARGET_CRC         108 /* 4B (uint32_t) */
+/* TSL2585 Target Calibration (16B) */
+#define CAL_TSL2585_TARGET_LUX_SLOPE     80 /* 4B (float) */
+#define CAL_TSL2585_TARGET_LUX_INTERCEPT 84 /* 4B (float) */
+#define CAL_TSL2585_RESERVED2            88 /* 4B (for page alignment) */
+#define CAL_TSL2585_TARGET_CRC           92 /* 4B (uint32_t) */
 
 #define CAL_TSL2585_END        128
 
@@ -184,22 +182,18 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     /* Validate the target data CRC */
     crc = copy_to_u32(data + CAL_TSL2585_TARGET_CRC);
     calculated_crc = HAL_CRC_Calculate(&hcrc,
-        (uint32_t *)(data + CAL_TSL2585_TARGET_LOW_REF),
-        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+        (uint32_t *)(data + CAL_TSL2585_TARGET_LUX_SLOPE),
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) / 4UL);
     if (crc == calculated_crc) {
         /* Parse the target calibration data */
         meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
-        cal_target->lux_low_ref = copy_to_f32(data + CAL_TSL2585_TARGET_LOW_REF);
-        cal_target->lux_low_reading = copy_to_f32(data + CAL_TSL2585_TARGET_LOW_READING);
-        cal_target->lux_high_ref = copy_to_f32(data + CAL_TSL2585_TARGET_HIGH_REF);
-        cal_target->lux_high_reading = copy_to_f32(data + CAL_TSL2585_TARGET_HIGH_READING);
+        cal_target->lux_slope = copy_to_f32(data + CAL_TSL2585_TARGET_LUX_SLOPE);
+        cal_target->lux_intercept = copy_to_f32(data + CAL_TSL2585_TARGET_LUX_INTERCEPT);
     } else {
         log_w("Invalid TSL2585 cal target CRC: %08X != %08X", crc, calculated_crc);
         meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
-        cal_target->lux_low_ref = NAN;
-        cal_target->lux_low_reading = NAN;
-        cal_target->lux_high_ref = NAN;
-        cal_target->lux_high_reading = NAN;
+        cal_target->lux_slope = NAN;
+        cal_target->lux_intercept = NAN;
     }
 
     return ret;
@@ -250,13 +244,11 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
 
     /* Fill in the target calibration data */
     const meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
-    copy_from_f32(data + CAL_TSL2585_TARGET_LOW_REF, cal_target->lux_low_ref);
-    copy_from_f32(data + CAL_TSL2585_TARGET_LOW_READING, cal_target->lux_low_reading);
-    copy_from_f32(data + CAL_TSL2585_TARGET_HIGH_REF, cal_target->lux_high_ref);
-    copy_from_f32(data + CAL_TSL2585_TARGET_HIGH_READING, cal_target->lux_high_reading);
+    copy_from_f32(data + CAL_TSL2585_TARGET_LUX_SLOPE, cal_target->lux_slope);
+    copy_from_f32(data + CAL_TSL2585_TARGET_LUX_INTERCEPT, cal_target->lux_intercept);
 
-    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_TARGET_LOW_REF),
-        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_TARGET_LUX_SLOPE),
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) / 4UL);
     copy_from_u32(data + CAL_TSL2585_TARGET_CRC, crc);
 
     /* Write the whole data buffer */
@@ -270,8 +262,8 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     const meter_probe_settings_tsl2585_cal_target_t *cal_target)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) + 4];
-    const size_t offset = CAL_TSL2585_TARGET_LOW_REF;
+    uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) + 4];
+    const size_t offset = CAL_TSL2585_TARGET_LUX_SLOPE;
     uint32_t version;
     uint32_t crc;
 
@@ -291,14 +283,12 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     }
 
     /* Fill in the target calibration data */
-    copy_from_f32(data + (CAL_TSL2585_TARGET_LOW_REF - offset), cal_target->lux_low_ref);
-    copy_from_f32(data + (CAL_TSL2585_TARGET_LOW_READING - offset), cal_target->lux_low_reading);
-    copy_from_f32(data + (CAL_TSL2585_TARGET_HIGH_REF - offset), cal_target->lux_high_ref);
-    copy_from_f32(data + (CAL_TSL2585_TARGET_HIGH_READING - offset), cal_target->lux_high_reading);
+    copy_from_f32(data + (CAL_TSL2585_TARGET_LUX_SLOPE - offset), cal_target->lux_slope);
+    copy_from_f32(data + (CAL_TSL2585_TARGET_LUX_INTERCEPT - offset), cal_target->lux_intercept);
 
     /* Calculate the target calibration data CRC */
     crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)data,
-        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LOW_REF) / 4UL);
+        (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) / 4UL);
     copy_from_u32(data + (CAL_TSL2585_TARGET_CRC - offset), crc);
 
     /* Write the data buffer */

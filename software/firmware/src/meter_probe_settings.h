@@ -35,10 +35,8 @@ typedef struct __meter_probe_settings_tsl2585_cal_slope_t {
 } meter_probe_settings_tsl2585_cal_slope_t;
 
 typedef struct __meter_probe_settings_tsl2585_cal_target_t {
-    float lux_low_ref;
-    float lux_low_reading;
-    float lux_high_ref;
-    float lux_high_reading;
+    float lux_slope;
+    float lux_intercept;
 } meter_probe_settings_tsl2585_cal_target_t;
 
 typedef struct __meter_probe_settings_tsl2585_t {

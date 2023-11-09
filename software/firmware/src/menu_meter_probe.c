@@ -163,13 +163,11 @@ menu_result_t meter_probe_sensor_calibration()
             settings.settings_tsl2585.cal_slope.b2);
 
         offset += menu_build_padded_format_row(buf + offset,
-            "Lux low", "%.2f][%f",
-            settings.settings_tsl2585.cal_target.lux_low_ref,
-            settings.settings_tsl2585.cal_target.lux_low_reading);
+            "Lux slope", "[%f",
+            settings.settings_tsl2585.cal_target.lux_slope);
         offset += menu_build_padded_format_row(buf + offset,
-            "Lux high", "%.2f][%f",
-            settings.settings_tsl2585.cal_target.lux_high_ref,
-            settings.settings_tsl2585.cal_target.lux_high_reading);
+            "Lux intercept", "%f",
+            settings.settings_tsl2585.cal_target.lux_intercept);
 
         offset += sprintf(buf + offset, "*** Import from USB device ***\n");
         offset += sprintf(buf + offset, "*** Export to USB device ***");

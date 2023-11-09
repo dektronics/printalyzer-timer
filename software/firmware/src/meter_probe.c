@@ -1158,14 +1158,21 @@ float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
     if (sensor_reading->gain >= TSL2585_GAIN_MAX) { return NAN; }
     if (!meter_probe_has_sensor_settings) { return NAN; }
 
-    const float slope = NAN; //sensor_settings.gain_cal[sensor_reading->gain].slope;
-    const float offset = NAN; //sensor_settings.gain_cal[sensor_reading->gain].offset;
-    if (!is_valid_number(slope) || !is_valid_number(offset)) { return NAN; }
+    const float lux_slope = sensor_settings.cal_target.lux_slope;
+    const float lux_intercept = sensor_settings.cal_target.lux_intercept;
+    if (!is_valid_number(lux_slope) || !is_valid_number(lux_intercept)) { return NAN; }
 
     const float basic_value = meter_probe_basic_result(sensor_reading);
     if (!is_valid_number(basic_value)) { return NAN; }
 
-    return (basic_value * slope) + offset;
+    float lux = (basic_value * lux_slope) + lux_intercept;
+
+    /* Prevent negative results */
+    if (lux < 0.0F) {
+        lux = 0.0F;
+    }
+
+    return lux;
 }
 
 void meter_probe_int_handler()
