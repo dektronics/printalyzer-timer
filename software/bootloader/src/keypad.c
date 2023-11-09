@@ -6,7 +6,8 @@
 
 #include "tca8418.h"
 
-#define KEY_STATE_MASK 0x0003FFFF
+/* Mask to only include internal keys */
+#define KEY_STATE_MASK 0x0003FFF3
 
 /* Flag to prevent duplicate initialization */
 static bool keypad_initialized = false;
