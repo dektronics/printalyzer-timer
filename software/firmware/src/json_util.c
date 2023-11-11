@@ -119,3 +119,22 @@ void json_write_float02(FIL *fp, int indent, const char *key, float val, bool ha
     }
 }
 
+void json_write_float06(FIL *fp, int indent, const char *key, float val, bool has_more)
+{
+    char buf[32];
+    if (!is_valid_number(val)) {
+        sprintf(buf, "null");
+    } else {
+        sprintf(buf, "%0.6f", val);
+    }
+
+    for (int i = 0; i < indent; i++) {
+        f_putc(' ', fp);
+    }
+
+    f_printf(fp, "\"%s\": %s", key, buf);
+
+    if (has_more) {
+        f_puts(",\n", fp);
+    }
+}

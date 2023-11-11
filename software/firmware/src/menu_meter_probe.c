@@ -33,8 +33,11 @@ static menu_result_t meter_probe_sensor_calibration();
 static menu_result_t meter_probe_sensor_calibration_import();
 static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
 static bool validate_section_header(const char *buf, size_t len, const meter_probe_device_info_t *info);
-//static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
-//static void parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_t *settings_tsl2585);
+static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
+static bool parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_gain_t *cal_gain);
+static bool parse_section_sensor_cal_slope(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_slope_t *cal_slope);
+static bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_target_t *cal_target);
+
 //static void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal);
 
 static menu_result_t meter_probe_sensor_calibration_export();
@@ -145,36 +148,47 @@ menu_result_t meter_probe_sensor_calibration()
     }
 
     do {
+        size_t option_offset = 0;
         size_t offset = 0;
 
         for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
                 tsl2585_gain_str(gain), "%f",
                 settings.settings_tsl2585.cal_gain.values[gain]);
+            option_offset++;
         }
+
         offset += menu_build_padded_format_row(buf + offset,
             "B0", "%f",
             settings.settings_tsl2585.cal_slope.b0);
+        option_offset++;
+
         offset += menu_build_padded_format_row(buf + offset,
             "B1", "%f",
             settings.settings_tsl2585.cal_slope.b1);
+        option_offset++;
+
         offset += menu_build_padded_format_row(buf + offset,
             "B2", "%f",
             settings.settings_tsl2585.cal_slope.b2);
+        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
-            "Lux slope", "[%f",
+            "Lux slope", "%f",
             settings.settings_tsl2585.cal_target.lux_slope);
+        option_offset++;
+
         offset += menu_build_padded_format_row(buf + offset,
             "Lux intercept", "%f",
             settings.settings_tsl2585.cal_target.lux_intercept);
+        option_offset++;
 
         offset += sprintf(buf + offset, "*** Import from USB device ***\n");
         offset += sprintf(buf + offset, "*** Export to USB device ***");
 
         option = display_selection_list("Sensor Calibration", option, buf);
 
-        if (option == TSL2585_GAIN_MAX + 1) {
+        if (option == option_offset + 1) {
             menu_result = meter_probe_sensor_calibration_import();
             if (menu_result == MENU_SAVE) {
                 meter_probe_stop();
@@ -185,7 +199,7 @@ menu_result_t meter_probe_sensor_calibration()
                     break;
                 }
             }
-        } else if (option == TSL2585_GAIN_MAX + 2) {
+        } else if (option == option_offset + 2) {
             menu_result = meter_probe_sensor_calibration_export();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
@@ -381,11 +395,9 @@ bool import_calibration_file(const char *filename, const meter_probe_device_info
         while (status == JSONSuccess) {
             if (!pair.key) { continue; }
 
-#if 0
             if (strncmp("sensor_cal", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
                 has_valid_sensor_cal = import_section_sensor_cal(pair.value, pair.valueLength, settings);
             }
-#endif
             status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
         }
 
@@ -455,13 +467,15 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
     return true;
 }
 
-#if 0
 bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings)
 {
     JSONStatus_t status;
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
+    bool has_gain = false;
+    bool has_slope = false;
+    bool has_target = false;
 
     /*
      * Iterate across the section, and import keys as they're found.
@@ -473,17 +487,47 @@ bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings
     while (status == JSONSuccess) {
         if (pair.key) {
             if (strncmp("gain", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                parse_section_sensor_cal_gain(pair.value, pair.valueLength, &settings->settings_tsl2585);
+                has_gain = parse_section_sensor_cal_gain(pair.value, pair.valueLength,
+                    &settings->settings_tsl2585.cal_gain);
+            } else if (strncmp("slope", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                has_slope = parse_section_sensor_cal_slope(pair.value, pair.valueLength,
+                    &settings->settings_tsl2585.cal_slope);
+            } else if (strncmp("target", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                has_target = parse_section_sensor_cal_target(pair.value, pair.valueLength,
+                    &settings->settings_tsl2585.cal_target);
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
     }
 
-    /* Validate the loaded gain calibration */
-    for (tsl2585_gain_t gain = 0; gain < TSL2585_GAIN_MAX; gain++) {
-        if (!is_valid_number(settings->settings_tsl2585.gain_cal[gain].slope)
-            || !is_valid_number(settings->settings_tsl2585.gain_cal[gain].offset)) {
-            log_w("Invalid gain cal for %s", tsl2585_gain_str(gain));
+    return has_gain && has_slope && has_target;
+}
+
+bool parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_gain_t *cal_gain)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+    tsl2585_gain_t gain = TSL2585_GAIN_0_5X;
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess && gain <= TSL2585_GAIN_256X) {
+        if (!pair.key && pair.jsonType == JSONNumber) {
+            cal_gain->values[gain] = json_parse_float(pair.value, pair.valueLength, NAN);
+            gain++;
+        }
+
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+
+    /* Validate the loaded gain */
+    if (gain < TSL2585_GAIN_256X) {
+        return false;
+    }
+
+    for (gain = TSL2585_GAIN_1X; gain <= TSL2585_GAIN_256X; gain++) {
+        if (cal_gain->values[gain] <= cal_gain->values[gain - 1]) {
             return false;
         }
     }
@@ -491,45 +535,69 @@ bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings
     return true;
 }
 
-void parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_t *settings_tsl2585)
+bool parse_section_sensor_cal_slope(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_slope_t *cal_slope)
 {
     JSONStatus_t status;
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
-    tsl2585_gain_t gain = 0;
 
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess && gain < TSL2585_GAIN_MAX) {
-        if (!pair.key && pair.jsonType == JSONObject) {
-            parse_section_sensor_cal_gain_entry(pair.value, pair.valueLength, &(settings_tsl2585->gain_cal[gain]));
-            gain++;
-        }
-
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-}
-
-void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
+    cal_slope->b0 = NAN;
+    cal_slope->b1 = NAN;
+    cal_slope->b2 = NAN;
 
     status = JSON_Iterate(buf, len, &start, &next, &pair);
     while (status == JSONSuccess) {
         if (pair.key) {
-            if (strncmp("slope", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                gain_cal->slope = json_parse_float(pair.value, pair.valueLength, NAN);
-            } else if (strncmp("offset", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                gain_cal->offset = json_parse_float(pair.value, pair.valueLength, NAN);
+            if (strncmp("b0", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                cal_slope->b0 =json_parse_float(pair.value, pair.valueLength, NAN);
+            } else if (strncmp("b1", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                cal_slope->b1 =json_parse_float(pair.value, pair.valueLength, NAN);
+            } else if (strncmp("b2", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                cal_slope->b2 =json_parse_float(pair.value, pair.valueLength, NAN);
             }
         }
         status = JSON_Iterate(buf, len, &start, &next, &pair);
     }
+
+    if (is_valid_number(cal_slope->b0)
+        && is_valid_number(cal_slope->b1)
+        && is_valid_number(cal_slope->b2)) {
+        return true;
+    } else {
+        return false;
+    }
 }
-#endif
+
+bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_target_t *cal_target)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+
+    cal_target->lux_slope = NAN;
+    cal_target->lux_intercept = NAN;
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("lux_slope", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                cal_target->lux_slope =json_parse_float(pair.value, pair.valueLength, NAN);
+            } else if (strncmp("lux_intercept", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                cal_target->lux_intercept =json_parse_float(pair.value, pair.valueLength, NAN);
+            }
+        }
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+
+    if (is_valid_number(cal_target->lux_slope)
+        && is_valid_number(cal_target->lux_intercept)) {
+        return true;
+    } else {
+        return false;
+    }
+}
 
 menu_result_t meter_probe_sensor_calibration_export()
 {
@@ -621,7 +689,7 @@ bool export_calibration_file(const char *filename, const meter_probe_device_info
         f_printf(&fp, ",\n");
         write_section_sensor_cal(&fp, settings);
         f_printf(&fp, "\n");
-        f_printf(&fp, "}");
+        f_printf(&fp, "}\n");
 
         log_d("Cal written to file: %s", filename);
         success = true;
@@ -648,33 +716,40 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
 
 bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
 {
-#if 0
-    char buf1[32];
-    char buf2[32];
+    char buf[32];
 
     f_printf(fp, "  \"sensor_cal\": {\n");
     f_printf(fp, "    \"gain\": [\n");
-    for (tsl2585_gain_t gain = 0; gain < TSL2585_GAIN_MAX; gain++) {
-        const float slope = settings->settings_tsl2585.gain_cal[gain].slope;
-        const float offset = settings->settings_tsl2585.gain_cal[gain].offset;
+    for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
+        const float gain_val = settings->settings_tsl2585.cal_gain.values[gain];
 
-        if (is_valid_number(slope) && is_valid_number(offset)) {
-            sprintf(buf1, "%0.6f", slope);
-            sprintf(buf2, "%0.6f", offset);
+        if (is_valid_number(gain_val)) {
+            sprintf(buf, "%0.6f", gain_val);
         } else {
-            sprintf(buf1, "null");
-            sprintf(buf2, "null");
+            sprintf(buf, "null");
         }
 
-        f_printf(fp, "      { \"slope\": %s, \"offset\": %s }", buf1, buf2);
-        if (gain < TSL2585_GAIN_MAX - 1) {
+        f_printf(fp, "      %s", buf);
+        if (gain < TSL2585_GAIN_256X) {
             f_putc(',', fp);
         }
         f_putc('\n', fp);
     }
-    f_printf(fp, "    ]\n");
+    f_printf(fp, "    ],\n");
+
+    f_printf(fp, "    \"slope\": {\n");
+    json_write_float06(fp, 6, "b0", settings->settings_tsl2585.cal_slope.b0, true);
+    json_write_float06(fp, 6, "b1", settings->settings_tsl2585.cal_slope.b1, true);
+    json_write_float06(fp, 6, "b2", settings->settings_tsl2585.cal_slope.b2, false);
+    f_printf(fp, "\n    },\n");
+
+    f_printf(fp, "    \"target\": {\n");
+    json_write_float06(fp, 6, "lux_slope",
+        settings->settings_tsl2585.cal_target.lux_slope, true);
+    json_write_float06(fp, 6, "lux_intercept",
+        settings->settings_tsl2585.cal_target.lux_intercept, false);
+    f_printf(fp, "\n    }\n");
     f_printf(fp, "  }");
-#endif
     return true;
 }
 
