@@ -116,6 +116,10 @@ typedef enum {
 #define TSL2585_ALS_DATA1_SCALED_STATUS 0x02 /*< Indicates if ALS data1 needs to be multiplied */
 #define TSL2585_ALS_DATA2_SCALED_STATUS 0x01 /*< Indicates if ALS data2 needs to be multiplied */
 
+/* VSYNC_CONTROL register values */
+#define TSL2585_VSYNC_CONTROL_HOLD_VSYNC_PERIOD 0x02 /*!< If set to "1" VSYNC_PERIOD cannot be updated until read */
+#define TSL2585_VSYNC_CONTROL_SW_VSYNC_TRIGGER  0x01 /*!< If set to "1", this bit can be used to trigger a SW sync */
+
 /* VSYNC_CFG register values */
 #define TSL2585_VSYNC_CFG_OSC_CALIB_DISABLED  0x00 /*!< Oscillator calibration disabled */
 #define TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON 0x40 /*!< Oscillator calibration after PON */
@@ -202,9 +206,15 @@ HAL_StatusTypeDef tsl2585_set_single_shot_mode(I2C_HandleTypeDef *hi2c, bool ena
 HAL_StatusTypeDef tsl2585_get_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t *period);
 HAL_StatusTypeDef tsl2585_set_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t period);
 
+HAL_StatusTypeDef tsl2585_get_vsync_period_target(I2C_HandleTypeDef *hi2c, uint16_t *period_target, bool *use_fast_timing);
 HAL_StatusTypeDef tsl2585_set_vsync_period_target(I2C_HandleTypeDef *hi2c, uint16_t period_target, bool use_fast_timing);
 
+HAL_StatusTypeDef tsl2585_get_vsync_control(I2C_HandleTypeDef *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_vsync_control(I2C_HandleTypeDef *hi2c, uint8_t value);
+
+HAL_StatusTypeDef tsl2585_get_vsync_cfg(I2C_HandleTypeDef *hi2c, uint8_t *value);
 HAL_StatusTypeDef tsl2585_set_vsync_cfg(I2C_HandleTypeDef *hi2c, uint8_t value);
+
 HAL_StatusTypeDef tsl2585_set_vsync_gpio_int(I2C_HandleTypeDef *hi2c, uint8_t value);
 
 /**
