@@ -44,7 +44,14 @@
  * Minimum exposure time that may be offered by calculation
  * from light readings.
  */
-#define EXPOSURE_TIME_LOWER_BOUND (1.0F)
+#define EXPOSURE_TIME_CALCULATION_LOWER_BOUND (1.0F)
+
+/**
+ * Minimum exposure time that can be handled by an enlarger,
+ * as a way to prevent uncalibrated profiles from permitting
+ * a shorter time than we can handle.
+ */
+#define EXPOSURE_TIME_ENLARGER_LOWER_BOUND (0.1F)
 
 typedef struct __exposure_state_t {
     exposure_mode_t mode;
@@ -225,12 +232,14 @@ void exposure_set_min_exposure_time(exposure_state_t *state, float value)
     if (!state) { return; }
     if (state->mode == EXPOSURE_MODE_DENSITOMETER) { return; }
 
-    if (isnormal(value) && value > 0.01F) {
+    if (isnormal(value) && value > EXPOSURE_TIME_ENLARGER_LOWER_BOUND) {
         state->min_exposure_time = value;
 
-        if (state->lux_reading_count > 0 && state->base_time < MAX(state->min_exposure_time, EXPOSURE_TIME_LOWER_BOUND)) {
+        if (state->lux_reading_count > 0 && state->base_time < MAX(state->min_exposure_time, EXPOSURE_TIME_CALCULATION_LOWER_BOUND)) {
             exposure_recalculate_base_time(state);
         }
+    } else {
+        state->min_exposure_time = EXPOSURE_TIME_ENLARGER_LOWER_BOUND;
     }
 }
 
@@ -238,10 +247,10 @@ float exposure_get_min_exposure_time(const exposure_state_t *state)
 {
     if (!state) { return 0; }
 
-    if (isnormal(state->min_exposure_time) && state->min_exposure_time > 0.01F) {
+    if (isnormal(state->min_exposure_time) && state->min_exposure_time > EXPOSURE_TIME_ENLARGER_LOWER_BOUND) {
         return state->min_exposure_time;
     } else {
-        return 0;
+        return EXPOSURE_TIME_ENLARGER_LOWER_BOUND;
     }
 }
 
@@ -995,7 +1004,7 @@ void exposure_recalculate_base_time(exposure_state_t *state)
     float target_time = powf(10, ht_lev100 / 100.0F) / lux_value;
 
     /* Adjust exposure time if it is too low */
-    float min_time = MAX(state->min_exposure_time, EXPOSURE_TIME_LOWER_BOUND);
+    float min_time = MAX(state->min_exposure_time, EXPOSURE_TIME_CALCULATION_LOWER_BOUND);
     if (target_time < min_time) {
         target_time = min_time;
     }
