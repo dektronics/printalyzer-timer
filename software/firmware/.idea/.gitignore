@@ -10,5 +10,7 @@
 dictionaries/
 # Code inspection settings
 inspectionProfiles/
+# Run configurations (system-specific)
+runConfigurations/
 # Other configuration files
 perl5local.xml
