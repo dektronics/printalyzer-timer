@@ -136,12 +136,14 @@ bool state_timer_main_exposure_callback(exposure_timer_state_t state, uint32_t t
 
     /* Handle the next keypad event without blocking */
     keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
-        if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+    HAL_StatusTypeDef ret;
+    do {
+        ret = keypad_wait_for_event(&keypad_event, 0);
+        if (ret == HAL_OK && keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
             log_i("Canceling exposure timer at %ldms", time_ms);
             return false;
         }
-    }
+    } while (ret == HAL_OK);
 
     return true;
 }
