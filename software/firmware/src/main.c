@@ -418,11 +418,6 @@ void tim3_init(void)
         Error_Handler();
     }
 
-    sConfigOC.Pulse = 24000;
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_4) != HAL_OK) {
-        Error_Handler();
-    }
-
     HAL_TIM_MspPostInit(&htim3);
 }
 
@@ -599,6 +594,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM11) {
         HAL_IncTick();
+    } else if (htim->Instance == TIM3) {
+        meter_probe_notify_cal_timer();
     } else if (htim->Instance == TIM10) {
         main_task_notify_countdown_timer();
     }

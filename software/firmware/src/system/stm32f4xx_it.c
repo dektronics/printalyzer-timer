@@ -21,6 +21,7 @@
 
 extern HCD_HandleTypeDef hhcd_USB_OTG_FS;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim10;
 extern TIM_HandleTypeDef htim11;
@@ -137,6 +138,14 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
 void TIM1_CC_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim1);
+}
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+    HAL_TIM_IRQHandler(&htim3);
 }
 
 /**

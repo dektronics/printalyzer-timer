@@ -112,6 +112,7 @@ static uint8_t sensor_device_id[3];
 static tsl2585_state_t sensor_state = {0};
 static bool sensor_osc_calibration_enabled = false;
 static uint32_t last_aint_ticks = 0;
+static volatile uint8_t sensor_osc_sync_count = 0;
 
 /* Queue for meter probe control events */
 static osMessageQueueId_t meter_probe_control_queue = NULL;
@@ -149,10 +150,6 @@ static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
 
 static HAL_StatusTypeDef sensor_osc_calibration();
-static void sensor_int_timer_output_init();
-static void sensor_int_timer_output_start();
-static void sensor_int_timer_output_stop();
-static void sensor_int_gpio_exti_input();
 static void sensor_int_gpio_exti_enable();
 static void sensor_int_gpio_exti_disable();
 
@@ -674,72 +671,62 @@ HAL_StatusTypeDef sensor_osc_calibration()
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t status3 = 0;
     uint16_t vsync_period = 0;
+    uint32_t sync_start;
 
-    log_d("TSL2585 oscillator calibration");
+    log_d("TSL2585 oscillator calibration (SW_VSYNC_TRIGGER)");
 
     do {
         /* Set VSYNC period target */
         ret = tsl2585_set_vsync_period_target(&hi2c2, 720, true); /* 1000Hz */
         if (ret != HAL_OK) { break; }
 
-        /* Configure sensor interrupt pin as an input */
-        ret = tsl2585_set_vsync_gpio_int(&hi2c2, TSL2585_GPIO_INT_INT_IN_EN | TSL2585_GPIO_INT_VSYNC_GPIO_OUT);
+        /* Set calibration mode */
+        ret = tsl2585_set_vsync_cfg(&hi2c2, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_MODE);
         if (ret != HAL_OK) { break; }
-
-        /* Set calibration mode and configure sensor to use the interrupt pin for VSYNC */
-        ret = tsl2585_set_vsync_cfg(&hi2c2, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_SELECT);
-        if (ret != HAL_OK) { break; }
-
-        /* Reconfigure SENSOR_INT as a PWM output */
-        sensor_int_timer_output_init();
-
-        /* Start PWM output on SENSOR_INT for VSYNC */
-        sensor_int_timer_output_start();
-
-        /* Short delay for output to stabilize */
-        osDelay(5);
 
         /* Power on the sensor (PON only) */
         ret = tsl2585_set_enable(&hi2c2, TSL2585_ENABLE_PON);
         if (ret != HAL_OK) { break; }
 
-        /* Poll STATUS3 until calibration is complete */
-        uint32_t poll_start = osKernelGetTickCount();
-        do {
-            ret = tsl2585_get_status3(&hi2c2, &status3);
-            if (ret != HAL_OK) { break; }
+        /* Enable interrupts from the 1kHz timer being used for this process */
+        sync_start = osKernelGetTickCount();
+        sensor_osc_sync_count = 0;
+        __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
 
-            if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) != 0) { break; }
-            osThreadYield();
-        } while (ret == HAL_OK && (osKernelGetTickCount() - poll_start) < pdMS_TO_TICKS(1000));
+        /* Wait until we've sent at least two I2C sync commands from the ISR */
+        while (sensor_osc_sync_count < 3) {
+            /* Check for timeout conditions and fail accordingly */
+            if (osKernelGetTickCount() - sync_start > 10) {
+                __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
+                log_w("VSYNC timeout error");
+                break;
+            }
+        }
 
-        if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) == 0) {
-            log_w("VSYNC calibration timeout");
-            ret = HAL_TIMEOUT;
+        /* Check if there was an I2C error inside the ISR */
+        if (sensor_osc_sync_count > 10) {
+            log_w("I2C error during VSYNC trigger interrupt");
+            ret = HAL_ERROR;
             break;
         }
 
-        ret = tsl2585_get_vsync_period(&hi2c2, &vsync_period);
+        ret = tsl2585_get_status3(&hi2c2, &status3);
         if (ret != HAL_OK) { break; }
 
-        log_d("VSYNC_PERIOD=%d (%f Hz)", vsync_period, (1.0F/(vsync_period * 1.388889F))*1000000.0F);
-    } while (0);
-
-    /* Stop PWM output on SENSOR_INT for VSYNC */
-    sensor_int_timer_output_stop();
-
-    /* Reinitialize the INT pin as an input */
-    sensor_int_gpio_exti_input();
-
-    /* Try to reconfigure the sensor pins regardless of results */
-    do {
-        /* Reconfigure the INT pin of the sensor back to its default */
-        ret = tsl2585_set_vsync_gpio_int(&hi2c2, TSL2585_GPIO_INT_VSYNC_GPIO_OUT);
-        if (ret != HAL_OK) { break; }
+        if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) != 0) {
+            ret = tsl2585_get_vsync_period(&hi2c2, &vsync_period);
+            if (ret != HAL_OK) { break; }
+            log_d("VSYNC_PERIOD=%d (%f Hz)", vsync_period, (1.0F/(vsync_period * 1.388889F))*1000000.0F);
+        } else {
+            log_w("VSYNC_PERIOD did not match the target");
+            ret = HAL_ERROR;
+            break;
+        }
 
         /* Reconfigure the VSYNC of the sensor back to its default */
         ret = tsl2585_set_vsync_cfg(&hi2c2, 0x00);
         if (ret != HAL_OK) { break; }
+
     } while (0);
 
     /* Disable the sensor in case of failure */
@@ -751,38 +738,23 @@ HAL_StatusTypeDef sensor_osc_calibration()
     return ret;
 }
 
-void sensor_int_timer_output_init()
+void meter_probe_notify_cal_timer()
 {
-    /* Reconfigure SENSOR_INT as a PWM output driven by TIM3/CH4 */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = SENSOR_INT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-    HAL_GPIO_Init(SENSOR_INT_GPIO_Port, &GPIO_InitStruct);
-}
-
-void sensor_int_timer_output_start()
-{
-    /* Start PWM output on SENSOR_INT */
-    HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-}
-
-void sensor_int_timer_output_stop()
-{
-    /* Stop PWM output on SENSOR_INT */
-    HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_4);
-}
-
-void sensor_int_gpio_exti_input()
-{
-    /* Reconfigure SENSOR_INT as its default mode as an EXTI input */
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    GPIO_InitStruct.Pin = SENSOR_INT_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+    /*
+     * This ISR waits for at least one call to ensure consistent
+     * timing, then sends two consecutive SW_VSYNC_TRIGGER commands
+     * via I2C. After the second command, it disables itself.
+     */
+    if (sensor_osc_sync_count == 1 || sensor_osc_sync_count == 2) {
+        HAL_StatusTypeDef ret = tsl2585_set_vsync_control(&hi2c2, 0x01);
+        if (ret != HAL_OK) {
+            sensor_osc_sync_count = 0xF0;
+        }
+    }
+    if (sensor_osc_sync_count >= 2) {
+        __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
+    }
+    sensor_osc_sync_count++;
 }
 
 void sensor_int_gpio_exti_enable()
