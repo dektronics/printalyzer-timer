@@ -654,7 +654,7 @@ HAL_StatusTypeDef tsl2585_set_mod_photodiode_smux(I2C_HandleTypeDef *hi2c,
     }
 
     /* Convert the input array to the right series of 2-bit values */
-    for (uint8_t i = 0; i < TSL2585_PHD_MAX; i++) {
+    for (uint8_t i = 0; i < (uint8_t)TSL2585_PHD_MAX; i++) {
         switch(phd_mod[i]) {
         case TSL2585_MOD0:
             phd_mod_vals[i] = 0x01;
@@ -1388,5 +1388,5 @@ float tsl2585_gain_value(tsl2585_gain_t gain)
 
 float tsl2585_integration_time_ms(uint16_t sample_time, uint16_t num_samples)
 {
-    return ((num_samples + 1) * (sample_time + 1) * 1.388889F) / 1000.0F;
+    return ((float)(num_samples + 1) * (float)(sample_time + 1) * 1.388889F) / 1000.0F;
 }

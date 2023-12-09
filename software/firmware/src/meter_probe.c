@@ -700,7 +700,7 @@ HAL_StatusTypeDef sensor_osc_calibration()
         osDelay(5);
 
         /* Power on the sensor (PON only) */
-        tsl2585_set_enable(&hi2c2, TSL2585_ENABLE_PON);
+        ret = tsl2585_set_enable(&hi2c2, TSL2585_ENABLE_PON);
         if (ret != HAL_OK) { break; }
 
         /* Poll STATUS3 until calibration is complete */
