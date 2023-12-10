@@ -276,7 +276,7 @@ osStatus_t meter_probe_control_start()
     HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
 
     /* Brief delay to ensure power has stabilized */
-    osDelay(1);
+    osDelay(10);
 
     do {
         /* Read the meter probe's settings memory */

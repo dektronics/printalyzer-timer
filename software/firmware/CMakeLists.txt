@@ -9,6 +9,9 @@ cmake_minimum_required(VERSION 3.20)
 find_package(Git REQUIRED)
 find_package(Perl REQUIRED)
 
+# Build configuration options
+option(USE_SEGGER_RTT "Enable logging via SEGGER RTT" OFF)
+
 # Specify cross-compilers and tools
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
 set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
@@ -56,6 +59,17 @@ set(CPU_PARAMETERS
 set(STARTUP_SCRIPT ${PROJECT_DIR}/system/startup_stm32f411retx.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F411RETX_FLASH.ld)
 
+add_compile_options(
+    ${CPU_PARAMETERS}
+    -fstack-protector-strong
+    "$<$<CONFIG:Debug>:-Og;-g3;-ggdb>"
+    "$<$<CONFIG:Release>:-Og;-g0>"
+)
+
+add_compile_definitions(
+    ${MCU_MODEL}
+)
+
 #######################################################################
 # Build information variables
 execute_process(
@@ -86,7 +100,6 @@ set(EXTERNAL_INCLUDE_DIRECTORIES
     ${EXTERNAL_DIR}/drivers/stm32f4xx/include
     ${EXTERNAL_DIR}/drivers/stm32f4xx/include/Legacy
     ${EXTERNAL_DIR}/drivers/cmsis/include/
-    ${EXTERNAL_DIR}/RTT/include
     ${EXTERNAL_DIR}/usb/core/include
     ${EXTERNAL_DIR}/usb/class/include
     ${EXTERNAL_DIR}/usb/target
@@ -106,8 +119,6 @@ set(PROJECT_INCLUDE_DIRECTORIES
 # Sources
 file(GLOB_RECURSE EXTERNAL_SOURCES
     ${EXTERNAL_DIR}/drivers/*.c
-    ${EXTERNAL_DIR}/RTT/src/*.c
-    ${EXTERNAL_DIR}/RTT/src/*.S
     ${EXTERNAL_DIR}/easylogger/src/*.c
     ${EXTERNAL_DIR}/fatfs/*.c
     ${EXTERNAL_DIR}/freertos/*.c
@@ -122,9 +133,14 @@ add_executable(${EXECUTABLE}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
+if(USE_SEGGER_RTT)
+    add_subdirectory(${EXTERNAL_DIR}/RTT)
+    target_compile_definitions(${EXECUTABLE} PRIVATE USE_SEGGER_RTT)
+    target_link_libraries(${EXECUTABLE} PRIVATE RTT)
+endif()
+
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
-    ${MCU_MODEL}
     USE_HAL_DRIVER
     $<$<CONFIG:DEBUG>:DEBUG>
     APP_BUILD_DATE="${BUILD_DATE}"
@@ -137,9 +153,7 @@ target_include_directories(${EXECUTABLE} PRIVATE
 
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
-    ${CPU_PARAMETERS}
     -Wall
-    -fstack-protector-strong
     -Wformat-overflow
     -Wmaybe-uninitialized
     -Wno-unused-parameter
@@ -148,8 +162,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -Wold-style-cast
         -Wuseless-cast
         -Wsuggest-override>
-    $<$<CONFIG:Debug>:-Og -g3 -ggdb>
-    $<$<CONFIG:Release>:-Og -g0>)
+)
 
 target_link_libraries(${EXECUTABLE} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/external/cmsis-dsp/lib/libarm_cortexM4lf_math.a)
