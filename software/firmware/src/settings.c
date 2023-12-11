@@ -120,9 +120,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY  48
 #define ENLARGER_CONFIG_TIMING_FALL_TIME       52
 #define ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV 56
-#define ENLARGER_CONFIG_TIMING_COLOR_TEMP      60
-#define ENLARGER_CONFIG_TIMING_LIGHT_SOURCE    64
-#define ENLARGER_CONFIG_TIMING_IR_CONTENT      68
+/* RESERVED (12B) */
 #define ENLARGER_CONFIG_CONTRAST_FILTER        72 /* 1B (contrast_filter_t) */
 /* RESERVED (56B) */
 #define ENLARGER_CONFIG_CONTROL_DMX_ENABLED   128 /* 1B (bool) */
@@ -908,7 +906,6 @@ void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_
     config->timing.turn_off_delay = copy_to_u32(data + ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY);
     config->timing.fall_time = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME);
     config->timing.fall_time_equiv = copy_to_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV);
-    config->timing.color_temperature = copy_to_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP);
 
     /* Enlarger control configuration */
     config->control.dmx_control = (bool)data[ENLARGER_CONFIG_CONTROL_DMX_ENABLED];
@@ -969,7 +966,6 @@ void settings_enlarger_config_populate_page(const enlarger_config_t *config, uin
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_TURN_OFF_DELAY,  config->timing.turn_off_delay);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME,       config->timing.fall_time);
     copy_from_u32(data + ENLARGER_CONFIG_TIMING_FALL_TIME_EQUIV, config->timing.fall_time_equiv);
-    copy_from_u32(data + ENLARGER_CONFIG_TIMING_COLOR_TEMP,      config->timing.color_temperature);
 
     /* Enlarger control configuration */
     data[ENLARGER_CONFIG_CONTROL_DMX_ENABLED] = (uint8_t)config->control.dmx_control;

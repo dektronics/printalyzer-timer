@@ -37,11 +37,6 @@ bool enlarger_config_is_valid(const enlarger_config_t *config)
         return false;
     }
 
-    /* Color temperature must be within reasonable bounds */
-    if (timing->color_temperature > 30000) {
-        return false;
-    }
-
     return true;
 }
 
@@ -104,8 +99,7 @@ bool enlarger_config_compare(const enlarger_config_t *config1, const enlarger_co
         || timing1->rise_time_equiv != timing2->rise_time_equiv
         || timing1->turn_off_delay != timing2->turn_off_delay
         || timing1->fall_time != timing2->fall_time
-        || timing1->fall_time_equiv != timing2->fall_time_equiv
-        || timing1->color_temperature != timing2->color_temperature) {
+        || timing1->fall_time_equiv != timing2->fall_time_equiv) {
         return false;
     }
 
@@ -134,7 +128,6 @@ void enlarger_config_set_defaults(enlarger_config_t *config)
 
     config->timing.turn_on_delay = 40;
     config->timing.turn_off_delay = 10;
-    config->timing.color_temperature = 3000;
 
     enlarger_config_recalculate(config);
 }

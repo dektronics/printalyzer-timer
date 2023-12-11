@@ -797,6 +797,9 @@ menu_result_t meter_probe_diagnostics()
         sample_count = 99;
     }
 
+    /* Enable internal calibration on every sequencer round */
+    meter_probe_sensor_set_mod_calibration(1);
+
     for (;;) {
         if (!sensor_initialized) {
             if (meter_probe_sensor_enable() == osOK) {

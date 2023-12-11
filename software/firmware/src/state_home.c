@@ -614,8 +614,10 @@ void state_home_start_meter_probe()
     static uint16_t sample_count = 99;
 
     if (meter_probe_start() == osOK) {
+        meter_probe_sensor_enable_osc_calibration();
         meter_probe_sensor_set_gain(TSL2585_GAIN_256X);
         meter_probe_sensor_set_integration(sample_time, sample_count);
+        meter_probe_sensor_set_mod_calibration(1);
         meter_probe_sensor_enable_agc(sample_count);
         meter_probe_sensor_enable();
     }

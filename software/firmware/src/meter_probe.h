@@ -183,6 +183,23 @@ osStatus_t meter_probe_sensor_set_gain(tsl2585_gain_t gain);
 osStatus_t meter_probe_sensor_set_integration(uint16_t sample_time, uint16_t sample_count);
 
 /**
+ * Set the modulator calibration repetition rate.
+ *
+ * The following values are supported:
+ * - 0x00 - Never
+ * - 0x01-0xFE - Every nth time
+ * - 0xFF - Only once at startup
+ *
+ * Note that modulator calibration adds approximately 8ms to the length of
+ * an integration cycle, so it should only be used when fast timing is
+ * not required.
+ *
+ * @param value Repetition rate to set
+ * @return osOK if the value was successfully set
+ */
+osStatus_t meter_probe_sensor_set_mod_calibration(uint8_t value);
+
+/**
  * Enable the meter probe sensor's AGC function
  *
  * @param sample_count Number of samples in an AGC integration cycle

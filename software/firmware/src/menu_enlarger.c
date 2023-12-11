@@ -1188,15 +1188,13 @@ menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile
             "Rise time equivalent   [%5lums]\n"
             "Turn off delay         [%5lums]\n"
             "Fall time              [%5lums]\n"
-            "Fall time equivalent   [%5lums]\n"
-            "Color temperature      [ %5luK]",
+            "Fall time equivalent   [%5lums]",
             timing_profile->turn_on_delay,
             timing_profile->rise_time,
             timing_profile->rise_time_equiv,
             timing_profile->turn_off_delay,
             timing_profile->fall_time,
-            timing_profile->fall_time_equiv,
-            timing_profile->color_temperature);
+            timing_profile->fall_time_equiv);
 
         option = display_selection_list(title, option, buf);
 
@@ -1287,20 +1285,6 @@ menu_result_t menu_enlarger_config_timing_edit(enlarger_timing_t *timing_profile
             } else {
                 if (timing_profile->fall_time_equiv != value_sel) {
                     timing_profile->fall_time_equiv = value_sel;
-                    profile_dirty = true;
-                }
-            }
-        } else if (option == 7) {
-            uint16_t value_sel = timing_profile->color_temperature;
-            if (display_input_value_u16(
-                "Color Temperature",
-                "The unfiltered color temperature\n"
-                "of the enlarger lamp.\n",
-                "", &value_sel, 0, UINT16_MAX, 5, " K") == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
-            } else {
-                if (timing_profile->color_temperature != value_sel) {
-                    timing_profile->color_temperature = value_sel;
                     profile_dirty = true;
                 }
             }

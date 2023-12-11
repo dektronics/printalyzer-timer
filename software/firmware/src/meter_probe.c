@@ -30,6 +30,7 @@ typedef enum {
     METER_PROBE_CONTROL_SENSOR_DISABLE,
     METER_PROBE_CONTROL_SENSOR_SET_GAIN,
     METER_PROBE_CONTROL_SENSOR_SET_INTEGRATION,
+    METER_PROBE_CONTROL_SENSOR_SET_MOD_CALIBRATION,
     METER_PROBE_CONTROL_SENSOR_ENABLE_AGC,
     METER_PROBE_CONTROL_SENSOR_DISABLE_AGC,
     METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING,
@@ -45,6 +46,10 @@ typedef struct {
     uint16_t sample_time;
     uint16_t sample_count;
 } sensor_control_integration_params_t;
+
+typedef struct {
+    uint8_t nth_iteration_value;
+} sensor_control_mod_cal_params_t;
 
 typedef struct {
     uint16_t sample_count;
@@ -63,6 +68,7 @@ typedef struct {
     union {
         sensor_control_gain_params_t gain;
         sensor_control_integration_params_t integration;
+        sensor_control_mod_cal_params_t mod_calibration;
         sensor_control_agc_params_t agc;
         sensor_control_interrupt_params_t interrupt;
     };
@@ -78,10 +84,12 @@ typedef struct {
     tsl2585_gain_t gain[3];
     uint16_t sample_time;
     uint16_t sample_count;
+    uint8_t nth_iteration_value;
     bool agc_enabled;
     uint16_t agc_sample_count;
     bool gain_pending;
     bool integration_pending;
+    bool mod_calibration_pending;
     bool agc_pending;
     bool sai_active;
     bool agc_disabled_reset_gain;
@@ -144,6 +152,7 @@ static osStatus_t meter_probe_control_sensor_enable(bool single_shot);
 static osStatus_t meter_probe_control_sensor_disable();
 static osStatus_t meter_probe_control_sensor_set_gain(const sensor_control_gain_params_t *params);
 static osStatus_t meter_probe_control_sensor_integration(const sensor_control_integration_params_t *params);
+static osStatus_t meter_probe_control_sensor_set_mod_calibration(const sensor_control_mod_cal_params_t *params);
 static osStatus_t meter_probe_control_sensor_enable_agc(const sensor_control_agc_params_t *params);
 static osStatus_t meter_probe_control_sensor_disable_agc();
 static osStatus_t meter_probe_control_sensor_trigger_next_reading();
@@ -216,6 +225,9 @@ void task_meter_probe_run(void *argument)
                 break;
             case METER_PROBE_CONTROL_SENSOR_SET_INTEGRATION:
                 ret = meter_probe_control_sensor_integration(&control_event.integration);
+                break;
+            case METER_PROBE_CONTROL_SENSOR_SET_MOD_CALIBRATION:
+                ret = meter_probe_control_sensor_set_mod_calibration(&control_event.mod_calibration);
                 break;
             case METER_PROBE_CONTROL_SENSOR_ENABLE_AGC:
                 ret = meter_probe_control_sensor_enable_agc(&control_event.agc);
@@ -523,6 +535,11 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
             if (ret != HAL_OK) { break; }
         }
 
+        if (!sensor_state.mod_calibration_pending) {
+            ret = tsl2585_get_calibration_nth_iteration(&hi2c2, &sensor_state.nth_iteration_value);
+            if (ret != HAL_OK) { break; }
+        }
+
         if (!sensor_state.agc_pending) {
             ret = tsl2585_get_agc_num_samples(&hi2c2, &sensor_state.agc_sample_count);
             if (ret != HAL_OK) { break; }
@@ -573,9 +590,13 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
         if (ret != HAL_OK) { break; }
 
-        /* Enable internal calibration on every sequencer round */
-        ret = tsl2585_set_calibration_nth_iteration(&hi2c2, 1);
-        if (ret != HAL_OK) { break; }
+        /* Set modulator calibration rate */
+        if (sensor_state.mod_calibration_pending) {
+            ret = tsl2585_set_calibration_nth_iteration(&hi2c2, sensor_state.nth_iteration_value);
+            if (ret != HAL_OK) { break; }
+
+            sensor_state.mod_calibration_pending = false;
+        }
 
         /* Configure photodiodes for Photopic measurement only */
         ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_phd_mod_vis);
@@ -897,6 +918,44 @@ osStatus_t meter_probe_control_sensor_integration(const sensor_control_integrati
     return hal_to_os_status(ret);
 }
 
+osStatus_t meter_probe_sensor_set_mod_calibration(uint8_t value)
+{
+    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_SENSOR_SET_MOD_CALIBRATION,
+        .result = &result,
+        .mod_calibration = {
+            .nth_iteration_value = value
+        }
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_sensor_set_mod_calibration(const sensor_control_mod_cal_params_t *params)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    log_d("meter_probe_control_sensor_set_mod_calibration: %d", params->nth_iteration_value);
+
+    if (sensor_state.running) {
+        ret = tsl2585_set_calibration_nth_iteration(&hi2c2, params->nth_iteration_value);
+        if (ret == HAL_OK) {
+            sensor_state.nth_iteration_value = params->nth_iteration_value;
+        }
+
+        sensor_state.discard_next_reading = true;
+        osMessageQueueReset(sensor_reading_queue);
+    } else {
+        sensor_state.nth_iteration_value = params->nth_iteration_value;
+        sensor_state.mod_calibration_pending = true;
+    }
+
+    return hal_to_os_status(ret);
+}
+
 osStatus_t meter_probe_sensor_enable_agc(uint16_t sample_count)
 {
     if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
@@ -1168,9 +1227,8 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     meter_probe_sensor_reading_t reading = {0};
     bool has_reading = false;
 
-    TaskHandle_t current_task_handle = xTaskGetCurrentTaskHandle();
-    UBaseType_t current_task_priority = uxTaskPriorityGet(current_task_handle);
-    vTaskPrioritySet(current_task_handle, osPriorityRealtime);
+    /* Prevent task switching to ensure fast processing of incoming sensor data */
+    vTaskSuspendAll();
 
 #if 0
     log_d("meter_probe_control_interrupt");
@@ -1272,7 +1330,8 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         }
     } while (0);
 
-    vTaskPrioritySet(current_task_handle, current_task_priority);
+    /* Resume normal task switching */
+    xTaskResumeAll();
 
     if (has_reading) {
 #if 0

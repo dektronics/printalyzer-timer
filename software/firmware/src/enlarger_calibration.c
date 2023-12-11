@@ -267,7 +267,6 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
         config->timing.turn_off_delay = timing_profile.turn_off_delay;
         config->timing.fall_time = timing_profile.fall_time;
         config->timing.fall_time_equiv = timing_profile.fall_time_equiv;
-        config->timing.color_temperature = 0;
     }
 
     return CALIBRATION_OK;
@@ -360,10 +359,16 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     enlarger_control_set_state_focus(enlarger_control, true);
 
     log_i("Activating light sensor with AGC");
+    if (meter_probe_sensor_enable_osc_calibration() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
     if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (meter_probe_sensor_set_integration(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_set_mod_calibration(1) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (meter_probe_sensor_enable_agc(SENSOR_NUM_SAMPLES) != osOK) {
@@ -397,6 +402,9 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
 
     log_i("Reconfiguring light sensor without AGC");
     if (meter_probe_sensor_disable_agc() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_set_mod_calibration(0) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (meter_probe_sensor_set_gain(sensor_gain) != osOK) {
