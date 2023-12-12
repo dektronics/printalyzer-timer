@@ -25,8 +25,8 @@ set(CMAKE_SIZE arm-none-eabi-size)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Specify compiler variables
-set (RUNTIME_LIBRARY "--specs=nano.specs")
-set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
+set(RUNTIME_LIBRARY "--specs=nano.specs")
+set(RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
 # Specify common compile flags and options
 set(CXX_FLAGS
@@ -96,38 +96,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 # Headers
-set(EXTERNAL_INCLUDE_DIRECTORIES
-    ${EXTERNAL_DIR}/drivers/stm32f4xx/include
-    ${EXTERNAL_DIR}/drivers/stm32f4xx/include/Legacy
-    ${EXTERNAL_DIR}/drivers/cmsis/include/
-    ${EXTERNAL_DIR}/usb/core/include
-    ${EXTERNAL_DIR}/usb/class/include
-    ${EXTERNAL_DIR}/usb/target
-    ${EXTERNAL_DIR}/fatfs/src
-    ${EXTERNAL_DIR}/fatfs/target
-    ${EXTERNAL_DIR}/freertos/include
-    ${EXTERNAL_DIR}/freertos/CMSIS_RTOS_V2
-    ${EXTERNAL_DIR}/freertos/portable/GCC/ARM_CM4F
-    ${EXTERNAL_DIR}/easylogger/include
-    ${EXTERNAL_DIR}/cmsis-dsp/include)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${PROJECT_DIR}
     ${PROJECT_DIR}/system
     ${PROJECT_DIR}/drivers)
 
 # Sources
-file(GLOB_RECURSE EXTERNAL_SOURCES
-    ${EXTERNAL_DIR}/drivers/*.c
-    ${EXTERNAL_DIR}/easylogger/src/*.c
-    ${EXTERNAL_DIR}/fatfs/*.c
-    ${EXTERNAL_DIR}/freertos/*.c
-    ${EXTERNAL_DIR}/usb/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
-    ${EXTERNAL_SOURCES} 
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
@@ -137,7 +116,25 @@ if(USE_SEGGER_RTT)
     target_link_libraries(${EXECUTABLE} PRIVATE RTT)
 endif()
 
+# Subdirectories to include
+add_subdirectory(${EXTERNAL_DIR}/drivers)
+target_include_directories(hal PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/freertos)
+target_include_directories(freertos PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/easylogger)
+target_include_directories(easylogger PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
 add_subdirectory(${EXTERNAL_DIR}/u8g2)
+
+add_subdirectory(${EXTERNAL_DIR}/fatfs)
+target_include_directories(fatfs PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/usb)
+target_include_directories(mw_usb_host PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/cmsis-dsp)
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -147,9 +144,9 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
     APP_BUILD_DESCRIBE="${BUILD_DESCRIBE}")
 
 # Add header directories (AFTER add_executable)
-target_include_directories(${EXECUTABLE} PRIVATE
-    ${EXTERNAL_INCLUDE_DIRECTORIES}
-    ${PROJECT_INCLUDE_DIRECTORIES})
+target_include_directories(${EXECUTABLE} PUBLIC
+    ${PROJECT_INCLUDE_DIRECTORIES}
+)
 
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
@@ -165,8 +162,15 @@ target_compile_options(${EXECUTABLE} PRIVATE
 )
 
 target_link_libraries(${EXECUTABLE} PRIVATE
+    cmsis
+    hal
+    freertos
+    easylogger
     u8g2
-    ${CMAKE_CURRENT_SOURCE_DIR}/external/cmsis-dsp/lib/libarm_cortexM4lf_math.a)
+    fatfs
+    mw_usb_host
+    cmsis-dsp
+)
 
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
