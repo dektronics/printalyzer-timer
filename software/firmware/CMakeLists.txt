@@ -109,7 +109,6 @@ set(EXTERNAL_INCLUDE_DIRECTORIES
     ${EXTERNAL_DIR}/freertos/CMSIS_RTOS_V2
     ${EXTERNAL_DIR}/freertos/portable/GCC/ARM_CM4F
     ${EXTERNAL_DIR}/easylogger/include
-    ${EXTERNAL_DIR}/u8g2/csrc
     ${EXTERNAL_DIR}/cmsis-dsp/include)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${PROJECT_DIR}
@@ -122,7 +121,6 @@ file(GLOB_RECURSE EXTERNAL_SOURCES
     ${EXTERNAL_DIR}/easylogger/src/*.c
     ${EXTERNAL_DIR}/fatfs/*.c
     ${EXTERNAL_DIR}/freertos/*.c
-    ${EXTERNAL_DIR}/u8g2/csrc/*.c
     ${EXTERNAL_DIR}/usb/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/*.c)
@@ -138,6 +136,8 @@ if(USE_SEGGER_RTT)
     target_compile_definitions(${EXECUTABLE} PRIVATE USE_SEGGER_RTT)
     target_link_libraries(${EXECUTABLE} PRIVATE RTT)
 endif()
+
+add_subdirectory(${EXTERNAL_DIR}/u8g2)
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -165,6 +165,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 )
 
 target_link_libraries(${EXECUTABLE} PRIVATE
+    u8g2
     ${CMAKE_CURRENT_SOURCE_DIR}/external/cmsis-dsp/lib/libarm_cortexM4lf_math.a)
 
 target_link_options(${EXECUTABLE} PRIVATE
