@@ -4,3 +4,4 @@ Release/
 .settings/*
 *.launch
 cmake-build-*
+*_XSubs.pm
