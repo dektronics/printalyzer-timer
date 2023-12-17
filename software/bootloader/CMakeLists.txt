@@ -113,10 +113,22 @@ target_include_directories(hal PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 add_subdirectory(${EXTERNAL_DIR}/u8g2)
 
 add_subdirectory(${EXTERNAL_DIR}/fatfs)
-target_include_directories(fatfs PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+target_include_directories(fatfs PRIVATE
+    ${PROJECT_INCLUDE_DIRECTORIES}
+    ${EXTERNAL_DIR}/printf/src/printf
+)
 
 add_subdirectory(${EXTERNAL_DIR}/usb)
-target_include_directories(mw_usb_host PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+target_include_directories(mw_usb_host PRIVATE
+    ${PROJECT_INCLUDE_DIRECTORIES}
+    ${EXTERNAL_DIR}/printf/src/printf
+)
+
+option(BUILD_STATIC_LIBRARY "" ON)
+option(SUPPORT_DECIMAL_SPECIFIERS "" OFF)
+option(SUPPORT_EXPONENTIAL_SPECIFIERS"" OFF)
+add_subdirectory(${EXTERNAL_DIR}/printf)
+
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
     USE_HAL_DRIVER
@@ -127,6 +139,7 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
 # Add header directories (AFTER add_executable)
 target_include_directories(${EXECUTABLE} PUBLIC
     ${PROJECT_INCLUDE_DIRECTORIES}
+    ${EXTERNAL_DIR}/printf/src/printf
 )
 
 # Compiler and linker options
@@ -145,6 +158,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 target_link_libraries(${EXECUTABLE} PRIVATE
     cmsis
     hal
+    printf
     u8g2
     fatfs
     mw_usb_host

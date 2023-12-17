@@ -1,9 +1,10 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <stdio.h>
+//#include <stdio.h>
+#include "printf.h"
 
-#define BL_PRINTF(...) printf(__VA_ARGS__)
-#define BL_SPRINTF(...) sprintf(__VA_ARGS__)
+#define BL_PRINTF(...) printf_(__VA_ARGS__)
+#define BL_SPRINTF(...) sprintf_(__VA_ARGS__)
 
 #endif /* LOGGER_H */
