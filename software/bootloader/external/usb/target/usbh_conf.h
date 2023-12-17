@@ -34,7 +34,7 @@
 #include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "logger.h"
 /* USER CODE END INCLUDE */
 
 /** @addtogroup STM32_USB_HOST_LIBRARY
@@ -125,8 +125,8 @@
 
 #if (USBH_DEBUG_LEVEL > 0U)
 #define  USBH_UsrLog(...)   do { \
-                            printf(__VA_ARGS__); \
-                            printf("\n"); \
+                            BL_PRINTF(__VA_ARGS__); \
+                            BL_PRINTF("\n"); \
 } while (0)
 #else
 #define USBH_UsrLog(...) do {} while (0)
@@ -135,9 +135,9 @@
 #if (USBH_DEBUG_LEVEL > 1U)
 
 #define  USBH_ErrLog(...) do { \
-                            printf("ERROR: "); \
-                            printf(__VA_ARGS__); \
-                            printf("\n"); \
+                            BL_PRINTF("ERROR: "); \
+                            BL_PRINTF(__VA_ARGS__); \
+                            BL_PRINTF("\n"); \
 } while (0)
 #else
 #define USBH_ErrLog(...) do {} while (0)
@@ -145,9 +145,9 @@
 
 #if (USBH_DEBUG_LEVEL > 2U)
 #define  USBH_DbgLog(...)   do { \
-                            printf("DEBUG : "); \
-                            printf(__VA_ARGS__); \
-                            printf("\n"); \
+                            BL_PRINTF("DEBUG : "); \
+                            BL_PRINTF(__VA_ARGS__); \
+                            BL_PRINTF("\n"); \
 } while (0)
 #else
 #define USBH_DbgLog(...) do {} while (0)

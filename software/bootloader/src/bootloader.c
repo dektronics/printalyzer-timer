@@ -3,6 +3,7 @@
 #include <machine/endian.h>
 #include <stdio.h>
 
+#include "logger.h"
 #include "app_descriptor.h"
 
 typedef void (*jump_function_t)(void); /*!< Function pointer definition */
@@ -106,7 +107,7 @@ bootloader_status_t bootloader_flash_next(uint32_t data)
         flash_ptr += 4;
     } else {
         /* Error occurred while writing data into Flash */
-        printf("Flash program error: 0x%08lX\r\n", HAL_FLASH_GetError());
+        BL_PRINTF("Flash program error: 0x%08lX\r\n", HAL_FLASH_GetError());
         HAL_FLASH_Lock();
         return BL_WRITE_ERROR;
     }
@@ -258,7 +259,7 @@ bootloader_status_t bootloader_verify_checksum(CRC_HandleTypeDef *hcrc)
     if (app_descriptor->crc32 == calculated_crc) {
         return BL_OK;
     } else {
-        printf("%08lX != %08lX\r\n", __bswap32(app_descriptor->crc32), __bswap32(calculated_crc));
+        BL_PRINTF("%08lX != %08lX\r\n", __bswap32(app_descriptor->crc32), __bswap32(calculated_crc));
     }
 
     return BL_CHKS_ERROR;

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <ff.h>
 
+#include "logger.h"
 #include "board_config.h"
 #include "usb_host.h"
 #include "fatfs.h"
@@ -492,10 +493,10 @@ uint8_t check_startup_action()
 
     while (keypad_poll() & KEYPAD_MENU && button_counter < 90) {
         if (button_counter == 5) {
-            printf("Release button to enter Bootloader.\r\n");
+            BL_PRINTF("Release button to enter Bootloader.\r\n");
         }
         if (button_counter == 40) {
-            printf("Release button to enter System Memory.\r\n");
+            BL_PRINTF("Release button to enter System Memory.\r\n");
         }
 
         HAL_Delay(100);
@@ -504,10 +505,10 @@ uint8_t check_startup_action()
 
     if (button_counter < 90) {
         if (button_counter > 40) {
-            printf("Jump to system memory...\r\n");
+            BL_PRINTF("Jump to system memory...\r\n");
             return 2;
         } else if (button_counter > 5) {
-            printf("Enter bootloader...\r\n");
+            BL_PRINTF("Enter bootloader...\r\n");
             return 1;
         }
     }
@@ -564,35 +565,35 @@ int main(void)
 
 void startup_messages()
 {
-    printf("Starting Printalyzer bootloader...\r\n");
+    BL_PRINTF("Starting Printalyzer bootloader...\r\n");
 
     uint32_t hal_ver = HAL_GetHalVersion();
     uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
     uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
 
-    printf("HAL Version: %d.%d.%d%c\r\n",
+    BL_PRINTF("HAL Version: %d.%d.%d%c\r\n",
         ((uint8_t)(hal_ver >> 24)) & 0x0F,
         ((uint8_t)(hal_ver >> 16)) & 0x0F,
         ((uint8_t)(hal_ver >> 8)) & 0x0F,
         hal_ver_code > 0 ? (char)hal_ver_code : ' ');
-    printf("Device ID: 0x%lX\r\n", HAL_GetDEVID());
-    printf("Revision ID: %ld\r\n", HAL_GetREVID());
-    printf("Flash size: %dk\r\n", *flash_size);
-    printf("SysClock: %ldMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
+    BL_PRINTF("Device ID: 0x%lX\r\n", HAL_GetDEVID());
+    BL_PRINTF("Revision ID: %ld\r\n", HAL_GetREVID());
+    BL_PRINTF("Flash size: %dk\r\n", *flash_size);
+    BL_PRINTF("SysClock: %ldMHz\r\n", HAL_RCC_GetSysClockFreq() / 1000000);
 
-    printf("Unique ID: %08lX%08lX%08lX\r\n",
+    BL_PRINTF("Unique ID: %08lX%08lX%08lX\r\n",
         __bswap32(HAL_GetUIDw0()),
         __bswap32(HAL_GetUIDw1()),
         __bswap32(HAL_GetUIDw2()));
 
-    printf("Bootloader build date: %s\r\n", BOOTLOADER_BUILD_DATE);
-    printf("Bootloader build describe: %s\r\n", BOOTLOADER_BUILD_DESCRIBE);
-    printf("\r\n");
+    BL_PRINTF("Bootloader build date: %s\r\n", BOOTLOADER_BUILD_DATE);
+    BL_PRINTF("Bootloader build describe: %s\r\n", BOOTLOADER_BUILD_DESCRIBE);
+    BL_PRINTF("\r\n");
 }
 
 void start_bootloader()
 {
-    printf("Start Bootloader\r\n");
+    BL_PRINTF("Start Bootloader\r\n");
 
     /* Initialize the display */
     const u8g2_display_handle_t display_handle = {
@@ -674,7 +675,7 @@ bool process_firmware_update()
     do {
         /* Check for flash write protection */
         if (bootloader_get_protection_status() & BL_PROTECTION_WRP) {
-            printf("Flash write protection enabled\r\n");
+            BL_PRINTF("Flash write protection enabled\r\n");
             display_static_message(
                 "Flash is write protected,\n"
                 "cannot update firmware.\n"
@@ -708,17 +709,17 @@ bool process_firmware_update()
         /* Open firmware file, if it exists */
         res = f_open(&fp, FW_FILENAME, FA_READ);
         if (res != FR_OK) {
-            printf("Unable to open firmware file: %d\r\n", res);
+            BL_PRINTF("Unable to open firmware file: %d\r\n", res);
             break;
         }
         file_open = true;
 
         /* Check size of the firmware file */
         if (bootloader_check_size(f_size(&fp)) != BL_OK) {
-            printf("Firmware size is invalid: %lu\r\n", f_size(&fp));
+            BL_PRINTF("Firmware size is invalid: %lu\r\n", f_size(&fp));
             break;
         }
-        printf("Firmware size is okay.\r\n");
+        BL_PRINTF("Firmware size is okay.\r\n");
 
         /* Calculate the firmware file checksum */
         __HAL_CRC_DR_RESET(&hcrc);
@@ -729,7 +730,7 @@ bool process_firmware_update()
             if (res == FR_OK) {
                 /* This check should never fail, but safer to do it anyways */
                 if ((bytes_read % 4) != 0) {
-                    printf("Bytes read are not word aligned\r\n");
+                    BL_PRINTF("Bytes read are not word aligned\r\n");
                     break;
                 }
 
@@ -742,7 +743,7 @@ bool process_firmware_update()
                     break;
                 }
             } else {
-                printf("File read error: %d\r\n", res);
+                BL_PRINTF("File read error: %d\r\n", res);
                 break;
             }
         } while (res == FR_OK && bytes_remaining > 0);
@@ -753,27 +754,27 @@ bool process_firmware_update()
         /* Read the app descriptor from the end of the firmware file */
         res = f_lseek(&fp, f_tell(&fp) - (sizeof(app_descriptor_t) - 4));
         if (res != FR_OK) {
-            printf("Unable to seek to read the firmware file descriptor: %d\r\n", res);
+            BL_PRINTF("Unable to seek to read the firmware file descriptor: %d\r\n", res);
             break;
         }
         res = f_read(&fp, &image_descriptor, sizeof(app_descriptor_t), &bytes_read);
         if (res != FR_OK || bytes_read != sizeof(app_descriptor_t)) {
-            printf("Unable to read the firmware file descriptor: %d\r\n", res);
+            BL_PRINTF("Unable to read the firmware file descriptor: %d\r\n", res);
             break;
         }
 
         f_rewind(&fp);
 
         if (calculated_crc != image_descriptor.crc32) {
-            printf("Firmware checksum mismatch: %08lX != %08lX\r\n",
+            BL_PRINTF("Firmware checksum mismatch: %08lX != %08lX\r\n",
                 image_descriptor.crc32, calculated_crc);
             break;
         }
-        printf("Firmware checksum is okay.\r\n");
+        BL_PRINTF("Firmware checksum is okay.\r\n");
 
         if (image_descriptor.magic_word == APP_DESCRIPTOR_MAGIC_WORD) {
             char msg_buf[256];
-            sprintf(msg_buf,
+            BL_SPRINTF(msg_buf,
                 "Firmware found:\n"
                 "\n"
                 "%s\n"
@@ -819,11 +820,11 @@ bool process_firmware_update()
         /* Erase existing flash contents */
         display_static_message("Erasing flash...");
         if (bootloader_erase() != BL_OK) {
-            printf("Error erasing flash\r\n");
+            BL_PRINTF("Error erasing flash\r\n");
             display_static_message("Unable to erase flash!");
             break;
         }
-        printf("Flash erased\r\n");
+        BL_PRINTF("Flash erased\r\n");
 
         /* Start programming */
         display_static_message("Programming firmware...");
@@ -837,7 +838,7 @@ bool process_firmware_update()
                 if (status == BL_OK) {
                     counter++;
                 } else {
-                    printf("Programming error at byte %lu\r\n", (counter * 4));
+                    BL_PRINTF("Programming error at byte %lu\r\n", (counter * 4));
                     break;
                 }
             }
@@ -850,7 +851,7 @@ bool process_firmware_update()
             break;
         }
 
-        printf("Firmware programmed\r\n");
+        BL_PRINTF("Firmware programmed\r\n");
 
         f_rewind(&fp);
 
@@ -863,14 +864,14 @@ bool process_firmware_update()
         do {
             res = f_read(&fp, buf, sizeof(buf), &bytes_read);
             if (res != FR_OK) {
-                printf("File read error: %d\r\n", res);
+                BL_PRINTF("File read error: %d\r\n", res);
                 break;
             }
             if (memcmp(flash_ptr, buf, bytes_read) == 0) {
                 counter += bytes_read;
                 flash_ptr += bytes_read / 4;
             } else {
-                printf("Verify error at byte %lu\r\n", counter);
+                BL_PRINTF("Verify error at byte %lu\r\n", counter);
                 status = BL_CHKS_ERROR;
                 break;
             }
@@ -880,7 +881,7 @@ bool process_firmware_update()
             display_static_message("Verification error!");
             break;
         }
-        printf("Firmware verified\r\n");
+        BL_PRINTF("Firmware verified\r\n");
 
         display_static_message("Verification complete");
         delay_with_usb(1000);
@@ -912,23 +913,23 @@ bool process_firmware_update()
 
 void start_system_memory()
 {
-    printf("Start System Memory\r\n");
+    BL_PRINTF("Start System Memory\r\n");
     bootloader_jump_to_sysmem();
 }
 
 bool start_application()
 {
-    printf("Check for application\r\n");
+    BL_PRINTF("Check for application\r\n");
 
     if (bootloader_check_for_application() == BL_OK) {
         /* Verify application checksum */
         if(bootloader_verify_checksum(&hcrc) != BL_OK) {
-            printf("Checksum Error.\r\n");
+            BL_PRINTF("Checksum Error.\r\n");
             return false;
         } else {
-            printf("Checksum OK.\r\n");
+            BL_PRINTF("Checksum OK.\r\n");
         }
-        printf("Launching Application...\r\n");
+        BL_PRINTF("Launching Application...\r\n");
 
         /* De-initialize all the peripherals */
         crc_deinit();
@@ -981,6 +982,6 @@ void Error_Handler(void)
  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    printf("Assert failed: file %s on line %ld\r\n", file, line);
+    BL_PRINTF("Assert failed: file %s on line %ld\r\n", file, line);
 }
 #endif /* USE_FULL_ASSERT */

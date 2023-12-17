@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <ff.h>
 
+#include "logger.h"
 #include "usbh_core.h"
 #include "usbh_msc.h"
 #include "fatfs.h"
@@ -72,7 +73,7 @@ void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
 
 void usb_msc_active()
 {
-    printf("usb_msc_active\r\n");
+    BL_PRINTF("usb_msc_active\r\n");
 
     if (fatfs_mount() != HAL_OK) {
         return;
@@ -84,7 +85,7 @@ void usb_msc_active()
     char str[12];
     res = f_getlabel("0:", str, 0);
     if (res == FR_OK) {
-        printf("Drive label: \"%s\"\r\n", str);
+        BL_PRINTF("Drive label: \"%s\"\r\n", str);
     }
 
     FATFS *fs;
@@ -93,13 +94,13 @@ void usb_msc_active()
     if (res == FR_OK) {
         total_sectors = (fs->n_fatent - 2) * fs->csize;
         free_sectors = free_clusters * fs->csize;
-        printf("Drive has %ld KB total space, %ld KB available\r\n", total_sectors / 2, free_sectors / 2);
+        BL_PRINTF("Drive has %ld KB total space, %ld KB available\r\n", total_sectors / 2, free_sectors / 2);
     }
 }
 
 void usb_msc_disconnect()
 {
-    printf("usb_msc_disconnect\r\n");
+    BL_PRINTF("usb_msc_disconnect\r\n");
     fatfs_unmount();
     usb_msc_mounted = false;
 }

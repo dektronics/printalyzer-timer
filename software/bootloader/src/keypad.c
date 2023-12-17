@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "logger.h"
 #include "tca8418.h"
 
 /* Mask to only include internal keys */
@@ -58,12 +59,12 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     } while (0);
 
     if (ret != HAL_OK) {
-        printf("Keypad setup error: %d\r\n", ret);
+        BL_PRINTF("Keypad setup error: %d\r\n", ret);
         return ret;
     }
 
     keypad_initialized = true;
-    printf("Keypad controller initialized\r\n");
+    BL_PRINTF("Keypad controller initialized\r\n");
     return HAL_OK;
 }
 

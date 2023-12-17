@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <strings.h>
 
+#include "logger.h"
 #include "i2c_util.h"
 
 /* I2C device address */
@@ -101,19 +102,19 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
     if (ret != HAL_OK) {
         return ret;
     }
-    printf("CONFIG: %02X\r\n", data);
+    BL_PRINTF("CONFIG: %02X\r\n", data);
 
     ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, &data);
     if (ret != HAL_OK) {
         return ret;
     }
-    printf("INT_STAT: %02X\r\n", data);
+    BL_PRINTF("INT_STAT: %02X\r\n", data);
 
     ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, &data);
     if (ret != HAL_OK) {
         return ret;
     }
-    printf("KEY_LCK_EC: %02X\r\n", data);
+    BL_PRINTF("KEY_LCK_EC: %02X\r\n", data);
 
     return HAL_OK;
 }

@@ -7,6 +7,8 @@
 #include <ff_gen_drv.h>
 #include <usbh_diskio.h>
 
+#include "logger.h"
+
 static char usbh_path[4]; /* USBH logical drive path */
 static FATFS usbh_fatfs;  /* File system object for USBH logical drive */
 
@@ -21,7 +23,7 @@ void fatfs_init(void)
 
     uint8_t ret = FATFS_LinkDriver(&USBH_Driver, usbh_path);
     if (ret != 0) {
-        printf("Unable to link USB driver to FATFS\r\n");
+        BL_PRINTF("Unable to link USB driver to FATFS\r\n");
         return;
     }
     fatfs_initialized = true;
@@ -47,7 +49,7 @@ HAL_StatusTypeDef fatfs_mount()
 
     FRESULT res = f_mount(&usbh_fatfs, (TCHAR const*)usbh_path, 0);
     if (res != FR_OK) {
-        printf("f_mount error: %d\r\n", res);
+        BL_PRINTF("f_mount error: %d\r\n", res);
         return HAL_ERROR;
     }
     fatfs_mounted = true;
