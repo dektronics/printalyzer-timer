@@ -21,8 +21,8 @@ set(CMAKE_SIZE arm-none-eabi-size)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 # Specify compiler variables
-set (RUNTIME_LIBRARY "--specs=nano.specs")
-set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
+set(RUNTIME_LIBRARY "--specs=nano.specs")
+set(RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
 # Specify common compile flags and options
 set(CXX_FLAGS
@@ -55,6 +55,17 @@ set(CPU_PARAMETERS
 set(STARTUP_SCRIPT ${PROJECT_DIR}/system/startup_stm32f411retx.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F411RETX_FLASH.ld)
 
+add_compile_options(
+    ${CPU_PARAMETERS}
+    -fstack-protector-strong
+    "$<$<CONFIG:Debug>:-Og;-g3;-ggdb>"
+    "$<$<CONFIG:Release>:-Og;-g0>"
+)
+
+add_compile_definitions(
+    ${MCU_MODEL}
+)
+
 #######################################################################
 # Build information variables
 execute_process(
@@ -81,54 +92,46 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
 # Headers
-set(EXTERNAL_INCLUDE_DIRECTORIES
-    ${EXTERNAL_DIR}/drivers/stm32f4xx/include
-    ${EXTERNAL_DIR}/drivers/stm32f4xx/include/Legacy
-    ${EXTERNAL_DIR}/drivers/cmsis/include/
-    ${EXTERNAL_DIR}/usb/core/include
-    ${EXTERNAL_DIR}/usb/class/include
-    ${EXTERNAL_DIR}/usb/target
-    ${EXTERNAL_DIR}/fatfs/src
-    ${EXTERNAL_DIR}/fatfs/target
-    ${EXTERNAL_DIR}/u8g2/include)
 set(PROJECT_INCLUDE_DIRECTORIES
     ${PROJECT_DIR}
     ${PROJECT_DIR}/system
     ${PROJECT_DIR}/drivers)
 
 # Sources
-file(GLOB_RECURSE EXTERNAL_SOURCES
-    ${EXTERNAL_DIR}/drivers/*.c
-    ${EXTERNAL_DIR}/fatfs/*.c
-    ${EXTERNAL_DIR}/u8g2/src/*.c
-    ${EXTERNAL_DIR}/usb/*.c)
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
-    ${EXTERNAL_SOURCES} 
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
+# Subdirectories to include
+add_subdirectory(${EXTERNAL_DIR}/drivers)
+target_include_directories(hal PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/u8g2)
+
+add_subdirectory(${EXTERNAL_DIR}/fatfs)
+target_include_directories(fatfs PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
+add_subdirectory(${EXTERNAL_DIR}/usb)
+target_include_directories(mw_usb_host PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
-    ${MCU_MODEL}
     USE_HAL_DRIVER
     $<$<CONFIG:DEBUG>:DEBUG>
     BOOTLOADER_BUILD_DATE="${BUILD_DATE}"
     BOOTLOADER_BUILD_DESCRIBE="${BUILD_DESCRIBE}")
 
 # Add header directories (AFTER add_executable)
-target_include_directories(${EXECUTABLE} PRIVATE
-    ${EXTERNAL_INCLUDE_DIRECTORIES}
-    ${PROJECT_INCLUDE_DIRECTORIES})
+target_include_directories(${EXECUTABLE} PUBLIC
+    ${PROJECT_INCLUDE_DIRECTORIES}
+)
 
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
-    ${CPU_PARAMETERS}
     -Wall
-    -fstack-protector-strong
     -Wformat-overflow
     -Wmaybe-uninitialized
     -Wno-unused-parameter
@@ -137,8 +140,15 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -Wold-style-cast
         -Wuseless-cast
         -Wsuggest-override>
-    $<$<CONFIG:Debug>:-Og -g3 -ggdb>
-    $<$<CONFIG:Release>:-Os -g0>)
+)
+
+target_link_libraries(${EXECUTABLE} PRIVATE
+    cmsis
+    hal
+    u8g2
+    fatfs
+    mw_usb_host
+)
 
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
