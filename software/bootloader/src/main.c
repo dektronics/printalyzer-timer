@@ -614,7 +614,15 @@ void start_bootloader()
                 while(1);
             }
         } else {
-            if (!prompt_visible) {
+            if (prompt_visible) {
+                if (keypad_poll() == KEYPAD_CANCEL) {
+                    /* Start the application firmware */
+                    display_static_message("Restarting...\r\n");
+                    HAL_Delay(1000);
+                    display_clear();
+                    start_application();
+                }
+            } else {
                 display_static_message(
                     "Insert a USB storage device to\n"
                     "install updated Printalyzer\n"
