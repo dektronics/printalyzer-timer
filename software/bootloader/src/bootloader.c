@@ -314,37 +314,3 @@ void bootloader_jump_to_application(void)
 
     jump();
 }
-
-/**
- * Perform the jump to the MCU System Memory (ST Bootloader).
- *
- * The function carries out the following operations:
- *  - De-initialize the clock and peripheral configuration
- *  - Stop the SysTick
- *  - Remap the system flash memory
- *  - Perform the jump
- */
-void bootloader_jump_to_sysmem(void)
-{
-    uint32_t jump_address = *(__IO uint32_t*)(SYSMEM_ADDRESS + 4);
-    jump_function_t jump = (jump_function_t)jump_address;
-
-    /* De-initialize the clock and peripherals */
-    HAL_RCC_DeInit();
-    HAL_DeInit();
-
-    /* Stop the SysTick */
-    SysTick->CTRL = 0;
-    SysTick->LOAD = 0;
-    SysTick->VAL  = 0;
-
-    __HAL_RCC_SYSCFG_CLK_ENABLE();
-    __HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
-
-    /* Set the stack pointer location */
-    __set_MSP(*(__IO uint32_t*)SYSMEM_ADDRESS);
-
-    jump();
-
-    while(1);
-}

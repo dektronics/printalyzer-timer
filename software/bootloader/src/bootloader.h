@@ -85,6 +85,5 @@ bootloader_status_t bootloader_verify_checksum(CRC_HandleTypeDef *hcrc);
 bootloader_status_t bootloader_check_for_application(void);
 
 void bootloader_jump_to_application(void);
-void bootloader_jump_to_sysmem(void);
 
 #endif /* BOOTLOADER_H */

@@ -49,7 +49,6 @@ static void startup_messages();
 static uint8_t check_startup_action();
 static void start_bootloader();
 static bool process_firmware_update();
-static void start_system_memory();
 static bool start_application();
 static void delay_with_usb(uint32_t delay);
 
@@ -477,19 +476,13 @@ uint8_t check_startup_action()
         if (button_counter == 5) {
             BL_PRINTF("Release button to enter Bootloader.\r\n");
         }
-        if (button_counter == 40) {
-            BL_PRINTF("Release button to enter System Memory.\r\n");
-        }
 
         HAL_Delay(100);
         button_counter++;
     }
 
     if (button_counter < 90) {
-        if (button_counter > 40) {
-            BL_PRINTF("Jump to system memory...\r\n");
-            return 2;
-        } else if (button_counter > 5) {
+        if (button_counter > 5) {
             BL_PRINTF("Enter bootloader...\r\n");
             return 1;
         }
@@ -534,8 +527,6 @@ int main(void)
     uint8_t action = check_startup_action();
     if (action == 1) {
         start_bootloader();
-    } else if (action == 2) {
-        start_system_memory();
     } else {
         if (!start_application()) {
             start_bootloader();
@@ -890,12 +881,6 @@ bool process_firmware_update()
     }
 
     return success;
-}
-
-void start_system_memory()
-{
-    BL_PRINTF("Start System Memory\r\n");
-    bootloader_jump_to_sysmem();
 }
 
 bool start_application()
