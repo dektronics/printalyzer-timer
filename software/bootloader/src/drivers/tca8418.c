@@ -4,7 +4,6 @@
 #include <strings.h>
 
 #include "logger.h"
-#include "i2c_util.h"
 
 /* I2C device address */
 static const uint8_t TCA8418_ADDRESS = 0x34 << 1;
@@ -57,6 +56,9 @@ static const uint8_t TCA8418_ADDRESS = 0x34 << 1;
 #define TCA8418_GPIO_PULL2     0x2D
 #define TCA8418_GPIO_PULL3     0x2E
 
+static HAL_StatusTypeDef tca8148_read_pin_registers(I2C_HandleTypeDef *hi2c, uint8_t reg, tca8418_pins_t *pins);
+static HAL_StatusTypeDef tca8148_write_pin_registers(I2C_HandleTypeDef *hi2c, uint8_t reg, const tca8418_pins_t *pins);
+
 HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
 {
     HAL_StatusTypeDef ret;
@@ -66,51 +68,57 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
      * Disable interrupts in case we didn't come up clean, so we're forced
      * to explicitly enable them.
      */
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_CFG, 0x00);
+    data = TCA8418_CFG_AI;
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN1, 0x00);
+
+    data = 0x00;
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN1, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN2, 0x00);
+
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN2, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN3, 0x00);
+
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN3, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
     /* Read key events until the FIFO is clear */
     do {
-        ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_EVENT_A, &data);
+        ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_KEY_EVENT_A, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
         if (ret != HAL_OK) {
             return ret;
         }
     } while (data != 0);
 
     /* Clear any leftover interrupt flags */
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, 0x0F);
+    data = 0x0F;
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
     /* Read the initial state of the controller */
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_CFG, &data);
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
     BL_PRINTF("CONFIG: %02X\r\n", data);
 
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, &data);
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
     BL_PRINTF("INT_STAT: %02X\r\n", data);
 
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, &data);
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -121,17 +129,18 @@ HAL_StatusTypeDef tca8418_init(I2C_HandleTypeDef *hi2c)
 
 HAL_StatusTypeDef tca8148_set_config(I2C_HandleTypeDef *hi2c, uint8_t value)
 {
-    return i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_CFG, value);
+    uint8_t data = value | TCA8418_CFG_AI;
+    return HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_CFG, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
 }
 
 HAL_StatusTypeDef tca8148_get_interrupt_status(I2C_HandleTypeDef *hi2c, uint8_t *status)
 {
-    return i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, status);
+    return HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, I2C_MEMADD_SIZE_8BIT, status, 1, HAL_MAX_DELAY);
 }
 
 HAL_StatusTypeDef tca8148_set_interrupt_status(I2C_HandleTypeDef *hi2c, uint8_t status)
 {
-    return i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, status);
+    return HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, I2C_MEMADD_SIZE_8BIT, &status, 1, HAL_MAX_DELAY);
 }
 
 HAL_StatusTypeDef tca8148_get_key_event_count(I2C_HandleTypeDef *hi2c, uint8_t *count)
@@ -139,7 +148,7 @@ HAL_StatusTypeDef tca8148_get_key_event_count(I2C_HandleTypeDef *hi2c, uint8_t *
     HAL_StatusTypeDef ret;
     uint8_t data;
 
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, &data);
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_KEY_LCK_EC, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -154,7 +163,7 @@ HAL_StatusTypeDef tca8148_get_next_key_event(I2C_HandleTypeDef *hi2c, uint8_t *k
     HAL_StatusTypeDef ret;
     uint8_t data;
 
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_KEY_EVENT_A, &data);
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, TCA8418_KEY_EVENT_A, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -167,164 +176,77 @@ HAL_StatusTypeDef tca8148_get_next_key_event(I2C_HandleTypeDef *hi2c, uint8_t *k
 
 HAL_StatusTypeDef tca8148_get_gpio_interrupt_status(I2C_HandleTypeDef *hi2c, tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-    uint8_t data1;
-    uint8_t data2;
-    uint8_t data3;
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_STAT1, &data1);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_STAT2, &data2);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_STAT3, &data3);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    pins->rows = data1;
-    pins->cols_l = data2;
-    pins->cols_h = data3 & 0x03;
-
-    return HAL_OK;
+    return tca8148_read_pin_registers(hi2c, TCA8418_GPIO_INT_STAT1, pins);
 }
 
 HAL_StatusTypeDef tca8148_get_gpio_data_status(I2C_HandleTypeDef *hi2c, tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-    uint8_t data1;
-    uint8_t data2;
-    uint8_t data3;
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DAT_STAT1, &data1);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DAT_STAT2, &data2);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    ret = i2c_read_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DAT_STAT3, &data3);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    pins->rows = data1;
-    pins->cols_l = data2;
-    pins->cols_h = data3 & 0x03;
-
-    return HAL_OK;
+    return tca8148_read_pin_registers(hi2c, TCA8418_GPIO_DAT_STAT1, pins);
 }
 
 HAL_StatusTypeDef tca8418_gpio_interrupt_enable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN1, pins->rows);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN2, pins->cols_l);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_INT_EN3, pins->cols_h);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    return HAL_OK;
+    return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_INT_EN1, pins);
 }
 
 HAL_StatusTypeDef tca8418_kp_gpio_select(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_KP_GPIO1, pins->rows);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_KP_GPIO2, pins->cols_l);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_KP_GPIO3, pins->cols_h);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    return HAL_OK;
+    return tca8148_write_pin_registers(hi2c, TCA8418_KP_GPIO1, pins);
 }
 
 HAL_StatusTypeDef tca8418_gpi_event_mode(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPI_EM1, pins->rows);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPI_EM2, pins->cols_l);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPI_EM3, pins->cols_h);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    return HAL_OK;
+    return tca8148_write_pin_registers(hi2c, TCA8418_GPI_EM1, pins);
 }
 
 HAL_StatusTypeDef tca8418_gpio_data_direction(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
-
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DIR1, pins->rows);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DIR2, pins->cols_l);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_DIR3, pins->cols_h);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-
-    return HAL_OK;
-
+    return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_DIR1, pins);
 }
 
 HAL_StatusTypeDef tca8418_gpio_pullup_disable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
-    HAL_StatusTypeDef ret;
+    return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_PULL1, pins);
+}
 
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_PULL1, pins->rows);
+HAL_StatusTypeDef tca8418_clear_interrupt_status(I2C_HandleTypeDef *hi2c)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data = 0x0F;
+    ret = HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    return ret;
+}
+
+HAL_StatusTypeDef tca8148_read_pin_registers(I2C_HandleTypeDef *hi2c, uint8_t reg, tca8418_pins_t *pins)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data[3];
+
+    ret = HAL_I2C_Mem_Read(hi2c, TCA8418_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, data, 3, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_PULL2, pins->cols_l);
-    if (ret != HAL_OK) {
-        return ret;
-    }
-    ret = i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_GPIO_PULL3, pins->cols_h);
-    if (ret != HAL_OK) {
-        return ret;
+
+    if (pins) {
+        pins->rows = data[0];
+        pins->cols_l = data[1];
+        pins->cols_h = data[2] & 0x03;
     }
 
     return HAL_OK;
 }
 
-HAL_StatusTypeDef tca8418_clear_interrupt_status(I2C_HandleTypeDef *hi2c)
+HAL_StatusTypeDef tca8148_write_pin_registers(I2C_HandleTypeDef *hi2c, uint8_t reg, const tca8418_pins_t *pins)
 {
-    return i2c_write_register(hi2c, TCA8418_ADDRESS, TCA8418_INT_STAT, 0x0F);
+    uint8_t data[3];
+
+    if (!pins) {
+        return HAL_ERROR;
+    }
+
+    data[0] = pins->rows;
+    data[1] = pins->cols_l;
+    data[2] = pins->cols_h;
+
+    return HAL_I2C_Mem_Write(hi2c, TCA8418_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, data, 3, HAL_MAX_DELAY);
 }
