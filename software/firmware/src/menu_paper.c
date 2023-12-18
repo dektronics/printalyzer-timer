@@ -1145,7 +1145,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         msg_option = display_message(
             "Calculation Error\n",
             NULL,
-            "Unable to calculate the"
+            "Unable to calculate the\n"
             "paper profile.\n",
             " OK ");
         if (msg_option == UINT8_MAX) {
