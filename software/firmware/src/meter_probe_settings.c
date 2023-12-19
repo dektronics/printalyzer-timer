@@ -114,7 +114,11 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
 {
     HAL_StatusTypeDef ret = HAL_OK;
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
-    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized) { return HAL_ERROR; }
+    if (handle->id.probe_type != METER_PROBE_TYPE_TSL2585
+        && handle->id.probe_type != METER_PROBE_TYPE_TSL2521) {
+        return HAL_ERROR;
+    }
 
     uint8_t data[PAGE_CAL_SIZE];
     uint32_t version;
@@ -296,4 +300,18 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     if (ret != HAL_OK) { return ret; }
 
     return ret;
+}
+
+const char *meter_probe_type_str(meter_probe_type_t type)
+{
+    switch (type) {
+    case METER_PROBE_TYPE_UNKNOWN:
+        return "UNKNOWN";
+    case METER_PROBE_TYPE_TSL2585:
+        return "TSL2585";
+    case METER_PROBE_TYPE_TSL2521:
+        return "TSL2521";
+    default:
+        return "?";
+    }
 }

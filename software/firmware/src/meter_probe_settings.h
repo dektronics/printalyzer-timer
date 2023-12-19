@@ -8,7 +8,8 @@
 
 typedef enum {
     METER_PROBE_TYPE_UNKNOWN = 0,
-    METER_PROBE_TYPE_TSL2585
+    METER_PROBE_TYPE_TSL2585 = 1,
+    METER_PROBE_TYPE_TSL2521 = 2
 } meter_probe_type_t;
 
 typedef struct __meter_probe_id_t {
@@ -70,5 +71,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
 
 HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
     const meter_probe_settings_tsl2585_cal_target_t *cal_target);
+
+const char *meter_probe_type_str(meter_probe_type_t type);
 
 #endif /* METER_PROBE_SETTINGS_H */

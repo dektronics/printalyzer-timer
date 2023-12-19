@@ -110,7 +110,7 @@ menu_result_t meter_probe_device_info()
     do {
         size_t offset = 0;
         offset += menu_build_padded_str_row(buf + offset, "Probe Type",
-            ((info.probe_id.probe_type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "Unknown"));
+            meter_probe_type_str(info.probe_id.probe_type));
         offset += menu_build_padded_format_row(buf + offset, "Revision", "%d", info.probe_id.probe_revision);
         offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%03d", info.probe_id.probe_serial);
         offset += menu_build_padded_format_row(buf + offset, "Sensor ID", "%02X%02X%02X",
@@ -142,7 +142,7 @@ menu_result_t meter_probe_sensor_calibration()
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_TYPE_TSL2585) {
+    if (settings.type != METER_PROBE_TYPE_TSL2585 && settings.type != METER_PROBE_TYPE_TSL2521) {
         /* Unknown meter probe type */
         return MENU_OK;
     }
@@ -436,6 +436,8 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
         } else if (strncmp("type", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
             if (info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) {
                 has_type_match = (strncmp(pair.value, "TSL2585", pair.valueLength) == 0);
+            } else if (info->probe_id.probe_type == METER_PROBE_TYPE_TSL2521) {
+                has_type_match = (strncmp(pair.value, "TSL2521", pair.valueLength) == 0);
             }
         } else if (strncmp("revision", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
             revision = json_parse_int(pair.value, pair.valueLength, 0);
@@ -624,7 +626,8 @@ menu_result_t meter_probe_sensor_calibration_export()
         return MENU_OK;
     }
 
-    if (info.probe_id.probe_type != METER_PROBE_TYPE_TSL2585 || !meter_probe_has_settings()) {
+    if ((info.probe_id.probe_type != METER_PROBE_TYPE_TSL2585 && info.probe_id.probe_type != METER_PROBE_TYPE_TSL2521)
+        || !meter_probe_has_settings()) {
         return MENU_OK;
     }
 
@@ -633,7 +636,7 @@ menu_result_t meter_probe_sensor_calibration_export()
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_TYPE_TSL2585) {
+    if (settings.type != info.probe_id.probe_type) {
         return MENU_OK;
     }
 
@@ -707,7 +710,7 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
     f_printf(fp, "  \"header\": {\n");
     json_write_int(fp, 4, "version", HEADER_EXPORT_VERSION, true);
     json_write_string(fp, 4, "device", "Printalyzer Meter Probe", true);
-    json_write_string(fp, 4, "type", ((info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) ? "TSL2585" : "unknown"), true);
+    json_write_string(fp, 4, "type", meter_probe_type_str(info->probe_id.probe_type), true);
     json_write_int(fp, 4, "revision", info->probe_id.probe_revision, true);
     json_write_int(fp, 4, "serial", (int)info->probe_id.probe_serial, false);
     f_printf(fp, "\n  }");
@@ -776,6 +779,12 @@ menu_result_t meter_probe_diagnostics()
     bool elapsed_tick_buf_full = false;
     size_t elapsed_tick_buf_pos = 0;
     const size_t elapsed_tick_buf_len = sizeof(elapsed_tick_buf) / sizeof(uint32_t);
+
+    /* Get meter probe device info */
+    meter_probe_device_info_t info;
+    if (meter_probe_get_device_info(&info) != osOK) {
+        return MENU_OK;
+    }
 
     /* Load active enlarger config */
     uint8_t config_index = settings_get_default_enlarger_config_index();
@@ -943,11 +952,12 @@ menu_result_t meter_probe_diagnostics()
 
             if (reading.result_status == METER_SENSOR_RESULT_VALID) {
                 sprintf(buf,
-                    "TSL2585 (%s, %.2fms)\n"
+                    "%s (%s, %.2fms)\n"
                     "Data: %lu\n"
                     "Basic: %f, Lux: %f\n"
                     "[%s][%s] {%.2f}\n"
                     "%s",
+                    meter_probe_type_str(info.probe_id.probe_type),
                     tsl2585_gain_str(reading.gain), atime,
                     reading.als_data,
                     basic_result, lux_result,
@@ -971,11 +981,12 @@ menu_result_t meter_probe_diagnostics()
                     break;
                 }
                 sprintf(buf,
-                    "TSL2585 (%s, %.2fms)\n"
+                    "%s (%s, %.2fms)\n"
                     "%s\n"
                     "\n"
                     "[%s][%s]\n"
                     "%s",
+                    meter_probe_type_str(info.probe_id.probe_type),
                     tsl2585_gain_str(reading.gain), atime,
                     status_str,
                     (enlarger_enabled ? "**" : "--"),

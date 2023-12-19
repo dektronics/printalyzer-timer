@@ -444,7 +444,7 @@ HAL_StatusTypeDef tsl2585_set_max_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_gain
     return ret;
 }
 
-bool tsl2686_get_gain_register(tsl2585_modulator_t mod, tsl2585_step_t step, uint8_t *reg, bool *upper)
+bool tsl2585_get_gain_register(tsl2585_modulator_t mod, tsl2585_step_t step, uint8_t *reg, bool *upper)
 {
     *reg = 0;
     if (mod == TSL2585_MOD0) {
@@ -500,7 +500,7 @@ HAL_StatusTypeDef tsl2585_get_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulato
     uint8_t reg;
     bool upper;
 
-    if (!tsl2686_get_gain_register(mod, step, &reg, &upper)) {
+    if (!tsl2585_get_gain_register(mod, step, &reg, &upper)) {
         return HAL_ERROR;
     }
 
@@ -527,7 +527,7 @@ HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulato
     uint8_t reg;
     bool upper;
 
-    if (!tsl2686_get_gain_register(mod, step, &reg, &upper)) {
+    if (!tsl2585_get_gain_register(mod, step, &reg, &upper)) {
         return HAL_ERROR;
     }
 

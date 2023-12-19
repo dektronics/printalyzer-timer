@@ -140,9 +140,14 @@ static const osSemaphoreAttr_t meter_probe_control_semaphore_attrs = {
     .name = "meter_probe_control_semaphore"
 };
 
-/* Only enable Photopic photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_phd_mod_vis[] = {
+/* TSL2585: Only enable Photopic photodiodes on modulator 0 */
+static const tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
     0, TSL2585_MOD0, 0, 0, 0, TSL2585_MOD0
+};
+
+/* TSL2521: Only enable Clear photodiodes on modulator 0 */
+static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
+    0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, 0
 };
 
 /* Meter probe control implementation functions */
@@ -316,13 +321,19 @@ osStatus_t meter_probe_control_start()
             break;
         }
 
-        log_i("Meter probe: type=%d, rev=%d, serial=%ld",
-            probe_settings_handle.id.probe_type,
+        log_i("Meter probe: type=%s, rev=%d, serial=%ld",
+            meter_probe_type_str(probe_settings_handle.id.probe_type),
             probe_settings_handle.id.probe_revision,
             probe_settings_handle.id.probe_serial);
 
-        if (probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2585) {
-            log_w("Unknown meter probe type");
+        /*
+         * The TSL2585 and TSL2521 are almost identical, except for the
+         * modulator count and photodiode configuration. Therefore, both
+         * use the same driver with only some minor differences in usage.
+         */
+        if (probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2585
+            && probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2521) {
+            log_w("Unknown meter probe type: %d", probe_settings_handle.id.probe_type);
             ret = HAL_ERROR;
             break;
         }
@@ -345,10 +356,12 @@ osStatus_t meter_probe_control_start()
         ret = tsl2585_init(&hi2c2, sensor_device_id);
         if (ret != HAL_OK) { break; }
 
-        ret = tsl2585_get_uv_calibration(&hi2c2, &sensor_state.uv_calibration);
-        if (ret != HAL_OK) { break; }
-
-        log_d("UV calibration value: %d", sensor_state.uv_calibration);
+        sensor_state.uv_calibration = 0;
+        if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+            ret = tsl2585_get_uv_calibration(&hi2c2, &sensor_state.uv_calibration);
+            if (ret != HAL_OK) { break; }
+            log_d("UV calibration value: %d", sensor_state.uv_calibration);
+        }
 
         /* Enable the meter probe button */
         keypad_enable_meter_probe();
@@ -427,7 +440,8 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
     memset(settings, 0, sizeof(meter_probe_settings_t));
 
     settings->type = probe_settings_handle.id.probe_type;
-    if (settings->type == METER_PROBE_TYPE_TSL2585 && meter_probe_has_sensor_settings) {
+    if ((settings->type == METER_PROBE_TYPE_TSL2585 || settings->type == METER_PROBE_TYPE_TSL2521)
+        && meter_probe_has_sensor_settings) {
         memcpy(&settings->settings_tsl2585, &sensor_settings, sizeof(meter_probe_settings_tsl2585_t));
     }
 
@@ -444,7 +458,7 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
         return osErrorParameter;
     }
 
-    if (settings->type == METER_PROBE_TYPE_TSL2585) {
+    if (settings->type == METER_PROBE_TYPE_TSL2585 || settings->type == METER_PROBE_TYPE_TSL2521) {
         HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&probe_settings_handle, &settings->settings_tsl2585);
         return hal_to_os_status(ret);
     } else {
@@ -457,7 +471,8 @@ osStatus_t meter_probe_sensor_enable_osc_calibration()
 {
     if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
 
-    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
+        || probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
         sensor_osc_calibration_enabled = true;
         return osOK;
     } else {
@@ -469,7 +484,8 @@ osStatus_t meter_probe_sensor_disable_osc_calibration()
 {
     if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
 
-    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
+        || probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
         sensor_osc_calibration_enabled = false;
         return osOK;
     } else {
@@ -598,9 +614,15 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
             sensor_state.mod_calibration_pending = false;
         }
 
-        /* Configure photodiodes for Photopic measurement only */
-        ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_phd_mod_vis);
-        if (ret != HAL_OK) { break; }
+        if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+            /* Configure photodiodes for Photopic measurement only */
+            ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
+            if (ret != HAL_OK) { break; }
+        } else if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
+            /* Configure photodiodes for Clear measurement only */
+            ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_tsl2521_phd_mod_vis);
+            if (ret != HAL_OK) { break; }
+        }
 
         if (sensor_state.gain_pending) {
             ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);

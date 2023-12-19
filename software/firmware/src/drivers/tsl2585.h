@@ -28,12 +28,12 @@ typedef enum {
 } tsl2585_step_t;
 
 typedef enum {
-    TSL2585_PHD_0 = 0, /*!< IR */
-    TSL2585_PHD_1,     /*!< Photopic */
-    TSL2585_PHD_2,     /*!< IR */
-    TSL2585_PHD_3,     /*!< UV-A */
-    TSL2585_PHD_4,     /*!< UV-A */
-    TSL2585_PHD_5,     /*!< Photopic */
+    TSL2585_PHD_0 = 0, /*!< TSL2585: IR,       TSL2521: IR */
+    TSL2585_PHD_1,     /*!< TSL2585: Photopic, TSL2521: Clear */
+    TSL2585_PHD_2,     /*!< TSL2585: IR,       TSL2521: Clear */
+    TSL2585_PHD_3,     /*!< TSL2585: UV-A,     TSL2521: Clear */
+    TSL2585_PHD_4,     /*!< TSL2585: UV-A,     TSL2521: Clear */
+    TSL2585_PHD_5,     /*!< TSL2585: Photopic, TSL2521: IR    */
     TSL2585_PHD_MAX
 } tsl2585_photodiode_t;
 
