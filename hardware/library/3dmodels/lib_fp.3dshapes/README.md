@@ -195,6 +195,10 @@ this directory's `.gitignore` file.
 * Status: Included (CC BY-SA /w Design Exception 1.0)
 * Source: SnapEDA <https://www.snapeda.com/parts/B4B-PH-SM4-TB%28LF%29%28SN%29/JST%20Sales/view-part/>
 
+### B5B-PH-SM4-TB(LF)(SN)
+* Status: Included (CC BY-SA /w Design Exception 1.0)
+* Source: SnapEDA <https://www.snapeda.com/parts/B5B-PH-SM4-TB(LF)(SN)/JST%20Sales/view-part/>
+
 ### BM02B-SRSS-TB
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=231>
