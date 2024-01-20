@@ -2973,7 +2973,7 @@
   (symbol (lib_id "Device:R_Small") (at 33.655 106.045 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 00000000-0000-0000-0000-00005f8ef38b)
-    (property "Reference" "R4" (at 34.925 105.41 0)
+    (property "Reference" "R9" (at 34.925 105.41 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10K" (at 34.925 107.315 0)
@@ -3005,7 +3005,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R4") (unit 1)
+          (reference "R9") (unit 1)
         )
       )
     )
@@ -3039,7 +3039,7 @@
   (symbol (lib_id "Device:C_Small") (at 91.44 36.83 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 0161b491-9ed3-41f9-8e55-988465847c49)
-    (property "Reference" "C5" (at 93.345 36.195 0)
+    (property "Reference" "C3" (at 93.345 36.195 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "47pF" (at 93.345 38.1 0)
@@ -3071,7 +3071,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C5") (unit 1)
+          (reference "C3") (unit 1)
         )
       )
     )
@@ -3230,7 +3230,7 @@
   (symbol (lib_id "Device:C_Small") (at 20.955 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 1812ef04-d6fa-4306-b012-a5c8dc57c183)
-    (property "Reference" "C14" (at 22.86 161.29 0)
+    (property "Reference" "C10" (at 22.86 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "4.7uF" (at 22.86 163.195 0)
@@ -3262,7 +3262,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C14") (unit 1)
+          (reference "C10") (unit 1)
         )
       )
       (project "main-board"
@@ -3356,7 +3356,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x05") (at 20.32 32.385 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 1e5f9228-7fba-4fd7-9edf-49648e7c5a13)
-    (property "Reference" "J3" (at 20.32 24.765 0)
+    (property "Reference" "J1" (at 20.32 24.765 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "Cable" (at 20.32 40.005 0)
@@ -3391,7 +3391,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "J3") (unit 1)
+          (reference "J1") (unit 1)
         )
       )
     )
@@ -3509,7 +3509,7 @@
   (symbol (lib_id "Project:FT260Q") (at 69.215 116.84 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 26f88e21-32a2-4336-9de4-3dddfb2f9d5b)
-    (property "Reference" "U9" (at 55.245 91.44 0)
+    (property "Reference" "U4" (at 55.245 91.44 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "FT260Q" (at 75.565 142.24 0)
@@ -3568,7 +3568,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "U9") (unit 1)
+          (reference "U4") (unit 1)
         )
       )
     )
@@ -3577,7 +3577,7 @@
   (symbol (lib_id "Device:C_Small") (at 41.91 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 2cd09f5e-3e84-4bc2-b624-278a346b964f)
-    (property "Reference" "C16" (at 43.815 161.29 0)
+    (property "Reference" "C12" (at 43.815 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "4.7uF" (at 43.815 163.195 0)
@@ -3609,7 +3609,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C16") (unit 1)
+          (reference "C12") (unit 1)
         )
       )
       (project "main-board"
@@ -3648,7 +3648,7 @@
   (symbol (lib_id "Device:C_Small") (at 151.13 66.04 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 34965ebd-eff5-450b-b069-ae3576c9a5b5)
-    (property "Reference" "C2" (at 154.94 64.77 0)
+    (property "Reference" "C1" (at 154.94 64.77 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "1uF" (at 154.94 66.675 0)
@@ -3680,7 +3680,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C2") (unit 1)
+          (reference "C1") (unit 1)
         )
       )
       (project "main-board"
@@ -3819,8 +3819,8 @@
   (symbol (lib_id "Device:R_Small") (at 216.535 32.385 90) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 43344440-d5e3-492f-a4bb-f07fec501d62)
-    (property "Reference" "R6" (at 215.265 30.48 90)
-      (effects (font (size 1.27 1.27)) (justify right))
+    (property "Reference" "R12" (at 216.535 30.48 90)
+      (effects (font (size 1.27 1.27)))
     )
     (property "Value" "220R" (at 213.995 34.29 90)
       (effects (font (size 1.27 1.27)) (justify right))
@@ -3851,7 +3851,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R6") (unit 1)
+          (reference "R12") (unit 1)
         )
       )
       (project "main-board"
@@ -4001,7 +4001,7 @@
   (symbol (lib_id "Device:C_Small") (at 100.965 36.83 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 53015133-2783-45e5-b351-0edd65e1b2c4)
-    (property "Reference" "C9" (at 102.87 36.195 0)
+    (property "Reference" "C4" (at 102.87 36.195 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "47pF" (at 102.87 38.1 0)
@@ -4033,7 +4033,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C9") (unit 1)
+          (reference "C4") (unit 1)
         )
       )
     )
@@ -4042,7 +4042,7 @@
   (symbol (lib_id "Power_Protection:USBLC6-2SC6") (at 62.865 32.385 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 562e9bc0-90b6-41f9-907d-793aaa89a5a6)
-    (property "Reference" "U5" (at 55.245 23.495 90)
+    (property "Reference" "U2" (at 55.245 23.495 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "USBLC6-2SC6" (at 66.04 41.275 90)
@@ -4078,7 +4078,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "U5") (unit 1)
+          (reference "U2") (unit 1)
         )
       )
       (project "main-board"
@@ -4092,7 +4092,7 @@
   (symbol (lib_id "Device:C_Small") (at 154.305 120.015 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 63524bb6-281c-4bd3-99f5-c36a57fac3e3)
-    (property "Reference" "C3" (at 154.305 115.57 90)
+    (property "Reference" "C16" (at 154.305 115.57 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "0.1uF" (at 154.305 117.475 90)
@@ -4124,7 +4124,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C3") (unit 1)
+          (reference "C16") (unit 1)
         )
       )
     )
@@ -4133,10 +4133,10 @@
   (symbol (lib_id "Device:R_Small") (at 156.845 61.595 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 64083849-8642-477a-9de2-0e1215eff364)
-    (property "Reference" "R1" (at 155.6766 60.0964 0)
+    (property "Reference" "R1" (at 155.575 60.325 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "22R" (at 157.988 60.0964 0)
+    (property "Value" "22R" (at 158.115 60.325 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Resistor_SMD:R_0402_1005Metric" (at 156.845 61.595 0)
@@ -4179,7 +4179,7 @@
   (symbol (lib_id "Regulator_Linear:MIC5365-3.3YC5") (at 151.765 29.845 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 675e7a41-226f-46f4-b3ba-a954e27ddf69)
-    (property "Reference" "U8" (at 151.765 20.32 0)
+    (property "Reference" "U3" (at 151.765 20.32 0)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "MIC5365-1.8YC5" (at 151.765 22.86 0)
@@ -4214,7 +4214,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "U8") (unit 1)
+          (reference "U3") (unit 1)
         )
       )
     )
@@ -4223,7 +4223,7 @@
   (symbol (lib_id "Device:R_Small") (at 20.955 106.045 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 68e23d94-9dad-4659-8733-779bb0dc4133)
-    (property "Reference" "R11" (at 22.225 105.41 0)
+    (property "Reference" "R7" (at 22.225 105.41 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10K" (at 22.225 107.315 0)
@@ -4255,7 +4255,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R11") (unit 1)
+          (reference "R7") (unit 1)
         )
       )
     )
@@ -4400,7 +4400,7 @@
   (symbol (lib_id "Device:R_Small") (at 93.98 94.615 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 7c7c8422-dc7d-466c-87cc-f7fb4019a457)
-    (property "Reference" "R10" (at 95.25 93.98 0)
+    (property "Reference" "R4" (at 95.25 93.98 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1K" (at 95.25 95.885 0)
@@ -4432,7 +4432,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R10") (unit 1)
+          (reference "R4") (unit 1)
         )
       )
     )
@@ -4585,7 +4585,7 @@
   (symbol (lib_id "Device:C_Small") (at 163.83 31.75 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 86c6d73c-9481-4f5f-ae52-07ca7b3e9a0b)
-    (property "Reference" "C11" (at 165.735 31.115 0)
+    (property "Reference" "C9" (at 165.735 31.115 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "1uF" (at 165.735 33.02 0)
@@ -4617,7 +4617,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C11") (unit 1)
+          (reference "C9") (unit 1)
         )
       )
       (project "main-board"
@@ -4711,7 +4711,7 @@
   (symbol (lib_id "Device:R_Small") (at 224.155 27.94 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 9231b63f-0416-4320-8c9c-19bb8a3bdda3)
-    (property "Reference" "R2" (at 225.425 27.305 0)
+    (property "Reference" "R11" (at 225.425 27.305 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10K" (at 225.425 29.21 0)
@@ -4743,7 +4743,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R2") (unit 1)
+          (reference "R11") (unit 1)
         )
       )
     )
@@ -4954,7 +4954,7 @@
   (symbol (lib_id "Device:C_Small") (at 73.025 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid aa0401b9-9257-4e22-a96f-1f218c93404b)
-    (property "Reference" "C19" (at 74.93 161.29 0)
+    (property "Reference" "C15" (at 74.93 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.1uF" (at 74.93 163.195 0)
@@ -4986,7 +4986,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C19") (unit 1)
+          (reference "C15") (unit 1)
         )
       )
       (project "main-board"
@@ -5040,7 +5040,7 @@
   (symbol (lib_id "Device:R_Small") (at 100.33 94.615 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ace864d4-f211-449d-a6bc-5719d2c089d9)
-    (property "Reference" "R12" (at 101.6 93.98 0)
+    (property "Reference" "R5" (at 101.6 93.98 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1K" (at 101.6 95.885 0)
@@ -5072,7 +5072,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R12") (unit 1)
+          (reference "R5") (unit 1)
         )
       )
     )
@@ -5146,7 +5146,7 @@
   (symbol (lib_id "Device:C_Small") (at 162.56 66.04 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b4078f15-4cab-4534-b054-fc86a613df57)
-    (property "Reference" "C4" (at 164.465 64.77 0)
+    (property "Reference" "C2" (at 164.465 64.77 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "4.7uF" (at 164.465 66.675 0)
@@ -5178,7 +5178,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C4") (unit 1)
+          (reference "C2") (unit 1)
         )
       )
     )
@@ -5187,7 +5187,7 @@
   (symbol (lib_id "Device:R_Small") (at 109.22 24.765 270) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid b469e594-5f8f-4513-b0ff-f7c814cb3f11)
-    (property "Reference" "R3" (at 109.22 22.86 90)
+    (property "Reference" "R2" (at 109.22 22.86 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "33R" (at 109.22 26.67 90)
@@ -5219,7 +5219,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R3") (unit 1)
+          (reference "R2") (unit 1)
         )
       )
       (project "main-board"
@@ -5348,7 +5348,7 @@
   (symbol (lib_id "Device:C_Small") (at 134.62 31.75 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid cf2cc803-09f1-4ab3-9d7c-3840ee23aaee)
-    (property "Reference" "C7" (at 136.525 31.115 0)
+    (property "Reference" "C8" (at 136.525 31.115 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "1uF" (at 136.525 33.02 0)
@@ -5380,7 +5380,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C7") (unit 1)
+          (reference "C8") (unit 1)
         )
       )
       (project "main-board"
@@ -5434,7 +5434,7 @@
   (symbol (lib_id "Device:C_Small") (at 52.07 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d22dde9e-eb28-4c9f-8510-b091895f156c)
-    (property "Reference" "C17" (at 53.975 161.29 0)
+    (property "Reference" "C13" (at 53.975 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.1uF" (at 53.975 163.195 0)
@@ -5466,7 +5466,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C17") (unit 1)
+          (reference "C13") (unit 1)
         )
       )
       (project "main-board"
@@ -5519,7 +5519,7 @@
   (symbol (lib_id "Device:C_Small") (at 31.115 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d29d3191-0399-4fad-b03c-7e41273be96b)
-    (property "Reference" "C15" (at 33.02 161.29 0)
+    (property "Reference" "C11" (at 33.02 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.1uF" (at 33.02 163.195 0)
@@ -5551,7 +5551,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C15") (unit 1)
+          (reference "C11") (unit 1)
         )
       )
       (project "main-board"
@@ -5565,7 +5565,7 @@
   (symbol (lib_id "Device:C_Small") (at 83.185 59.055 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d6257723-12de-4446-a420-edff3c4f4fce)
-    (property "Reference" "C10" (at 85.09 58.42 0)
+    (property "Reference" "C7" (at 85.09 58.42 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.1uF" (at 85.09 60.325 0)
@@ -5597,7 +5597,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C10") (unit 1)
+          (reference "C7") (unit 1)
         )
       )
       (project "main-board"
@@ -5611,7 +5611,7 @@
   (symbol (lib_id "Device:C_Small") (at 62.865 161.925 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d62f8f46-5d9a-4c8f-86b4-d70f80c9a4d1)
-    (property "Reference" "C18" (at 64.77 161.29 0)
+    (property "Reference" "C14" (at 64.77 161.29 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "4.7uF" (at 64.77 163.195 0)
@@ -5643,7 +5643,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C18") (unit 1)
+          (reference "C14") (unit 1)
         )
       )
       (project "main-board"
@@ -5762,7 +5762,7 @@
   (symbol (lib_id "Project:CAT24C08") (at 149.86 129.54 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid dc9af76d-8cba-4494-9fba-8a0b56422970)
-    (property "Reference" "U2" (at 142.24 123.19 0)
+    (property "Reference" "U5" (at 142.24 123.19 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "CAT24C08" (at 150.495 135.89 0)
@@ -5800,7 +5800,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "U2") (unit 1)
+          (reference "U5") (unit 1)
         )
       )
     )
@@ -5954,7 +5954,7 @@
   (symbol (lib_id "Device:R_Small") (at 109.22 32.385 270) (mirror x) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid e8838bbd-6cbc-41ed-a99e-9ed85967fd5b)
-    (property "Reference" "R5" (at 109.22 30.48 90)
+    (property "Reference" "R3" (at 109.22 30.48 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "33R" (at 109.22 34.29 90)
@@ -5986,7 +5986,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R5") (unit 1)
+          (reference "R3") (unit 1)
         )
       )
       (project "main-board"
@@ -6041,7 +6041,7 @@
   (symbol (lib_id "Device:R_Small") (at 44.45 125.73 270) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid eda8c513-fe9d-4906-90c6-f875bf31ea94)
-    (property "Reference" "R7" (at 44.45 123.825 90)
+    (property "Reference" "R10" (at 44.45 123.825 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "5.1k" (at 44.45 127.635 90)
@@ -6073,7 +6073,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R7") (unit 1)
+          (reference "R10") (unit 1)
         )
       )
       (project "main-board"
@@ -6112,7 +6112,7 @@
   (symbol (lib_id "Device:C_Small") (at 49.53 59.055 180) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid ef06e02f-a02e-4713-afd1-e1d47a4faaa6)
-    (property "Reference" "C8" (at 51.435 58.42 0)
+    (property "Reference" "C5" (at 51.435 58.42 0)
       (effects (font (size 1.27 1.27)) (justify right))
     )
     (property "Value" "10nF" (at 51.435 60.325 0)
@@ -6144,7 +6144,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C8") (unit 1)
+          (reference "C5") (unit 1)
         )
       )
       (project "main-board"
@@ -6158,7 +6158,7 @@
   (symbol (lib_id "Device:R_Small") (at 106.68 94.615 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid f496c42b-faf7-42cd-bbb3-8d8272dce01e)
-    (property "Reference" "R9" (at 107.95 93.98 0)
+    (property "Reference" "R6" (at 107.95 93.98 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "10K" (at 107.95 95.885 0)
@@ -6190,7 +6190,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "R9") (unit 1)
+          (reference "R6") (unit 1)
         )
       )
     )
@@ -6315,7 +6315,7 @@
   (symbol (lib_id "Device:C_Small") (at 224.155 36.83 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid faecbb4b-03b4-4500-936e-358675c7fd86)
-    (property "Reference" "C1" (at 226.4918 35.6616 0)
+    (property "Reference" "C17" (at 226.4918 35.6616 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1uF" (at 226.4918 37.973 0)
@@ -6347,7 +6347,7 @@
     (instances
       (project "meter-probe"
         (path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-          (reference "C1") (unit 1)
+          (reference "C17") (unit 1)
         )
       )
       (project "main-board"
