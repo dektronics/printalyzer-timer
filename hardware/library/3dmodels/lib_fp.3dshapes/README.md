@@ -231,6 +231,10 @@ this directory's `.gitignore` file.
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on Digi-Key <https://cdn.amphenol-cs.com/media/wysiwyg/files/3d/s87583-3010xx.zip>
 
+### Amphenol\_74626-11S0BPLF
+* Status: Included
+* Source: SnapEDA <https://www.snapeda.com/parts/74626-11S0BPLF/Amphenol%20ICC%20(FCI)/view-part/>
+
 ### Weidmuller\_1825960000
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on product page <https://catalog.weidmueller.com/catalog/Start.do?ObjectID=1825960000>
