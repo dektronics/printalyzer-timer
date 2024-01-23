@@ -2841,7 +2841,7 @@
   (symbol (lib_id "Device:FerriteBead_Small") (at 167.005 62.865 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid aceb4ccc-e166-48a7-8877-9522f8a12cdd)
-    (property "Reference" "L?" (at 167.005 57.785 90)
+    (property "Reference" "FB2" (at 167.005 57.785 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "70 Ohm" (at 167.005 59.69 90)
@@ -2872,9 +2872,6 @@
     (pin "2" (uuid 887fcb50-8355-4795-b5be-f4f20522a534))
     (instances
       (project "main-board"
-        (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-          (reference "L?") (unit 1)
-        )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
           (reference "FB2") (unit 1)
         )
@@ -3463,7 +3460,7 @@
   (symbol (lib_id "Device:FerriteBead_Small") (at 167.005 102.235 90) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d2b6ea3f-960e-4dfa-ae18-20182ba1e844)
-    (property "Reference" "L?" (at 167.005 97.155 90)
+    (property "Reference" "FB3" (at 167.005 97.155 90)
       (effects (font (size 1.27 1.27)))
     )
     (property "Value" "70 Ohm" (at 167.005 99.06 90)
@@ -3494,9 +3491,6 @@
     (pin "2" (uuid c80fe1bf-3f85-4844-a746-f7692289a1a8))
     (instances
       (project "main-board"
-        (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-          (reference "L?") (unit 1)
-        )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
           (reference "FB3") (unit 1)
         )
@@ -3891,7 +3885,7 @@
   (symbol (lib_id "Device:C_Small") (at 79.375 109.22 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid eec3284d-0399-4175-8134-e7386d5d2d12)
-    (property "Reference" "C?" (at 81.7118 108.0516 0)
+    (property "Reference" "C26" (at 81.7118 108.0516 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "0.01uF" (at 81.7118 110.363 0)
@@ -3922,9 +3916,6 @@
     (pin "2" (uuid f5ab62d6-62ac-459d-a526-c822f2dc6f1b))
     (instances
       (project "main-board"
-        (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b69b5"
-          (reference "C?") (unit 1)
-        )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b674d"
           (reference "C26") (unit 1)
         )

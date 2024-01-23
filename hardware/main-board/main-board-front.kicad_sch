@@ -3983,7 +3983,7 @@
   (symbol (lib_id "Device:C_Small") (at 198.755 156.845 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid 4f1d548e-4cb8-4f3d-a961-053b5af379eb)
-    (property "Reference" "C?" (at 201.0918 155.6766 0)
+    (property "Reference" "C48" (at 201.0918 155.6766 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "1uF" (at 201.0918 157.988 0)
@@ -4014,9 +4014,6 @@
     (pin "2" (uuid e5cbb55e-35c2-4256-8a8e-8d46fa0317a3))
     (instances
       (project "main-board"
-        (path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-          (reference "C?") (unit 1)
-        )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
           (reference "C48") (unit 1)
         )
@@ -4453,7 +4450,7 @@
   (symbol (lib_id "Connector_Generic:Conn_01x02") (at 254 152.4 0) (unit 1)
     (in_bom yes) (on_board yes) (dnp no)
     (uuid d3903c01-7104-4d77-ac27-48764dfdfd26)
-    (property "Reference" "J5" (at 252.73 149.86 0)
+    (property "Reference" "J8" (at 252.73 149.86 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Conn_01x02" (at 252.73 157.48 0)
@@ -4487,9 +4484,6 @@
     (pin "2" (uuid 3f59c7c2-c349-4383-83b0-2bda206c186c))
     (instances
       (project "main-board"
-        (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005f8b69b5"
-          (reference "J5") (unit 1)
-        )
         (path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
           (reference "J8") (unit 1)
         )
