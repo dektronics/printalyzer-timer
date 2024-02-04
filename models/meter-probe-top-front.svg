@@ -21,9 +21,9 @@
      inkscape:pagecheckerboard="0"
      showgrid="false"
      units="in"
-     inkscape:zoom="1.5168671"
-     inkscape:cx="568.27655"
-     inkscape:cy="299.96036"
+     inkscape:zoom="2.145174"
+     inkscape:cx="546.80878"
+     inkscape:cy="311.86281"
      inkscape:window-width="3072"
      inkscape:window-height="1583"
      inkscape:window-x="0"
@@ -82,18 +82,25 @@
      inkscape:label="0"
      id="g867">
     <g
-       id="g2752"
-       transform="translate(-221.7829,-9.01648)">
+       id="g1605">
+      <g
+         id="g1581">
+        <path
+           d="m 604.45199,291.56134 -68.4344,-68.4344 a 11.338583,11.338583 0 0 0 -16.03518,0 l -68.4344,68.4344 a 68.031496,68.031496 0 0 0 -19.03974,37.1603 3.779528,3.779528 0 0 0 3.73029,4.3876 h 183.52288 a 3.779528,3.779528 0 0 0 3.73029,-4.3876 68.031496,68.031496 0 0 0 -19.03974,-37.1603 z"
+           style="fill:#d9d9d6;fill-opacity:1;stroke:#000000;stroke-width:0.755906;stroke-miterlimit:4;stroke-dasharray:none"
+           id="path958" />
+        <path
+           d="m 537.44882,249.77354 a 9.44882,9.44882 0 1 0 -18.89764,0 9.44882,9.44882 0 1 0 18.89764,0 z"
+           style="fill:#ffff00;fill-opacity:1;stroke:none"
+           id="path960" />
+      </g>
       <path
-         d="m 741.76531,232.14342 -77.88322,77.8832 a 68.031496,68.031496 0 0 0 -18.87369,36.1863 3.779528,3.779528 0 0 0 3.72107,4.4417 h 202.10686 a 3.779528,3.779528 0 0 0 3.72107,-4.4417 68.031496,68.031496 0 0 0 -18.87369,-36.1863 l -77.88322,-77.8832 a 11.338583,11.338583 0 0 0 -16.03518,0 z"
-         style="fill:#d9d9d6;fill-opacity:1;stroke:#000000;stroke-width:0.755906;stroke-miterlimit:4;stroke-dasharray:none"
-         id="path1106" />
-      <path
-         d="m 759.23172,258.79002 a 9.44882,9.44882 0 1 0 -18.89764,0 9.44882,9.44882 0 1 0 18.89764,0 z"
+         d="m 537.44882,249.77354 a 9.44882,9.44882 0 1 0 -18.89764,0 9.44882,9.44882 0 1 0 18.89764,0 z"
          style="fill:#ffff00;fill-opacity:1;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none"
          id="path1108" />
       <g
-         id="g2736">
+         id="g2736"
+         transform="translate(-221.7829,-9.0164805)">
         <circle
            style="fill:none;fill-opacity:1;stroke:#2d2926;stroke-width:1.89014;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            id="path1689"
