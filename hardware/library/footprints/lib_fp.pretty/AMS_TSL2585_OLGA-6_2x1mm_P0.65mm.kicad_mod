@@ -3,7 +3,7 @@
   (descr "AMS  OLGA, 8 Pin (https://ams.com/documents/20143/36005/AS7341_DS000504_3-00.pdf/#page=63)")
   (tags "AMS OLGA NoLead")
   (attr smd)
-  (fp_text reference "REF**" (at 0 -2) (layer "F.SilkS")
+  (fp_text reference "REF**" (at 0 -2.2) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
     (tstamp 6be1ba07-e134-4460-b9bc-e3a516ecb856)
   )
@@ -17,8 +17,17 @@
   )
   (fp_line (start -0.5 1.11) (end 0.5 1.11)
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 93e3a38e-77fc-4530-bf1a-aa18aa4360ab))
-  (fp_line (start 0 -1.11) (end 0.5 -1.11)
+  (fp_line (start -0.3 -1.11) (end 0.5 -1.11)
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 5b791505-18c0-4b86-998b-c5e3ae83db0d))
+  (fp_poly
+    (pts
+      (xy -0.5 -1.11)
+      (xy -0.86 -1.11)
+      (xy -0.5 -1.47)
+      (xy -0.5 -1.11)
+    )
+
+    (stroke (width 0.12) (type solid)) (fill solid) (layer "F.SilkS") (tstamp 0cbfdf3e-fd0d-49ac-bf44-30d20c86abb4))
   (fp_rect (start -0.8 -1.3) (end 0.8 1.3)
     (stroke (width 0.05) (type default)) (fill none) (layer "F.CrtYd") (tstamp 8a73649d-e6d3-447c-a012-d306a8bb3b61))
   (fp_line (start -0.5 -0.8) (end -0.3 -1)
