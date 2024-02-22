@@ -46,8 +46,8 @@ PCB layouts.
 The "software" directory contains all the source code for the firmware
 that runs on the hardware.
 
-### Models
-The "models" directory contains any CAD models and related resources
+### Enclosure
+The "enclosure" directory contains any CAD models and related resources
 necessary to physically assemble the project.
 
 ## License
