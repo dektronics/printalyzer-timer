@@ -2450,7 +2450,7 @@
     (property "Value" "NUD3112DMT1G" (at -8.89 -11.43 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Package_SO:SC-74-6_1.5x2.9mm_P0.95mm" (at -20.32 -15.24 0)
+    (property "Footprint" "lib_fp:OnSemi_SC-74-6_1.5x3.0mm_P0.95mm" (at -20.32 -15.24 0)
       (effects (font (size 1.27 1.27)) (justify left) hide)
     )
     (property "Datasheet" "http://www.onsemi.com/pub/Collateral/NUD3112-D.PDF" (at 0 -2.54 0)

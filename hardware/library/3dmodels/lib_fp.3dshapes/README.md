@@ -250,3 +250,7 @@ this directory's `.gitignore` file.
 ### SW-PEC11L-4220F-S0015
 * Status: Included
 * Source: GrabCAD <https://grabcad.com/library/bourns-pec-encoder-series-1>
+
+### OnSemi\_SC-74-6\_1.5x3.0mm\_P0.95mm
+* Status: Included
+* Source: Created for project using KiCad packages3D generator and datasheet specs
