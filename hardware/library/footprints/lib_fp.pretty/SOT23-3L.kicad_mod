@@ -3,7 +3,7 @@
   (descr "SOT23-3L, from ST ESD device datasheet")
   (tags "SOT TO_SOT_SMD")
   (attr smd)
-  (fp_text reference "REF**" (at 0 -2.4) (layer "F.SilkS")
+  (fp_text reference "REF**" (at 0 -2.6) (layer "F.SilkS")
       (effects (font (size 1 1) (thickness 0.15)))
     (tstamp 189da86b-e3d4-4352-b767-b89bddffb261)
   )
@@ -15,7 +15,7 @@
       (effects (font (size 0.4 0.4) (thickness 0.06)))
     (tstamp dfab6b38-6037-458d-a2df-85c1bdbe7d5f)
   )
-  (fp_line (start 0 -1.56) (end -1.8 -1.56)
+  (fp_line (start 0 -1.56) (end -0.8 -1.56)
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp f2c468e5-a10f-4fda-bf66-c8d498793736))
   (fp_line (start 0 -1.56) (end 0.8 -1.56)
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 6d117da4-dd3b-404a-a95e-dbd35edd345a))
@@ -23,6 +23,15 @@
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 43cfc110-f8b2-4f52-b66c-53793b1f5b0a))
   (fp_line (start 0 1.56) (end 0.8 1.56)
     (stroke (width 0.12) (type solid)) (layer "F.SilkS") (tstamp 6b88d801-92f3-4da7-b31d-ac4abe523e8f))
+  (fp_poly
+    (pts
+      (xy -1.3 -1.51)
+      (xy -1.54 -1.84)
+      (xy -1.06 -1.84)
+      (xy -1.3 -1.51)
+    )
+
+    (stroke (width 0.12) (type solid)) (fill solid) (layer "F.SilkS") (tstamp 90fc6e78-8078-43e9-91b1-2bf8467581fe))
   (fp_line (start -2.05 -1.7) (end -2.05 1.7)
     (stroke (width 0.05) (type solid)) (layer "F.CrtYd") (tstamp 395762cc-b854-40eb-9a03-541cc285913d))
   (fp_line (start -2.05 1.7) (end 2.05 1.7)
