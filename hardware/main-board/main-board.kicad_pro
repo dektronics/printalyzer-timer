@@ -3,12 +3,12 @@
     "3dviewports": [],
     "design_settings": {
       "defaults": {
-        "board_outline_line_width": 0.038099999999999995,
-        "copper_line_width": 0.254,
+        "board_outline_line_width": 0.049999999999999996,
+        "copper_line_width": 0.19999999999999998,
         "copper_text_italic": false,
-        "copper_text_size_h": 1.524,
-        "copper_text_size_v": 1.524,
-        "copper_text_thickness": 0.30479999999999996,
+        "copper_text_size_h": 1.5,
+        "copper_text_size_v": 1.5,
+        "copper_text_thickness": 0.3,
         "copper_text_upright": false,
         "courtyard_line_width": 0.049999999999999996,
         "dimension_precision": 4,
@@ -38,11 +38,11 @@
           "height": 2.88,
           "width": 1.12
         },
-        "silk_line_width": 0.15239999999999998,
+        "silk_line_width": 0.12,
         "silk_text_italic": false,
-        "silk_text_size_h": 0.8128,
-        "silk_text_size_v": 0.8128,
-        "silk_text_thickness": 0.15239999999999998,
+        "silk_text_size_h": 1.0,
+        "silk_text_size_v": 1.0,
+        "silk_text_thickness": 0.15,
         "silk_text_upright": false,
         "zones": {
           "45_degree_only": false,
@@ -87,7 +87,7 @@
         }
       ],
       "drc_exclusions": [
-        "courtyards_overlap|74104001|111050001|bbcde485-72cf-4fec-9aa3-1d920557ee42|6ddab7ac-8690-471e-b82e-576cb8df2f0b",
+        "courtyards_overlap|76978999|111681999|6ddab7ac-8690-471e-b82e-576cb8df2f0b|bbcde485-72cf-4fec-9aa3-1d920557ee42",
         "footprint_type_mismatch|138000000|128910000|85184e6a-4531-411d-9260-25605d6a22d3|00000000-0000-0000-0000-000000000000",
         "footprint_type_mismatch|167500000|128910000|0bbb3efa-630b-4edf-a9fa-5675a05c89aa|00000000-0000-0000-0000-000000000000",
         "lib_footprint_mismatch|114800000|36925000|15e77d60-9a70-40f0-90ba-32e91d3929c2|00000000-0000-0000-0000-000000000000",
@@ -269,10 +269,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      "pin_not_driven|1238250|514350|07d48c74-ba6c-4be2-9c17-d7be5b3de4bb|00000000-0000-0000-0000-000000000000|||",
-      "pin_not_driven|1238250|641350|a9bd43fc-9a99-4059-97dc-68abcbbb7f10|00000000-0000-0000-0000-000000000000|||"
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
