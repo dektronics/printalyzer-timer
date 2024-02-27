@@ -3413,7 +3413,7 @@
     (property "Value" "NetTie_2" (at 104.14 163.195 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "Footprint" "NetTie:NetTie-2_SMD_Pad0.5mm" (at 104.14 165.1 0)
+    (property "Footprint" "NetTie:NetTie-2_SMD_Pad2.0mm" (at 104.14 165.1 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 104.14 165.1 0)

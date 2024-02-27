@@ -161,10 +161,10 @@
         "min_silk_clearance": 0.0,
         "min_text_height": 0.7999999999999999,
         "min_text_thickness": 0.08,
-        "min_through_hole_diameter": 0.254,
+        "min_through_hole_diameter": 0.19999999999999998,
         "min_track_width": 0.15239999999999998,
         "min_via_annular_width": 0.049999999999999996,
-        "min_via_diameter": 0.508,
+        "min_via_diameter": 0.35,
         "solder_mask_to_copper_clearance": 0.0,
         "use_height_for_length_calcs": true
       },
@@ -173,7 +173,7 @@
           "td_allow_use_two_tracks": true,
           "td_curve_segcount": 5,
           "td_on_pad_in_zone": false,
-          "td_onpadsmd": true,
+          "td_onpadsmd": false,
           "td_onroundshapesonly": false,
           "td_ontrackend": false,
           "td_onviapad": true
@@ -224,6 +224,10 @@
         {
           "diameter": 0.6096,
           "drill": 0.3556
+        },
+        {
+          "diameter": 0.7,
+          "drill": 0.3
         },
         {
           "diameter": 0.8,
@@ -515,6 +519,23 @@
         "via_diameter": 0.6096,
         "via_drill": 0.3048,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "USB",
+        "pcb_color": "rgb(204, 102, 0)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.1524,
+        "via_diameter": 0.6858,
+        "via_drill": 0.3302,
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -570,6 +591,10 @@
       {
         "netclass": "Signal",
         "pattern": "Net-(U2-Pad4)"
+      },
+      {
+        "netclass": "USB",
+        "pattern": "/USB_*D*"
       }
     ]
   },

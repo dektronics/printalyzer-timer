@@ -102,9 +102,7 @@
         "silk_edge_clearance|131340000|136000000|00000000-0000-0000-0000-00005faa9ed8|e7f2d9bf-6b14-4666-bb48-d030af4bfb03",
         "silk_edge_clearance|144660000|136000000|00000000-0000-0000-0000-00005faa9ed8|c39e08c6-2c7d-491f-9218-54490aba4b4a",
         "silk_edge_clearance|160840000|136000000|00000000-0000-0000-0000-00005faa9ed8|0993e190-7cd2-4719-95d6-a0baf30a57fd",
-        "silk_edge_clearance|174160000|136000000|00000000-0000-0000-0000-00005faa9ed8|7d16ae9c-04a3-4ae2-a32a-04ae3e2b0212",
-        "via_dangling|147066000|72390000|6c79c8a0-411c-4f2d-baad-b3c48384af00|00000000-0000-0000-0000-000000000000",
-        "via_dangling|156845000|72517000|ec31fc7d-1867-4805-9ea4-f215b234a4ac|00000000-0000-0000-0000-000000000000"
+        "silk_edge_clearance|174160000|136000000|00000000-0000-0000-0000-00005faa9ed8|7d16ae9c-04a3-4ae2-a32a-04ae3e2b0212"
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -512,6 +510,40 @@
       },
       {
         "bus_width": 12,
+        "clearance": 0.127,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "Debug",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.254,
+        "via_diameter": 0.6858,
+        "via_drill": 0.3302,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.127,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "I2C",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.254,
+        "via_diameter": 0.6858,
+        "via_drill": 0.3302,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
         "clearance": 1.5,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
@@ -530,6 +562,40 @@
       {
         "bus_width": 12,
         "clearance": 0.127,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "Panel_Ind",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.254,
+        "via_diameter": 0.6858,
+        "via_drill": 0.3302,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.127,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.6858,
+        "microvia_drill": 0.3302,
+        "name": "Panel_Key",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.254,
+        "via_diameter": 0.6858,
+        "via_drill": 0.3302,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.127,
         "diff_pair_gap": 0.2032,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.261112,
@@ -537,7 +603,7 @@
         "microvia_diameter": 0.6858,
         "microvia_drill": 0.3302,
         "name": "USB",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "pcb_color": "rgb(204, 102, 0)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.254,
         "via_diameter": 0.6858,
@@ -562,19 +628,63 @@
     "netclass_patterns": [
       {
         "netclass": "USB",
-        "pattern": "/USB_OTG_FS_D+"
+        "pattern": "/USB_OTG_D*"
       },
       {
         "netclass": "USB",
-        "pattern": "/USB_OTG_FS_D-"
+        "pattern": "/Front External Connections/USB_*_D*"
       },
       {
-        "netclass": "USB",
-        "pattern": "/Front External Connections/USB_CONN_D+"
+        "netclass": "Debug",
+        "pattern": "/JTDO_*"
       },
       {
-        "netclass": "USB",
-        "pattern": "/Front External Connections/USB_CONN_D-"
+        "netclass": "Debug",
+        "pattern": "/JTMS_*"
+      },
+      {
+        "netclass": "Debug",
+        "pattern": "/JCLK_*"
+      },
+      {
+        "netclass": "Debug",
+        "pattern": "/JTDI"
+      },
+      {
+        "netclass": "Debug",
+        "pattern": "/JTDO_*"
+      },
+      {
+        "netclass": "Debug",
+        "pattern": "/USART1_*"
+      },
+      {
+        "netclass": "Debug",
+        "pattern": "/RESET"
+      },
+      {
+        "netclass": "Panel_Ind",
+        "pattern": "/User Input/IND*"
+      },
+      {
+        "netclass": "Panel_Key",
+        "pattern": "/User Input/BTN*"
+      },
+      {
+        "netclass": "Panel_Key",
+        "pattern": "/FOOTSWITCH"
+      },
+      {
+        "netclass": "Panel_Key",
+        "pattern": "/User Input/BLACKOUT_SW"
+      },
+      {
+        "netclass": "Panel_Key",
+        "pattern": "/User Input/ENC_BTN"
+      },
+      {
+        "netclass": "I2C",
+        "pattern": "*I2C?_*"
       }
     ]
   },
