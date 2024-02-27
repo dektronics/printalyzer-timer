@@ -7,8 +7,8 @@
   (paper "USLetter")
   (title_block
     (title "Printalyzer - Meter Probe")
-    (date "2024-02-22")
-    (rev "D")
+    (date "2024-02-27")
+    (rev "E")
     (company "Dektronics, Inc.")
     (comment 1 "Derek Konigsberg")
   )
