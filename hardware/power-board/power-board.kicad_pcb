@@ -3,7 +3,7 @@
 	(generator "pcbnew")
 	(generator_version "8.0")
 	(general
-		(thickness 1.62)
+		(thickness 1.6)
 		(legacy_teardrops no)
 	)
 	(paper "USLetter")
@@ -54,7 +54,7 @@
 			)
 			(layer "dielectric 1"
 				(type "core")
-				(thickness 1.53)
+				(thickness 1.51)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)

@@ -3,7 +3,7 @@
 	(generator "pcbnew")
 	(generator_version "8.0")
 	(general
-		(thickness 1.62)
+		(thickness 1.6)
 		(legacy_teardrops no)
 	)
 	(paper "USLetter")
@@ -48,7 +48,7 @@
 			)
 			(layer "F.Mask"
 				(type "Top Solder Mask")
-				(thickness 0.01)
+				(thickness 0.0069)
 			)
 			(layer "F.Cu"
 				(type "copper")
@@ -56,29 +56,29 @@
 			)
 			(layer "dielectric 1"
 				(type "prepreg")
-				(thickness 0.48)
+				(thickness 0.2104)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)
 			)
 			(layer "In1.Cu"
 				(type "copper")
-				(thickness 0.035)
+				(thickness 0.0152)
 			)
 			(layer "dielectric 2"
 				(type "core")
-				(thickness 0.5)
+				(thickness 1.065)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)
 			)
 			(layer "In2.Cu"
 				(type "copper")
-				(thickness 0.035)
+				(thickness 0.0152)
 			)
 			(layer "dielectric 3"
 				(type "prepreg")
-				(thickness 0.48)
+				(thickness 0.2104)
 				(material "FR4")
 				(epsilon_r 4.5)
 				(loss_tangent 0.02)
@@ -89,7 +89,7 @@
 			)
 			(layer "B.Mask"
 				(type "Bottom Solder Mask")
-				(thickness 0.01)
+				(thickness 0.0069)
 			)
 			(layer "B.Paste"
 				(type "Bottom Solder Paste")
@@ -5598,11 +5598,63 @@
 				)
 			)
 		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "f45b29da-c678-429d-b214-5f2addb8c3a7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "285db1ac-dfa2-469e-ad70-99eb69b143ed")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1a9eee67-c082-4397-b496-f3716789a169")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2cbcf9aa-8d1c-49a1-bf2d-2d04fd51c55a")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7b7ea")
 		(sheetname "Root")
 		(sheetfile "main-board.kicad_sch")
-		(attr exclude_from_pos_files)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(fp_circle
 			(center 0 0)
 			(end 3.2 0)
@@ -5803,11 +5855,63 @@
 				)
 			)
 		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bdff5e47-3397-474f-bf50-79a7d2ccc780")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d059029f-2521-46c7-8d8c-6ed1d3f1a2c9")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5a7a65f0-905e-487f-88a5-e5dc5d6e2697")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d636868d-4d46-47ea-8878-368ec21028ca")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7de48")
 		(sheetname "Root")
 		(sheetfile "main-board.kicad_sch")
-		(attr exclude_from_pos_files)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(fp_circle
 			(center 0 0)
 			(end 3.2 0)
@@ -6008,11 +6112,63 @@
 				)
 			)
 		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "68cfdb1f-2cc3-4a20-ad93-305f807e18b3")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b63ee2f2-3a42-4cc2-a631-6fcc785ef39e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "05efd34d-ed02-4ee3-b006-338e25b88a73")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d21e861b-1f01-43bc-9a9e-7d67522b3f51")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7e086")
 		(sheetname "Root")
 		(sheetfile "main-board.kicad_sch")
-		(attr exclude_from_pos_files)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(fp_circle
 			(center 0 0)
 			(end 3.2 0)
@@ -6213,11 +6369,63 @@
 				)
 			)
 		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3e6768c4-2d80-44b7-a97e-a1fa1f0c0954")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d6e5f643-062f-4cc1-a2f6-53b0e242e7f0")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "26ae6fa9-9381-4fe2-9627-04db58013abd")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "66e4f56e-f2ab-46ed-a03c-2d3eede372b9")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7e48d")
 		(sheetname "Root")
 		(sheetfile "main-board.kicad_sch")
-		(attr exclude_from_pos_files)
+		(attr exclude_from_pos_files exclude_from_bom)
 		(fp_circle
 			(center 0 0)
 			(end 3.2 0)
@@ -14064,7 +14272,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f9aefec")
+		(sheetname "Root")
+		(sheetfile "main-board.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 -0.91)
@@ -20264,7 +20475,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/da920d2f-e5b8-4e29-8f81-84533580a0f2")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -21754,7 +21968,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/8a93f3f2-f283-469c-9e9f-8871e0a44ab2")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -23457,7 +23674,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/e8ee626d-e54f-413c-9826-583e7b6b6b82")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -25234,7 +25454,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/3304989a-566c-4978-9ed2-9f1a9aa51434")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -25489,7 +25712,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/eab04b7f-bf07-481b-89d5-c7d9b2769851")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -27442,7 +27668,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/249a8158-ba0d-4742-bb3a-8709688cffa0")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -31607,7 +31836,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/cc24a4bf-d4fc-41b9-b7f8-f231924362dd")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -32118,7 +32350,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/f7aac5ee-fada-4c59-87cc-5a1627fc4bc7")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -33441,7 +33676,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/b6efd227-2a5f-4b7f-85a4-2a62927e43c9")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -35915,7 +36153,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/7d93cbca-ba75-41ef-9419-cd0c65c0efef")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -36328,7 +36569,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/27fd8475-c66a-411a-9740-4fc7a51951ee")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -39776,7 +40020,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/ce79fa42-13e3-4ff2-a825-52c00970a76e")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -40546,7 +40793,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/adaa9cf8-359b-49f2-bf93-9dabacb0600a")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -40801,7 +41051,10 @@
 				)
 			)
 		)
+		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/62b1c4c8-93ab-42bf-bed3-d673daadfde7")
+		(sheetname "Power Supply and Control")
+		(sheetfile "main-board-power.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.711252 0.91)
@@ -41319,7 +41572,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbdf8d6")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -41602,7 +41858,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbebc62")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -41885,7 +42144,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbeb435")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -42168,7 +42430,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc08730")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -42451,7 +42716,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc0f9f3")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -42734,7 +43002,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc26232")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -43017,7 +43288,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc3373d")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -43300,7 +43574,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc36f01")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -43597,6 +43874,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8b879a")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.6 18.5)
@@ -43935,6 +44214,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8b9734")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 7.6 18.5)
@@ -44273,6 +44554,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8b9eb7")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -44597,6 +44880,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bad5b")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -44921,6 +45206,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8ba80f")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -45245,6 +45532,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8ba3e3")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -45569,6 +45858,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bb404")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -45893,6 +46184,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bb964")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -46217,6 +46510,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bbe5f")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -46541,6 +46836,8 @@
 			)
 		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bc2b0")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.885 6.885)
@@ -46864,7 +47161,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "RotaryEncoder*Switch*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa5a5ad")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 6.01 6.11)
@@ -47343,7 +47643,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbe096e")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -47626,7 +47929,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc0b403")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -47910,6 +48216,8 @@
 			)
 		)
 		(path "/cdf17f15-2c70-4f12-869a-f8eb36bba672")
+		(sheetname "Root")
+		(sheetfile "main-board.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start 45.13 -11.73)
@@ -48505,7 +48813,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/e316d82e-f41a-4ecf-9e81-2583f8b3cc9e")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
@@ -48788,7 +49099,10 @@
 				(justify mirror)
 			)
 		)
+		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/60a42a0a-26aa-4d19-b2b2-ed9338ba09bc")
+		(sheetname "User Input")
+		(sheetfile "main-board-input.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -0.29 1.08)
