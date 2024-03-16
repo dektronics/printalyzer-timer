@@ -139,6 +139,7 @@ add_subdirectory(${EXTERNAL_DIR}/cmsis-dsp)
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
     USE_HAL_DRIVER
+    STM32_THREAD_SAFE_STRATEGY=4
     $<$<CONFIG:DEBUG>:DEBUG>
     APP_BUILD_DATE="${BUILD_DATE}"
     APP_BUILD_DESCRIBE="${BUILD_DESCRIBE}")
@@ -170,9 +171,7 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     fatfs
     mw_usb_host
     cmsis-dsp
-)
 
-target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
@@ -183,7 +182,8 @@ target_link_options(${EXECUTABLE} PRIVATE
     -lc
     -lm
     -Wl,--end-group
-    -Wl,--print-memory-usage)
+    -Wl,--print-memory-usage
+)
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/codesize.pl -s ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
