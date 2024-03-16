@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -95,7 +95,7 @@
 #if (USBH_USE_OS == 1)
   #include "cmsis_os.h"
   #define USBH_PROCESS_PRIO          osPriorityNormal
-  #define USBH_PROCESS_STACK_SIZE    ((uint16_t)2048)
+  #define USBH_PROCESS_STACK_SIZE    ((uint16_t)0)
 #endif /* (USBH_USE_OS == 1) */
 
 /**

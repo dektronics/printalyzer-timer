@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -24,13 +24,13 @@
   * @brief  Drive VBUS.
   * @param  state : VBUS state
   *          This parameter can be one of the these values:
-  *           - 1 : VBUS Active
-  *           - 0 : VBUS Inactive
+  *          - 1 : VBUS Active
+  *          - 0 : VBUS Inactive
   */
-void MX_DriverVbusFS(uint8_t state)
+void MX_DriverVbusHS(uint8_t state)
 {
   uint8_t data = state;
-  /* USER CODE BEGIN PREPARE_GPIO_DATA_VBUS_FS */
+  /* USER CODE BEGIN PREPARE_GPIO_DATA_VBUS_HS */
   if(state == 0)
   {
     /* Drive high Charge pump */
@@ -41,7 +41,7 @@ void MX_DriverVbusFS(uint8_t state)
     /* Drive low Charge pump */
     data = GPIO_PIN_RESET;
   }
-  /* USER CODE END PREPARE_GPIO_DATA_VBUS_FS */
-  HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,(GPIO_PinState)data);
+  /* USER CODE END PREPARE_GPIO_DATA_VBUS_HS */
+  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,(GPIO_PinState)data);
 }
 

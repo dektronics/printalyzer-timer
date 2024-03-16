@@ -5,7 +5,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -26,7 +26,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usb_host.h"
 
-void MX_DriverVbusFS(uint8_t state);
+void MX_DriverVbusHS(uint8_t state);
 
 #ifdef __cplusplus
 }
