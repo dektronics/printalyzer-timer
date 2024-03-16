@@ -1,6 +1,6 @@
 Configuration	printalyzer-timer
 STM32CubeMX 	6.10.0
-Date	02/05/2024
+Date	03/16/2024
 MCU	STM32F446RETx
 
 
@@ -168,7 +168,7 @@ STM32Cube MCU packages and embedded software packs : Copy only the necessary lib
 Generate peripheral initialization as a pair of '.c/.h' files per peripheral : No
 Backup previously generated files when re-generating : No
 Delete previously generated files when not re-generated : Yes
-Set all free pins as analog (to optimize the power consumption) : No
+Set all free pins as analog (to optimize the power consumption) : Yes
 
 
 Toolchains Settings : 
