@@ -65,8 +65,6 @@ void state_test_strip_entry(state_t *state_base, state_controller_t *controller,
     state->patches_covered = 0;
     memset(&state->elements, 0, sizeof(display_test_strip_elements_t));
 
-    led_set_on(LED_IND_TEST_STRIP);
-
     state_test_strip_prepare_elements(state, controller);
 }
 
@@ -320,8 +318,6 @@ bool state_test_strip_countdown(const exposure_state_t *exposure_state, const en
 void state_test_strip_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
-
-    led_set_off(LED_IND_TEST_STRIP);
 
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
     enlarger_control_set_state_off(&enlarger_config->control, false);

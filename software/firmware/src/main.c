@@ -532,7 +532,7 @@ void tim9_init(void)
     TIM_OC_InitTypeDef sConfigOC = {0};
 
     htim9.Instance = TIM9;
-    htim9.Init.Prescaler = 179;
+    htim9.Init.Prescaler = 119;
     htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim9.Init.Period = 999;
     htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

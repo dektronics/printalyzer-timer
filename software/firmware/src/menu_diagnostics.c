@@ -144,7 +144,6 @@ menu_result_t diagnostics_led()
     led_set_state(0);
 
     bool illum_on = false;
-    bool ind_on = false;
     int led_index = 0;
     uint8_t led_brightness = current_brightness;
     bool led_brightness_changed = false;
@@ -152,11 +151,9 @@ menu_result_t diagnostics_led()
     for (;;) {
         sprintf(buf,
             "Illumination = %s\n"
-            "  Indicators = %s\n"
             "       Index = %2d \n"
             "  Brightness = %3d",
             (illum_on ? "on " : "off"),
-            (ind_on ? "on " : "off"),
             led_index,
             led_brightness);
         display_static_list("LED Test", buf);
@@ -166,19 +163,15 @@ menu_result_t diagnostics_led()
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
                 illum_on = !illum_on;
                 led_index = 0;
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
-                ind_on = !ind_on;
-                led_index = 0;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 illum_on = false;
                 if (led_index <= 0) {
-                    led_index = 14;
+                    led_index = 24;
                 } else {
                     led_index--;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                ind_on = false;
-                if (led_index >= 14) {
+                if (led_index >= 12) {
                     led_index = 0;
                 } else {
                     led_index++;
@@ -219,57 +212,46 @@ menu_result_t diagnostics_led()
             } else {
                 led_set_off(LED_ILLUM_ALL);
             }
-            if (ind_on) {
-                led_set_on(LED_IND_ALL);
-            } else {
-                led_set_off(LED_IND_ALL);
-            }
 
             switch (led_index) {
             case 1:
-                led_set_state(LED_START);
+                led_set_state(LED_START_UPPER);
                 break;
             case 2:
-                led_set_state(LED_FOCUS);
+                led_set_state(LED_START_LOWER);
                 break;
             case 3:
-                led_set_state(LED_DEC_CONTRAST);
+                led_set_state(LED_FOCUS_UPPER);
                 break;
             case 4:
-                led_set_state(LED_DEC_EXPOSURE);
+                led_set_state(LED_FOCUS_LOWER);
                 break;
             case 5:
-                led_set_state(LED_INC_CONTRAST);
+                led_set_state(LED_DEC_CONTRAST);
                 break;
             case 6:
-                led_set_state(LED_INC_EXPOSURE);
+                led_set_state(LED_DEC_EXPOSURE);
                 break;
             case 7:
-                led_set_state(LED_ADD_ADJUSTMENT);
+                led_set_state(LED_INC_CONTRAST);
                 break;
             case 8:
-                led_set_state(LED_TEST_STRIP);
+                led_set_state(LED_INC_EXPOSURE);
                 break;
             case 9:
-                led_set_state(LED_CANCEL);
+                led_set_state(LED_ADD_ADJUSTMENT);
                 break;
             case 10:
-                led_set_state(LED_MENU);
+                led_set_state(LED_TEST_STRIP);
                 break;
             case 11:
-                led_set_state(LED_IND_ADD_ADJUSTMENT);
+                led_set_state(LED_CANCEL);
                 break;
             case 12:
-                led_set_state(LED_IND_TEST_STRIP);
-                break;
-            case 13:
-                led_set_state(LED_IND_CANCEL);
-                break;
-            case 14:
-                led_set_state(LED_IND_MENU);
+                led_set_state(LED_MENU);
                 break;
             default:
-                if (!illum_on && !ind_on) {
+                if (!illum_on) {
                     led_set_state(0);
                 }
                 break;
@@ -294,7 +276,7 @@ menu_result_t diagnostics_buzzer()
 
     char buf[256];
 
-    pam8904e_freq_t freq = PAM8904E_FREQ_DEFAULT;
+    pam8904e_freq_t freq = PAM8904E_FREQ_500HZ;
     bool freq_changed = false;
     buzzer_volume_t volume = settings_get_buzzer_volume();
     bool volume_changed = false;
@@ -306,9 +288,6 @@ menu_result_t diagnostics_buzzer()
     for (;;) {
         uint32_t freq_num;
         switch (freq) {
-        case PAM8904E_FREQ_DEFAULT:
-            freq_num = 1465;
-            break;
         case PAM8904E_FREQ_500HZ:
             freq_num = 500;
             break;
@@ -321,8 +300,20 @@ menu_result_t diagnostics_buzzer()
         case PAM8904E_FREQ_2000HZ:
             freq_num = 2000;
             break;
-        case PAM8904E_FREQ_4800HZ:
-            freq_num = 4800;
+        case PAM8904E_FREQ_2500HZ:
+            freq_num = 2500;
+            break;
+        case PAM8904E_FREQ_3000HZ:
+            freq_num = 3000;
+            break;
+        case PAM8904E_FREQ_3600HZ:
+            freq_num = 3600;
+            break;
+        case PAM8904E_FREQ_4000HZ:
+            freq_num = 4000;
+            break;
+        case PAM8904E_FREQ_4500HZ:
+            freq_num = 4500;
             break;
         default:
             freq_num = 0;
@@ -344,12 +335,12 @@ menu_result_t diagnostics_buzzer()
                 osDelay(pdMS_TO_TICKS(duration));
                 buzzer_stop();
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (freq > PAM8904E_FREQ_DEFAULT) {
+                if (freq > PAM8904E_FREQ_500HZ) {
                     freq--;
                     freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (freq < PAM8904E_FREQ_4800HZ) {
+                if (freq < PAM8904E_FREQ_4500HZ) {
                     freq++;
                     freq_changed = true;
                 }
