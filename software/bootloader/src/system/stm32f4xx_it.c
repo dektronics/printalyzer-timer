@@ -24,7 +24,6 @@
 extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
 extern SMBUS_HandleTypeDef hsmbus2;
 extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim10;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -116,13 +115,7 @@ void SysTick_Handler(void)
   */
 void EXTI9_5_IRQHandler(void)
 {
-  /* USER CODE BEGIN EXTI9_5_IRQn 0 */
-
-  /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(KEY_INT_Pin);
-  /* USER CODE BEGIN EXTI9_5_IRQn 1 */
-
-  /* USER CODE END EXTI9_5_IRQn 1 */
+    HAL_GPIO_EXTI_IRQHandler(KEY_INT_Pin);
 }
 
 /**
@@ -130,14 +123,7 @@ void EXTI9_5_IRQHandler(void)
   */
 void TIM1_UP_TIM10_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 0 */
-
-  /* USER CODE END TIM1_UP_TIM10_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  HAL_TIM_IRQHandler(&htim10);
-  /* USER CODE BEGIN TIM1_UP_TIM10_IRQn 1 */
-
-  /* USER CODE END TIM1_UP_TIM10_IRQn 1 */
+    HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
@@ -145,13 +131,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
   */
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 0 */
-
-  /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_TRG_COM_TIM11_IRQn 1 */
-
-  /* USER CODE END TIM1_TRG_COM_TIM11_IRQn 1 */
+    HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
@@ -159,13 +139,7 @@ void TIM1_TRG_COM_TIM11_IRQHandler(void)
   */
 void TIM1_CC_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM1_CC_IRQn 0 */
-
-  /* USER CODE END TIM1_CC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim1);
-  /* USER CODE BEGIN TIM1_CC_IRQn 1 */
-
-  /* USER CODE END TIM1_CC_IRQn 1 */
+    HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
@@ -173,13 +147,7 @@ void TIM1_CC_IRQHandler(void)
   */
 void I2C2_EV_IRQHandler(void)
 {
-  /* USER CODE BEGIN I2C2_EV_IRQn 0 */
-
-  /* USER CODE END I2C2_EV_IRQn 0 */
-  HAL_SMBUS_EV_IRQHandler(&hsmbus2);
-  /* USER CODE BEGIN I2C2_EV_IRQn 1 */
-
-  /* USER CODE END I2C2_EV_IRQn 1 */
+    HAL_SMBUS_EV_IRQHandler(&hsmbus2);
 }
 
 /**
@@ -187,13 +155,7 @@ void I2C2_EV_IRQHandler(void)
   */
 void I2C2_ER_IRQHandler(void)
 {
-  /* USER CODE BEGIN I2C2_ER_IRQn 0 */
-
-  /* USER CODE END I2C2_ER_IRQn 0 */
-  HAL_SMBUS_ER_IRQHandler(&hsmbus2);
-  /* USER CODE BEGIN I2C2_ER_IRQn 1 */
-
-  /* USER CODE END I2C2_ER_IRQn 1 */
+    HAL_SMBUS_ER_IRQHandler(&hsmbus2);
 }
 
 /**
@@ -201,11 +163,5 @@ void I2C2_ER_IRQHandler(void)
   */
 void OTG_HS_IRQHandler(void)
 {
-  /* USER CODE BEGIN OTG_HS_IRQn 0 */
-
-  /* USER CODE END OTG_HS_IRQn 0 */
-  HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
-  /* USER CODE BEGIN OTG_HS_IRQn 1 */
-
-  /* USER CODE END OTG_HS_IRQn 1 */
+    HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
 }

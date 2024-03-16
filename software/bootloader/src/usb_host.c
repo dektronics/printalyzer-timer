@@ -8,7 +8,7 @@
 #include "usbh_msc.h"
 #include "fatfs.h"
 
-USBH_HandleTypeDef hUsbHostFS;
+USBH_HandleTypeDef hUsbHostHS;
 static usb_app_state_t app_state = APPLICATION_IDLE;
 static bool usb_msc_mounted = false;
 
@@ -18,13 +18,13 @@ static void usb_msc_disconnect();
 
 USBH_StatusTypeDef usb_host_init(void)
 {
-    if (USBH_Init(&hUsbHostFS, usb_host_userprocess, HOST_FS) != USBH_OK) {
+    if (USBH_Init(&hUsbHostHS, usb_host_userprocess, HOST_FS) != USBH_OK) {
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_MSC_CLASS) != USBH_OK) {
         return USBH_FAIL;
     }
-    if (USBH_Start(&hUsbHostFS) != USBH_OK) {
+    if (USBH_Start(&hUsbHostHS) != USBH_OK) {
         return USBH_FAIL;
     }
     return USBH_OK;
@@ -32,12 +32,12 @@ USBH_StatusTypeDef usb_host_init(void)
 
 void usb_host_deinit(void)
 {
-    USBH_DeInit(&hUsbHostFS);
+    USBH_DeInit(&hUsbHostHS);
 }
 
 void usb_host_process(void)
 {
-    USBH_Process(&hUsbHostFS);
+    USBH_Process(&hUsbHostHS);
 }
 
 void usb_host_userprocess(USBH_HandleTypeDef *phost, uint8_t id)
