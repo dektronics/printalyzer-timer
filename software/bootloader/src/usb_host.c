@@ -18,7 +18,7 @@ static void usb_msc_disconnect();
 
 USBH_StatusTypeDef usb_host_init(void)
 {
-    if (USBH_Init(&hUsbHostHS, usb_host_userprocess, HOST_FS) != USBH_OK) {
+    if (USBH_Init(&hUsbHostHS, usb_host_userprocess, HOST_HS) != USBH_OK) {
         return USBH_FAIL;
     }
     if (USBH_RegisterClass(&hUsbHostHS, USBH_MSC_CLASS) != USBH_OK) {
