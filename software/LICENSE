@@ -146,3 +146,10 @@
  License:  One-clause BSD license (see LICENSE file for details)
 
 ******************************************************************************
+
+ CherryUSB
+ Path:     firmware/external/CherryUSB
+ Upstream: https://github.com/cherry-embedded/CherryUSB
+ License:  Apache License 2.0
+
+******************************************************************************
