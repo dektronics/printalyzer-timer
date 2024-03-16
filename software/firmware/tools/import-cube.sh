@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # This script helps with importing framework source files from an STM32CubeMX
@@ -49,7 +49,7 @@ cp "${CUBEDIR}/"*.ld "${PROJDIR}/"
 # Project core sources
 #
 mkdir -p "${PROJDIR}/src/system"
-cp "${CUBEDIR}/Core/Startup/"startup_stm32f411retx.s "${PROJDIR}/src/system/"
+cp "${CUBEDIR}/Core/Startup/"startup_stm32f446retx.s "${PROJDIR}/src/system/"
 cp "${CUBEDIR}/Core/Inc/"stm32f4xx*.h "${PROJDIR}/src/system/"
 cp "${CUBEDIR}/Core/Src/"stm32f4xx*.c "${PROJDIR}/src/system/"
 cp "${CUBEDIR}/Core/Src/"sys*.c "${PROJDIR}/src/system/"
