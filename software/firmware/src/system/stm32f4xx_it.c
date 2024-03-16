@@ -92,8 +92,8 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line[9:5] interrupts.
-  */
+ * @brief This function handles EXTI line[9:5] interrupts.
+ */
 void EXTI9_5_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(KEY_INT_Pin);
@@ -126,44 +126,45 @@ void TIM1_CC_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles TIM4 global interrupt.
-  */
+ * @brief This function handles TIM4 global interrupt.
+ */
 void TIM4_IRQHandler(void)
 {
-  HAL_TIM_IRQHandler(&htim4);
+    HAL_TIM_IRQHandler(&htim4);
 }
 
 /**
-  * @brief This function handles I2C2 event interrupt.
-  */
+ * @brief This function handles I2C2 event interrupt.
+ */
 void I2C2_EV_IRQHandler(void)
 {
-  HAL_SMBUS_EV_IRQHandler(&hsmbus2);
+    HAL_SMBUS_EV_IRQHandler(&hsmbus2);
 }
 
 /**
-  * @brief This function handles I2C2 error interrupt.
-  */
+ * @brief This function handles I2C2 error interrupt.
+ */
 void I2C2_ER_IRQHandler(void)
 {
-  HAL_SMBUS_ER_IRQHandler(&hsmbus2);
+    HAL_SMBUS_ER_IRQHandler(&hsmbus2);
 }
 
 /**
-  * @brief This function handles TIM8 break interrupt and TIM12 global interrupt.
-  */
+ * @brief This function handles TIM8 break interrupt and TIM12 global interrupt.
+ */
 void TIM8_BRK_TIM12_IRQHandler(void)
 {
-  HAL_TIM_IRQHandler(&htim8);
+    HAL_TIM_IRQHandler(&htim8);
 }
 
 /**
-  * @brief This function handles TIM8 capture compare interrupt.
-  */
+ * @brief This function handles TIM8 capture compare interrupt.
+ */
 void TIM8_CC_IRQHandler(void)
 {
-  HAL_TIM_IRQHandler(&htim8);
+    HAL_TIM_IRQHandler(&htim8);
 }
+
 /**
  * @brief This function handles DMA2 stream6 global interrupt.
  */
@@ -181,9 +182,9 @@ void USART6_IRQHandler(void)
 }
 
 /**
-  * @brief This function handles USB On The Go HS global interrupt.
-  */
+ * @brief This function handles USB On The Go HS global interrupt.
+ */
 void OTG_HS_IRQHandler(void)
 {
-  HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
+    HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
 }

@@ -32,9 +32,9 @@
 /* Peripheral handles initialized before this task is started */
 extern UART_HandleTypeDef huart1;
 extern I2C_HandleTypeDef hi2c1;
-extern I2C_HandleTypeDef hi2c2;
+extern SMBUS_HandleTypeDef hsmbus2;
 extern SPI_HandleTypeDef hspi1;
-extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim9;
@@ -297,8 +297,8 @@ void main_task_display_init()
 {
     const u8g2_display_handle_t display_handle = {
         .hspi = &hspi1,
-        .reset_gpio_port = DISP_RES_GPIO_Port,
-        .reset_gpio_pin = DISP_RES_Pin,
+        .reset_gpio_port = DISP_RESET_GPIO_Port,
+        .reset_gpio_pin = DISP_RESET_Pin,
         .cs_gpio_port = DISP_CS_GPIO_Port,
         .cs_gpio_pin = DISP_CS_Pin,
         .dc_gpio_port = DISP_DC_GPIO_Port,
@@ -317,7 +317,7 @@ void main_task_display_init()
 void main_task_led_init()
 {
     const stp16cpc26_handle_t led_handle = {
-        .hspi = &hspi2,
+        .hspi = &hspi3,
         .le_gpio_port = LED_LE_GPIO_Port,
         .le_gpio_pin = LED_LE_Pin,
         .oe_tim = &htim3,

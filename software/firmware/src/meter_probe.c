@@ -17,6 +17,12 @@
 #include "keypad.h"
 #include "util.h"
 
+/*
+ * TODO The entire meter probe interface needs to be rewritten for the new hardware
+ * Until this code is updated, it will be disabled in a kludgy way to get
+ * the rest of the firmware to compile.
+ */
+
 extern TIM_HandleTypeDef htim3;
 
 /**
@@ -108,7 +114,8 @@ typedef struct {
 } tsl2585_fifo_data_t;
 
 /* Global I2C handle for the meter probe */
-extern I2C_HandleTypeDef hi2c2;
+//XXX Not initializing this variable, so any actual attempts to use will crash
+/*extern*/ I2C_HandleTypeDef hi2c2;
 
 static bool meter_probe_initialized = false;
 static bool meter_probe_started = false;
@@ -271,6 +278,7 @@ bool meter_probe_is_started()
 
 osStatus_t meter_probe_start()
 {
+#if 0
     if (!meter_probe_initialized || meter_probe_started) { return osErrorResource; }
 
     osStatus_t result = osOK;
@@ -281,6 +289,8 @@ osStatus_t meter_probe_start()
     osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
     return result;
+#endif
+    return osErrorResource;
 }
 
 osStatus_t meter_probe_control_start()
@@ -290,7 +300,7 @@ osStatus_t meter_probe_control_start()
     log_d("meter_probe_control_start");
 
     /* Apply power to the meter probe port */
-    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
+    //HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
 
     /* Brief delay to ensure power has stabilized */
     osDelay(10);
@@ -399,7 +409,7 @@ osStatus_t meter_probe_control_stop()
     keypad_disable_meter_probe();
 
     /* Remove power from the meter probe port */
-    HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
+    //HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
 
     /* Reset state variables */
     meter_probe_started = false;

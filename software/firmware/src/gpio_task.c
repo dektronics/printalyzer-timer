@@ -40,10 +40,7 @@ void gpio_task_run(void *argument)
     /* Start the GPIO interrupt handling event loop */
     for (;;) {
         if(osMessageQueueGet(gpio_event_queue, &gpio_pin, NULL, portMAX_DELAY) == osOK) {
-            if (gpio_pin == USB_VBUS_OC_Pin) {
-                /* USB VBUS OverCurrent */
-                log_d("USB VBUS OverCurrent interrupt");
-            } else if(gpio_pin == KEY_INT_Pin) {
+            if(gpio_pin == KEY_INT_Pin) {
                 /* Keypad controller interrupt */
                 keypad_int_event_handler();
             } else if (gpio_pin == ENC_CH1_Pin) {

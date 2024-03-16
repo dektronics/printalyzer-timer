@@ -30,7 +30,7 @@ typedef enum {
     USB_SERIAL_DRIVER_SLCOM
 } usb_serial_driver_t;
 
-USBH_HandleTypeDef hUsbHostFS;
+USBH_HandleTypeDef hUsbHostHS;
 static usb_app_state_t app_state = APPLICATION_IDLE;
 static uint8_t last_active_class = 0;
 static bool usb_msc_mounted = false;
@@ -104,35 +104,35 @@ USBH_StatusTypeDef usb_host_init(void)
         return USBH_FAIL;
     }
 
-    if (USBH_Init(&hUsbHostFS, usb_host_userprocess, HOST_FS) != USBH_OK) {
+    if (USBH_Init(&hUsbHostHS, usb_host_userprocess, HOST_HS) != USBH_OK) {
         log_e("USBH_Init fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_CDC_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_CDC_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass CDC fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_MSC_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_MSC_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass MSC fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_HID_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_HID_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass HID fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_FTDI_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_VENDOR_SERIAL_FTDI_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass VENDOR_SERIAL_FTDI fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_PLCOM_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_VENDOR_SERIAL_PLCOM_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass VENDOR_SERIAL_PLCOM fail");
         return USBH_FAIL;
     }
-    if (USBH_RegisterClass(&hUsbHostFS, USBH_VENDOR_SERIAL_SLCOM_CLASS) != USBH_OK) {
+    if (USBH_RegisterClass(&hUsbHostHS, USBH_VENDOR_SERIAL_SLCOM_CLASS) != USBH_OK) {
         log_e("USBH_RegisterClass VENDOR_SERIAL_SLCOM fail");
         return USBH_FAIL;
     }
-    if (USBH_Start(&hUsbHostFS) != USBH_OK) {
+    if (USBH_Start(&hUsbHostHS) != USBH_OK) {
         log_e("USBH_Start fail");
         return USBH_FAIL;
     }
@@ -822,13 +822,13 @@ USBH_StatusTypeDef usb_serial_set_line_coding(const usb_serial_line_coding_t *li
     /* If serial is already attached, change active settings */
     switch (usb_serial_active_driver) {
     case USB_SERIAL_DRIVER_FTDI:
-        status = usb_serial_ftdi_set_line_coding(&hUsbHostFS, line_coding);
+        status = usb_serial_ftdi_set_line_coding(&hUsbHostHS, line_coding);
         break;
     case USB_SERIAL_DRIVER_PLCOM:
-        status = usb_serial_plcom_set_line_coding(&hUsbHostFS, line_coding);
+        status = usb_serial_plcom_set_line_coding(&hUsbHostHS, line_coding);
         break;
     case USB_SERIAL_DRIVER_SLCOM:
-        status = usb_serial_slcom_set_line_coding(&hUsbHostFS, line_coding);
+        status = usb_serial_slcom_set_line_coding(&hUsbHostHS, line_coding);
         break;
     case USB_SERIAL_DRIVER_NONE:
     default:
@@ -875,16 +875,16 @@ USBH_StatusTypeDef usb_serial_transmit(const uint8_t *buf, size_t length)
     do {
         switch (usb_serial_active_driver) {
         case USB_SERIAL_DRIVER_CDC:
-            status = USBH_CDC_Transmit(&hUsbHostFS, (uint8_t *)buf, length);
+            status = USBH_CDC_Transmit(&hUsbHostHS, (uint8_t *)buf, length);
             break;
         case USB_SERIAL_DRIVER_FTDI:
-            status = USBH_FTDI_Transmit(&hUsbHostFS, buf, length);
+            status = USBH_FTDI_Transmit(&hUsbHostHS, buf, length);
             break;
         case USB_SERIAL_DRIVER_PLCOM:
-            status = USBH_PLCOM_Transmit(&hUsbHostFS, buf, length);
+            status = USBH_PLCOM_Transmit(&hUsbHostHS, buf, length);
             break;
         case USB_SERIAL_DRIVER_SLCOM:
-            status = USBH_SLCOM_Transmit(&hUsbHostFS, buf, length);
+            status = USBH_SLCOM_Transmit(&hUsbHostHS, buf, length);
             break;
         case USB_SERIAL_DRIVER_NONE:
         default:
