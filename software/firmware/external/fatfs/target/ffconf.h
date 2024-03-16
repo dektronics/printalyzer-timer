@@ -4,7 +4,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -23,7 +23,7 @@
 #include "usbh_msc.h"
 #include "cmsis_os.h" /* _FS_REENTRANT set to 1 and CMSIS API chosen */
 /* Handle for USB Host */
-#define hUSB_Host hUsbHostFS
+#define hUSB_Host hUsbHostHS
 
 /*-----------------------------------------------------------------------------/
 / Function Configurations
@@ -218,7 +218,7 @@
 #define _FS_NORTC   0
 #define _NORTC_MON  1
 #define _NORTC_MDAY 1
-#define _NORTC_YEAR 2023
+#define _NORTC_YEAR 2024
 /* The option _FS_NORTC switches timestamp functiton. If the system does not have
 /  any RTC function or valid timestamp is not needed, set _FS_NORTC = 1 to disable
 /  the timestamp function. All objects modified by FatFs will have a fixed timestamp
@@ -243,7 +243,7 @@
 
 #define _USE_MUTEX       1 /* 0:Disable or 1:Enable */
 #define _FS_TIMEOUT      1000 /* Timeout period in unit of time ticks */
-#define _SYNC_t          osMutexId_t
+#define _SYNC_t          osSemaphoreId_t
 /* The option _FS_REENTRANT switches the re-entrancy (thread safe) of the FatFs
 /  module itself. Note that regardless of this option, file access to different
 /  volume is always re-entrant and volume control functions, f_mount(), f_mkfs()

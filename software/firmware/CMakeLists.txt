@@ -49,15 +49,15 @@ set(EXTERNAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
 
 # MCU Information
 set(MCU_FAMILY STM32F4xx)
-set(MCU_MODEL STM32F411xE)
+set(MCU_MODEL STM32F446xx)
 set(CPU_PARAMETERS
     -mcpu=cortex-m4
     -mthumb
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${PROJECT_DIR}/system/startup_stm32f411retx.s)
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F411RETX_FLASH.ld)
+set(STARTUP_SCRIPT ${PROJECT_DIR}/system/startup_stm32f446retx.s)
+set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F446RETX_FLASH.ld)
 
 add_compile_options(
     ${CPU_PARAMETERS}

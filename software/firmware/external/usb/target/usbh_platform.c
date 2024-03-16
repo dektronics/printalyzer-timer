@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2024 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -20,13 +20,13 @@
 #include "usbh_platform.h"
 
 /**
- * @brief  Drive VBUS.
- * @param  state : VBUS state
- *          This parameter can be one of the these values:
- *           - 1 : VBUS Active
- *           - 0 : VBUS Inactive
- */
-void MX_DriverVbusFS(uint8_t state)
+  * @brief  Drive VBUS.
+  * @param  state : VBUS state
+  *          This parameter can be one of the these values:
+  *          - 1 : VBUS Active
+  *          - 0 : VBUS Inactive
+  */
+void MX_DriverVbusHS(uint8_t state)
 {
     uint8_t data = state;
     if (state == 0) {
@@ -37,6 +37,6 @@ void MX_DriverVbusFS(uint8_t state)
         data = GPIO_PIN_RESET;
     }
 
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, (GPIO_PinState)data);
+  HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13,(GPIO_PinState)data);
 }
 

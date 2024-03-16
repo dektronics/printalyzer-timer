@@ -1,11 +1,11 @@
 /**
  ******************************************************************************
- * @file    stm32f4xx_hal_timebase_TIM.c
+ * @file    stm32f4xx_hal_timebase_tim.c
  * @brief   HAL time base based on the hardware TIM.
  ******************************************************************************
  * @attention
  *
- * Copyright (c) 2023 STMicroelectronics.
+ * Copyright (c) 2024 STMicroelectronics.
  * All rights reserved.
  *
  * This software is licensed under terms that can be found in the LICENSE file
@@ -45,7 +45,7 @@ HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
     HAL_RCC_GetClockConfig(&clkconfig, &pFLatency);
 
     /* Compute TIM11 clock */
-    uwTimclock = HAL_RCC_GetPCLK2Freq();
+    uwTimclock = 2*HAL_RCC_GetPCLK2Freq();
 
     /* Compute the prescaler value to have TIM11 counter clock equal to 1MHz */
     uwPrescalerValue = (uint32_t) ((uwTimclock / 1000000U) - 1U);
