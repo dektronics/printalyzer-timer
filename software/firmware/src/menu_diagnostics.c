@@ -20,7 +20,7 @@
 #include "illum_controller.h"
 #include "enlarger_control.h"
 #include "densitometer.h"
-#include "usb_host.h"
+//#include "usb_host.h"
 #include "dmx.h"
 #include "util.h"
 
@@ -678,6 +678,9 @@ menu_result_t diagnostics_dmx512()
 
 menu_result_t diagnostics_densitometer()
 {
+    //TODO Rewrite for new USB host stack
+    return MENU_OK;
+#if 0
     char buf[512];
     densitometer_result_t dens_result = DENSITOMETER_RESULT_UNKNOWN;
     densitometer_reading_t reading;
@@ -729,6 +732,7 @@ menu_result_t diagnostics_densitometer()
         }
     }
     return MENU_OK;
+#endif
 }
 
 menu_result_t diagnostics_screenshot_mode()

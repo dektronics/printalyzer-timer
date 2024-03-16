@@ -10,13 +10,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <usbh_hid_keybd.h>
+//#include <usbh_hid_keybd.h>
 
 #define LOG_TAG "keypad"
 #define LOG_LVL ELOG_LVL_INFO
 #include <elog.h>
 
 #include "tca8418.h"
+#include "util.h"
 
 #define KEYPAD_INDEX_MAX       14
 #define KEYPAD_REPEAT_DELAY_MS 600
@@ -673,6 +674,8 @@ keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event)
     uint8_t keycode = (uint8_t)((event->keypad_state & 0xFF00) >> 8);
     keypad_key_t keypad_key = 0;
 
+#if 0
+    //TODO Rewrite for new USB host stack
     switch (keycode) {
     case KEY_UPARROW:
     case KEY_KEYPAD_8_UP_ARROW:
@@ -704,6 +707,7 @@ keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event)
     default:
         break;
     }
+#endif
 
     return keypad_key;
 }

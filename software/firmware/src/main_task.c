@@ -14,7 +14,7 @@
 #include <elog.h>
 
 #include "exposure_timer.h"
-#include "usb_host.h"
+//#include "usb_host.h"
 #include "display.h"
 #include "led.h"
 #include "gpio_task.h"
@@ -229,6 +229,8 @@ void main_task_run(void *argument)
     illum_controller_refresh();
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
+#if 0
+    //TODO Rewrite for new USB host stack
     /*
      * Initialize the USB host framework.
      * This framework does have a dedicated management task, but it is
@@ -237,6 +239,7 @@ void main_task_run(void *argument)
     if (usb_host_init() != USBH_OK) {
         log_e("Unable to initialize USB host\r\n");
     }
+#endif
 
     /* Startup beep */
     buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);

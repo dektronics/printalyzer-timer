@@ -11,7 +11,7 @@
 #include "step_wedge.h"
 #include "display.h"
 #include "util.h"
-#include "usb_host.h"
+//#include "usb_host.h"
 #include "densitometer.h"
 
 static int calibration_status(const step_wedge_t *wedge);
@@ -298,10 +298,13 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
                 "of the step wedge.\n",
                 option);
             uint16_t value_sel = lroundf(step_wedge_get_density(wedge, option - 1) * 100);
-            bool dens_enable = usb_serial_is_attached();
+            //TODO Rewrite for new USB host stack
+            bool dens_enable = false; //XXX usb_serial_is_attached();
+#if 0
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
+#endif
 
             patch_option = display_input_value_f16_data_cb(
                 patch_title_buf, patch_buf,

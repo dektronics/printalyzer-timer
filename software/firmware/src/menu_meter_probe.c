@@ -20,7 +20,7 @@
 #include "enlarger_control.h"
 #include "util.h"
 #include "json_util.h"
-#include "usb_host.h"
+//#include "usb_host.h"
 #include "core_json.h"
 #include "file_picker.h"
 
@@ -216,7 +216,8 @@ menu_result_t meter_probe_sensor_calibration_import()
     uint8_t option;
     meter_probe_settings_t imported_settings = {0};
 
-    if (!usb_msc_is_mounted()) {
+    //TODO Rewrite for new USB host stack
+    if (true /*XXX !usb_msc_is_mounted()*/) {
         option = display_message(
                 "Import from USB device",
                 NULL,
@@ -607,7 +608,8 @@ menu_result_t meter_probe_sensor_calibration_export()
     char filename[32];
     uint8_t option;
 
-    if (!usb_msc_is_mounted()) {
+    //TODO Rewrite for new USB host stack
+    if (true /*XXX !usb_msc_is_mounted()*/) {
         option = display_message(
                 "Export to USB device",
                 NULL,

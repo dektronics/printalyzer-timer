@@ -14,7 +14,7 @@
 
 #include "display.h"
 #include "settings.h"
-#include "usb_host.h"
+//#include "usb_host.h"
 #include "core_json.h"
 #include "util.h"
 #include "json_util.h"
@@ -96,7 +96,8 @@ menu_result_t menu_import_config(state_controller_t *controller)
     uint8_t option;
     bool reload_paper = false;
 
-    if (!usb_msc_is_mounted()) {
+    //TODO Rewrite for new USB host stack
+    if (true /*XXX !usb_msc_is_mounted()*/) {
         option = display_message(
                 "Import from USB device",
                 NULL,
@@ -897,7 +898,8 @@ menu_result_t menu_export_config()
     char filename[32];
     uint8_t option;
 
-    if (!usb_msc_is_mounted()) {
+    //TODO Rewrite for new USB host stack
+    if (true /*XXX !usb_msc_is_mounted()*/) {
         option = display_message(
                 "Export to USB device",
                 NULL,

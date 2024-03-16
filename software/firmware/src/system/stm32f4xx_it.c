@@ -19,7 +19,6 @@
 #include "stm32f4xx_it.h"
 #include "board_config.h"
 
-extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
 extern SMBUS_HandleTypeDef hsmbus2;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim4;
@@ -186,5 +185,5 @@ void USART6_IRQHandler(void)
  */
 void OTG_HS_IRQHandler(void)
 {
-    HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
+    //TODO Rewrite for new USB host stack
 }

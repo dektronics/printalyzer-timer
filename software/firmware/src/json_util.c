@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <string.h>
 #include <limits.h>
 #include <math.h>
 #include <errno.h>

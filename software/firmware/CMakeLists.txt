@@ -131,8 +131,8 @@ add_subdirectory(${EXTERNAL_DIR}/u8g2)
 add_subdirectory(${EXTERNAL_DIR}/fatfs)
 target_include_directories(fatfs PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 
-add_subdirectory(${EXTERNAL_DIR}/usb)
-target_include_directories(mw_usb_host PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+#add_subdirectory(${EXTERNAL_DIR}/usb)
+#target_include_directories(mw_usb_host PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 
 add_subdirectory(${EXTERNAL_DIR}/cmsis-dsp)
 
@@ -169,7 +169,7 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     easylogger
     u8g2
     fatfs
-    mw_usb_host
+#   mw_usb_host
     cmsis-dsp
 
     -T${MCU_LINKER_SCRIPT}

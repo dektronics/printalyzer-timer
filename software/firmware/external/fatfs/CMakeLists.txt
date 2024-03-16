@@ -6,7 +6,7 @@ add_library(fatfs
     src/ff.c
     src/option/ccsbcs.c
     src/option/syscall.c
-    target/usbh_diskio.c
+    #target/usbh_diskio.c
 )
 
 target_include_directories(fatfs PUBLIC
@@ -18,5 +18,5 @@ target_link_libraries(fatfs PRIVATE
     cmsis
     hal
     freertos
-    mw_usb_host
+    #mw_usb_host
 )
