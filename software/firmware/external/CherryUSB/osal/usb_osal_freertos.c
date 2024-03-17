@@ -153,7 +153,21 @@ void usb_osal_timer_delete(struct usb_osal_timer *timer)
 
 void usb_osal_timer_start(struct usb_osal_timer *timer)
 {
-    xTimerStart(timer->timer, 0);
+    /* XXX (DK)
+     * This function gets called from inside an ISR in the latest master,
+     * and has had to be modified to handle the case correctly.
+     * Hopefully this is a temporary kludge until upstream notices
+     * the bug and fixes it for real.
+     */
+    if (xPortIsInsideInterrupt()) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xTimerStartFromISR(timer->timer, &xHigherPriorityTaskWoken);
+        if (xHigherPriorityTaskWoken != pdFALSE) {
+            portYIELD_FROM_ISR(pdFALSE)
+        }
+    } else {
+        xTimerStart(timer->timer, 0);
+    }
 }
 
 void usb_osal_timer_stop(struct usb_osal_timer *timer)
