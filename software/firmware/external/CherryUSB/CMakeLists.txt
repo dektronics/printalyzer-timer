@@ -33,15 +33,17 @@ if(CONFIG_CHERRYUSB_DEVICE)
 endif()
 
 if(CONFIG_CHERRYUSB_HOST)
-    target_sources(cherryusb PRIVATE 
-    core/usbh_core.c
-    class/hub/usbh_hub.c
-    class/cdc/usbh_cdc_acm.c
-    class/hid/usbh_hid.c
-    class/msc/usbh_msc.c
-    class/audio/usbh_audio.c
-    class/video/usbh_video.c
-    class/wireless/usbh_rndis.c
+    target_sources(cherryusb PRIVATE
+        core/usbh_core.c
+        class/hub/usbh_hub.c
+        class/cdc/usbh_cdc_acm.c
+        class/hid/usbh_hid.c
+        class/msc/usbh_msc.c
+        port/dwc2/usb_hc_dwc2.c
+        port/dwc2/usb_glue_st.c
+        #class/audio/usbh_audio.c
+        #class/video/usbh_video.c
+        #class/wireless/usbh_rndis.c
     )
 
 endif()

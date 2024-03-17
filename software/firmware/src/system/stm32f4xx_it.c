@@ -185,5 +185,6 @@ void USART6_IRQHandler(void)
  */
 void OTG_HS_IRQHandler(void)
 {
-    //TODO Rewrite for new USB host stack
+    extern void USBH_IRQHandler(uint8_t busid);
+    USBH_IRQHandler(0);
 }

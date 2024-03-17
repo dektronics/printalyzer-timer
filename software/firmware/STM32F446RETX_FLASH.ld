@@ -93,6 +93,10 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
+    __usbh_class_info_start__ = .;
+    KEEP(*(.usbh_class_info)) /* section information for usbh class */
+    __usbh_class_info_end__ = .;
+    . = ALIGN(4);
   } >FLASH
 
   .ARM.extab : {
