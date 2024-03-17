@@ -13,7 +13,8 @@
 
 /* ================ USB common Configuration ================ */
 
-#define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
+extern void elog_raw(const char *format, ...);
+#define CONFIG_USB_PRINTF(...) elog_raw(__VA_ARGS__)
 
 #define usb_malloc(size) pvPortMalloc(size)
 #define usb_free(ptr)    vPortFree(ptr)
