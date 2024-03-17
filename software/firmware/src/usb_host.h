@@ -5,4 +5,6 @@
 
 bool usb_host_init();
 
-#endif // USB_HOST_H
+bool usb_hub_init();
+
+#endif /* USB_HOST_H */

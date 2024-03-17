@@ -235,7 +235,11 @@ void main_task_run(void *argument)
      * not handled as part of the application code.
      */
     if (!usb_host_init()) {
-        log_e("Unable to initialize USB host\r\n");
+        log_e("Unable to initialize USB host");
+    } else {
+        if (!usb_hub_init()) {
+            log_e("Unable to initialize USB hub");
+        }
     }
 
     /* Startup beep */
