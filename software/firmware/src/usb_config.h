@@ -120,7 +120,7 @@ extern void elog_raw(const char *format, ...);
 #define CONFIG_USBHOST_PSC_PRIO 0
 #endif
 #ifndef CONFIG_USBHOST_PSC_STACKSIZE
-#define CONFIG_USBHOST_PSC_STACKSIZE 2048
+#define CONFIG_USBHOST_PSC_STACKSIZE 4096
 #endif
 
 //#define CONFIG_USBHOST_GET_STRING_DESC

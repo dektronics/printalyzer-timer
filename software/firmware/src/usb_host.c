@@ -4,6 +4,9 @@
 
 #include "stm32f4xx.h"
 #include "usbh_core.h"
+#include "usbh_msc.h"
+#include "usbh_hid.h"
+#include "usb_hid_keyboard.h"
 #include "board_config.h"
 
 #define LOG_TAG "usb_host"
@@ -15,10 +18,19 @@ extern void Error_Handler(void);
 
 static const uint8_t USB2422_ADDRESS = 0x2C << 1;
 
+typedef enum {
+    HID_DEVICE_UNKNOWN = 0,
+    HID_DEVICE_KEYBOARD,
+    HID_DEVICE_MOUSE,
+    HID_DEVICE_METER_PROBE
+} hid_device_type_t;
+
 static HAL_StatusTypeDef smbus_master_block_write(
     SMBUS_HandleTypeDef *hsmbus,
     uint8_t dev_address, uint8_t mem_address,
     const uint8_t *data, uint8_t len);
+
+static hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class);
 
 void usb_hc_low_level_init(struct usbh_bus *bus)
 {
@@ -182,4 +194,82 @@ HAL_StatusTypeDef smbus_master_block_write(
     }
 
     return HAL_OK;
+}
+
+void usbh_msc_run(struct usbh_msc *msc_class)
+{
+    log_d("usbh_msc_run");
+}
+
+void usbh_msc_stop(struct usbh_msc *msc_class)
+{
+    log_d("usbh_msc_stop");
+}
+
+hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class)
+{
+    if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x132C) {
+        return HID_DEVICE_METER_PROBE;
+    } else {
+        /* Grab the interface descriptor */
+        struct usb_interface_descriptor *intf_desc;
+        intf_desc = &hid_class->hport->config.intf[hid_class->intf].altsetting[0].intf_desc;
+
+        if (intf_desc->bInterfaceSubClass == HID_SUBCLASS_BOOTIF &&
+            intf_desc->bInterfaceProtocol == HID_PROTOCOL_KEYBOARD) {
+            return HID_DEVICE_KEYBOARD;
+        } else if (intf_desc->bInterfaceSubClass == HID_SUBCLASS_BOOTIF &&
+                   intf_desc->bInterfaceProtocol == HID_PROTOCOL_MOUSE) {
+            return HID_DEVICE_MOUSE;
+        }
+    }
+    return HID_DEVICE_UNKNOWN;
+}
+
+void usbh_hid_run(struct usbh_hid *hid_class)
+{
+    log_d("usbh_hid_run");
+
+    hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
+
+    switch (device_type) {
+    case HID_DEVICE_METER_PROBE:
+        log_d("Meter probe attached (intf=%d)", hid_class->intf);
+        //TODO add meter probe support
+        break;
+    case HID_DEVICE_KEYBOARD:
+        log_d("Keyboard attached");
+        usbh_hid_keyboard_attached(hid_class);
+        break;
+    case HID_DEVICE_MOUSE:
+        log_d("Mouse attached");
+        /* Mice are not supported */
+        break;
+    default:
+        break;
+    }
+}
+
+void usbh_hid_stop(struct usbh_hid *hid_class)
+{
+    log_d("usbh_hid_stop");
+
+    hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
+
+    switch (device_type) {
+    case HID_DEVICE_METER_PROBE:
+        log_d("Meter probe detached (intf=%d)", hid_class->intf);
+        //TODO add meter probe support
+        break;
+    case HID_DEVICE_KEYBOARD:
+        log_d("Keyboard detached");
+        usbh_hid_keyboard_detached(hid_class);
+        break;
+    case HID_DEVICE_MOUSE:
+        log_d("Mouse detached");
+        /* Mice are not supported */
+        break;
+    default:
+        break;
+    }
 }

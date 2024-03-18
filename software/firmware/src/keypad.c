@@ -10,11 +10,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-//#include <usbh_hid_keybd.h>
-
 #define LOG_TAG "keypad"
 #define LOG_LVL ELOG_LVL_INFO
 #include <elog.h>
+
+#include <usb_hid.h>
 
 #include "tca8418.h"
 #include "util.h"
@@ -674,40 +674,37 @@ keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event)
     uint8_t keycode = (uint8_t)((event->keypad_state & 0xFF00) >> 8);
     keypad_key_t keypad_key = 0;
 
-#if 0
-    //TODO Rewrite for new USB host stack
     switch (keycode) {
-    case KEY_UPARROW:
-    case KEY_KEYPAD_8_UP_ARROW:
+    case HID_KBD_USAGE_UP:
+    case HID_KBD_USAGE_KPDUP:
         keypad_key = KEYPAD_INC_EXPOSURE;
         break;
-    case KEY_DOWNARROW:
-    case KEY_KEYPAD_2_DOWN_ARROW:
+    case HID_KBD_USAGE_DOWN:
+    case HID_KBD_USAGE_KPDDOWN:
         keypad_key = KEYPAD_DEC_EXPOSURE;
         break;
-    case KEY_LEFTARROW:
-    case KEY_KEYPAD_4_LEFT_ARROW:
+    case HID_KBD_USAGE_LEFT:
+    case HID_KBD_USAGE_KPDLEFT:
         keypad_key = KEYPAD_DEC_CONTRAST;
         break;
-    case KEY_RIGHTARROW:
-    case KEY_KEYPAD_6_RIGHT_ARROW:
+    case HID_KBD_USAGE_RIGHT:
+    case HID_KBD_USAGE_KPDRIGHT:
         keypad_key = KEYPAD_INC_CONTRAST;
         break;
-    case KEY_A:
-    case KEY_EQUAL_PLUS:
-    case KEY_KEYPAD_PLUS:
+    case HID_KBD_USAGE_A:
+    case HID_KBD_USAGE_PLUS:
+    case HID_KBD_USAGE_KPDPLUS:
         keypad_key = KEYPAD_ADD_ADJUSTMENT;
         break;
-    case KEY_F1:
+    case HID_KBD_USAGE_F1:
         keypad_key = KEYPAD_MENU;
         break;
-    case KEY_ESCAPE:
+    case HID_KBD_USAGE_ESCAPE:
         keypad_key = KEYPAD_CANCEL;
         break;
     default:
         break;
     }
-#endif
 
     return keypad_key;
 }
