@@ -116,7 +116,8 @@ int usbh_hid_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t
     setup->wIndex = 0;
     setup->wLength = buflen;
 
-    return usbh_control_transfer(hid_class->hport, setup, buffer);
+    memcpy(g_hid_buf, buffer, buflen);
+    return usbh_control_transfer(hid_class->hport, setup, g_hid_buf);
 }
 
 int usbh_hid_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen)
@@ -129,7 +130,8 @@ int usbh_hid_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t
     setup->wIndex = 0;
     setup->wLength = buflen;
 
-    return usbh_control_transfer(hid_class->hport, setup, buffer);
+    memcpy(g_hid_buf, buffer, buflen);
+    return usbh_control_transfer(hid_class->hport, setup, g_hid_buf);
 }
 
 int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)

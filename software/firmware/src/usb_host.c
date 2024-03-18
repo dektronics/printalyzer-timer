@@ -76,6 +76,9 @@ bool usb_host_init()
     /* Make sure the USB2422 hub is in reset, and the VBUS signal is low */
     HAL_GPIO_WritePin(GPIOB, USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
 
+    /* Initialize class drivers */
+    usbh_hid_keyboard_init();
+
     /*
      * May need to modify this library function so the error code
      * is actually returned. It isn't, so not handling it.
