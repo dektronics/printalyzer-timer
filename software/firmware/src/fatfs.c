@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <ff.h>
 #include <ff_gen_drv.h>
-//#include <usbh_diskio.h>
+#include <usbh_diskio.h>
 
 #define LOG_TAG "fatfs"
 #include <elog.h>
@@ -16,11 +16,8 @@ static FATFS usbh_fatfs;  /* File system object for USBH logical drive */
 static bool fatfs_initialized = false;
 static bool fatfs_mounted = false;
 
-//TODO Rewrite for new USB host stack
-
 void fatfs_init(void)
 {
-#if 0
     memset(&usbh_fatfs, 0, sizeof(FATFS));
     fatfs_initialized = false;
     fatfs_mounted = false;
@@ -31,12 +28,10 @@ void fatfs_init(void)
         return;
     }
     fatfs_initialized = true;
-#endif
 }
 
 HAL_StatusTypeDef fatfs_mount()
 {
-#if 0
     if (!fatfs_initialized || fatfs_mounted) {
         return HAL_ERROR;
     }
@@ -50,13 +45,10 @@ HAL_StatusTypeDef fatfs_mount()
     }
     fatfs_mounted = true;
     return HAL_OK;
-#endif
-    return HAL_ERROR;
 }
 
 void fatfs_unmount()
 {
-#if 0
     if (!fatfs_initialized || !fatfs_mounted) {
         return;
     }
@@ -64,5 +56,4 @@ void fatfs_unmount()
     f_mount(0, (TCHAR const*)usbh_path, 0);
     memset(&usbh_fatfs, 0, sizeof(FATFS));
     fatfs_mounted = false;
-#endif
 }

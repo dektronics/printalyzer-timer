@@ -14,17 +14,12 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USBH_DISKIO_H
 #define __USBH_DISKIO_H
 
-/* Includes ------------------------------------------------------------------*/
-#include "usbh_core.h"
-#include "usbh_msc.h"
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
+#include "ff_gen_drv.h"
+
 extern const Diskio_drvTypeDef  USBH_Driver;
 
 #endif /* __USBH_DISKIO_H */

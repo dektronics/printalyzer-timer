@@ -20,7 +20,7 @@
 #include "illum_controller.h"
 #include "enlarger_control.h"
 #include "densitometer.h"
-//#include "usb_host.h"
+#include "usb_host.h"
 #include "dmx.h"
 #include "util.h"
 

@@ -1,12 +1,14 @@
 #include "usb_host.h"
 
 #include <cmsis_os.h>
+#include <ff.h>
 
 #include "stm32f4xx.h"
 #include "usbh_core.h"
 #include "usbh_msc.h"
 #include "usbh_hid.h"
 #include "usb_hid_keyboard.h"
+#include "usb_msc_fatfs.h"
 #include "board_config.h"
 
 #define LOG_TAG "usb_host"
@@ -91,6 +93,9 @@ bool usb_host_init()
 
     /* Initialize class drivers */
     if (!usbh_hid_keyboard_init()) {
+        return false;
+    }
+    if (!usbh_msc_fatfs_init()) {
         return false;
     }
 
@@ -214,14 +219,25 @@ HAL_StatusTypeDef smbus_master_block_write(
     return HAL_OK;
 }
 
+bool usb_msc_is_mounted()
+{
+    return usbh_msc_is_mounted();
+}
+
 void usbh_msc_run(struct usbh_msc *msc_class)
 {
     log_d("usbh_msc_run");
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    usbh_msc_fatfs_attached(msc_class);
+    osMutexRelease(usb_attach_mutex);
 }
 
 void usbh_msc_stop(struct usbh_msc *msc_class)
 {
     log_d("usbh_msc_stop");
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    usbh_msc_fatfs_detached(msc_class);
+    osMutexRelease(usb_attach_mutex);
 }
 
 hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class)

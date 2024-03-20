@@ -11,7 +11,7 @@
 #include "step_wedge.h"
 #include "display.h"
 #include "util.h"
-//#include "usb_host.h"
+#include "usb_host.h"
 #include "densitometer.h"
 
 static int calibration_status(const step_wedge_t *wedge);

@@ -15,7 +15,7 @@
 #include "settings.h"
 #include "paper_profile.h"
 #include "util.h"
-//#include "usb_host.h"
+#include "usb_host.h"
 #include "densitometer.h"
 #include "step_wedge.h"
 #include "menu_step_wedge.h"
