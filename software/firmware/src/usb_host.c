@@ -18,6 +18,12 @@ extern void Error_Handler(void);
 
 static const uint8_t USB2422_ADDRESS = 0x2C << 1;
 
+/* Mutex to synchronize attach and detach event handling */
+static osMutexId_t usb_attach_mutex;
+static const osMutexAttr_t usb_attach_mutex_attributes = {
+    .name = "usb_attach_mutex"
+};
+
 typedef enum {
     HID_DEVICE_UNKNOWN = 0,
     HID_DEVICE_KEYBOARD,
@@ -76,8 +82,17 @@ bool usb_host_init()
     /* Make sure the USB2422 hub is in reset, and the VBUS signal is low */
     HAL_GPIO_WritePin(GPIOB, USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
 
+    /* Initialize attach event mutex */
+    usb_attach_mutex = osMutexNew(&usb_attach_mutex_attributes);
+    if (!usb_attach_mutex) {
+        log_e("usb_attach_mutex create error");
+        return false;
+    }
+
     /* Initialize class drivers */
-    usbh_hid_keyboard_init();
+    if (!usbh_hid_keyboard_init()) {
+        return false;
+    }
 
     /*
      * May need to modify this library function so the error code
@@ -233,6 +248,8 @@ void usbh_hid_run(struct usbh_hid *hid_class)
 {
     log_d("usbh_hid_run");
 
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+
     hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
 
     switch (device_type) {
@@ -251,11 +268,15 @@ void usbh_hid_run(struct usbh_hid *hid_class)
     default:
         break;
     }
+
+    osMutexRelease(usb_attach_mutex);
 }
 
 void usbh_hid_stop(struct usbh_hid *hid_class)
 {
     log_d("usbh_hid_stop");
+
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
 
     hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
 
@@ -275,4 +296,6 @@ void usbh_hid_stop(struct usbh_hid *hid_class)
     default:
         break;
     }
+
+    osMutexRelease(usb_attach_mutex);
 }
