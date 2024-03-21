@@ -156,7 +156,7 @@ extern void elog_raw(const char *format, ...);
 
 /* ================ USB Host Port Configuration ==================*/
 
-#define CONFIG_USBHOST_PIPE_NUM 12
+#define CONFIG_USBHOST_PIPE_NUM 16
 
 /* ================ EHCI Configuration ================ */
 
