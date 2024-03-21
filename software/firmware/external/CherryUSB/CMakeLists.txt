@@ -1,16 +1,17 @@
 add_library(cherryusb STATIC)
 
 target_include_directories(cherryusb PUBLIC
-common
-core
-osal
-class/cdc
-class/hid
-class/msc
-class/audio
-class/video
-class/hub
-class/wireless
+    common
+    core
+    osal
+    class/cdc
+    class/hid
+    class/msc
+    class/audio
+    class/video
+    class/hub
+    class/wireless
+    class/vendor/serial
 )
 
 if(CONFIG_CHERRYUSB_DEVICE)
@@ -39,6 +40,9 @@ if(CONFIG_CHERRYUSB_HOST)
         class/cdc/usbh_cdc_acm.c
         class/hid/usbh_hid.c
         class/msc/usbh_msc.c
+        class/vendor/serial/usbh_ch34x.c
+        class/vendor/serial/usbh_cp210x.c
+        class/vendor/serial/usbh_ftdi.c
         port/dwc2/usb_hc_dwc2.c
         port/dwc2/usb_glue_st.c
         #class/audio/usbh_audio.c
