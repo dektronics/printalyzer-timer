@@ -423,6 +423,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get device descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
+    usb_osal_msleep(2); /*(DK)*/
 
     parse_device_descriptor(hport, (struct usb_device_descriptor *)ep0_request_buffer[hport->bus->busid], 8);
 
@@ -490,6 +491,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get full device descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
+    usb_osal_msleep(2); /*(DK)*/
 
     parse_device_descriptor(hport, (struct usb_device_descriptor *)ep0_request_buffer[hport->bus->busid], USB_SIZEOF_DEVICE_DESC);
     USB_LOG_INFO("New device found,idVendor:%04x,idProduct:%04x,bcdDevice:%04x\r\n",
@@ -509,6 +511,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get config descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
+    usb_osal_msleep(2); /*(DK)*/
 
     parse_config_descriptor(hport, (struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid], USB_SIZEOF_CONFIG_DESC);
 
@@ -526,6 +529,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get full config descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
+    usb_osal_msleep(2); /*(DK)*/
 
     ret = parse_config_descriptor(hport, (struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid], wTotalLength);
     if (ret < 0) {
@@ -587,6 +591,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to set configuration,errorcode:%d\r\n", ret);
         goto errout;
     }
+    usb_osal_msleep(2); /*(DK)*/
 
 #ifdef CONFIG_USBHOST_MSOS_ENABLE
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
