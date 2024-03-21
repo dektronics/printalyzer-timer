@@ -159,11 +159,14 @@ void usb_osal_timer_start(struct usb_osal_timer *timer)
      * Hopefully this is a temporary kludge until upstream notices
      * the bug and fixes it for real.
      */
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    int ret;
+
     if (xPortIsInsideInterrupt()) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xTimerStartFromISR(timer->timer, &xHigherPriorityTaskWoken);
-        if (xHigherPriorityTaskWoken != pdFALSE) {
-            portYIELD_FROM_ISR(pdFALSE)
+        ret = xTimerStartFromISR(timer->timer, &xHigherPriorityTaskWoken);
+        if (ret == pdPASS) {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     } else {
         xTimerStart(timer->timer, 0);
