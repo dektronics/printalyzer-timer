@@ -51,87 +51,46 @@
 #endif
 // clang-format on
 
-#ifndef CONFIG_USB_DWC2_RAM_SIZE
-#error "please define CONFIG_USB_DWC2_RAM_SIZE in usb_config.h, only support 1280 or 4096"
-#endif
-
-#if CONFIG_USB_DWC2_RAM_SIZE == 1280
-/*FIFO sizes in bytes (total available memory for FIFOs is 1.25KB )*/
-#ifndef CONFIG_USB_DWC2_RX_FIFO_SIZE
-#define CONFIG_USB_DWC2_RX_FIFO_SIZE (512)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX0_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX1_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX1_FIFO_SIZE (128)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX2_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX2_FIFO_SIZE (128)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX3_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX3_FIFO_SIZE (128)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX4_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX4_FIFO_SIZE (128)
-#endif
-
-#ifndef CONFIG_USB_DWC2_TX5_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX5_FIFO_SIZE (128)
-#endif
-
-#ifndef CONFIG_USBDEV_EP_NUM
-#define CONFIG_USBDEV_EP_NUM 4 /* define with minimum value*/
-#endif
-
-#elif CONFIG_USB_DWC2_RAM_SIZE == 4096
-
 //#define CONFIG_USB_DWC2_DMA_ENABLE
 
-#ifdef CONFIG_USB_DWC2_DMA_ENABLE
-#warning "if you enable dcache,please add .nocacheble section in your sct or ld or icf"
-#endif
-
-/*FIFO sizes in bytes (total available memory for FIFOs is 4KB )*/
-#ifndef CONFIG_USB_DWC2_RX_FIFO_SIZE
-#define CONFIG_USB_DWC2_RX_FIFO_SIZE (1024)
+#ifndef CONFIG_USB_DWC2_RXALL_FIFO_SIZE
+#define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (320)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX0_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX0_FIFO_SIZE (256)
+#define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX1_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX1_FIFO_SIZE (1024)
+#define CONFIG_USB_DWC2_TX1_FIFO_SIZE (512 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX2_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX2_FIFO_SIZE (512)
+#define CONFIG_USB_DWC2_TX2_FIFO_SIZE (64 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX3_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX3_FIFO_SIZE (512)
+#define CONFIG_USB_DWC2_TX3_FIFO_SIZE (64 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX4_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX4_FIFO_SIZE (512)
+#define CONFIG_USB_DWC2_TX4_FIFO_SIZE (64 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX5_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX5_FIFO_SIZE (256)
+#define CONFIG_USB_DWC2_TX5_FIFO_SIZE (64 / 4)
 #endif
 
-#ifndef CONFIG_USBDEV_EP_NUM
-#define CONFIG_USBDEV_EP_NUM 6 /* define with minimum value*/
+#ifndef CONFIG_USB_DWC2_TX6_FIFO_SIZE
+#define CONFIG_USB_DWC2_TX6_FIFO_SIZE (64 / 4)
 #endif
 
-#else
-#error "Unsupported CONFIG_USB_DWC2_RAM_SIZE value"
+#ifndef CONFIG_USB_DWC2_TX7_FIFO_SIZE
+#define CONFIG_USB_DWC2_TX7_FIFO_SIZE (64 / 4)
+#endif
+
+#ifndef CONFIG_USB_DWC2_TX8_FIFO_SIZE
+#define CONFIG_USB_DWC2_TX8_FIFO_SIZE (64 / 4)
 #endif
 
 #define USBD_BASE (g_usbdev_bus[0].reg_base)
@@ -516,6 +475,7 @@ int usb_dc_init(uint8_t busid)
     uint8_t hsphy_type;
     uint8_t dma_support;
     uint8_t endpoints;
+    uint32_t fifo_num;
 
     memset(&g_dwc2_udc, 0, sizeof(struct dwc2_udc));
 
@@ -546,7 +506,6 @@ int usb_dc_init(uint8_t busid)
     endpoints = ((USB_OTG_GLB->GHWCFG2 & (0x0f << 10)) >> 10) + 1;
 
     USB_LOG_INFO("========== dwc2 udc params ==========\r\n");
-    USB_LOG_INFO("GCCFG:%08x\r\n", USB_OTG_GLB->GCCFG);
     USB_LOG_INFO("CID:%08x\r\n", USB_OTG_GLB->CID);
     USB_LOG_INFO("GSNPSID:%08x\r\n", USB_OTG_GLB->GSNPSID);
     USB_LOG_INFO("GHWCFG1:%08x\r\n", USB_OTG_GLB->GHWCFG1);
@@ -555,17 +514,11 @@ int usb_dc_init(uint8_t busid)
     USB_LOG_INFO("GHWCFG4:%08x\r\n", USB_OTG_GLB->GHWCFG4);
 
     USB_LOG_INFO("dwc2 fsphy type:%d, hsphy type:%d, dma support:%d\r\n", fsphy_type, hsphy_type, dma_support);
-    USB_LOG_INFO("dwc2 has %d endpoints, default config: %d endpoints\r\n", endpoints, CONFIG_USBDEV_EP_NUM);
+    USB_LOG_INFO("dwc2 has %d endpoints and dfifo depth(32-bit words) is %d, default config: %d endpoints\r\n", endpoints, (USB_OTG_GLB->GHWCFG3 >> 16), CONFIG_USBDEV_EP_NUM);
     USB_LOG_INFO("=================================\r\n");
 
     if (endpoints < CONFIG_USBDEV_EP_NUM) {
         USB_LOG_ERR("dwc2 has less endpoints than config, please check\r\n");
-        while (1) {
-        }
-    }
-
-    if ((hsphy_type == 0) && (CONFIG_USB_DWC2_RAM_SIZE != 1280)) {
-        USB_LOG_ERR("dwc2 hsphy type is 0, but ram size is not 1280, please check\r\n");
         while (1) {
         }
     }
@@ -605,9 +558,6 @@ int usb_dc_init(uint8_t busid)
     }
 #endif
 
-    ret = dwc2_flush_txfifo(0x10U);
-    ret = dwc2_flush_rxfifo();
-
     /* Clear all pending Device Interrupts */
     USB_OTG_DEV->DIEPMSK = 0U;
     USB_OTG_DEV->DOEPMSK = 0U;
@@ -624,15 +574,14 @@ int usb_dc_init(uint8_t busid)
                            USB_OTG_GINTMSK_IISOIXFRM | USB_OTG_GINTMSK_PXFRM_IISOOXFRM;
 
 #ifdef CONFIG_USB_DWC2_DMA_ENABLE
-    if ((USB_OTG_GLB->GHWCFG2 & (0x3U << 3)) == 0U) {
-        USB_LOG_ERR("This dwc2 version does not support dma, so stop working\r\n");
+    if (((USB_OTG_GLB->GHWCFG2 & (0x3U << 3)) >> 3) != 2) {
+        USB_LOG_ERR("This dwc2 version does not support dma mode, so stop working\r\n");
         while (1) {
         }
     }
 
     USB_OTG_DEV->DCFG &= ~USB_OTG_DCFG_DESCDMA;
-    USB_OTG_GLB->GAHBCFG |= (USB_OTG_GAHBCFG_DMAEN | USB_OTG_GAHBCFG_HBSTLEN_2);
-
+    USB_OTG_GLB->GAHBCFG |= (USB_OTG_GAHBCFG_DMAEN | USB_OTG_GAHBCFG_HBSTLEN_4);
 #else
     USB_OTG_GLB->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
 #endif
@@ -643,27 +592,48 @@ int usb_dc_init(uint8_t busid)
     USB_OTG_GLB->GINTMSK |= USB_OTG_GINTMSK_SOFM;
 #endif
 
-    USB_OTG_GLB->GRXFSIZ = (CONFIG_USB_DWC2_RX_FIFO_SIZE / 4);
+    USB_OTG_GLB->GRXFSIZ = (CONFIG_USB_DWC2_RXALL_FIFO_SIZE);
 
-    dwc2_set_txfifo(0, CONFIG_USB_DWC2_TX0_FIFO_SIZE / 4);
-    dwc2_set_txfifo(1, CONFIG_USB_DWC2_TX1_FIFO_SIZE / 4);
-    dwc2_set_txfifo(2, CONFIG_USB_DWC2_TX2_FIFO_SIZE / 4);
-    dwc2_set_txfifo(3, CONFIG_USB_DWC2_TX3_FIFO_SIZE / 4);
+    dwc2_set_txfifo(0, CONFIG_USB_DWC2_TX0_FIFO_SIZE);
+    dwc2_set_txfifo(1, CONFIG_USB_DWC2_TX1_FIFO_SIZE);
+    dwc2_set_txfifo(2, CONFIG_USB_DWC2_TX2_FIFO_SIZE);
+    dwc2_set_txfifo(3, CONFIG_USB_DWC2_TX3_FIFO_SIZE);
+
+    fifo_num = CONFIG_USB_DWC2_RXALL_FIFO_SIZE;
+    fifo_num += CONFIG_USB_DWC2_TX0_FIFO_SIZE;
+    fifo_num += CONFIG_USB_DWC2_TX1_FIFO_SIZE;
+    fifo_num += CONFIG_USB_DWC2_TX2_FIFO_SIZE;
+    fifo_num += CONFIG_USB_DWC2_TX3_FIFO_SIZE;
 #if CONFIG_USBDEV_EP_NUM > 4
-    dwc2_set_txfifo(4, CONFIG_USB_DWC2_TX4_FIFO_SIZE / 4);
+    dwc2_set_txfifo(4, CONFIG_USB_DWC2_TX4_FIFO_SIZE);
+    fifo_num += CONFIG_USB_DWC2_TX4_FIFO_SIZE;
 #endif
 #if CONFIG_USBDEV_EP_NUM > 5
-    dwc2_set_txfifo(5, CONFIG_USB_DWC2_TX5_FIFO_SIZE / 4);
+    dwc2_set_txfifo(5, CONFIG_USB_DWC2_TX5_FIFO_SIZE);
+    fifo_num += CONFIG_USB_DWC2_TX5_FIFO_SIZE;
 #endif
 #if CONFIG_USBDEV_EP_NUM > 6
-    dwc2_set_txfifo(6, CONFIG_USB_DWC2_TX6_FIFO_SIZE / 4);
+    dwc2_set_txfifo(6, CONFIG_USB_DWC2_TX6_FIFO_SIZE);
+    fifo_num += CONFIG_USB_DWC2_TX6_FIFO_SIZE;
 #endif
 #if CONFIG_USBDEV_EP_NUM > 7
-    dwc2_set_txfifo(7, CONFIG_USB_DWC2_TX7_FIFO_SIZE / 4);
+    dwc2_set_txfifo(7, CONFIG_USB_DWC2_TX7_FIFO_SIZE);
+    fifo_num += CONFIG_USB_DWC2_TX7_FIFO_SIZE;
 #endif
 #if CONFIG_USBDEV_EP_NUM > 8
-    dwc2_set_txfifo(8, CONFIG_USB_DWC2_TX8_FIFO_SIZE / 4);
+    dwc2_set_txfifo(8, CONFIG_USB_DWC2_TX8_FIFO_SIZE);
+    fifo_num += CONFIG_USB_DWC2_TX8_FIFO_SIZE;
 #endif
+
+    if (fifo_num > (USB_OTG_GLB->GHWCFG3 >> 16)) {
+        USB_LOG_ERR("Your fifo config is overflow, please check\r\n");
+        while (1) {
+        }
+    }
+
+    ret = dwc2_flush_txfifo(0x10U);
+    ret = dwc2_flush_rxfifo();
+
     USB_OTG_GLB->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
     USB_OTG_DEV->DCTL &= ~USB_OTG_DCTL_SDIS;
 
@@ -672,6 +642,9 @@ int usb_dc_init(uint8_t busid)
 
 int usb_dc_deinit(uint8_t busid)
 {
+    USB_OTG_GLB->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
+    USB_OTG_DEV->DCTL |= USB_OTG_DCTL_SDIS;
+
     /* Clear Pending interrupt */
     for (uint8_t i = 0U; i < 15U; i++) {
         USB_OTG_INEP(i)->DIEPINT = 0xFB7FU;
@@ -686,8 +659,6 @@ int usb_dc_deinit(uint8_t busid)
     /* Flush the FIFO */
     dwc2_flush_txfifo(0x10U);
     dwc2_flush_rxfifo();
-
-    USB_OTG_DEV->DCTL |= USB_OTG_DCTL_SDIS;
 
     usb_dc_low_level_deinit();
     return 0;

@@ -775,6 +775,10 @@ __WEAK void usb_hc_low_level2_init(struct usbh_bus *bus)
 {
 }
 
+__WEAK void usb_hc_low_level_deinit(struct usbh_bus *bus)
+{
+}
+
 int usb_hc_init(struct usbh_bus *bus)
 {
     uint32_t interval;
@@ -948,6 +952,7 @@ int usb_hc_deinit(struct usbh_bus *bus)
         usb_osal_sem_delete(qh->waitsem);
     }
 
+    usb_hc_low_level_deinit(bus);
     return 0;
 }
 
@@ -1253,7 +1258,7 @@ int usbh_kill_urb(struct usbh_urb *urb)
         }
     } else {
 #ifdef CONFIG_USB_EHCI_ISO
-        ehci_remove_itd_urb(urb);
+        ehci_remove_itd_urb(bus, urb);
         EHCI_HCOR->usbcmd |= (EHCI_USBCMD_PSEN | EHCI_USBCMD_ASEN);
         usb_osal_leave_critical_section(flags);
         return 0;
@@ -1315,7 +1320,7 @@ void USBH_IRQHandler(uint8_t busid)
     struct usbh_bus *bus;
 
     bus = &g_usbhost_bus[busid];
-    
+
     usbsts = EHCI_HCOR->usbsts & EHCI_HCOR->usbintr;
     EHCI_HCOR->usbsts = usbsts;
 
