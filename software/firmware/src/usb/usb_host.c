@@ -337,14 +337,14 @@ void usbh_cdc_acm_stop(struct usbh_cdc_acm *cdc_acm_class)
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_ftdi_run(struct usbh_ftdi *ftdi_class)
+void usbh_serial_ftdi_run(struct usbh_serial_ftdi *ftdi_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_ftdi_attached(ftdi_class);
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_ftdi_stop(struct usbh_ftdi *ftdi_class)
+void usbh_serial_ftdi_stop(struct usbh_serial_ftdi *ftdi_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_ftdi_detached(ftdi_class);

@@ -42,12 +42,8 @@ if(CONFIG_CHERRYUSB_HOST)
         class/msc/usbh_msc.c
         class/vendor/serial/usbh_ch34x.c
         class/vendor/serial/usbh_cp210x.c
-        class/vendor/serial/usbh_ftdi.c
         port/dwc2/usb_hc_dwc2.c
         port/dwc2/usb_glue_st.c
-        #class/audio/usbh_audio.c
-        #class/video/usbh_video.c
-        #class/wireless/usbh_rndis.c
     )
 
 endif()

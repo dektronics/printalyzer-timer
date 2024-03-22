@@ -7,9 +7,9 @@
 #include "usbh_msc.h"
 #include "usbh_hid.h"
 #include "usbh_cdc_acm.h"
-#include "usbh_ftdi.h"
 #include "usbh_cp210x.h"
 #include "usbh_ch34x.h"
+#include "class/usbh_serial_ftdi.h"
 
 #define LOG_TAG "usb_serial"
 #include <elog.h>
@@ -25,7 +25,7 @@ typedef enum {
 typedef struct {
     union {
         struct usbh_cdc_acm *cdc_acm_class;
-        struct usbh_ftdi *ftdi_class;
+        struct usbh_serial_ftdi *ftdi_class;
         struct usbh_cp210x *cp210x_class;
         struct usbh_ch34x *ch34x_class;
     };
@@ -84,7 +84,7 @@ void usbh_serial_cdc_detached(struct usbh_cdc_acm *cdc_acm_class)
     }
 }
 
-void usbh_serial_ftdi_attached(struct usbh_ftdi *ftdi_class)
+void usbh_serial_ftdi_attached(struct usbh_serial_ftdi *ftdi_class)
 {
     if (handle.connected) {
         return;
@@ -95,7 +95,7 @@ void usbh_serial_ftdi_attached(struct usbh_ftdi *ftdi_class)
     usb_serial_attached();
 }
 
-void usbh_serial_ftdi_detached(struct usbh_ftdi *ftdi_class)
+void usbh_serial_ftdi_detached(struct usbh_serial_ftdi *ftdi_class)
 {
     if (handle.driver == USB_SERIAL_FTDI && handle.ftdi_class == ftdi_class) {
         usb_serial_detached();
@@ -189,24 +189,16 @@ void usb_serial_thread(void *argument)
             break;
         }
 
-//        if (ret > 2) {
-//            log_d("--> [%d] \"%s\"", ret, bulk_in_buffer + 2);
-//        }
-        if (handle.driver == USB_SERIAL_FTDI) {
-            if (ret > 2) {
-                for (size_t i = 0; i < ret; i++) {
-                    USB_LOG_RAW("0x%02x ", bulk_in_buffer[i]);
+        /* Log received bytes */
+        if (ret > 0) {
+            if (handle.driver == USB_SERIAL_FTDI) {
+                /* FTDI returns two modem status bytes that need to be skipped */
+                if (ret > 2) {
+                    log_d("[len=%d], \"%.*s\"", ret - 2, ret - 2, bulk_in_buffer + 2);
                 }
-                USB_LOG_RAW("nbytes:%d\r\n", ret);
+            } else {
+                log_d("[len=%d], \"%.*s\"", ret, ret, bulk_in_buffer);
             }
-        } else if (handle.driver == USB_SERIAL_CP210X) {
-            for (size_t i = 0; i < ret; i++) {
-                USB_LOG_RAW("0x%02x ", bulk_in_buffer[i]);
-            }
-            if (ret > 1) {
-                USB_LOG_RAW("'%c' ", bulk_in_buffer[0]);
-            }
-            USB_LOG_RAW("nbytes:%d\r\n", ret);
         }
     }
     serial_task = NULL;
@@ -219,7 +211,7 @@ int usb_serial_set_line_coding(struct cdc_line_coding *line_coding)
     case USB_SERIAL_CDC_ACM:
         return usbh_cdc_acm_set_line_coding(handle.cdc_acm_class, line_coding);
     case USB_SERIAL_FTDI:
-        return usbh_ftdi_set_line_coding(handle.ftdi_class, line_coding);
+        return usbh_serial_ftdi_set_line_coding(handle.ftdi_class, line_coding);
     case USB_SERIAL_CP210X:
         return usbh_cp210x_set_line_coding(handle.cp210x_class, line_coding);
     case USB_SERIAL_CH34X:
@@ -235,7 +227,7 @@ int usb_serial_set_line_state(bool dtr, bool rts)
     case USB_SERIAL_CDC_ACM:
         return usbh_cdc_acm_set_line_state(handle.cdc_acm_class, dtr, rts);
     case USB_SERIAL_FTDI:
-        return usbh_ftdi_set_line_state(handle.ftdi_class, dtr, rts);
+        return usbh_serial_ftdi_set_line_state(handle.ftdi_class, dtr, rts);
     case USB_SERIAL_CP210X:
         return usbh_cp210x_set_line_state(handle.cp210x_class, dtr, rts);
     case USB_SERIAL_CH34X:
@@ -251,7 +243,7 @@ int usb_serial_bulk_in_transfer(uint8_t *buffer, uint32_t buflen, uint32_t timeo
     case USB_SERIAL_CDC_ACM:
         return usbh_cdc_acm_bulk_in_transfer(handle.cdc_acm_class, buffer, buflen, timeout);
     case USB_SERIAL_FTDI:
-        return usbh_ftdi_bulk_in_transfer(handle.ftdi_class, buffer, buflen, timeout);
+        return usbh_serial_ftdi_bulk_in_transfer(handle.ftdi_class, buffer, buflen, timeout);
     case USB_SERIAL_CP210X:
         return usbh_cp210x_bulk_in_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:
@@ -267,7 +259,7 @@ int usb_serial_bulk_out_transfer(uint8_t *buffer, uint32_t buflen, uint32_t time
     case USB_SERIAL_CDC_ACM:
         return usbh_cdc_acm_bulk_out_transfer(handle.cdc_acm_class, buffer, buflen, timeout);
     case USB_SERIAL_FTDI:
-        return usbh_ftdi_bulk_out_transfer(handle.ftdi_class, buffer, buflen, timeout);
+        return usbh_serial_ftdi_bulk_out_transfer(handle.ftdi_class, buffer, buflen, timeout);
     case USB_SERIAL_CP210X:
         return usbh_cp210x_bulk_out_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:

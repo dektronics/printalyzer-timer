@@ -145,8 +145,6 @@ set(CHERRYUSB_LDFLAGS
     -Wl,--undefined=cdc_acm_class_info
     -Wl,--undefined=cdc_data_class_info
     -Wl,--undefined=ch34x_class_info
-    -Wl,--undefined=ftdi1_class_info
-    -Wl,--undefined=ftdi2_class_info
     -Wl,--undefined=cp210x_class_info
 )
 
