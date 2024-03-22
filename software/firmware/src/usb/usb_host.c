@@ -18,6 +18,8 @@
 #define LOG_TAG "usb_host"
 #include <elog.h>
 
+#define SERIAL_RECV_BUF_SIZE 256
+
 extern SMBUS_HandleTypeDef hsmbus2;
 
 extern void Error_Handler(void);
@@ -29,6 +31,27 @@ static osMutexId_t usb_attach_mutex;
 static const osMutexAttr_t usb_attach_mutex_attributes = {
     .name = "usb_attach_mutex"
 };
+
+/* Mutex to guard the serial buffers */
+static osMutexId_t usb_serial_mutex = NULL;
+static const osMutexAttr_t usb_serial_mutex_attributes = {
+    .name = "usb_serial_mutex"
+};
+
+/* Semaphore for serial transmit */
+static osSemaphoreId_t usb_serial_transmit_semaphore = NULL;
+static const osSemaphoreAttr_t usb_serial_transmit_semaphore_attributes = {
+    .name = "usb_serial_transmit_semaphore"
+};
+
+/* Semaphore for serial receive */
+static osSemaphoreId_t usb_serial_receive_semaphore = NULL;
+static const osSemaphoreAttr_t usb_serial_receive_semaphore_attributes = {
+    .name = "usb_serial_receive_semaphore"
+};
+
+static uint8_t usb_serial_recv_buf[SERIAL_RECV_BUF_SIZE] = {0};
+static size_t usb_serial_recv_buf_len = 0;
 
 typedef enum {
     HID_DEVICE_UNKNOWN = 0,
@@ -43,6 +66,9 @@ static HAL_StatusTypeDef smbus_master_block_write(
     const uint8_t *data, uint8_t len);
 
 static hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class);
+
+static void usbh_serial_receive_callback(uint8_t *data, size_t length);
+static void usbh_serial_transmit_callback();
 
 void usb_hc_low_level_init(struct usbh_bus *bus)
 {
@@ -95,6 +121,27 @@ bool usb_host_init()
         return false;
     }
 
+    /* Initialize the serial buffer mutex */
+    usb_serial_mutex = osMutexNew(&usb_serial_mutex_attributes);
+    if (!usb_serial_mutex) {
+        log_e("usb_serial_mutex create error");
+        return false;
+    }
+
+    /* Initialize the serial transmit semaphore */
+    usb_serial_transmit_semaphore = osSemaphoreNew(1, 0, &usb_serial_transmit_semaphore_attributes);
+    if (!usb_serial_transmit_semaphore) {
+        log_e("usb_serial_transmit_semaphore create error");
+        return false;
+    }
+
+    /* Initialize the serial receive semaphore */
+    usb_serial_receive_semaphore = osSemaphoreNew(1, 0, &usb_serial_receive_semaphore_attributes);
+    if (!usb_serial_receive_semaphore) {
+        log_e("usb_serial_receive_semaphore create error");
+        return false;
+    }
+
     /* Initialize class drivers */
     if (!usbh_hid_keyboard_init()) {
         return false;
@@ -102,7 +149,7 @@ bool usb_host_init()
     if (!usbh_msc_fatfs_init()) {
         return false;
     }
-    if (!usbh_serial_init()) {
+    if (!usbh_serial_init(usbh_serial_receive_callback, usbh_serial_transmit_callback)) {
         return false;
     }
 
@@ -382,4 +429,127 @@ void usbh_ch34x_stop(struct usbh_ch34x *ch34x_class)
 bool usb_serial_is_attached()
 {
     return usbh_serial_is_attached();
+}
+
+void usbh_serial_receive_callback(uint8_t *data, size_t length)
+{
+    osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
+
+    /* Append to the receive buffer */
+    size_t copy_len = MIN(SERIAL_RECV_BUF_SIZE - usb_serial_recv_buf_len, length);
+    if (copy_len > 0) {
+        memcpy(usb_serial_recv_buf + usb_serial_recv_buf_len, data, copy_len);
+        usb_serial_recv_buf_len += copy_len;
+    }
+
+    osMutexRelease(usb_serial_mutex);
+
+    osSemaphoreRelease(usb_serial_receive_semaphore);
+}
+
+void usbh_serial_transmit_callback()
+{
+    osSemaphoreRelease(usb_serial_transmit_semaphore);
+}
+
+osStatus_t usb_serial_transmit(const uint8_t *buf, size_t length)
+{
+    //TODO
+    return osErrorParameter;
+}
+
+void usb_serial_clear_receive_buffer()
+{
+    osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
+    memset(usb_serial_recv_buf, 0, sizeof(usb_serial_recv_buf));
+    usb_serial_recv_buf_len = 0;
+    osMutexRelease(usb_serial_mutex);
+}
+
+osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_wait)
+{
+    uint32_t start_wait_ticks = 0;
+    uint32_t elapsed_wait_ticks = 0;
+    uint32_t remaining_ticks = pdMS_TO_TICKS(ms_to_wait);
+    bool has_line = false;
+
+    if (!buf || length == 0) {
+        return osErrorParameter;
+    }
+
+    do {
+        /* Before waiting, check the buffer to see if it already contains data */
+        osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
+
+        /* Scan the buffer to see if it contains a line break */
+        for (size_t i = 0; i < usb_serial_recv_buf_len; i++) {
+            if (usb_serial_recv_buf[i] == '\r' || usb_serial_recv_buf[i] == '\n') {
+                has_line = true;
+                break;
+            }
+        }
+
+        /* Process the buffer if it has a line break or is otherwise full */
+        if (has_line || usb_serial_recv_buf_len == SERIAL_RECV_BUF_SIZE) {
+            size_t i = 0;
+            size_t j = 0;
+            bool has_start = false;
+            bool has_end = false;
+            for (i = 0; i < usb_serial_recv_buf_len; i++) {
+                /* Strip line breaks out of the result, but use them as start/end markers */
+                if (usb_serial_recv_buf[i] == '\r' || usb_serial_recv_buf[i] == '\n') {
+                    if (has_start) {
+                        has_end = true;
+                    }
+                } else {
+                    if (has_end) {
+                        break;
+                    }
+                    has_start = true;
+                    /* Populate the provided buffer as long as it has space */
+                    if (j < length) {
+                        buf[j++] = usb_serial_recv_buf[i];
+                    }
+                }
+            }
+
+            /* Ensure that the buffer is null-terminated */
+            if (j > length - 1) {
+                j = length - 1;
+            }
+            buf[j] = '\0';
+
+            /* Clear or adjust the internal buffer for the next receive */
+            if (i == usb_serial_recv_buf_len) {
+                usb_serial_recv_buf_len = 0;
+            } else {
+                size_t remaining = usb_serial_recv_buf_len - i;
+                memmove(usb_serial_recv_buf, usb_serial_recv_buf + i, remaining);
+                usb_serial_recv_buf_len -= i;
+            }
+        }
+
+        osMutexRelease(usb_serial_mutex);
+
+        /* If data was received, then exit the loop */
+        if (has_line) {
+            break;
+        }
+
+        /* Wait to be notified of new data, up to the specified maximum */
+        start_wait_ticks = osKernelGetTickCount();
+        if (osSemaphoreAcquire(usb_serial_receive_semaphore, remaining_ticks) == osErrorTimeout) {
+            remaining_ticks = 0;
+        } else {
+            elapsed_wait_ticks = start_wait_ticks - osKernelGetTickCount();
+            if (remaining_ticks > elapsed_wait_ticks) {
+                remaining_ticks -= elapsed_wait_ticks;
+            } else {
+                remaining_ticks = 0;
+            }
+        }
+
+    } while (!has_line && remaining_ticks > 0);
+
+    return has_line ? osOK : osErrorTimeout;
 }

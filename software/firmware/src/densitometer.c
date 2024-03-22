@@ -5,6 +5,8 @@
 #include <math.h>
 #include <ctype.h>
 
+#include "usb_host.h"
+
 #define LOG_TAG "densitometer"
 #include <elog.h>
 
@@ -372,8 +374,6 @@ densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t
 
 densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading, uint32_t ms_to_wait)
 {
-#if 0
-    //TODO Rewrite for new USB host stack
     char line_buf[64];
 
     if (!reading) {
@@ -384,13 +384,11 @@ densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading,
         return DENSITOMETER_RESULT_NOT_CONNECTED;
     }
 
-    if (usb_serial_receive_line((uint8_t *)line_buf, sizeof(line_buf), ms_to_wait) == USBH_OK) {
+    if (usb_serial_receive_line((uint8_t *)line_buf, sizeof(line_buf), ms_to_wait) == osOK) {
         return densitometer_parse_reading(reading, line_buf);
     } else {
         return DENSITOMETER_RESULT_TIMEOUT;
     }
-#endif
-    return DENSITOMETER_RESULT_NOT_CONNECTED;
 }
 
 void densitometer_log_reading(const densitometer_reading_t *reading)

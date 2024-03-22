@@ -248,13 +248,10 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             uint16_t value_sel = lroundf(profile->max_net_density * 100);
             uint16_t value_sel_prev = value_sel;
 
-            //TODO Rewrite for new USB host stack
-            bool dens_enable = false; //XXX usb_serial_is_attached();
-#if 0
+            bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
-#endif
             if (display_input_value_f16_data_cb(
                 "Max Net Density",
                 "Maximum density (Dmax) of the\n"
@@ -620,13 +617,10 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
             menu_result = menu_step_wedge_show(wedge);
         } else if (option == 2) {
             uint16_t value_sel = lroundf(paper_dmin * 100);
-            //TODO Rewrite for new USB host stack
-            bool dens_enable = false; //XXX usb_serial_is_attached();
-#if 0
+            bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
-#endif
             if (display_input_value_f16_data_cb(
                 "Paper Dmin (optional)",
                 "Minimum density of the paper,\n"
@@ -691,13 +685,10 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 value_sel = max_value;
             }
 
-            //TODO Rewrite for new USB host stack
-            bool dens_enable = false; //XXX usb_serial_is_attached();
-#if 0
+            bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
-#endif
 
             patch_option = display_input_value_f16_data_cb(
                 patch_title_buf, patch_buf,

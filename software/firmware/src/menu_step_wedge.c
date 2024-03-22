@@ -299,12 +299,10 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
                 option);
             uint16_t value_sel = lroundf(step_wedge_get_density(wedge, option - 1) * 100);
             //TODO Rewrite for new USB host stack
-            bool dens_enable = false; //XXX usb_serial_is_attached();
-#if 0
+            bool dens_enable = usb_serial_is_attached();
             if (dens_enable) {
                 usb_serial_clear_receive_buffer();
             }
-#endif
 
             patch_option = display_input_value_f16_data_cb(
                 patch_title_buf, patch_buf,
