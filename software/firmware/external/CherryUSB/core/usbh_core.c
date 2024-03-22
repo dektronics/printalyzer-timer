@@ -100,6 +100,18 @@ static const struct usbh_class_driver *usbh_find_class_driver(uint8_t class, uin
         if ((index->match_flags & USB_CLASS_MATCH_INTF_PROTOCOL) && !(index->protocol == protocol)) {
             continue;
         }
+        /*
+         * (DK)
+         * If a single class driver needs more complex matching logic than a
+         * 1:1 match of the above properties, it can provide a custom matching
+         * function. This avoids the need for a potentially large number of
+         * mostly redundant class info structures for certain drivers.
+         */
+        if (index->match_flags & USB_CLASS_MATCH_CUSTOM_FUNC && (index->class_driver && index->class_driver->match)) {
+            if (!index->class_driver->match(class, subclass, protocol, vid, pid)) {
+                continue;
+            }
+        }
         return index->class_driver;
     }
     return NULL;

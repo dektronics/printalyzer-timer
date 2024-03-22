@@ -30,6 +30,7 @@ extern "C" {
 #define USB_CLASS_MATCH_INTF_CLASS    0x0004
 #define USB_CLASS_MATCH_INTF_SUBCLASS 0x0008
 #define USB_CLASS_MATCH_INTF_PROTOCOL 0x0010
+#define USB_CLASS_MATCH_CUSTOM_FUNC   0x0020 /*(DK)*/
 
 #define CLASS_CONNECT(hport, i)    ((hport)->config.intf[i].class_driver->connect(hport, i))
 #define CLASS_DISCONNECT(hport, i) ((hport)->config.intf[i].class_driver->disconnect(hport, i))
@@ -71,6 +72,7 @@ struct usbh_class_driver {
     const char *driver_name;
     int (*connect)(struct usbh_hubport *hport, uint8_t intf);
     int (*disconnect)(struct usbh_hubport *hport, uint8_t intf);
+    int (*match)(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid); /*(DK)*/
 };
 
 struct usbh_endpoint {
