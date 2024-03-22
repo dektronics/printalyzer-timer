@@ -7,9 +7,9 @@
 #include "usbh_msc.h"
 #include "usbh_hid.h"
 #include "usbh_cdc_acm.h"
-#include "usbh_cp210x.h"
 #include "usbh_ch34x.h"
 #include "class/usbh_serial_ftdi.h"
+#include "class/usbh_serial_cp210x.h"
 
 #define LOG_TAG "usb_serial"
 #include <elog.h>
@@ -26,7 +26,7 @@ typedef struct {
     union {
         struct usbh_cdc_acm *cdc_acm_class;
         struct usbh_serial_ftdi *ftdi_class;
-        struct usbh_cp210x *cp210x_class;
+        struct usbh_serial_cp210x *cp210x_class;
         struct usbh_ch34x *ch34x_class;
     };
     usb_serial_driver_t driver;
@@ -102,7 +102,7 @@ void usbh_serial_ftdi_detached(struct usbh_serial_ftdi *ftdi_class)
     }
 }
 
-void usbh_serial_cp210x_attached(struct usbh_cp210x *cp210x_class)
+void usbh_serial_cp210x_attached(struct usbh_serial_cp210x *cp210x_class)
 {
     if (handle.connected) {
         return;
@@ -113,7 +113,7 @@ void usbh_serial_cp210x_attached(struct usbh_cp210x *cp210x_class)
     usb_serial_attached();
 }
 
-void usbh_serial_cp210x_detached(struct usbh_cp210x *cp210x_class)
+void usbh_serial_cp210x_detached(struct usbh_serial_cp210x *cp210x_class)
 {
     if (handle.driver == USB_SERIAL_CP210X && handle.cp210x_class == cp210x_class) {
         usb_serial_detached();
@@ -213,7 +213,7 @@ int usb_serial_set_line_coding(struct cdc_line_coding *line_coding)
     case USB_SERIAL_FTDI:
         return usbh_serial_ftdi_set_line_coding(handle.ftdi_class, line_coding);
     case USB_SERIAL_CP210X:
-        return usbh_cp210x_set_line_coding(handle.cp210x_class, line_coding);
+        return usbh_serial_cp210x_set_line_coding(handle.cp210x_class, line_coding);
     case USB_SERIAL_CH34X:
         return usbh_ch34x_set_line_coding(handle.ch34x_class, line_coding);
     default:
@@ -229,7 +229,7 @@ int usb_serial_set_line_state(bool dtr, bool rts)
     case USB_SERIAL_FTDI:
         return usbh_serial_ftdi_set_line_state(handle.ftdi_class, dtr, rts);
     case USB_SERIAL_CP210X:
-        return usbh_cp210x_set_line_state(handle.cp210x_class, dtr, rts);
+        return usbh_serial_cp210x_set_line_state(handle.cp210x_class, dtr, rts);
     case USB_SERIAL_CH34X:
         return usbh_ch34x_set_line_state(handle.ch34x_class, dtr, rts);
     default:
@@ -245,7 +245,7 @@ int usb_serial_bulk_in_transfer(uint8_t *buffer, uint32_t buflen, uint32_t timeo
     case USB_SERIAL_FTDI:
         return usbh_serial_ftdi_bulk_in_transfer(handle.ftdi_class, buffer, buflen, timeout);
     case USB_SERIAL_CP210X:
-        return usbh_cp210x_bulk_in_transfer(handle.cp210x_class, buffer, buflen, timeout);
+        return usbh_serial_cp210x_bulk_in_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:
         return usbh_ch34x_bulk_in_transfer(handle.ch34x_class, buffer, buflen, timeout);
     default:
@@ -261,7 +261,7 @@ int usb_serial_bulk_out_transfer(uint8_t *buffer, uint32_t buflen, uint32_t time
     case USB_SERIAL_FTDI:
         return usbh_serial_ftdi_bulk_out_transfer(handle.ftdi_class, buffer, buflen, timeout);
     case USB_SERIAL_CP210X:
-        return usbh_cp210x_bulk_out_transfer(handle.cp210x_class, buffer, buflen, timeout);
+        return usbh_serial_cp210x_bulk_out_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:
         return usbh_ch34x_bulk_out_transfer(handle.ch34x_class, buffer, buflen, timeout);
     default:

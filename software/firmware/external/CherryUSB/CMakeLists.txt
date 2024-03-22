@@ -41,7 +41,6 @@ if(CONFIG_CHERRYUSB_HOST)
         class/hid/usbh_hid.c
         class/msc/usbh_msc.c
         class/vendor/serial/usbh_ch34x.c
-        class/vendor/serial/usbh_cp210x.c
         port/dwc2/usb_hc_dwc2.c
         port/dwc2/usb_glue_st.c
     )

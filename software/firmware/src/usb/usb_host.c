@@ -351,14 +351,14 @@ void usbh_serial_ftdi_stop(struct usbh_serial_ftdi *ftdi_class)
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_cp210x_run(struct usbh_cp210x *cp210x_class)
+void usbh_serial_cp210x_run(struct usbh_serial_cp210x *cp210x_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_cp210x_attached(cp210x_class);
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_cp210x_stop(struct usbh_cp210x *cp210x_class)
+void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_cp210x_detached(cp210x_class);
