@@ -142,10 +142,6 @@ set(CHERRYUSB_LDFLAGS
     -Wl,--undefined=hid_custom_class_info
     -Wl,--undefined=msc_class_info
     -Wl,--undefined=hub_class_info
-    -Wl,--undefined=cdc_acm_class_info
-    -Wl,--undefined=cdc_data_class_info
-    -Wl,--undefined=ch34x_class_info
-    -Wl,--undefined=cp210x_class_info
 )
 
 add_subdirectory(${EXTERNAL_DIR}/cmsis-dsp)

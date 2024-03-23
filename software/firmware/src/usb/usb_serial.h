@@ -8,7 +8,7 @@
 struct usbh_cdc_acm;
 struct usbh_serial_ftdi;
 struct usbh_serial_cp210x;
-struct usbh_ch34x;
+struct usbh_serial_ch34x;
 
 typedef void (*usbh_serial_receive_callback_t)(uint8_t *data, size_t length);
 typedef void (*usbh_serial_transmit_callback_t)();
@@ -24,8 +24,8 @@ void usbh_serial_ftdi_detached(struct usbh_serial_ftdi *ftdi_class);
 void usbh_serial_cp210x_attached(struct usbh_serial_cp210x *cp210x_class);
 void usbh_serial_cp210x_detached(struct usbh_serial_cp210x *cp210x_class);
 
-void usbh_serial_ch34x_attached(struct usbh_ch34x *ch34x_class);
-void usbh_serial_ch34x_detached(struct usbh_ch34x *ch34x_class);
+void usbh_serial_ch34x_attached(struct usbh_serial_ch34x *ch34x_class);
+void usbh_serial_ch34x_detached(struct usbh_serial_ch34x *ch34x_class);
 
 bool usbh_serial_is_attached();
 

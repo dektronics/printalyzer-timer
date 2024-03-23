@@ -7,9 +7,6 @@
 #include "usbh_core.h"
 #include "usbh_msc.h"
 #include "usbh_hid.h"
-#include "usbh_ftdi.h"
-#include "usbh_cp210x.h"
-#include "usbh_ch34x.h"
 #include "usb_hid_keyboard.h"
 #include "usb_msc_fatfs.h"
 #include "usb_serial.h"
@@ -412,14 +409,14 @@ void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class)
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_ch34x_run(struct usbh_ch34x *ch34x_class)
+void usbh_serial_ch34x_run(struct usbh_serial_ch34x *ch34x_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_ch34x_attached(ch34x_class);
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_ch34x_stop(struct usbh_ch34x *ch34x_class)
+void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_ch34x_detached(ch34x_class);

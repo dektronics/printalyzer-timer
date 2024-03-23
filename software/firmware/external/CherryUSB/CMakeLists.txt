@@ -11,7 +11,6 @@ target_include_directories(cherryusb PUBLIC
     class/video
     class/hub
     class/wireless
-    class/vendor/serial
 )
 
 if(CONFIG_CHERRYUSB_DEVICE)
@@ -40,7 +39,6 @@ if(CONFIG_CHERRYUSB_HOST)
         class/cdc/usbh_cdc_acm.c
         class/hid/usbh_hid.c
         class/msc/usbh_msc.c
-        class/vendor/serial/usbh_ch34x.c
         port/dwc2/usb_hc_dwc2.c
         port/dwc2/usb_glue_st.c
     )
