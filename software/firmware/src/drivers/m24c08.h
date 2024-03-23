@@ -1,14 +1,16 @@
 /*
- * M24C02(-D) 2-Kbit serial I2C bus EEPROM
+ * M24C08 8-Kbit serial I2C bus EEPROM
  */
 
-#ifndef M24C02_H
-#define M24C02_H
+#ifndef M24C08_H
+#define M24C08_H
 
 #include <stm32f4xx_hal.h>
 
-#define M24C02_PAGE_SIZE  0x10UL
-#define M24C02_PAGE_LIMIT 0x100UL
+typedef struct i2c_handle_t i2c_handle_t;
+
+#define M24C08_PAGE_SIZE  0x10UL
+#define M24C08_MEM_SIZE   0x200UL
 
 /**
  * Read a byte from the specified address.
@@ -17,7 +19,7 @@
  * @param address Address to read from
  * @param data Pointer to the variable to read the data into
  */
-HAL_StatusTypeDef m24c02_read_byte(I2C_HandleTypeDef *hi2c, uint8_t address, uint8_t *data);
+HAL_StatusTypeDef m24c08_read_byte(i2c_handle_t *hi2c, uint16_t address, uint8_t *data);
 
 /**
  * Read a sequence of bytes from the specified address.
@@ -31,7 +33,7 @@ HAL_StatusTypeDef m24c02_read_byte(I2C_HandleTypeDef *hi2c, uint8_t address, uin
  * @param data Pointer to the buffer to read the data into
  * @param data_len Size of the data to be read
  */
-HAL_StatusTypeDef m24c02_read_buffer(I2C_HandleTypeDef *hi2c, uint8_t address, uint8_t *data, size_t data_len);
+HAL_StatusTypeDef m24c08_read_buffer(i2c_handle_t *hi2c, uint16_t address, uint8_t *data, size_t data_len);
 
 /**
  * Write a byte to the specified address.
@@ -40,7 +42,7 @@ HAL_StatusTypeDef m24c02_read_buffer(I2C_HandleTypeDef *hi2c, uint8_t address, u
  * @param address Address to write to
  * @param data Data to be written
  */
-HAL_StatusTypeDef m24c02_write_byte(I2C_HandleTypeDef *hi2c, uint8_t address, uint8_t data);
+HAL_StatusTypeDef m24c08_write_byte(i2c_handle_t *hi2c, uint16_t address, uint8_t data);
 
 /**
  * Write a sequence of bytes to the specified address.
@@ -54,7 +56,7 @@ HAL_StatusTypeDef m24c02_write_byte(I2C_HandleTypeDef *hi2c, uint8_t address, ui
  * @param data Pointer to the buffer to write the data from
  * @param data_len Size of the data to be written
  */
-HAL_StatusTypeDef m24c02_write_buffer(I2C_HandleTypeDef *hi2c, uint8_t address, const uint8_t *data, size_t data_len);
+HAL_StatusTypeDef m24c08_write_buffer(i2c_handle_t *hi2c, uint16_t address, const uint8_t *data, size_t data_len);
 
 /**
  * Write a sequence of bytes to the specified address within a memory page.
@@ -68,27 +70,6 @@ HAL_StatusTypeDef m24c02_write_buffer(I2C_HandleTypeDef *hi2c, uint8_t address, 
  * @param data Pointer to the buffer to write the data from
  * @param data_len Size of the data to be written
  */
-HAL_StatusTypeDef m24c02_write_page(I2C_HandleTypeDef *hi2c, uint8_t address, const uint8_t *data, size_t data_len);
+HAL_StatusTypeDef m24c08_write_page(i2c_handle_t *hi2c, uint16_t address, const uint8_t *data, size_t data_len);
 
-/**
- * Read the identification page
- *
- * @param hi2c Pointer to a handle for the I2C peripheral
- * @param data Pointer to a 16-byte buffer to read the data into
- */
-HAL_StatusTypeDef m24c02_read_id_page(I2C_HandleTypeDef *hi2c, uint8_t *data);
-
-/**
- * Write the identification page
- *
- * Note: This function explicitly avoids overwriting the device identification
- * code, which is stored in the first 3 bytes of the data buffer. Therefore,
- * the first 3 bytes of the provided buffer must match the first 3 bytes of
- * the existing identification page value.
- *
- * @param hi2c Pointer to a handle for the I2C peripheral
- * @param data Pointer to a 16-byte buffer to write the data from
- */
-HAL_StatusTypeDef m24c02_write_id_page(I2C_HandleTypeDef *hi2c, const uint8_t *data);
-
-#endif /* M24C02_H */
+#endif /* M24C08_H */

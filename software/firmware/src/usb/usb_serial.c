@@ -34,7 +34,7 @@ typedef struct {
     uint8_t active;
 } usb_serial_handle_t;
 
-usb_serial_handle_t handle = {0};
+static usb_serial_handle_t handle = {0};
 
 static osThreadId_t serial_task = NULL;
 static const osThreadAttr_t serial_task_attrs = {

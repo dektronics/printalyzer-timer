@@ -77,9 +77,6 @@ static void *blackout_callback_user_data = NULL;
 /* Current blackout state */
 static bool blackout_state = false;
 
-/* Current meter probe state */
-static bool meter_probe_enabled = false;
-
 /* Flag to track initialization state */
 static bool keypad_initialized = false;
 
@@ -304,28 +301,16 @@ void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *use
     }
 }
 
-void keypad_enable_meter_probe()
+HAL_StatusTypeDef keypad_inject_raw_event(keypad_key_t keycode, bool pressed, TickType_t ticks)
 {
-    if (!keypad_initialized) { return; }
-    if (meter_probe_enabled) { return; }
-
-    const tca8418_pins_t pins_fifo = { 0x0F, 0xFF, 0x03 };
-
-    if (tca8418_gpi_event_mode(keypad_i2c, &pins_fifo) == HAL_OK) {
-        meter_probe_enabled = true;
-    }
-}
-
-void keypad_disable_meter_probe()
-{
-    if (!keypad_initialized) { return; }
-    if (!meter_probe_enabled) { return; }
-
-    const tca8418_pins_t pins_fifo = { 0x07, 0xFF, 0x03 };
-
-    if (tca8418_gpi_event_mode(keypad_i2c, &pins_fifo) == HAL_OK) {
-        meter_probe_enabled = false;
-    }
+    keypad_raw_event_t raw_event = {
+        .keycode = keycode,
+        .pressed = pressed,
+        .ticks = ticks,
+        .repeated = false
+    };
+    osStatus_t ret = osMessageQueuePut(keypad_raw_event_queue, &raw_event, 0, 0);
+    return os_to_hal_status(ret);
 }
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
@@ -474,11 +459,6 @@ HAL_StatusTypeDef keypad_int_event_handler()
             if (keycode == 0 && pressed == 0) {
                 /* Last key has been read, break the loop */
                 break;
-            }
-
-            /* Ignore meter probe events when the meter probe is not enabled */
-            if (keycode == KEYPAD_METER_PROBE && !meter_probe_enabled) {
-                continue;
             }
 
             /*

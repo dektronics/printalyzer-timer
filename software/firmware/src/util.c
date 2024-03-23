@@ -6,6 +6,8 @@
 #include <math.h>
 #include <ctype.h>
 
+#include <usb_errno.h>
+
 #include "display.h"
 #include "enlarger_config.h"
 #include "exposure_state.h"
@@ -319,6 +321,53 @@ HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status)
     case osErrorISR:
     default:
         return HAL_ERROR;
+    }
+}
+
+HAL_StatusTypeDef usb_to_hal_status(int usb_status)
+{
+    /*
+     * HAL does not provide many error code options, so it is better
+     * to directly use the USB error codes if more specific behavior
+     * or useful logging matters.
+     */
+    if (usb_status >= 0) {
+        return HAL_OK;
+    } else if (usb_status == -USB_ERR_BUSY) {
+        return HAL_BUSY;
+    } else if (usb_status == -USB_ERR_TIMEOUT) {
+        return HAL_TIMEOUT;
+    } else {
+        return HAL_ERROR;
+    }
+}
+
+osStatus_t usb_to_os_status(int usb_status)
+{
+    /*
+     * There is a lot of guesswork in this translation, so its better
+     * to directly use the USB error codes if more specific behavior
+     * or useful logging matters.
+     */
+    if (usb_status >= 0) {
+        return osOK;
+    } else {
+        switch (usb_status) {
+        case -USB_ERR_TIMEOUT:
+            return osErrorTimeout;
+        case -USB_ERR_BUSY:
+        case -USB_ERR_NODEV:
+        case -USB_ERR_NOTCONN:
+            return osErrorResource;
+        case -USB_ERR_INVAL:
+        case -USB_ERR_NOTSUPP:
+        case -USB_ERR_RANGE:
+            return osErrorParameter;
+        case -USB_ERR_NOMEM:
+            return osErrorNoMemory;
+        default:
+            return osError;
+        }
     }
 }
 

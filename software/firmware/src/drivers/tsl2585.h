@@ -10,6 +10,8 @@
 #include "stm32f4xx_hal.h"
 #include <stdbool.h>
 
+typedef struct i2c_handle_t i2c_handle_t;
+
 #define TSL2585_SAMPLE_TIME_BASE 1.388889F /*!< Sample time base in microseconds */
 
 typedef enum {
@@ -137,39 +139,39 @@ typedef enum {
 #define TSL2585_GPIO_INT_VSYNC_GPIO_OUT    0x02 /*!< Set the VSYNC/GPIO pin HI or LOW */
 #define TSL2585_GPIO_INT_VSYNC_GPIO_IN     0x01 /*!< External HIGH or LOW value applied to the VSYNC/GPIO pin */
 
-HAL_StatusTypeDef tsl2585_init(I2C_HandleTypeDef *hi2c, uint8_t *sensor_id);
+HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, uint8_t *sensor_id);
 
-HAL_StatusTypeDef tsl2585_get_enable(I2C_HandleTypeDef *hi2c, uint8_t *value);
-HAL_StatusTypeDef tsl2585_set_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
-HAL_StatusTypeDef tsl2585_enable(I2C_HandleTypeDef *hi2c);
-HAL_StatusTypeDef tsl2585_disable(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef tsl2585_get_enable(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_enable(i2c_handle_t *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_enable(i2c_handle_t *hi2c);
+HAL_StatusTypeDef tsl2585_disable(i2c_handle_t *hi2c);
 
-HAL_StatusTypeDef tsl2585_get_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t *value);
-HAL_StatusTypeDef tsl2585_set_interrupt_enable(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_get_interrupt_enable(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_interrupt_enable(i2c_handle_t *hi2c, uint8_t value);
 
-HAL_StatusTypeDef tsl2585_set_sleep_after_interrupt(I2C_HandleTypeDef *hi2c, bool enabled);
+HAL_StatusTypeDef tsl2585_set_sleep_after_interrupt(i2c_handle_t *hi2c, bool enabled);
 
-HAL_StatusTypeDef tsl2585_soft_reset(I2C_HandleTypeDef *hi2c);
-HAL_StatusTypeDef tsl2585_clear_fifo(I2C_HandleTypeDef *hi2c);
-HAL_StatusTypeDef tsl2585_clear_sleep_after_interrupt(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef tsl2585_soft_reset(i2c_handle_t *hi2c);
+HAL_StatusTypeDef tsl2585_clear_fifo(i2c_handle_t *hi2c);
+HAL_StatusTypeDef tsl2585_clear_sleep_after_interrupt(i2c_handle_t *hi2c);
 
-HAL_StatusTypeDef tsl2585_enable_modulators(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mods);
+HAL_StatusTypeDef tsl2585_enable_modulators(i2c_handle_t *hi2c, tsl2585_modulator_t mods);
 
-HAL_StatusTypeDef tsl2585_get_status(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_set_status(I2C_HandleTypeDef *hi2c, uint8_t status);
+HAL_StatusTypeDef tsl2585_get_status(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_set_status(i2c_handle_t *hi2c, uint8_t status);
 
-HAL_StatusTypeDef tsl2585_get_status2(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_get_status3(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_get_status4(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_get_status5(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status2(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status3(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status4(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_status5(i2c_handle_t *hi2c, uint8_t *status);
 
-HAL_StatusTypeDef tsl2585_set_mod_gain_table_select(I2C_HandleTypeDef *hi2c, bool alternate);
+HAL_StatusTypeDef tsl2585_set_mod_gain_table_select(i2c_handle_t *hi2c, bool alternate);
 
-HAL_StatusTypeDef tsl2585_get_max_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_gain_t *gain);
-HAL_StatusTypeDef tsl2585_set_max_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_gain_t gain);
+HAL_StatusTypeDef tsl2585_get_max_mod_gain(i2c_handle_t *hi2c, tsl2585_gain_t *gain);
+HAL_StatusTypeDef tsl2585_set_max_mod_gain(i2c_handle_t *hi2c, tsl2585_gain_t gain);
 
-HAL_StatusTypeDef tsl2585_get_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t *gain);
-HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t gain);
+HAL_StatusTypeDef tsl2585_get_mod_gain(i2c_handle_t *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t *gain);
+HAL_StatusTypeDef tsl2585_set_mod_gain(i2c_handle_t *hi2c, tsl2585_modulator_t mod, tsl2585_step_t step, tsl2585_gain_t gain);
 
 /**
  * Gets whether residual measurement shall be performed on the selected modulator
@@ -177,7 +179,7 @@ HAL_StatusTypeDef tsl2585_set_mod_gain(I2C_HandleTypeDef *hi2c, tsl2585_modulato
  * @param mod Modulator to configure residual measurement on
  * @param steps Mask of sequencer steps residual measurement is enabled for
  */
-HAL_StatusTypeDef tsl2585_get_mod_residual_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t *steps);
+HAL_StatusTypeDef tsl2585_get_mod_residual_enable(i2c_handle_t *hi2c, tsl2585_modulator_t mod, tsl2585_step_t *steps);
 
 /**
  * Sets whether residual measurement shall be performed on the selected modulator
@@ -185,37 +187,37 @@ HAL_StatusTypeDef tsl2585_get_mod_residual_enable(I2C_HandleTypeDef *hi2c, tsl25
  * @param mod Modulator to configure residual measurement on
  * @param steps Mask of sequencer steps to enable residual measurement for
  */
-HAL_StatusTypeDef tsl2585_set_mod_residual_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, tsl2585_step_t steps);
+HAL_StatusTypeDef tsl2585_set_mod_residual_enable(i2c_handle_t *hi2c, tsl2585_modulator_t mod, tsl2585_step_t steps);
 
-HAL_StatusTypeDef tsl2585_set_mod_photodiode_smux(I2C_HandleTypeDef *hi2c,
+HAL_StatusTypeDef tsl2585_set_mod_photodiode_smux(i2c_handle_t *hi2c,
     tsl2585_step_t step, const tsl2585_modulator_t phd_mod[static TSL2585_PHD_MAX]);
 
-HAL_StatusTypeDef tsl2585_get_uv_calibration(I2C_HandleTypeDef *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_get_uv_calibration(i2c_handle_t *hi2c, uint8_t *value);
 
-HAL_StatusTypeDef tsl2585_set_mod_idac_range(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_set_mod_idac_range(i2c_handle_t *hi2c, uint8_t value);
 
-HAL_StatusTypeDef tsl2585_get_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t *iteration);
-HAL_StatusTypeDef tsl2585_set_calibration_nth_iteration(I2C_HandleTypeDef *hi2c, uint8_t iteration);
+HAL_StatusTypeDef tsl2585_get_calibration_nth_iteration(i2c_handle_t *hi2c, uint8_t *iteration);
+HAL_StatusTypeDef tsl2585_set_calibration_nth_iteration(i2c_handle_t *hi2c, uint8_t iteration);
 
-HAL_StatusTypeDef tsl2585_get_agc_calibration(I2C_HandleTypeDef *hi2c, bool *enabled);
-HAL_StatusTypeDef tsl2585_set_agc_calibration(I2C_HandleTypeDef *hi2c, bool enabled);
+HAL_StatusTypeDef tsl2585_get_agc_calibration(i2c_handle_t *hi2c, bool *enabled);
+HAL_StatusTypeDef tsl2585_set_agc_calibration(i2c_handle_t *hi2c, bool enabled);
 
-HAL_StatusTypeDef tsl2585_get_single_shot_mode(I2C_HandleTypeDef *hi2c, bool *enabled);
-HAL_StatusTypeDef tsl2585_set_single_shot_mode(I2C_HandleTypeDef *hi2c, bool enabled);
+HAL_StatusTypeDef tsl2585_get_single_shot_mode(i2c_handle_t *hi2c, bool *enabled);
+HAL_StatusTypeDef tsl2585_set_single_shot_mode(i2c_handle_t *hi2c, bool enabled);
 
-HAL_StatusTypeDef tsl2585_get_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t *period);
-HAL_StatusTypeDef tsl2585_set_vsync_period(I2C_HandleTypeDef *hi2c, uint16_t period);
+HAL_StatusTypeDef tsl2585_get_vsync_period(i2c_handle_t *hi2c, uint16_t *period);
+HAL_StatusTypeDef tsl2585_set_vsync_period(i2c_handle_t *hi2c, uint16_t period);
 
-HAL_StatusTypeDef tsl2585_get_vsync_period_target(I2C_HandleTypeDef *hi2c, uint16_t *period_target, bool *use_fast_timing);
-HAL_StatusTypeDef tsl2585_set_vsync_period_target(I2C_HandleTypeDef *hi2c, uint16_t period_target, bool use_fast_timing);
+HAL_StatusTypeDef tsl2585_get_vsync_period_target(i2c_handle_t *hi2c, uint16_t *period_target, bool *use_fast_timing);
+HAL_StatusTypeDef tsl2585_set_vsync_period_target(i2c_handle_t *hi2c, uint16_t period_target, bool use_fast_timing);
 
-HAL_StatusTypeDef tsl2585_get_vsync_control(I2C_HandleTypeDef *hi2c, uint8_t *value);
-HAL_StatusTypeDef tsl2585_set_vsync_control(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_get_vsync_control(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_vsync_control(i2c_handle_t *hi2c, uint8_t value);
 
-HAL_StatusTypeDef tsl2585_get_vsync_cfg(I2C_HandleTypeDef *hi2c, uint8_t *value);
-HAL_StatusTypeDef tsl2585_set_vsync_cfg(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_get_vsync_cfg(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_vsync_cfg(i2c_handle_t *hi2c, uint8_t value);
 
-HAL_StatusTypeDef tsl2585_set_vsync_gpio_int(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_set_vsync_gpio_int(i2c_handle_t *hi2c, uint8_t value);
 
 /**
  * Get the number of samples in an AGC measurement cycle.
@@ -226,14 +228,14 @@ HAL_StatusTypeDef tsl2585_set_vsync_gpio_int(I2C_HandleTypeDef *hi2c, uint8_t va
  *
  * @param value An 11-bit value that determines the number of samples (0-2047)
  */
-HAL_StatusTypeDef tsl2585_get_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t *value);
+HAL_StatusTypeDef tsl2585_get_agc_num_samples(i2c_handle_t *hi2c, uint16_t *value);
 
 /**
  * Set the number of samples in an AGC measurement cycle.
  *
  * @param value An 11-bit value that determines the number of samples (0-2047)
  */
-HAL_StatusTypeDef tsl2585_set_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t value);
+HAL_StatusTypeDef tsl2585_set_agc_num_samples(i2c_handle_t *hi2c, uint16_t value);
 
 /**
  * Get the sample time.
@@ -243,14 +245,14 @@ HAL_StatusTypeDef tsl2585_set_agc_num_samples(I2C_HandleTypeDef *hi2c, uint16_t 
  *
  * @param value An 11-bit value that determines the sample time (0-2047)
  */
-HAL_StatusTypeDef tsl2585_get_sample_time(I2C_HandleTypeDef *hi2c, uint16_t *value);
+HAL_StatusTypeDef tsl2585_get_sample_time(i2c_handle_t *hi2c, uint16_t *value);
 
 /**
  * Set the sample time.
  *
  * @param value An 11-bit value that determines the sample time (0-2047)
  */
-HAL_StatusTypeDef tsl2585_set_sample_time(I2C_HandleTypeDef *hi2c, uint16_t value);
+HAL_StatusTypeDef tsl2585_set_sample_time(i2c_handle_t *hi2c, uint16_t value);
 
 /**
  * Get the number of samples in an ALS integration cycle.
@@ -261,14 +263,14 @@ HAL_StatusTypeDef tsl2585_set_sample_time(I2C_HandleTypeDef *hi2c, uint16_t valu
  *
  * @param value An 11-bit value that determines the number of samples (0-2047)
  */
-HAL_StatusTypeDef tsl2585_get_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t *value);
+HAL_StatusTypeDef tsl2585_get_als_num_samples(i2c_handle_t *hi2c, uint16_t *value);
 
 /**
  * Set the number of samples in an ALS integration cycle.
  *
  * @param value An 11-bit value that determines the number of samples (0-2047)
  */
-HAL_StatusTypeDef tsl2585_set_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t value);
+HAL_StatusTypeDef tsl2585_set_als_num_samples(i2c_handle_t *hi2c, uint16_t value);
 
 /**
  * Get the ALS interrupt persistence value.
@@ -280,40 +282,40 @@ HAL_StatusTypeDef tsl2585_set_als_num_samples(I2C_HandleTypeDef *hi2c, uint16_t 
  *
  * @param value A 4-bit value from 0x0 to 0xF
  */
-HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t *value);
 
 /**
  * Set the ALS interrupt persistence value.
  *
  * @param value A 4-bit value from 0x0 to 0xF
  */
-HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(I2C_HandleTypeDef *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t value);
 
-HAL_StatusTypeDef tsl2585_get_als_status(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_get_als_status2(I2C_HandleTypeDef *hi2c, uint8_t *status);
-HAL_StatusTypeDef tsl2585_get_als_status3(I2C_HandleTypeDef *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_als_status(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_als_status2(i2c_handle_t *hi2c, uint8_t *status);
+HAL_StatusTypeDef tsl2585_get_als_status3(i2c_handle_t *hi2c, uint8_t *status);
 
-HAL_StatusTypeDef tsl2585_get_als_scale(I2C_HandleTypeDef *hi2c, uint8_t *scale);
-HAL_StatusTypeDef tsl2585_set_als_scale(I2C_HandleTypeDef *hi2c, uint8_t scale);
+HAL_StatusTypeDef tsl2585_get_als_scale(i2c_handle_t *hi2c, uint8_t *scale);
+HAL_StatusTypeDef tsl2585_set_als_scale(i2c_handle_t *hi2c, uint8_t scale);
 
-HAL_StatusTypeDef tsl2585_get_fifo_als_status_write_enable(I2C_HandleTypeDef *hi2c, bool *enable);
-HAL_StatusTypeDef tsl2585_set_fifo_als_status_write_enable(I2C_HandleTypeDef *hi2c, bool enable);
+HAL_StatusTypeDef tsl2585_get_fifo_als_status_write_enable(i2c_handle_t *hi2c, bool *enable);
+HAL_StatusTypeDef tsl2585_set_fifo_als_status_write_enable(i2c_handle_t *hi2c, bool enable);
 
-HAL_StatusTypeDef tsl2585_get_fifo_als_data_format(I2C_HandleTypeDef *hi2c, tsl2585_als_fifo_data_format_t *format);
-HAL_StatusTypeDef tsl2585_set_fifo_als_data_format(I2C_HandleTypeDef *hi2c, tsl2585_als_fifo_data_format_t format);
+HAL_StatusTypeDef tsl2585_get_fifo_als_data_format(i2c_handle_t *hi2c, tsl2585_als_fifo_data_format_t *format);
+HAL_StatusTypeDef tsl2585_set_fifo_als_data_format(i2c_handle_t *hi2c, tsl2585_als_fifo_data_format_t format);
 
-HAL_StatusTypeDef tsl2585_get_als_msb_position(I2C_HandleTypeDef *hi2c, uint8_t *position);
-HAL_StatusTypeDef tsl2585_set_als_msb_position(I2C_HandleTypeDef *hi2c, uint8_t position);
+HAL_StatusTypeDef tsl2585_get_als_msb_position(i2c_handle_t *hi2c, uint8_t *position);
+HAL_StatusTypeDef tsl2585_set_als_msb_position(i2c_handle_t *hi2c, uint8_t position);
 
-HAL_StatusTypeDef tsl2585_get_als_data0(I2C_HandleTypeDef *hi2c, uint16_t *data);
-HAL_StatusTypeDef tsl2585_get_als_data1(I2C_HandleTypeDef *hi2c, uint16_t *data);
-HAL_StatusTypeDef tsl2585_get_als_data2(I2C_HandleTypeDef *hi2c, uint16_t *data);
+HAL_StatusTypeDef tsl2585_get_als_data0(i2c_handle_t *hi2c, uint16_t *data);
+HAL_StatusTypeDef tsl2585_get_als_data1(i2c_handle_t *hi2c, uint16_t *data);
+HAL_StatusTypeDef tsl2585_get_als_data2(i2c_handle_t *hi2c, uint16_t *data);
 
-HAL_StatusTypeDef tsl2585_set_fifo_data_write_enable(I2C_HandleTypeDef *hi2c, tsl2585_modulator_t mod, bool enable);
+HAL_StatusTypeDef tsl2585_set_fifo_data_write_enable(i2c_handle_t *hi2c, tsl2585_modulator_t mod, bool enable);
 
-HAL_StatusTypeDef tsl2585_get_fifo_status(I2C_HandleTypeDef *hi2c, tsl2585_fifo_status_t *status);
+HAL_StatusTypeDef tsl2585_get_fifo_status(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status);
 
-HAL_StatusTypeDef tsl2585_read_fifo(I2C_HandleTypeDef *hi2c, uint8_t *data, uint16_t len);
+HAL_StatusTypeDef tsl2585_read_fifo(i2c_handle_t *hi2c, uint8_t *data, uint16_t len);
 
 const char* tsl2585_gain_str(tsl2585_gain_t gain);
 float tsl2585_gain_value(tsl2585_gain_t gain);

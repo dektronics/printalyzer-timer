@@ -15,13 +15,9 @@
 #include "meter_probe_settings.h"
 #include "tsl2585.h"
 #include "keypad.h"
+#include "usb_host.h"
+#include "i2c_interface.h"
 #include "util.h"
-
-/*
- * TODO The entire meter probe interface needs to be rewritten for the new hardware
- * Until this code is updated, it will be disabled in a kludgy way to get
- * the rest of the firmware to compile.
- */
 
 extern TIM_HandleTypeDef htim3;
 
@@ -114,8 +110,7 @@ typedef struct {
 } tsl2585_fifo_data_t;
 
 /* Global I2C handle for the meter probe */
-//XXX Not initializing this variable, so any actual attempts to use will crash
-/*extern*/ I2C_HandleTypeDef hi2c2;
+static i2c_handle_t *hi2c = NULL;
 
 static bool meter_probe_initialized = false;
 static bool meter_probe_started = false;
@@ -171,8 +166,6 @@ static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
 
 static HAL_StatusTypeDef sensor_osc_calibration();
-static void sensor_int_gpio_exti_enable();
-static void sensor_int_gpio_exti_disable();
 
 static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data);
 
@@ -278,7 +271,6 @@ bool meter_probe_is_started()
 
 osStatus_t meter_probe_start()
 {
-#if 0
     if (!meter_probe_initialized || meter_probe_started) { return osErrorResource; }
 
     osStatus_t result = osOK;
@@ -289,8 +281,6 @@ osStatus_t meter_probe_start()
     osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
     return result;
-#endif
-    return osErrorResource;
 }
 
 osStatus_t meter_probe_control_start()
@@ -306,27 +296,20 @@ osStatus_t meter_probe_control_start()
     osDelay(10);
 
     do {
-        /* Read the meter probe's settings memory */
-        ret = meter_probe_settings_init(&probe_settings_handle, &hi2c2);
-
-        /* If the first I2C operation since power-up fails, try reinitializing the I2C bus */
-        if (ret == HAL_BUSY) {
-            ret = HAL_I2C_DeInit(&hi2c2);
-            if (ret != HAL_OK) {
-                log_w("Unable to de-init I2C");
-                break;
-            }
-
-            ret = HAL_I2C_Init(&hi2c2);
-            if (ret != HAL_OK) {
-                log_w("Unable to re-init I2C");
-                break;
-            }
-
-            /* Now retry the operation */
-            ret = meter_probe_settings_init(&probe_settings_handle, &hi2c2);
+        if (!usb_meter_probe_is_attached()) {
+            log_w("Meter probe not attached");
+            break;
         }
 
+        hi2c = usb_get_meter_probe_i2c_interface();
+
+        //FIXME Replace this kludge with a settings code update
+        probe_settings_handle.id.probe_type = METER_PROBE_TYPE_TSL2585;
+        probe_settings_handle.id.probe_revision = 5;
+        probe_settings_handle.id.probe_serial = 0xFF;
+
+        /* Read the meter probe's settings memory */
+        ret = meter_probe_settings_init(&probe_settings_handle, hi2c);
         if (ret != HAL_OK) {
             break;
         }
@@ -363,18 +346,15 @@ osStatus_t meter_probe_control_start()
          * This routine should complete with the sensor in a disabled
          * state.
          */
-        ret = tsl2585_init(&hi2c2, sensor_device_id);
+        ret = tsl2585_init(hi2c, sensor_device_id);
         if (ret != HAL_OK) { break; }
 
         sensor_state.uv_calibration = 0;
         if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
-            ret = tsl2585_get_uv_calibration(&hi2c2, &sensor_state.uv_calibration);
+            ret = tsl2585_get_uv_calibration(hi2c, &sensor_state.uv_calibration);
             if (ret != HAL_OK) { break; }
             log_d("UV calibration value: %d", sensor_state.uv_calibration);
         }
-
-        /* Enable the meter probe button */
-        keypad_enable_meter_probe();
 
         meter_probe_started = true;
     } while (0);
@@ -404,9 +384,6 @@ osStatus_t meter_probe_stop()
 osStatus_t meter_probe_control_stop()
 {
     log_d("meter_probe_control_stop");
-
-    /* Disable the meter probe button */
-    keypad_disable_meter_probe();
 
     /* Remove power from the meter probe port */
     //HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
@@ -479,6 +456,9 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
 
 osStatus_t meter_probe_sensor_enable_osc_calibration()
 {
+    //FIXME Might no longer support OSC calibration
+    return osOK;
+#if 0
     if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
 
     if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
@@ -488,10 +468,14 @@ osStatus_t meter_probe_sensor_enable_osc_calibration()
     } else {
         return osErrorParameter;
     }
+#endif
 }
 
 osStatus_t meter_probe_sensor_disable_osc_calibration()
 {
+    //FIXME Might no longer support OSC calibration
+    return osOK;
+#if 0
     if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
 
     if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
@@ -501,6 +485,7 @@ osStatus_t meter_probe_sensor_disable_osc_calibration()
     } else {
         return osErrorParameter;
     }
+#endif
 }
 
 osStatus_t meter_probe_sensor_enable()
@@ -538,87 +523,87 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
     log_d("meter_probe_control_sensor_enable: %s", single_shot ? "single_shot" : "continuous");
 
     /* Disable handling of sensor interrupts */
-    sensor_int_gpio_exti_disable();
+    //FIXME sensor_int_gpio_exti_disable();
 
     do {
         /* Query the initial state of the sensor */
         if (!sensor_state.gain_pending) {
-            ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, &sensor_state.gain[0]);
+            ret = tsl2585_get_mod_gain(hi2c, TSL2585_MOD0, TSL2585_STEP0, &sensor_state.gain[0]);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD1, TSL2585_STEP0, &sensor_state.gain[1]);
+            ret = tsl2585_get_mod_gain(hi2c, TSL2585_MOD1, TSL2585_STEP0, &sensor_state.gain[1]);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_get_mod_gain(&hi2c2, TSL2585_MOD2, TSL2585_STEP0, &sensor_state.gain[2]);
+            ret = tsl2585_get_mod_gain(hi2c, TSL2585_MOD2, TSL2585_STEP0, &sensor_state.gain[2]);
             if (ret != HAL_OK) { break; }
         }
 
         if (!sensor_state.integration_pending) {
-            ret = tsl2585_get_sample_time(&hi2c2, &sensor_state.sample_time);
+            ret = tsl2585_get_sample_time(hi2c, &sensor_state.sample_time);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_get_als_num_samples(&hi2c2, &sensor_state.sample_count);
+            ret = tsl2585_get_als_num_samples(hi2c, &sensor_state.sample_count);
             if (ret != HAL_OK) { break; }
         }
 
         if (!sensor_state.mod_calibration_pending) {
-            ret = tsl2585_get_calibration_nth_iteration(&hi2c2, &sensor_state.nth_iteration_value);
+            ret = tsl2585_get_calibration_nth_iteration(hi2c, &sensor_state.nth_iteration_value);
             if (ret != HAL_OK) { break; }
         }
 
         if (!sensor_state.agc_pending) {
-            ret = tsl2585_get_agc_num_samples(&hi2c2, &sensor_state.agc_sample_count);
+            ret = tsl2585_get_agc_num_samples(hi2c, &sensor_state.agc_sample_count);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_get_agc_calibration(&hi2c2, &sensor_state.agc_enabled);
+            ret = tsl2585_get_agc_calibration(hi2c, &sensor_state.agc_enabled);
             if (ret != HAL_OK) { break; }
         }
 
         /* Put the sensor into a known initial state */
 
         /* Enable writing of ALS status to the FIFO */
-        ret = tsl2585_set_fifo_als_status_write_enable(&hi2c2, true);
+        ret = tsl2585_set_fifo_als_status_write_enable(hi2c, true);
         if (ret != HAL_OK) { break; }
 
         /* Enable writing of results to the FIFO */
-        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD0, true);
+        ret = tsl2585_set_fifo_data_write_enable(hi2c, TSL2585_MOD0, true);
         if (ret != HAL_OK) { break; }
-        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD1, false);
+        ret = tsl2585_set_fifo_data_write_enable(hi2c, TSL2585_MOD1, false);
         if (ret != HAL_OK) { break; }
-        ret = tsl2585_set_fifo_data_write_enable(&hi2c2, TSL2585_MOD2, false);
+        ret = tsl2585_set_fifo_data_write_enable(hi2c, TSL2585_MOD2, false);
         if (ret != HAL_OK) { break; }
 
         /* Set FIFO data format to 32-bits */
-        ret = tsl2585_set_fifo_als_data_format(&hi2c2, TSL2585_ALS_FIFO_32BIT);
+        ret = tsl2585_set_fifo_als_data_format(hi2c, TSL2585_ALS_FIFO_32BIT);
         if (ret != HAL_OK) { break; }
 
         /* Set MSB position for full 26-bit result */
-        ret = tsl2585_set_als_msb_position(&hi2c2, 6);
+        ret = tsl2585_set_als_msb_position(hi2c, 6);
         if (ret != HAL_OK) { break; }
 
         /* Make sure residuals are enabled */
-        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD0, TSL2585_STEPS_ALL);
+        ret = tsl2585_set_mod_residual_enable(hi2c, TSL2585_MOD0, TSL2585_STEPS_ALL);
         if (ret != HAL_OK) { break; }
-        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD1, TSL2585_STEPS_ALL);
+        ret = tsl2585_set_mod_residual_enable(hi2c, TSL2585_MOD1, TSL2585_STEPS_ALL);
         if (ret != HAL_OK) { break; }
-        ret = tsl2585_set_mod_residual_enable(&hi2c2, TSL2585_MOD2, TSL2585_STEPS_ALL);
+        ret = tsl2585_set_mod_residual_enable(hi2c, TSL2585_MOD2, TSL2585_STEPS_ALL);
         if (ret != HAL_OK) { break; }
 
         /* Select alternate gain table, which caps gain at 256x but gives us more residual bits */
-        ret = tsl2585_set_mod_gain_table_select(&hi2c2, true);
+        ret = tsl2585_set_mod_gain_table_select(hi2c, true);
         if (ret != HAL_OK) { break; }
 
         /* Set maximum gain to 256x per app note on residual measurement */
-        ret = tsl2585_set_max_mod_gain(&hi2c2, TSL2585_GAIN_256X);
+        ret = tsl2585_set_max_mod_gain(hi2c, TSL2585_GAIN_256X);
         if (ret != HAL_OK) { break; }
 
         /* Enable modulator */
-        ret = tsl2585_enable_modulators(&hi2c2, TSL2585_MOD0);
+        ret = tsl2585_enable_modulators(hi2c, TSL2585_MOD0);
         if (ret != HAL_OK) { break; }
 
         /* Set modulator calibration rate */
         if (sensor_state.mod_calibration_pending) {
-            ret = tsl2585_set_calibration_nth_iteration(&hi2c2, sensor_state.nth_iteration_value);
+            ret = tsl2585_set_calibration_nth_iteration(hi2c, sensor_state.nth_iteration_value);
             if (ret != HAL_OK) { break; }
 
             sensor_state.mod_calibration_pending = false;
@@ -626,42 +611,42 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
 
         if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
             /* Configure photodiodes for Photopic measurement only */
-            ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
+            ret = tsl2585_set_mod_photodiode_smux(hi2c, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
             if (ret != HAL_OK) { break; }
         } else if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
             /* Configure photodiodes for Clear measurement only */
-            ret = tsl2585_set_mod_photodiode_smux(&hi2c2, TSL2585_STEP0, sensor_tsl2521_phd_mod_vis);
+            ret = tsl2585_set_mod_photodiode_smux(hi2c, TSL2585_STEP0, sensor_tsl2521_phd_mod_vis);
             if (ret != HAL_OK) { break; }
         }
 
         if (sensor_state.gain_pending) {
-            ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
+            ret = tsl2585_set_mod_gain(hi2c, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD1, TSL2585_STEP0, sensor_state.gain[1]);
+            ret = tsl2585_set_mod_gain(hi2c, TSL2585_MOD1, TSL2585_STEP0, sensor_state.gain[1]);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD2, TSL2585_STEP0, sensor_state.gain[2]);
+            ret = tsl2585_set_mod_gain(hi2c, TSL2585_MOD2, TSL2585_STEP0, sensor_state.gain[2]);
             if (ret != HAL_OK) { break; }
 
             sensor_state.gain_pending = false;
         }
 
         if (sensor_state.integration_pending) {
-            ret = tsl2585_set_sample_time(&hi2c2, sensor_state.sample_time);
+            ret = tsl2585_set_sample_time(hi2c, sensor_state.sample_time);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_set_als_num_samples(&hi2c2, sensor_state.sample_count);
+            ret = tsl2585_set_als_num_samples(hi2c, sensor_state.sample_count);
             if (ret != HAL_OK) { break; }
 
             sensor_state.integration_pending = false;
         }
 
         if (sensor_state.agc_pending) {
-            ret = tsl2585_set_agc_num_samples(&hi2c2, sensor_state.agc_sample_count);
+            ret = tsl2585_set_agc_num_samples(hi2c, sensor_state.agc_sample_count);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_set_agc_calibration(&hi2c2, sensor_state.agc_enabled);
+            ret = tsl2585_set_agc_calibration(hi2c, sensor_state.agc_enabled);
             if (ret != HAL_OK) { break; }
 
             sensor_state.agc_pending = false;
@@ -675,20 +660,20 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         /* Clear out any old sensor readings */
         osMessageQueueReset(sensor_reading_queue);
 
-        ret = tsl2585_set_single_shot_mode(&hi2c2, single_shot);
+        ret = tsl2585_set_single_shot_mode(hi2c, single_shot);
         if (ret != HAL_OK) { break; }
 
-        ret = tsl2585_set_sleep_after_interrupt(&hi2c2, single_shot);
+        ret = tsl2585_set_sleep_after_interrupt(hi2c, single_shot);
         if (ret != HAL_OK) { break; }
 
         /* Configure to interrupt on every ALS cycle */
-        ret = tsl2585_set_als_interrupt_persistence(&hi2c2, 0);
+        ret = tsl2585_set_als_interrupt_persistence(hi2c, 0);
         if (ret != HAL_OK) {
             break;
         }
 
         /* Enable sensor interrupts */
-        ret = tsl2585_set_interrupt_enable(&hi2c2, TSL2585_INTENAB_AIEN);
+        ret = tsl2585_set_interrupt_enable(hi2c, TSL2585_INTENAB_AIEN);
         if (ret != HAL_OK) {
             break;
         }
@@ -701,10 +686,10 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         }
 
         /* Enable handling of sensor interrupts */
-        sensor_int_gpio_exti_enable();
+        //FIXME sensor_int_gpio_exti_enable();
 
         /* Enable the sensor (ALS Enable and Power ON) */
-        ret = tsl2585_enable(&hi2c2);
+        ret = tsl2585_enable(hi2c);
         if (ret != HAL_OK) {
             break;
         }
@@ -730,15 +715,15 @@ HAL_StatusTypeDef sensor_osc_calibration()
 
     do {
         /* Set VSYNC period target */
-        ret = tsl2585_set_vsync_period_target(&hi2c2, 720, true); /* 1000Hz */
+        ret = tsl2585_set_vsync_period_target(hi2c, 720, true); /* 1000Hz */
         if (ret != HAL_OK) { break; }
 
         /* Set calibration mode */
-        ret = tsl2585_set_vsync_cfg(&hi2c2, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_MODE);
+        ret = tsl2585_set_vsync_cfg(hi2c, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_MODE);
         if (ret != HAL_OK) { break; }
 
         /* Power on the sensor (PON only) */
-        ret = tsl2585_set_enable(&hi2c2, TSL2585_ENABLE_PON);
+        ret = tsl2585_set_enable(hi2c, TSL2585_ENABLE_PON);
         if (ret != HAL_OK) { break; }
 
         /* Enable interrupts from the 1kHz timer being used for this process */
@@ -763,11 +748,11 @@ HAL_StatusTypeDef sensor_osc_calibration()
             break;
         }
 
-        ret = tsl2585_get_status3(&hi2c2, &status3);
+        ret = tsl2585_get_status3(hi2c, &status3);
         if (ret != HAL_OK) { break; }
 
         if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) != 0) {
-            ret = tsl2585_get_vsync_period(&hi2c2, &vsync_period);
+            ret = tsl2585_get_vsync_period(hi2c, &vsync_period);
             if (ret != HAL_OK) { break; }
             log_d("VSYNC_PERIOD=%d (%f Hz)", vsync_period, (1.0F/(vsync_period * 1.388889F))*1000000.0F);
         } else {
@@ -777,7 +762,7 @@ HAL_StatusTypeDef sensor_osc_calibration()
         }
 
         /* Reconfigure the VSYNC of the sensor back to its default */
-        ret = tsl2585_set_vsync_cfg(&hi2c2, 0x00);
+        ret = tsl2585_set_vsync_cfg(hi2c, 0x00);
         if (ret != HAL_OK) { break; }
 
     } while (0);
@@ -785,7 +770,7 @@ HAL_StatusTypeDef sensor_osc_calibration()
     /* Disable the sensor in case of failure */
     if (ret != HAL_OK) {
         log_w("VSYNC calibration failed");
-        tsl2585_disable(&hi2c2);
+        tsl2585_disable(hi2c);
     }
 
     return ret;
@@ -799,7 +784,7 @@ void meter_probe_notify_cal_timer()
      * via I2C. After the second command, it disables itself.
      */
     if (sensor_osc_sync_count == 1 || sensor_osc_sync_count == 2) {
-        HAL_StatusTypeDef ret = tsl2585_set_vsync_control(&hi2c2, 0x01);
+        HAL_StatusTypeDef ret = tsl2585_set_vsync_control(hi2c, 0x01);
         if (ret != HAL_OK) {
             sensor_osc_sync_count = 0xF0;
         }
@@ -808,18 +793,6 @@ void meter_probe_notify_cal_timer()
         __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
     }
     sensor_osc_sync_count++;
-}
-
-void sensor_int_gpio_exti_enable()
-{
-    /* Enable interrupts from the SENSOR_INT pin */
-    HAL_NVIC_EnableIRQ(EXTI1_IRQn);
-}
-
-void sensor_int_gpio_exti_disable()
-{
-    /* Disable interrupts from the SENSOR_INT pin */
-    HAL_NVIC_DisableIRQ(EXTI1_IRQn);
 }
 
 osStatus_t meter_probe_sensor_disable()
@@ -843,7 +816,7 @@ osStatus_t meter_probe_control_sensor_disable()
     log_d("meter_probe_control_sensor_disable");
 
     do {
-        ret = tsl2585_disable(&hi2c2);
+        ret = tsl2585_disable(hi2c);
         if (ret != HAL_OK) { break; }
         sensor_state.running = false;
     } while (0);
@@ -890,7 +863,7 @@ osStatus_t meter_probe_control_sensor_set_gain(const sensor_control_gain_params_
     }
 
     if (sensor_state.running) {
-        ret = tsl2585_set_mod_gain(&hi2c2, params->mod, TSL2585_STEP0, params->gain);
+        ret = tsl2585_set_mod_gain(hi2c, params->mod, TSL2585_STEP0, params->gain);
         if (ret == HAL_OK) {
             sensor_state.gain[mod_index] = params->gain;
         }
@@ -929,12 +902,12 @@ osStatus_t meter_probe_control_sensor_integration(const sensor_control_integrati
     log_d("meter_probe_control_sensor_integration: %d, %d", params->sample_time, params->sample_count);
 
     if (sensor_state.running) {
-        ret = tsl2585_set_sample_time(&hi2c2, params->sample_time);
+        ret = tsl2585_set_sample_time(hi2c, params->sample_time);
         if (ret == HAL_OK) {
             sensor_state.sample_time = params->sample_time;
         }
 
-        ret = tsl2585_set_als_num_samples(&hi2c2, params->sample_count);
+        ret = tsl2585_set_als_num_samples(hi2c, params->sample_count);
         if (ret == HAL_OK) {
             sensor_state.sample_count = params->sample_count;
         }
@@ -973,7 +946,7 @@ osStatus_t meter_probe_control_sensor_set_mod_calibration(const sensor_control_m
     log_d("meter_probe_control_sensor_set_mod_calibration: %d", params->nth_iteration_value);
 
     if (sensor_state.running) {
-        ret = tsl2585_set_calibration_nth_iteration(&hi2c2, params->nth_iteration_value);
+        ret = tsl2585_set_calibration_nth_iteration(hi2c, params->nth_iteration_value);
         if (ret == HAL_OK) {
             sensor_state.nth_iteration_value = params->nth_iteration_value;
         }
@@ -1012,12 +985,12 @@ osStatus_t meter_probe_control_sensor_enable_agc(const sensor_control_agc_params
     log_d("meter_probe_control_sensor_enable_agc");
 
     if (sensor_state.running) {
-        ret = tsl2585_set_agc_num_samples(&hi2c2, params->sample_count);
+        ret = tsl2585_set_agc_num_samples(hi2c, params->sample_count);
         if (ret == HAL_OK) {
             sensor_state.agc_sample_count = params->sample_count;
         }
 
-        ret = tsl2585_set_agc_calibration(&hi2c2, true);
+        ret = tsl2585_set_agc_calibration(hi2c, true);
         if (ret == HAL_OK) {
             sensor_state.agc_enabled = true;
         }
@@ -1052,10 +1025,10 @@ osStatus_t meter_probe_control_sensor_disable_agc()
 
     if (sensor_state.running) {
         do {
-            ret = tsl2585_set_agc_calibration(&hi2c2, false);
+            ret = tsl2585_set_agc_calibration(hi2c, false);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_set_agc_num_samples(&hi2c2, 0);
+            ret = tsl2585_set_agc_num_samples(hi2c, 0);
             if (ret != HAL_OK) { break; }
         } while (0);
         if (ret == HAL_OK) {
@@ -1097,7 +1070,7 @@ osStatus_t meter_probe_control_sensor_trigger_next_reading()
 
     if (!sensor_state.sai_active) {
         uint8_t status4 = 0;
-        tsl2585_get_status4(&hi2c2, &status4);
+        tsl2585_get_status4(hi2c, &status4);
         if ((status4 & TSL2585_STATUS4_SAI_ACTIVE) != 0) {
             sensor_state.sai_active = true;
         } else {
@@ -1106,7 +1079,7 @@ osStatus_t meter_probe_control_sensor_trigger_next_reading()
         }
     }
 
-    ret = tsl2585_clear_sleep_after_interrupt(&hi2c2);
+    ret = tsl2585_clear_sleep_after_interrupt(hi2c);
     if (ret == HAL_OK) {
         sensor_state.sai_active = false;
     }
@@ -1260,7 +1233,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     bool has_reading = false;
 
     /* Prevent task switching to ensure fast processing of incoming sensor data */
-    vTaskSuspendAll();
+    //vTaskSuspendAll();
 
 #if 0
     log_d("meter_probe_control_interrupt");
@@ -1272,7 +1245,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
 
     do {
         /* Get the interrupt status */
-        ret = tsl2585_get_status(&hi2c2, &status);
+        ret = tsl2585_get_status(hi2c, &status);
         if (ret != HAL_OK) { break; }
 
 #if 0
@@ -1337,7 +1310,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
              * the registers to disable AGC does not seem to take.
              */
             if (sensor_state.agc_disabled_reset_gain) {
-                ret = tsl2585_set_mod_gain(&hi2c2, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
+                ret = tsl2585_set_mod_gain(hi2c, TSL2585_MOD0, TSL2585_STEP0, sensor_state.gain[0]);
                 if (ret != HAL_OK) { break; }
                 sensor_state.agc_disabled_reset_gain = false;
                 sensor_state.discard_next_reading = true;
@@ -1345,13 +1318,13 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         }
 
         /* Clear the interrupt status */
-        ret = tsl2585_set_status(&hi2c2, status);
+        ret = tsl2585_set_status(hi2c, status);
         if (ret != HAL_OK) { break; }
 
         /* Check single-shot specific state */
         if (sensor_state.single_shot) {
             uint8_t status4 = 0;
-            ret = tsl2585_get_status4(&hi2c2, &status4);
+            ret = tsl2585_get_status4(hi2c, &status4);
             if (ret != HAL_OK) { break; }
             if ((status4 & TSL2585_STATUS4_SAI_ACTIVE) != 0) {
 #if 0
@@ -1363,7 +1336,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     } while (0);
 
     /* Resume normal task switching */
-    xTaskResumeAll();
+    //xTaskResumeAll();
 
     if (has_reading) {
 #if 0
@@ -1388,7 +1361,7 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
     const uint8_t data_size = 7;
 
     do {
-        ret = tsl2585_get_fifo_status(&hi2c2, &fifo_status);
+        ret = tsl2585_get_fifo_status(hi2c, &fifo_status);
         if (ret != HAL_OK) { break; }
 
 #if 0
@@ -1397,7 +1370,7 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
 
         if (fifo_status.overflow) {
             log_w("FIFO overflow, clearing");
-            ret = tsl2585_clear_fifo(&hi2c2);
+            ret = tsl2585_clear_fifo(hi2c);
             if (ret != HAL_OK) { break; }
 
             if (fifo_data) {
@@ -1413,10 +1386,10 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
         }
 
         while (fifo_status.level >= data_size) {
-            ret = tsl2585_read_fifo(&hi2c2, data, data_size);
+            ret = tsl2585_read_fifo(hi2c, data, data_size);
             if (ret != HAL_OK) { break; }
 
-            ret = tsl2585_get_fifo_status(&hi2c2, &fifo_status);
+            ret = tsl2585_get_fifo_status(hi2c, &fifo_status);
             if (ret != HAL_OK) { break; }
 
             counter++;

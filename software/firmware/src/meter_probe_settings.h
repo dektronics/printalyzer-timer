@@ -6,6 +6,8 @@
 
 #include "tsl2585.h"
 
+typedef struct i2c_handle_t i2c_handle_t;
+
 typedef enum {
     METER_PROBE_TYPE_UNKNOWN = 0,
     METER_PROBE_TYPE_TSL2585 = 1,
@@ -20,7 +22,7 @@ typedef struct __meter_probe_id_t {
 } meter_probe_id_t;
 
 typedef struct __meter_probe_settings_handle_t {
-    I2C_HandleTypeDef *hi2c;
+    i2c_handle_t *hi2c;
     bool initialized;
     meter_probe_id_t id;
 } meter_probe_settings_handle_t;
@@ -51,7 +53,7 @@ typedef struct __meter_probe_settings_tsl2585_t {
  *
  * @param hi2c Handle for the I2C peripheral used by the meter probe
  */
-HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, i2c_handle_t *hi2c);
 
 /**
  * Clear the meter probe settings to factory blank.
@@ -61,7 +63,7 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
  *
  * @param hi2c Handle for the I2C peripheral used by the meter probe
  */
-HAL_StatusTypeDef meter_probe_settings_clear(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef meter_probe_settings_clear(i2c_handle_t *hi2c);
 
 HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_handle_t *handle,
     meter_probe_settings_tsl2585_t *settings_tsl2585);

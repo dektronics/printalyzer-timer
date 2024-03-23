@@ -76,6 +76,7 @@ void keypad_enable_meter_probe();
  */
 void keypad_disable_meter_probe();
 
+HAL_StatusTypeDef keypad_inject_raw_event(keypad_key_t keycode, bool pressed, TickType_t ticks);
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);
 HAL_StatusTypeDef keypad_clear_events();
 HAL_StatusTypeDef keypad_flush_events();

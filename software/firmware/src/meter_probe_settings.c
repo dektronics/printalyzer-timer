@@ -7,12 +7,25 @@
 #include <elog.h>
 
 #include "settings_util.h"
-#include "m24c02.h"
+#include "m24c08.h"
 #include "tsl2585.h"
 
 extern CRC_HandleTypeDef hcrc;
 
 #define LATEST_CAL_TSL2585_VERSION 1
+
+/*
+ * The first 256B are reserved for FT260 configuration and shall never be
+ * modified by this code. If the format is documented, then it can be read
+ * for some of the device ID information. However, that can also be read
+ * out of the USB device properties.
+ */
+#define PAGE_RESERVED          0x000UL
+#define PAGE_RESERVED_SIZE     (256UL)
+
+/* TODO: Come up with a new structure for this page */
+#define PAGE_HEADER            0x100UL
+#define PAGE_HEADER_SIZE       (16UL)
 
 #define ID_MEMORY_ID             0 /* 3B */
 #define ID_PROBE_TYPE            3 /* 1B (uint8_t) */
@@ -20,8 +33,8 @@ extern CRC_HandleTypeDef hcrc;
 #define ID_PROBE_RESERVED0       5 /* 7B (for page alignment) */
 #define ID_PROBE_SERIAL         12 /* 4B (uint32_t) */
 
-#define PAGE_CAL               0x000UL
-#define PAGE_CAL_SIZE          (128UL)
+#define PAGE_CAL               0x110UL
+#define PAGE_CAL_SIZE          (112UL)
 
 /* TSL2585 Data Format Header (16B) */
 #define CAL_TSL2585_VERSION      0 /* 4B (uint32_t) */
@@ -53,24 +66,24 @@ extern CRC_HandleTypeDef hcrc;
 #define CAL_TSL2585_RESERVED2            88 /* 4B (for page alignment) */
 #define CAL_TSL2585_TARGET_CRC           92 /* 4B (uint32_t) */
 
-#define CAL_TSL2585_END        128
-
-HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, I2C_HandleTypeDef *hi2c)
+HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, i2c_handle_t *hi2c)
 {
     HAL_StatusTypeDef ret;
-    uint8_t id_data[M24C02_PAGE_SIZE];
+    uint8_t header_data[PAGE_HEADER_SIZE];
 
     if (!handle || handle->initialized || !hi2c) { return HAL_ERROR; }
 
     do {
         /* Read the identification area of the meter probe memory */
-        ret = m24c02_read_id_page(hi2c, id_data);
+        ret = m24c08_read_buffer(hi2c, PAGE_HEADER, header_data, sizeof(header_data));
         if (ret != HAL_OK) { break; }
 
-        log_d("Memory ID: 0x%02X%02X%02X", id_data[0], id_data[1], id_data[2]);
+#if 0
+        //TODO Enable this once the header page format is redefined
+        log_d("Memory ID: 0x%02X%02X%02X", header_data[0], header_data[1], header_data[2]);
 
         /* Verify the memory device identification code */
-        if (id_data[0] != 0x20 && id_data[1] != 0xE0 && id_data[2] != 0x08) {
+        if (header_data[0] != 0x20 && header_data[1] != 0xE0 && header_data[2] != 0x08) {
             log_w("Unexpected memory type");
             ret = HAL_ERROR;
             break;
@@ -79,10 +92,18 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         handle->hi2c = hi2c;
 
         /* Read the probe type information out of the rest of the ID page */
-        memcpy(handle->id.memory_id, id_data, 3);
-        handle->id.probe_type = id_data[ID_PROBE_TYPE];
-        handle->id.probe_revision = id_data[ID_PROBE_REVISION];
-        handle->id.probe_serial = copy_to_u32(id_data + ID_PROBE_SERIAL);
+        memcpy(handle->id.memory_id, header_data, 3);
+        handle->id.probe_type = header_data[ID_PROBE_TYPE];
+        handle->id.probe_revision = header_data[ID_PROBE_REVISION];
+        handle->id.probe_serial = copy_to_u32(header_data + ID_PROBE_SERIAL);
+#endif
+        handle->hi2c = hi2c;
+
+        //FIXME This data is hard-coded until a new header format is defined
+        memcpy(handle->id.memory_id, header_data, 3);
+        handle->id.probe_type = METER_PROBE_TYPE_TSL2585;
+        handle->id.probe_revision = 5;
+        handle->id.probe_serial = 1234;
 
         handle->initialized = true;
     } while (0);
@@ -90,19 +111,24 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
     return ret;
 }
 
-HAL_StatusTypeDef meter_probe_settings_clear(I2C_HandleTypeDef *hi2c)
+HAL_StatusTypeDef meter_probe_settings_clear(i2c_handle_t *hi2c)
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
     if (!hi2c) { return HAL_ERROR; }
 
-    uint8_t data[M24C02_PAGE_SIZE];
+    uint8_t data[M24C08_PAGE_SIZE];
     memset(data, 0xFF, sizeof(data));
 
     log_i("meter_probe_settings_clear");
 
-    for (size_t addr = 0; addr < M24C02_PAGE_LIMIT; addr += M24C02_PAGE_SIZE) {
-        ret = m24c02_write_page(hi2c, addr, data, sizeof(data));
+    /*
+     * This loop clears everything except the reserved region at the start of
+     * the EEPROM. This area must remain untouched because it is used to
+     * configure the FT260 USB controller on power-up.
+     */
+    for (size_t addr = (PAGE_RESERVED + PAGE_RESERVED_SIZE); addr < M24C08_MEM_SIZE; addr += M24C08_PAGE_SIZE) {
+        ret = m24c08_write_page(hi2c, addr, data, sizeof(data));
         if (ret != HAL_OK) { break; }
     }
 
@@ -126,7 +152,7 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     uint32_t calculated_crc;
 
     /* Read the whole data buffer */
-    ret = m24c02_read_buffer(handle->hi2c, PAGE_CAL, data, PAGE_CAL_SIZE);
+    ret = m24c08_read_buffer(handle->hi2c, PAGE_CAL, data, PAGE_CAL_SIZE);
     if (ret != HAL_OK) { return ret; }
 
     /* Get the version */
@@ -256,7 +282,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
     copy_from_u32(data + CAL_TSL2585_TARGET_CRC, crc);
 
     /* Write the whole data buffer */
-    ret = m24c02_write_buffer(handle->hi2c, PAGE_CAL, data, PAGE_CAL_SIZE);
+    ret = m24c08_write_buffer(handle->hi2c, PAGE_CAL, data, PAGE_CAL_SIZE);
     if (ret != HAL_OK) { return ret; }
 
     return ret;
@@ -275,7 +301,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
 
     /* Read just the version */
-    ret = m24c02_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
+    ret = m24c08_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
     if (ret != HAL_OK) { return ret; }
 
     /* Parse and validate the version */
@@ -296,7 +322,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     copy_from_u32(data + (CAL_TSL2585_TARGET_CRC - offset), crc);
 
     /* Write the data buffer */
-    ret = m24c02_write_buffer(handle->hi2c, offset, data, sizeof(data));
+    ret = m24c08_write_buffer(handle->hi2c, offset, data, sizeof(data));
     if (ret != HAL_OK) { return ret; }
 
     return ret;
