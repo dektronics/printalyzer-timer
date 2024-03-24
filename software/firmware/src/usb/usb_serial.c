@@ -10,6 +10,7 @@
 #include "class/usbh_serial_ch34x.h"
 #include "class/usbh_serial_ftdi.h"
 #include "class/usbh_serial_cp210x.h"
+#include "class/usbh_serial_pl2303.h"
 
 #define LOG_TAG "usb_serial"
 #include <elog.h>
@@ -19,7 +20,8 @@ typedef enum {
     USB_SERIAL_CDC_ACM,
     USB_SERIAL_FTDI,
     USB_SERIAL_CP210X,
-    USB_SERIAL_CH34X
+    USB_SERIAL_CH34X,
+    USB_SERIAL_PL2303
 } usb_serial_driver_t;
 
 typedef struct {
@@ -28,6 +30,7 @@ typedef struct {
         struct usbh_serial_ftdi *ftdi_class;
         struct usbh_serial_cp210x *cp210x_class;
         struct usbh_serial_ch34x *ch34x_class;
+        struct usbh_serial_pl2303 *pl2303_class;
     };
     usb_serial_driver_t driver;
     uint8_t connected;
@@ -143,6 +146,24 @@ void usbh_serial_ch34x_detached(struct usbh_serial_ch34x *ch34x_class)
     }
 }
 
+void usbh_serial_pl2303_attached(struct usbh_serial_pl2303 *pl2303_class)
+{
+    if (handle.connected) {
+        return;
+    }
+    handle.pl2303_class = pl2303_class;
+    handle.driver = USB_SERIAL_PL2303;
+    handle.connected = 1;
+    usb_serial_attached();
+}
+
+void usbh_serial_pl2303_detached(struct usbh_serial_pl2303 *pl2303_class)
+{
+    if (handle.driver == USB_SERIAL_PL2303 && handle.pl2303_class == pl2303_class) {
+        usb_serial_detached();
+    }
+}
+
 void usb_serial_attached()
 {
     if (!serial_task) {
@@ -221,6 +242,8 @@ int usb_serial_set_line_coding(struct cdc_line_coding *line_coding)
         return usbh_serial_cp210x_set_line_coding(handle.cp210x_class, line_coding);
     case USB_SERIAL_CH34X:
         return usbh_serial_ch34x_set_line_coding(handle.ch34x_class, line_coding);
+    case USB_SERIAL_PL2303:
+        return usbh_serial_pl2303_set_line_coding(handle.pl2303_class, line_coding);
     default:
         return -1;
     }
@@ -237,6 +260,8 @@ int usb_serial_set_line_state(bool dtr, bool rts)
         return usbh_serial_cp210x_set_line_state(handle.cp210x_class, dtr, rts);
     case USB_SERIAL_CH34X:
         return usbh_serial_ch34x_set_line_state(handle.ch34x_class, dtr, rts);
+    case USB_SERIAL_PL2303:
+        return usbh_serial_pl2303_set_line_state(handle.pl2303_class, dtr, rts);
     default:
         return -1;
     }
@@ -253,6 +278,8 @@ int usb_serial_bulk_in_transfer(uint8_t *buffer, uint32_t buflen, uint32_t timeo
         return usbh_serial_cp210x_bulk_in_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:
         return usbh_serial_ch34x_bulk_in_transfer(handle.ch34x_class, buffer, buflen, timeout);
+    case USB_SERIAL_PL2303:
+        return usbh_serial_pl2303_bulk_in_transfer(handle.pl2303_class, buffer, buflen, timeout);
     default:
         return -1;
     }
@@ -269,6 +296,8 @@ int usb_serial_bulk_out_transfer(uint8_t *buffer, uint32_t buflen, uint32_t time
         return usbh_serial_cp210x_bulk_out_transfer(handle.cp210x_class, buffer, buflen, timeout);
     case USB_SERIAL_CH34X:
         return usbh_serial_ch34x_bulk_out_transfer(handle.ch34x_class, buffer, buflen, timeout);
+    case USB_SERIAL_PL2303:
+        return usbh_serial_pl2303_bulk_out_transfer(handle.pl2303_class, buffer, buflen, timeout);
     default:
         return -1;
     }

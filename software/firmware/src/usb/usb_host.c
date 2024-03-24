@@ -432,6 +432,20 @@ void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class)
     osMutexRelease(usb_attach_mutex);
 }
 
+void usbh_serial_pl2303_run(struct usbh_serial_pl2303 *pl2303_class)
+{
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    usbh_serial_pl2303_attached(pl2303_class);
+    osMutexRelease(usb_attach_mutex);
+}
+
+void usbh_serial_pl2303_stop(struct usbh_serial_pl2303 *pl2303_class)
+{
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    usbh_serial_pl2303_detached(pl2303_class);
+    osMutexRelease(usb_attach_mutex);
+}
+
 bool usb_serial_is_attached()
 {
     return usbh_serial_is_attached();

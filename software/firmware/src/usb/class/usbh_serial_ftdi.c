@@ -37,7 +37,7 @@
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ftdi_buf[64];
 
-#define CONFIG_USBHOST_MAX_FTDI_CLASS 4
+#define CONFIG_USBHOST_MAX_FTDI_CLASS 1
 
 /* Port Identifier Table */
 #define FTDI_PIT_DEFAULT    0   /* SIOA */

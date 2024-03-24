@@ -19,9 +19,9 @@
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ch34x_buf[64];
 
-#define CONFIG_USBHOST_MAX_CP210X_CLASS 1
+#define CONFIG_USBHOST_MAX_CH34X_CLASS 1
 
-static struct usbh_serial_ch34x g_ch34x_class[CONFIG_USBHOST_MAX_CP210X_CLASS];
+static struct usbh_serial_ch34x g_ch34x_class[CONFIG_USBHOST_MAX_CH34X_CLASS];
 static uint32_t g_devinuse = 0;
 
 static int usbh_serial_ch34x_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
@@ -41,7 +41,7 @@ static struct usbh_serial_ch34x *usbh_serial_ch34x_class_alloc(void)
 {
     int devno;
 
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_CP210X_CLASS; devno++) {
+    for (devno = 0; devno < CONFIG_USBHOST_MAX_CH34X_CLASS; devno++) {
         if ((g_devinuse & (1 << devno)) == 0) {
             g_devinuse |= (1 << devno);
             memset(&g_ch34x_class[devno], 0, sizeof(struct usbh_serial_ch34x));
