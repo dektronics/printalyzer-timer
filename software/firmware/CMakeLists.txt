@@ -138,6 +138,12 @@ set(CONFIG_CHERRYUSB_OSAL "freertos")
 add_subdirectory(${EXTERNAL_DIR}/CherryUSB)
 target_include_directories(cherryusb PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 target_link_libraries(cherryusb PRIVATE freertos)
+set(CHERRYUSB_LDFLAGS
+    -Wl,--undefined=hid_custom_class_info
+    -Wl,--undefined=msc_class_info
+    -Wl,--undefined=hub_class_info
+    -Wl,--undefined=cdc_acm_class_info
+)
 
 add_subdirectory(${EXTERNAL_DIR}/cmsis-dsp)
 
@@ -181,6 +187,7 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--gc-sections
+    ${CHERRYUSB_LDFLAGS}
     ${RUNTIME_LIBRARY_SYSCALLS}
     -u _printf_float
     -Wl,--start-group
