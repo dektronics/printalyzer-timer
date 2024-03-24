@@ -522,9 +522,6 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
 
     log_d("meter_probe_control_sensor_enable: %s", single_shot ? "single_shot" : "continuous");
 
-    /* Disable handling of sensor interrupts */
-    //FIXME sensor_int_gpio_exti_disable();
-
     do {
         /* Query the initial state of the sensor */
         if (!sensor_state.gain_pending) {
@@ -684,9 +681,6 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
                 break;
             }
         }
-
-        /* Enable handling of sensor interrupts */
-        //FIXME sensor_int_gpio_exti_enable();
 
         /* Enable the sensor (ALS Enable and Power ON) */
         ret = tsl2585_enable(hi2c);
