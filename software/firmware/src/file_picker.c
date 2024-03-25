@@ -12,6 +12,7 @@
 #include "main_menu.h"
 #include "utarray.h"
 #include "bsdlib.h"
+#include "usb_msc_fatfs.h"
 
 typedef struct {
     BYTE fattrib;
@@ -25,6 +26,8 @@ typedef struct {
     uint8_t option;
 } file_picker_selection_t;
 
+static uint8_t mounted_drive_count();
+static menu_result_t drive_selection_impl(const char *title, uint8_t *num);
 static menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection);
 static void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno);
 static int file_entry_sort(const void *a, const void *b);
@@ -39,19 +42,30 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
     file_picker_selection_t selection;
     uint8_t option_list[32];
     char path_buf[512];
-    size_t path_len;
+    size_t path_len = 0;
     size_t name_len;
     uint8_t option_index = 0;
-    char *p;
-    char *q;
+    bool select_drive = true;
+    uint8_t drive_num = 0;
+    char *p = NULL;
+    char *q = NULL;
     log_i("Open file picker");
 
-    strncpy(path_buf, "0:/", 4);
-    path_len = strlen(path_buf);
-    p = strrchr(path_buf, '/');
-    option_list[option_index] = 1;
-
     do {
+        if (select_drive) {
+            result = drive_selection_impl(title, &drive_num);
+            if (result == MENU_OK) {
+                strncpy(path_buf, "0:/", 4);
+                path_buf[0] = '0' + drive_num;
+                path_len = strlen(path_buf);
+                p = strrchr(path_buf, '/');
+                option_list[option_index] = 1;
+                select_drive = false;
+            } else if (result == MENU_CANCEL || result == MENU_TIMEOUT) {
+                break;
+            }
+        }
+
         result = file_picker_impl(title, path_buf, option_list[option_index], &selection);
         if (result == MENU_OK) {
             name_len = strlen(selection.altname);
@@ -73,7 +87,12 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
             }
         } else if (result == MENU_CANCEL) {
             if (option_index == 0) {
-                break;
+                if (mounted_drive_count() > 1) {
+                    select_drive = true;
+                    continue;
+                } else {
+                    break;
+                }
             }
 
             q = strrchr(path_buf, '/');
@@ -102,6 +121,77 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
     return result;
 }
 
+uint8_t mounted_drive_count()
+{
+    uint8_t count = 0;
+    for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
+        if (usbh_msc_is_mounted(i)) { count++; }
+    }
+    return count;
+}
+
+menu_result_t drive_selection_impl(const char *title, uint8_t *num)
+{
+    menu_result_t menu_result = MENU_CANCEL;
+    char buf[256];
+    uint8_t drive_num[8];
+    uint8_t drive_count;
+    uint8_t max;
+    size_t offset = 0;
+    uint8_t option = 0;
+    uint8_t j = 0;
+
+    log_i("Preparing drive picker");
+
+    max = usbh_msc_max_drives();
+    if (max > sizeof(drive_num)) {
+        return MENU_CANCEL;
+    }
+
+    /* Handle the case of a single drive */
+    drive_count = mounted_drive_count();
+    if (drive_count < 2) {
+        for (uint8_t i = 0; i < max; i++) {
+            if (usbh_msc_is_mounted(i)) {
+                *num = i;
+                return MENU_OK;
+            }
+        }
+    }
+
+    for (uint8_t i = 0; i < max; i++) {
+        if (usbh_msc_is_mounted(i)) {
+            if (j > 0) {
+                buf[offset++] = '\n';
+            }
+
+            if (*num == i) {
+                option = j + 1;
+            }
+            drive_num[j++] = i;
+
+            const char *label = usbh_msc_drive_label(i);
+            if (label) {
+                sprintf(buf + offset, "%c: %s", 'A' + i, label);
+            } else {
+                sprintf(buf + offset, "%c: <USB DRIVE>", 'A' + i);
+            }
+            offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
+        }
+    }
+
+    option = display_selection_list(title, option, buf);
+    if (option == 0) {
+        menu_result = MENU_CANCEL;
+    } else if (option == UINT8_MAX) {
+        menu_result = MENU_TIMEOUT;
+    } else {
+        *num = drive_num[option - 1];
+        menu_result = MENU_OK;
+    }
+    return menu_result;
+}
+
 menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection)
 {
     menu_result_t menu_result = MENU_CANCEL;
@@ -115,7 +205,7 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
     size_t list_size = 0;
     size_t offset = 0;
 
-    log_i("Preparing picker");
+    log_i("Preparing file picker");
 
     res = f_opendir(&dir, path);
     if (res == FR_OK) {

@@ -19,6 +19,7 @@ _Static_assert(CONFIG_USBHOST_MAX_MSC_CLASS == FF_VOLUMES, "CherryUSB and FATFS 
 typedef struct {
     struct usbh_msc *msc_class;
     char usbh_path[4]; /* USBH logical drive path */
+    char label[12];
     bool linked;
     bool mounted;
     bool ready;
@@ -67,6 +68,7 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
 
     /* Initialize handle state */
     handle->msc_class = msc_class;
+    handle->label[0] = 0;
     handle->linked = false;
     handle->mounted = false;
     handle->ready = false;
@@ -90,10 +92,9 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
     handle->mounted = true;
 
     /* Do some initial operations to make sure the volume works */
-    char str[12];
-    fres = f_getlabel((TCHAR const*)handle->usbh_path, str, 0);
+    fres = f_getlabel((TCHAR const*)handle->usbh_path, handle->label, 0);
     if (fres == FR_OK) {
-        log_i("Drive label: \"%s\"", str);
+        log_i("Drive label: \"%s\"", handle->label);
     }
 
     FATFS *fs;
@@ -148,12 +149,23 @@ void usbh_msc_fatfs_detached(struct usbh_msc *msc_class)
     handle->msc_class = NULL;
 }
 
-bool usbh_msc_is_mounted()
+bool usbh_msc_is_mounted(uint8_t num)
 {
-    for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_MSC_CLASS; i++) {
-        if (msc_handles[i].ready) { return true; }
+    return (num < CONFIG_USBHOST_MAX_MSC_CLASS) && msc_handles[num].ready;
+}
+
+const char *usbh_msc_drive_label(uint8_t num)
+{
+    if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
+        return msc_handles[num].label;
+    } else {
+        return NULL;
     }
-    return false;
+}
+
+uint8_t usbh_msc_max_drives()
+{
+    return CONFIG_USBHOST_MAX_MSC_CLASS;
 }
 
 /**

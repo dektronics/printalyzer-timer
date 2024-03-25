@@ -277,7 +277,10 @@ HAL_StatusTypeDef smbus_master_block_write(
 
 bool usb_msc_is_mounted()
 {
-    return usbh_msc_is_mounted();
+    for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
+        if (usbh_msc_is_mounted(i)) { return true; }
+    }
+    return false;
 }
 
 void usbh_msc_run(struct usbh_msc *msc_class)
