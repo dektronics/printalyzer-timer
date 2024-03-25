@@ -6,12 +6,10 @@ add_library(fatfs
     src/ff.c
     src/ffsystem_cmsis_os.c
     src/ffunicode.c
-    target/usbh_diskio.c
 )
 
 target_include_directories(fatfs PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/target
 )
 
 target_link_libraries(fatfs PRIVATE

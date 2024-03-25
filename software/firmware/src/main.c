@@ -10,7 +10,6 @@
 #define LOG_TAG "main"
 #include <elog.h>
 
-#include "fatfs.h"
 #include "board_config.h"
 #include "main_task.h"
 #include "gpio_task.h"
@@ -630,9 +629,6 @@ int main(void)
     tim9_init();
     tim10_init();
     crc_init();
-
-    /* Initialize the FATFS support code */
-    fatfs_init();
 
     /* Initialize the FreeRTOS scheduler */
     osKernelInitialize();
