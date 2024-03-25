@@ -29,13 +29,11 @@ DSTATUS USBH_initialize (BYTE);
 DSTATUS USBH_status (BYTE);
 DRESULT USBH_read (BYTE, BYTE*, DWORD, UINT);
 
-#if _USE_WRITE == 1
+#if !FF_FS_READONLY
 DRESULT USBH_write (BYTE, const BYTE*, DWORD, UINT);
-#endif /* _USE_WRITE == 1 */
+#endif /* !FF_FS_READONLY */
 
-#if _USE_IOCTL == 1
 DRESULT USBH_ioctl (BYTE, BYTE, void*);
-#endif /* _USE_IOCTL == 1 */
 
 const Diskio_drvTypeDef  USBH_Driver =
 {
@@ -98,12 +96,12 @@ DRESULT USBH_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
  * @param  count: Number of sectors to write (1..128)
  * @retval DRESULT: Operation result
  */
-#if _USE_WRITE == 1
+#if !FF_FS_READONLY
 DRESULT USBH_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
 {
     return usbh_msc_scsi_write10(active_msc_class, sector, buff, count);
 }
-#endif /* _USE_WRITE == 1 */
+#endif /* !FF_FS_READONLY */
 
 /**
  * @brief  I/O control operation
@@ -112,7 +110,6 @@ DRESULT USBH_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
  * @param  *buff: Buffer to send/receive control data
  * @retval DRESULT: Operation result
  */
-#if _USE_IOCTL == 1
 DRESULT USBH_ioctl(BYTE lun, BYTE cmd, void *buff)
 {
     int result = 0;
@@ -142,5 +139,3 @@ DRESULT USBH_ioctl(BYTE lun, BYTE cmd, void *buff)
         break;
     }
 }
-#endif /* _USE_IOCTL == 1 */
-

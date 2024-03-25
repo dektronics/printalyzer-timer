@@ -4,8 +4,8 @@ add_library(fatfs
     src/ff_gen_drv.c
     src/diskio.c
     src/ff.c
-    src/option/ccsbcs.c
-    src/option/syscall.c
+    src/ffsystem_cmsis_os.c
+    src/ffunicode.c
     target/usbh_diskio.c
 )
 

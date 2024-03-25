@@ -64,9 +64,10 @@
  FatFs (as distributed by STMicroelectronics)
 
  Path:     firmware/external/fatfs
- Upstream: https://github.com/STMicroelectronics/STM32CubeF4
-           Middlewares/Third_Party/FatFs
+ Upstream: https://github.com/STMicroelectronics/stm32_mw_fatfs
  License:  Three-clause BSD license
+
+ Code has been reorganized and modified as necessary for project integration.
 
 ******************************************************************************
 

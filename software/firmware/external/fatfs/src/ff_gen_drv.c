@@ -3,18 +3,19 @@
   * @file    ff_gen_drv.c
   * @author  MCD Application Team
   * @brief   FatFs generic low level driver.
-  *****************************************************************************
+  ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2017 STMicroelectronics. All rights reserved.
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the st_license.txt
+  * file in the root directory of this software component.
+  * If no st_license.txt file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
-**/
+  */
+
 /* Includes ------------------------------------------------------------------*/
 #include "ff_gen_drv.h"
 
@@ -41,7 +42,7 @@ uint8_t FATFS_LinkDriverEx(const Diskio_drvTypeDef *drv, char *path, uint8_t lun
   uint8_t ret = 1;
   uint8_t DiskNum = 0;
 
-  if(disk.nbr < _VOLUMES)
+  if(disk.nbr < FF_VOLUMES)
   {
     disk.is_initialized[disk.nbr] = 0;
     disk.drv[disk.nbr] = drv;
@@ -117,6 +118,3 @@ uint8_t FATFS_GetAttachedDriversNbr(void)
 {
   return disk.nbr;
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

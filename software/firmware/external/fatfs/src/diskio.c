@@ -1,8 +1,8 @@
 /*-----------------------------------------------------------------------*/
-/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2017        */
+/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2023        */
 /*                                                                       */
-/*   Portions COPYRIGHT 2017 STMicroelectronics                          */
-/*   Portions Copyright (C) 2017, ChaN, all right reserved               */
+/*   Portions COPYRIGHT 2017-2023 STMicroelectronics                     */
+/*   Portions Copyright (C) 2013, ChaN, all right reserved               */
 /*-----------------------------------------------------------------------*/
 /* If a working storage control module is available, it should be        */
 /* attached to the FatFs via a glue function rather than modifying it.   */
@@ -76,9 +76,10 @@ DSTATUS disk_initialize (
 DRESULT disk_read (
 	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	        /* Sector address in LBA */
+	LBA_t sector,   /* Sector address in LBA */
 	UINT count		/* Number of sectors to read */
 )
+
 {
   DRESULT res;
 
@@ -94,11 +95,11 @@ DRESULT disk_read (
   * @param  count: Number of sectors to write (1..128)
   * @retval DRESULT: Operation result
   */
-#if _USE_WRITE == 1
+
 DRESULT disk_write (
 	BYTE pdrv,		/* Physical drive nmuber to identify the drive */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address in LBA */
+	LBA_t sector,		/* Sector address in LBA */
 	UINT count        	/* Number of sectors to write */
 )
 {
@@ -107,7 +108,7 @@ DRESULT disk_write (
   res = disk.drv[pdrv]->disk_write(disk.lun[pdrv], buff, sector, count);
   return res;
 }
-#endif /* _USE_WRITE == 1 */
+
 
 /**
   * @brief  I/O control operation
@@ -116,7 +117,7 @@ DRESULT disk_write (
   * @param  *buff: Buffer to send/receive control data
   * @retval DRESULT: Operation result
   */
-#if _USE_IOCTL == 1
+
 DRESULT disk_ioctl (
 	BYTE pdrv,		/* Physical drive nmuber (0..) */
 	BYTE cmd,		/* Control code */
@@ -128,7 +129,7 @@ DRESULT disk_ioctl (
   res = disk.drv[pdrv]->disk_ioctl(disk.lun[pdrv], cmd, buff);
   return res;
 }
-#endif /* _USE_IOCTL == 1 */
+
 
 /**
   * @brief  Gets Time from RTC

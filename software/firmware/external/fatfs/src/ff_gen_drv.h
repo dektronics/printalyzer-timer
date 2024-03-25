@@ -3,18 +3,18 @@
   * @file    ff_gen_drv.h
   * @author  MCD Application Team
   * @brief   Header for ff_gen_drv.c module.
-  *****************************************************************************
+  ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2017 STMicroelectronics. All rights reserved.
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                       opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the st_license.txt
+  * file in the root directory of this software component.
+  * If no st_license.txt file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
-**/
+  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __FF_GEN_DRV_H
@@ -37,16 +37,11 @@
   */
 typedef struct
 {
-  DSTATUS (*disk_initialize) (BYTE);                     /*!< Initialize Disk Drive                     */
-  DSTATUS (*disk_status)     (BYTE);                     /*!< Get Disk Status                           */
-  DRESULT (*disk_read)       (BYTE, BYTE*, DWORD, UINT);       /*!< Read Sector(s)                            */
-#if _USE_WRITE == 1
-  DRESULT (*disk_write)      (BYTE, const BYTE*, DWORD, UINT); /*!< Write Sector(s) when _USE_WRITE = 0       */
-#endif /* _USE_WRITE == 1 */
-#if _USE_IOCTL == 1
-  DRESULT (*disk_ioctl)      (BYTE, BYTE, void*);              /*!< I/O control operation when _USE_IOCTL = 1 */
-#endif /* _USE_IOCTL == 1 */
-
+  DSTATUS (*disk_initialize) (BYTE);                           /*!< Initialize Disk Drive*/
+  DSTATUS (*disk_status)     (BYTE);                           /*!< Get Disk Status*/
+  DRESULT (*disk_read)       (BYTE, BYTE*, DWORD, UINT);       /*!< Read Sector(s)*/
+  DRESULT (*disk_write)      (BYTE, const BYTE*, DWORD, UINT); /*!< Write Sector(s)*/
+  DRESULT (*disk_ioctl)      (BYTE, BYTE, void*);              /*!< I/O control operation*/
 }Diskio_drvTypeDef;
 
 /**
@@ -54,9 +49,9 @@ typedef struct
   */
 typedef struct
 {
-  uint8_t                 is_initialized[_VOLUMES];
-  const Diskio_drvTypeDef *drv[_VOLUMES];
-  uint8_t                 lun[_VOLUMES];
+  uint8_t                 is_initialized[FF_VOLUMES];
+  const Diskio_drvTypeDef *drv[FF_VOLUMES];
+  uint8_t                 lun[FF_VOLUMES];
   volatile uint8_t        nbr;
 
 }Disk_drvTypeDef;
@@ -75,6 +70,3 @@ uint8_t FATFS_GetAttachedDriversNbr(void);
 #endif
 
 #endif /* __FF_GEN_DRV_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
