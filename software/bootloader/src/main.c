@@ -61,10 +61,6 @@ bool start_application();
 void Error_Handler(void);
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
-#ifndef MIN
-#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
-#endif
-
 void system_clock_config(void)
 {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};

@@ -121,12 +121,6 @@ target_include_directories(fatfs PRIVATE
     ${EXTERNAL_DIR}/printf/src/printf
 )
 
-add_subdirectory(${EXTERNAL_DIR}/usb)
-target_include_directories(mw_usb_host PRIVATE
-    ${PROJECT_INCLUDE_DIRECTORIES}
-    ${EXTERNAL_DIR}/printf/src/printf
-)
-
 option(BUILD_STATIC_LIBRARY "" ON)
 option(SUPPORT_DECIMAL_SPECIFIERS "" OFF)
 option(SUPPORT_EXPONENTIAL_SPECIFIERS"" OFF)
@@ -166,7 +160,6 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     printf
     u8g2
     fatfs
-    mw_usb_host
 
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}

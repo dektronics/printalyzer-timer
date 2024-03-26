@@ -4,16 +4,15 @@
 #include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
 #include <stdbool.h>
-#include <usbh_def.h>
 
-typedef enum {
-  APPLICATION_IDLE = 0,
-  APPLICATION_START,
-  APPLICATION_READY,
-  APPLICATION_DISCONNECT
-} usb_app_state_t;
+//typedef enum {
+//  APPLICATION_IDLE = 0,
+//  APPLICATION_START,
+//  APPLICATION_READY,
+//  APPLICATION_DISCONNECT
+//} usb_app_state_t;
 
-USBH_StatusTypeDef usb_host_init(void);
+void usb_host_init(void);
 void usb_host_deinit(void);
 void usb_host_process(void);
 

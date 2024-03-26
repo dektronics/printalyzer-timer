@@ -17,5 +17,4 @@ target_include_directories(fatfs PUBLIC
 target_link_libraries(fatfs PRIVATE
     cmsis
     hal
-    mw_usb_host
 )

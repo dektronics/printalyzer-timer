@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <ff.h>
 #include <cmsis_os.h>
 
@@ -36,6 +37,10 @@ static void delay_with_usb(uint32_t delay);
 static void bootloader_start_application();
 
 extern bool start_application();
+
+#ifndef MIN
+#define MIN(a, b)  (((a) < (b)) ? (a) : (b))
+#endif
 
 osStatus_t bootloader_task_init(void)
 {

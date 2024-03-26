@@ -21,7 +21,6 @@
 
 #include <stdio.h>
 
-extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
 extern SMBUS_HandleTypeDef hsmbus2;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim11;
@@ -143,5 +142,5 @@ void I2C2_ER_IRQHandler(void)
  */
 void OTG_HS_IRQHandler(void)
 {
-    HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
+    //FIXME HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
 }
