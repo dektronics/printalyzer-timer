@@ -24,6 +24,7 @@
 extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
 extern SMBUS_HandleTypeDef hsmbus2;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim11;
 
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
@@ -75,32 +76,10 @@ void UsageFault_Handler(void)
 }
 
 /**
- * @brief This function handles System service call via SWI instruction.
- */
-void SVC_Handler(void)
-{
-}
-
-/**
  * @brief This function handles Debug monitor.
  */
 void DebugMon_Handler(void)
 {
-}
-
-/**
- * @brief This function handles Pendable request for system service.
- */
-void PendSV_Handler(void)
-{
-}
-
-/**
- * @brief This function handles System tick timer.
- */
-void SysTick_Handler(void)
-{
-    HAL_IncTick();
 }
 
 /******************************************************************************/
@@ -111,56 +90,57 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles EXTI line[9:5] interrupts.
-  */
+ * @brief This function handles EXTI line[9:5] interrupts.
+ */
 void EXTI9_5_IRQHandler(void)
 {
     HAL_GPIO_EXTI_IRQHandler(KEY_INT_Pin);
 }
 
 /**
-  * @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
-  */
+ * @brief This function handles TIM1 update interrupt and TIM10 global interrupt.
+ */
 void TIM1_UP_TIM10_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
-  * @brief This function handles TIM1 trigger and commutation interrupts and TIM11 global interrupt.
-  */
+ * @brief This function handles TIM1 trigger and commutation interrupts and TIM11 global interrupt.
+ */
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim1);
+    HAL_TIM_IRQHandler(&htim11);
 }
 
 /**
-  * @brief This function handles TIM1 capture compare interrupt.
-  */
+ * @brief This function handles TIM1 capture compare interrupt.
+ */
 void TIM1_CC_IRQHandler(void)
 {
     HAL_TIM_IRQHandler(&htim1);
 }
 
 /**
-  * @brief This function handles I2C2 event interrupt.
-  */
+ * @brief This function handles I2C2 event interrupt.
+ */
 void I2C2_EV_IRQHandler(void)
 {
     HAL_SMBUS_EV_IRQHandler(&hsmbus2);
 }
 
 /**
-  * @brief This function handles I2C2 error interrupt.
-  */
+ * @brief This function handles I2C2 error interrupt.
+ */
 void I2C2_ER_IRQHandler(void)
 {
     HAL_SMBUS_ER_IRQHandler(&hsmbus2);
 }
 
 /**
-  * @brief This function handles USB On The Go HS global interrupt.
-  */
+ * @brief This function handles USB On The Go HS global interrupt.
+ */
 void OTG_HS_IRQHandler(void)
 {
     HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);

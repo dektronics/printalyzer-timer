@@ -110,6 +110,9 @@ add_executable(${EXECUTABLE}
 add_subdirectory(${EXTERNAL_DIR}/drivers)
 target_include_directories(hal PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 
+add_subdirectory(${EXTERNAL_DIR}/freertos)
+target_include_directories(freertos PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
+
 add_subdirectory(${EXTERNAL_DIR}/u8g2)
 
 add_subdirectory(${EXTERNAL_DIR}/fatfs)
@@ -132,6 +135,7 @@ add_subdirectory(${EXTERNAL_DIR}/printf)
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
     USE_HAL_DRIVER
+    STM32_THREAD_SAFE_STRATEGY=4
     $<$<CONFIG:DEBUG>:DEBUG>
     BOOTLOADER_BUILD_DATE="${BUILD_DATE}"
     BOOTLOADER_BUILD_DESCRIBE="${BUILD_DESCRIBE}")
@@ -158,6 +162,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
 target_link_libraries(${EXECUTABLE} PRIVATE
     cmsis
     hal
+    freertos
     printf
     u8g2
     fatfs

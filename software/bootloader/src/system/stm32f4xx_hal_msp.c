@@ -29,7 +29,9 @@ void HAL_MspInit(void)
     __HAL_RCC_SYSCFG_CLK_ENABLE();
     __HAL_RCC_PWR_CLK_ENABLE();
 
-    /* System interrupt init */
+    /* System interrupt init*/
+    /* PendSV_IRQn interrupt configuration */
+    HAL_NVIC_SetPriority(PendSV_IRQn, 15, 0);
 }
 
 /**
@@ -121,9 +123,9 @@ void HAL_SMBUS_MspInit(SMBUS_HandleTypeDef* hsmbus)
         __HAL_RCC_I2C2_CLK_ENABLE();
 
         /* I2C2 interrupt Init */
-        HAL_NVIC_SetPriority(I2C2_EV_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(I2C2_EV_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(I2C2_EV_IRQn);
-        HAL_NVIC_SetPriority(I2C2_ER_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(I2C2_ER_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(I2C2_ER_IRQn);
     }
 }
@@ -283,11 +285,11 @@ void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
         /* TIM1 interrupt Init */
-        HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
-        HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 15, 0);
         HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
-        HAL_NVIC_SetPriority(TIM1_CC_IRQn, 0, 0);
+        HAL_NVIC_SetPriority(TIM1_CC_IRQn, 5, 0);
         HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
     }
 }
