@@ -10,7 +10,6 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
-/* Includes ------------------------------------------------------------------*/
 #include "diskio.h"
 #include "ff_gen_drv.h"
 
@@ -20,13 +19,7 @@
 #endif
 #endif
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
 extern Disk_drvTypeDef  disk;
-
-/* Private function prototypes -----------------------------------------------*/
-/* Private functions ---------------------------------------------------------*/
 
 /**
   * @brief  Gets Disk Status
@@ -39,7 +32,7 @@ DSTATUS disk_status (
 {
   DSTATUS stat;
 
-  stat = disk.drv[pdrv]->disk_status(disk.lun[pdrv]);
+  stat = disk.drv[pdrv]->disk_status(pdrv);
   return stat;
 }
 
@@ -56,7 +49,7 @@ DSTATUS disk_initialize (
 
   if(disk.is_initialized[pdrv] == 0)
   {
-    stat = disk.drv[pdrv]->disk_initialize(disk.lun[pdrv]);
+    stat = disk.drv[pdrv]->disk_initialize(pdrv);
     if(stat == RES_OK)
     {
       disk.is_initialized[pdrv] = 1;
@@ -83,7 +76,7 @@ DRESULT disk_read (
 {
   DRESULT res;
 
-  res = disk.drv[pdrv]->disk_read(disk.lun[pdrv], buff, sector, count);
+  res = disk.drv[pdrv]->disk_read(pdrv, buff, sector, count);
   return res;
 }
 
@@ -105,10 +98,9 @@ DRESULT disk_write (
 {
   DRESULT res;
 
-  res = disk.drv[pdrv]->disk_write(disk.lun[pdrv], buff, sector, count);
+  res = disk.drv[pdrv]->disk_write(pdrv, buff, sector, count);
   return res;
 }
-
 
 /**
   * @brief  I/O control operation
@@ -126,7 +118,7 @@ DRESULT disk_ioctl (
 {
   DRESULT res;
 
-  res = disk.drv[pdrv]->disk_ioctl(disk.lun[pdrv], cmd, buff);
+  res = disk.drv[pdrv]->disk_ioctl(pdrv, cmd, buff);
   return res;
 }
 
@@ -140,6 +132,3 @@ __weak DWORD get_fattime (void)
 {
   return 0;
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-

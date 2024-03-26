@@ -28,11 +28,11 @@ typedef struct {
 
 static usbh_msc_fatfs_handle_t msc_handles[CONFIG_USBHOST_MAX_MSC_CLASS];
 
-static DSTATUS fatfs_diskio_initialize(BYTE lun);
-static DSTATUS fatfs_diskio_status(BYTE lun);
-static DRESULT fatfs_diskio_read(BYTE lun, BYTE *buff, DWORD sector, UINT count);
-static DRESULT fatfs_diskio_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count);
-static DRESULT fatfs_diskio_ioctl(BYTE lun, BYTE cmd, void *buff);
+static DSTATUS fatfs_diskio_initialize(BYTE pdrv);
+static DSTATUS fatfs_diskio_status(BYTE pdrv);
+static DRESULT fatfs_diskio_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count);
+static DRESULT fatfs_diskio_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count);
+static DRESULT fatfs_diskio_ioctl(BYTE pdrv, BYTE cmd, void *buff);
 
 static const Diskio_drvTypeDef fatfs_usbh_msc_driver = {
     fatfs_diskio_initialize,
@@ -75,7 +75,7 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
     memset(&handle->usbh_fatfs, 0, sizeof(FATFS));
 
     /* Link the driver callbacks */
-    ret = FATFS_LinkDriverEx(&fatfs_usbh_msc_driver, handle->usbh_path, devno);
+    ret = FATFS_LinkDriver(&fatfs_usbh_msc_driver, handle->usbh_path, devno);
     if (ret != 0) {
         log_w("Unable to link USB driver to FATFS");
         return;
@@ -139,7 +139,7 @@ void usbh_msc_fatfs_detached(struct usbh_msc *msc_class)
     }
 
     if (handle->linked) {
-        ret = FATFS_UnLinkDriverEx(handle->usbh_path, devno);
+        ret = FATFS_UnLinkDriver(devno);
         if (ret != 0) {
             log_w("Unable to unlink USB driver from FATFS");
         }
@@ -157,6 +157,10 @@ bool usbh_msc_is_mounted(uint8_t num)
 const char *usbh_msc_drive_label(uint8_t num)
 {
     if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
+        uint8_t pathnum = msc_handles[num].usbh_path[0] - '0';
+        if (num != pathnum) {
+            log_d("-->Pathnum mismatch: dev=%d, path=\"%s\"", num, msc_handles[num].usbh_path);
+        }
         return msc_handles[num].label;
     } else {
         return NULL;
@@ -170,10 +174,10 @@ uint8_t usbh_msc_max_drives()
 
 /**
  * Initializes access to a drive
- * @param lun logical unit id
+ * @param pdrv physical drive number
  * @return Operation status
  */
-DSTATUS fatfs_diskio_initialize(BYTE lun)
+DSTATUS fatfs_diskio_initialize(BYTE pdrv)
 {
     return RES_OK;
 }
@@ -183,7 +187,7 @@ DSTATUS fatfs_diskio_initialize(BYTE lun)
  * @param lun logical unit id
  * @return Operation status
  */
-DSTATUS fatfs_diskio_status(BYTE lun)
+DSTATUS fatfs_diskio_status(BYTE pdrv)
 {
     /* Not sure we currently have an equivalent way of checking this */
     return RES_OK;
@@ -191,49 +195,49 @@ DSTATUS fatfs_diskio_status(BYTE lun)
 
 /**
  * Read sectors
- * @param lun logical unit id
+ * @param pdrv physical drive number
  * @param buff Data buffer to store read data
  * @param sector Sector address (LBA)
  * @param count Number of sectors to read (1..128)
  * @return Operation result
  */
-DRESULT fatfs_diskio_read(BYTE lun, BYTE *buff, DWORD sector, UINT count)
+DRESULT fatfs_diskio_read(BYTE pdrv, BYTE *buff, DWORD sector, UINT count)
 {
-    if (lun >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[lun].msc_class) {
+    if (pdrv >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[pdrv].msc_class) {
         return RES_ERROR;
     }
-    return usbh_msc_scsi_read10(msc_handles[lun].msc_class, sector, buff, count);
+    return usbh_msc_scsi_read10(msc_handles[pdrv].msc_class, sector, buff, count);
 }
 
 /**
  * Write sectors
- * @param lun logical unit id
+ * @param pdrv physical drive number
  * @param buff Data to be written
  * @param sector Sector address (LBA)
  * @param count Number of sectors to write (1..128)
  * @return Operation result
  */
-DRESULT fatfs_diskio_write(BYTE lun, const BYTE *buff, DWORD sector, UINT count)
+DRESULT fatfs_diskio_write(BYTE pdrv, const BYTE *buff, DWORD sector, UINT count)
 {
-    if (lun >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[lun].msc_class) {
+    if (pdrv >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[pdrv].msc_class) {
         return RES_ERROR;
     }
-    return usbh_msc_scsi_write10(msc_handles[lun].msc_class, sector, buff, count);
+    return usbh_msc_scsi_write10(msc_handles[pdrv].msc_class, sector, buff, count);
 }
 
 /**
  * I/O control operation
- * @param lun logical unit id
+ * @param pdrv physical drive number
  * @param cmd Control code
  * @param buff Buffer to send/receive control data
  * @return Operation result
  */
-DRESULT fatfs_diskio_ioctl(BYTE lun, BYTE cmd, void *buff)
+DRESULT fatfs_diskio_ioctl(BYTE pdrv, BYTE cmd, void *buff)
 {
-    if (lun >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[lun].msc_class) {
+    if (pdrv >= CONFIG_USBHOST_MAX_MSC_CLASS || !msc_handles[pdrv].msc_class) {
         return RES_ERROR;
     }
-    struct usbh_msc *msc_class = msc_handles[lun].msc_class;
+    struct usbh_msc *msc_class = msc_handles[pdrv].msc_class;
 
     int result = 0;
 
