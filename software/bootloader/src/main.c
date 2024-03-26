@@ -153,6 +153,9 @@ void mpu_config(void)
 
 void usart1_uart_init(void)
 {
+    /*
+     * USART1 is used for debug logging
+     */
     huart1.Instance = USART1;
     huart1.Init.BaudRate = 115200;
     huart1.Init.WordLength = UART_WORDLENGTH_8B;
@@ -204,14 +207,14 @@ void gpio_init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins : LED_LE_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
+    /* Configure GPIO pins: LED_LE_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
     GPIO_InitStruct.Pin = LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins : BUZZ_EN1_Pin BUZZ_EN2_Pin DISP_CS_Pin DISP_DC_Pin DMX512_RX_EN_Pin */
+    /* Configure GPIO pins: BUZZ_EN1_Pin BUZZ_EN2_Pin DISP_CS_Pin DISP_DC_Pin DMX512_RX_EN_Pin */
     GPIO_InitStruct.Pin = BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin
                           |DMX512_RX_EN_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -219,26 +222,26 @@ void gpio_init(void)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure GPIO pins : PA3 PA12 */
+    /* Configure GPIO pins: PA3 PA12 */
     GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_12;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure GPIO pins : PB1 PB2 PB4 PB9 */
+    /* Configure GPIO pins: PB1 PB2 PB4 PB9 */
     GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /* Configure GPIO pins : USB_HUB_RESET_Pin USB_DRIVE_VBUS_Pin */
+    /* Configure GPIO pins: USB_HUB_RESET_Pin USB_DRIVE_VBUS_Pin */
     GPIO_InitStruct.Pin = USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-    /* Configure GPIO pin : USB_HUB_CLK_Pin */
+    /* Configure GPIO pin: USB_HUB_CLK_Pin */
     GPIO_InitStruct.Pin = USB_HUB_CLK_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -246,14 +249,14 @@ void gpio_init(void)
     GPIO_InitStruct.Alternate = GPIO_AF0_MCO;
     HAL_GPIO_Init(USB_HUB_CLK_GPIO_Port, &GPIO_InitStruct);
 
-    /* Configure GPIO pin : RELAY_ENLG_Pin */
+    /* Configure GPIO pin: RELAY_ENLG_Pin */
     GPIO_InitStruct.Pin = RELAY_ENLG_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(RELAY_ENLG_GPIO_Port, &GPIO_InitStruct);
 
-    /* Configure GPIO pin : KEY_INT_Pin */
+    /* Configure GPIO pin: KEY_INT_Pin */
     GPIO_InitStruct.Pin = KEY_INT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -464,7 +467,7 @@ void tim9_init(void)
     TIM_OC_InitTypeDef sConfigOC = {0};
 
     htim9.Instance = TIM9;
-    htim9.Init.Prescaler = 179;
+    htim9.Init.Prescaler = 119;
     htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
     htim9.Init.Period = 999;
     htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -982,8 +985,8 @@ void delay_with_usb(uint32_t delay)
 void Error_Handler(void)
 {
     __disable_irq();
-    while (1) {
-    }
+    __ASM volatile("BKPT #01");
+    while (1) { }
 }
 
 #ifdef USE_FULL_ASSERT

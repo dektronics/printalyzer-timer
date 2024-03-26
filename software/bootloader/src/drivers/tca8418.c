@@ -204,9 +204,24 @@ HAL_StatusTypeDef tca8418_gpio_data_direction(I2C_HandleTypeDef *hi2c, const tca
     return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_DIR1, pins);
 }
 
+HAL_StatusTypeDef tca8418_gpio_interrupt_level(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
+{
+    return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_INT_LVL1, pins);
+}
+
 HAL_StatusTypeDef tca8418_gpio_pullup_disable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
 {
     return tca8148_write_pin_registers(hi2c, TCA8418_GPIO_PULL1, pins);
+}
+
+HAL_StatusTypeDef tca8418_gpio_data_status(I2C_HandleTypeDef *hi2c, tca8418_pins_t *pins)
+{
+    return tca8148_read_pin_registers(hi2c, TCA8418_GPIO_DAT_STAT1, pins);
+}
+
+HAL_StatusTypeDef tca8418_debounce_disable(I2C_HandleTypeDef *hi2c, const tca8418_pins_t *pins)
+{
+    return tca8148_write_pin_registers(hi2c, TCA8418_DEBOUNCE_DIS1, pins);
 }
 
 HAL_StatusTypeDef tca8418_clear_interrupt_status(I2C_HandleTypeDef *hi2c)

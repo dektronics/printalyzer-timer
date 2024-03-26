@@ -162,9 +162,7 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     u8g2
     fatfs
     mw_usb_host
-)
 
-target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
@@ -174,7 +172,8 @@ target_link_options(${EXECUTABLE} PRIVATE
     -lc
     -lm
     -Wl,--end-group
-    -Wl,--print-memory-usage)
+    -Wl,--print-memory-usage
+)
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.bin

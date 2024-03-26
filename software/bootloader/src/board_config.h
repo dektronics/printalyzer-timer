@@ -62,7 +62,11 @@
 #define KEY_INT_GPIO_Port        GPIOB
 #define KEY_INT_EXTI_IRQn        EXTI9_5_IRQn
 
-/* Pin mapping for DMX512 line driver control */
+/* Pin mapping for the DMX512 UART port */
+#define DMX512_TX_Pin            GPIO_PIN_6
+#define DMX512_TX_GPIO_Port      GPIOC
+#define DMX512_RX_Pin            GPIO_PIN_7
+#define DMX512_RX_GPIO_Port      GPIOC
 #define DMX512_TX_EN_Pin         GPIO_PIN_8
 #define DMX512_TX_EN_GPIO_Port   GPIOC
 #define DMX512_RX_EN_Pin         GPIO_PIN_11

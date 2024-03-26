@@ -166,7 +166,6 @@ void HAL_SMBUS_MspDeInit(SMBUS_HandleTypeDef* hsmbus)
          * PC12     ------> I2C2_SDA
          */
         HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10);
-
         HAL_GPIO_DeInit(GPIOC, GPIO_PIN_12);
 
         /* I2C2 interrupt DeInit */
@@ -186,7 +185,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     if (hspi->Instance == SPI1) {
         /* Peripheral clock enable */
         __HAL_RCC_SPI1_CLK_ENABLE();
-
         __HAL_RCC_GPIOA_CLK_ENABLE();
 
         /*
@@ -204,7 +202,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
     } else if (hspi->Instance == SPI3) {
         /* Peripheral clock enable */
         __HAL_RCC_SPI3_CLK_ENABLE();
-
         __HAL_RCC_GPIOC_CLK_ENABLE();
 
         /*
