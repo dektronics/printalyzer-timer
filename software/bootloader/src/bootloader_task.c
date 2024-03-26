@@ -12,7 +12,6 @@
 #include "logger.h"
 #include "board_config.h"
 #include "usb_host.h"
-#include "fatfs.h"
 #include "keypad.h"
 #include "display.h"
 #include "bootloader.h"
@@ -33,10 +32,8 @@ const osThreadAttr_t bootloader_task_attributes = {
 
 static void bootloader_task_run(void *argument);
 static bool process_firmware_update();
-static void delay_with_usb(uint32_t delay);
 static void bootloader_start_application();
-
-extern bool start_application();
+extern void deinit_peripherals();
 
 #ifndef MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
@@ -66,35 +63,40 @@ void bootloader_task_run(void *argument)
     display_enable(true);
     display_draw_test_pattern();
 
-    /* Initialize the USB host */
-    usb_host_init();
-
-    /* Initialize the FATFS support code */
-    fatfs_init();
-
+    /*
+     * Initialize the USB host framework.
+     * This framework does have a dedicated management task, but it is
+     * not handled as part of the application code.
+     */
+    if (!usb_host_init()) {
+        BL_PRINTF("Unable to initialize USB host\r\n");
+    } else {
+        if (!usb_hub_init()) {
+            BL_PRINTF("Unable to initialize USB hub\r\n");
+        }
+    }
 
     /* Main loop */
     bool prompt_visible = false;
     while (1) {
-        usb_host_process();
+        osDelay(10);
         if (usb_msc_is_mounted()) {
             prompt_visible = false;
             if (process_firmware_update()) {
-                delay_with_usb(1000);
+                osDelay(1000);
                 display_static_message("Restarting...\r\n");
-                delay_with_usb(100);
+                osDelay(100);
 
                 /* De-initialize the USB and FatFs components */
                 usb_msc_unmount();
-                fatfs_deinit();
                 usb_host_deinit();
 
                 /* Start the application firmware */
-                HAL_Delay(1000);
+                osDelay(1000);
                 display_clear();
                 bootloader_start_application();
             } else {
-                delay_with_usb(1000);
+                osDelay(1000);
                 display_static_message("Firmware update failed");
                 while(1);
             }
@@ -103,7 +105,7 @@ void bootloader_task_run(void *argument)
                 if (keypad_poll() == KEYPAD_CANCEL) {
                     /* Start the application firmware */
                     display_static_message("Restarting...\r\n");
-                    HAL_Delay(1000);
+                    osDelay(1000);
                     display_clear();
                     bootloader_start_application();
                 }
@@ -150,7 +152,7 @@ bool process_firmware_update()
 
             key_count = 0;
             for (int i = 0; i < 200; i++) {
-                delay_with_usb(50);
+                osDelay(50);
                 if (keypad_poll() == KEYPAD_START) {
                     key_count++;
                 } else {
@@ -261,7 +263,7 @@ bool process_firmware_update()
 
         key_count = 0;
         do {
-            delay_with_usb(50);
+            osDelay(50);
             if (keypad_poll() == KEYPAD_START) {
                 key_count++;
             } else {
@@ -269,7 +271,7 @@ bool process_firmware_update()
             }
             if (key_count > 2) {
                 display_static_message("Starting firmware update...");
-                delay_with_usb(1000);
+                osDelay(1000);
                 break;
             }
         } while (1);
@@ -349,7 +351,7 @@ bool process_firmware_update()
         BL_PRINTF("Firmware verified\r\n");
 
         display_static_message("Verification complete");
-        delay_with_usb(1000);
+        osDelay(1000);
 
 #if(USE_WRITE_PROTECTION)
         /* Enable flash write protection */
@@ -376,27 +378,20 @@ bool process_firmware_update()
     return success;
 }
 
-void delay_with_usb(uint32_t delay)
-{
-    /*
-     * Based on HAL_Delay() with USB host processing
-     * inside the busy loop.
-     */
-
-    uint32_t tickstart = HAL_GetTick();
-    uint32_t wait = delay;
-
-    if (wait < HAL_MAX_DELAY) {
-        wait += (uint32_t)(uwTickFreq);
-    }
-
-    while ((HAL_GetTick() - tickstart) < wait) {
-        usb_host_process();
-    }
-}
-
 void bootloader_start_application()
 {
-    //FIXME This needs to shut down FreeRTOS, or just reboot the whole system
-    start_application();
+    /* Shutdown the USB host stack */
+    usb_host_deinit();
+
+    /* Wait for things to settle */
+    osDelay(200);
+
+    /* Suspend the FreeRTOS scheduler */
+    vTaskSuspendAll();
+
+    /* Deinitialize the peripherals */
+    deinit_peripherals();
+
+    /* Trigger a restart */
+    NVIC_SystemReset();
 }

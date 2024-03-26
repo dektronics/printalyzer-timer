@@ -1,7 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-//#include <stdio.h>
 #include "printf.h"
 
 #define BL_PRINTF(...) printf_(__VA_ARGS__)

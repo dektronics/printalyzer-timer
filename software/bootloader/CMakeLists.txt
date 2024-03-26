@@ -58,8 +58,8 @@ set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/STM32F446RETX_FLASH.ld)
 add_compile_options(
     ${CPU_PARAMETERS}
     -fstack-protector-strong
-    "$<$<CONFIG:Debug>:-Og;-g3;-ggdb>"
-    "$<$<CONFIG:Release>:-Og;-g0>"
+    "$<$<CONFIG:Debug>:-Os;-g3;-ggdb>"
+    "$<$<CONFIG:Release>:-Os;-g0>"
 )
 
 add_compile_definitions(
@@ -121,6 +121,19 @@ target_include_directories(fatfs PRIVATE
     ${EXTERNAL_DIR}/printf/src/printf
 )
 
+set(CONFIG_CHERRYUSB_HOST 1)
+set(CONFIG_CHERRYUSB_OSAL "freertos")
+add_subdirectory(${EXTERNAL_DIR}/CherryUSB)
+target_include_directories(cherryusb PRIVATE
+    ${PROJECT_INCLUDE_DIRECTORIES}
+    ${EXTERNAL_DIR}/printf/src/printf
+)
+target_link_libraries(cherryusb PRIVATE freertos)
+set(CHERRYUSB_LDFLAGS
+    -Wl,--undefined=msc_class_info
+    -Wl,--undefined=hub_class_info
+)
+
 option(BUILD_STATIC_LIBRARY "" ON)
 option(SUPPORT_DECIMAL_SPECIFIERS "" OFF)
 option(SUPPORT_EXPONENTIAL_SPECIFIERS"" OFF)
@@ -160,11 +173,13 @@ target_link_libraries(${EXECUTABLE} PRIVATE
     printf
     u8g2
     fatfs
+    cherryusb
 
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--gc-sections
+    ${CHERRYUSB_LDFLAGS}
     ${RUNTIME_LIBRARY_SYSCALLS}
     -Wl,--start-group
     -lc

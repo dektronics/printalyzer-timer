@@ -71,32 +71,6 @@
 
 ******************************************************************************
 
- STM32 USB Host and Device Libraries
-
- Path:     firmware/external/usb
- Upstream: https://github.com/STMicroelectronics/STM32CubeF4
-           Middlewares/ST/STM32_USB_Host_Library
-           https://github.com/STMicroelectronics/stm32_mw_usb_host
- License:  ST Ultimate Liberty License (SLA0044)
-
- Code has been combined into a consistent directory structure and modified
- as necessary for project integration.
-
-******************************************************************************
-
- STM32 USB Host Additional Device Class Drivers
-
- Path:     firmware/external/class/include
-           firmware/external/class/src
- Files:    usbh_serial_*.h, usbh_serial_*.c
- License:  Same as overall project, except where otherwise noted
-
- These drivers have been written to support devices that are not directly
- supported by the ST library, but are incorporated into its directory
- structure for the sake of layout consistency.
-
-******************************************************************************
-
  CMSIS
  
  Path:     firmware/external/drivers/cmsis

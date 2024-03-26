@@ -11,12 +11,14 @@
 #include "logger.h"
 #include "board_config.h"
 #include "usb_host.h"
-#include "fatfs.h"
 #include "keypad.h"
 #include "display.h"
 #include "bootloader.h"
 #include "bootloader_task.h"
 #include "app_descriptor.h"
+
+/* Uncomment for testing */
+/* #define FORCE_BOOTLOADER */
 
 UART_HandleTypeDef huart1;
 
@@ -56,6 +58,7 @@ static void crc_deinit(void);
 static void startup_messages();
 static uint8_t check_startup_action();
 static void start_bootloader();
+void deinit_peripherals();
 bool start_application();
 
 void Error_Handler(void);
@@ -504,6 +507,9 @@ void crc_deinit(void)
 
 uint8_t check_startup_action()
 {
+#ifdef FORCE_BOOTLOADER
+    return 1;
+#else
     uint8_t button_counter = 0;
 
     while (keypad_poll() & KEYPAD_MENU && button_counter < 90) {
@@ -523,6 +529,7 @@ uint8_t check_startup_action()
     }
 
     return 0;
+#endif
 }
 
 int main(void)
@@ -618,6 +625,16 @@ void start_bootloader()
     }
 }
 
+void deinit_peripherals()
+{
+    crc_deinit();
+    tim_deinit();
+    spi_deinit();
+    i2c_deinit();
+    gpio_deinit();
+    usart_deinit();
+}
+
 bool start_application()
 {
     BL_PRINTF("Check for application\r\n");
@@ -633,12 +650,7 @@ bool start_application()
         BL_PRINTF("Launching Application...\r\n");
 
         /* De-initialize all the peripherals */
-        crc_deinit();
-        tim_deinit();
-        spi_deinit();
-        i2c_deinit();
-        gpio_deinit();
-        usart_deinit();
+        deinit_peripherals();
 
         /* Start the application */
         bootloader_jump_to_application();

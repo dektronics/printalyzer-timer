@@ -6,6 +6,7 @@
 #include "usbh_core.h"
 #include "usbh_msc.h"
 #include "usb_scsi.h"
+#include "printf.h"
 
 #undef USB_DBG_TAG
 #define USB_DBG_TAG "usbh_msc"
@@ -329,7 +330,7 @@ static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
         return -USB_ERR_RANGE;
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, msc_class->sdchar);
+    snprintf_(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, msc_class->sdchar);
 
     USB_LOG_INFO("Register MSC Class:%s\r\n", hport->config.intf[intf].devname);
 

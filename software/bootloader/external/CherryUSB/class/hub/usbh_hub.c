@@ -5,6 +5,7 @@
  */
 #include "usbh_core.h"
 #include "usbh_hub.h"
+#include "printf.h"
 
 #undef USB_DBG_TAG
 #define USB_DBG_TAG "usbh_hub"
@@ -387,7 +388,7 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     hub->connected = true;
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, hub->index);
+    snprintf_(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, hub->index);
 
     usb_slist_add_tail(&hub->bus->hub_list, &hub->list);
 
@@ -665,7 +666,7 @@ int usbh_hub_initialize(struct usbh_bus *bus)
         return -1;
     }
 
-    snprintf(thread_name, 32, "usbh_hub%u", bus->busid);
+    snprintf_(thread_name, 32, "usbh_hub%u", bus->busid);
     bus->hub_thread = usb_osal_thread_create(thread_name, CONFIG_USBHOST_PSC_STACKSIZE, CONFIG_USBHOST_PSC_PRIO, usbh_hub_thread, bus);
     if (bus->hub_thread == NULL) {
         USB_LOG_ERR("Failed to create hub thread\r\n");

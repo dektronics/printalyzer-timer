@@ -142,5 +142,6 @@ void I2C2_ER_IRQHandler(void)
  */
 void OTG_HS_IRQHandler(void)
 {
-    //FIXME HAL_HCD_IRQHandler(&hhcd_USB_OTG_HS);
+    extern void USBH_IRQHandler(uint8_t busid);
+    USBH_IRQHandler(0);
 }

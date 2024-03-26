@@ -292,7 +292,7 @@ bootloader_status_t bootloader_check_for_application(void)
  *  - Set the stack pointer location
  *  - Perform the jump
  */
-void bootloader_jump_to_application(void)
+__USED __attribute__((optimize("O0"))) void bootloader_jump_to_application(void)
 {
     uint32_t jump_address = *(__IO uint32_t*)(APP_ADDRESS + 4);
     jump_function_t jump = (jump_function_t)jump_address;
