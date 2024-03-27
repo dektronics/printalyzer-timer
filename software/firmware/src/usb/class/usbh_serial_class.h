@@ -29,6 +29,9 @@ struct usbh_serial_class_interface {
 extern "C" {
 #endif
 
+bool usbh_serial_increment_count(uint8_t *devnum);
+void usbh_serial_decrement_count(uint8_t devnum);
+
 int usbh_serial_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 int usbh_serial_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 int usbh_serial_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);

@@ -17,13 +17,6 @@
 
 #define DEV_FORMAT "/dev/ttyUSB%d"
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ch34x_buf[64];
-
-#define CONFIG_USBHOST_MAX_CH34X_CLASS 1
-
-static struct usbh_serial_ch34x g_ch34x_class[CONFIG_USBHOST_MAX_CH34X_CLASS];
-static uint32_t g_devinuse = 0;
-
 static int usbh_serial_ch34x_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ch34x_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ch34x_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);
@@ -54,28 +47,17 @@ static int usbh_serial_ch34x_match(uint8_t class, uint8_t subclass, uint8_t prot
 
 static struct usbh_serial_ch34x *usbh_serial_ch34x_class_alloc(void)
 {
-    int devno;
-
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_CH34X_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
-            memset(&g_ch34x_class[devno], 0, sizeof(struct usbh_serial_ch34x));
-            g_ch34x_class[devno].base.vtable = &vtable;
-            g_ch34x_class[devno].minor = devno;
-            return &g_ch34x_class[devno];
-        }
+    struct usbh_serial_ch34x *ch34x_class = pvPortMalloc(sizeof(struct usbh_serial_ch34x));
+    if (ch34x_class) {
+        memset(ch34x_class, 0, sizeof(struct usbh_serial_ch34x));
+        ch34x_class->base.vtable = &vtable;
     }
-    return NULL;
+    return ch34x_class;
 }
 
 static void usbh_serial_ch34x_class_free(struct usbh_serial_ch34x *ch34x_class)
 {
-    int devno = ch34x_class->minor;
-
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
-    }
-    memset(ch34x_class, 0, sizeof(struct usbh_serial_ch34x));
+    vPortFree(ch34x_class);
 }
 
 static int usbh_serial_ch34x_get_baudrate_div(uint32_t baudrate, uint8_t *factor, uint8_t *divisor)
@@ -137,12 +119,12 @@ static int usbh_serial_ch34x_get_version(struct usbh_serial_ch34x *ch34x_class)
     setup->wIndex = 0;
     setup->wLength = 2;
 
-    ret = usbh_control_transfer(HPORT(ch34x_class), setup, g_ch34x_buf);
+    ret = usbh_control_transfer(HPORT(ch34x_class), setup, ch34x_class->control_buf);
     if (ret < 0) {
         return ret;
     }
 
-    log_i("Ch34x chip version %02x:%02x", g_ch34x_buf[0], g_ch34x_buf[1]);
+    log_i("Ch34x chip version %02x:%02x", ch34x_class->control_buf[0], ch34x_class->control_buf[1]);
     return ret;
 }
 
@@ -249,16 +231,24 @@ int usbh_serial_ch34x_set_line_state(struct usbh_serial_class *serial_class, boo
 static int usbh_serial_ch34x_connect(struct usbh_hubport *hport, uint8_t intf)
 {
     struct usb_endpoint_descriptor *ep_desc;
+    uint8_t devnum = 0;
     int ret = 0;
+
+    if (!usbh_serial_increment_count(&devnum)) {
+        log_w("Too many serial devices attached");
+        return -USB_ERR_NODEV;
+    }
 
     struct usbh_serial_ch34x *ch34x_class = usbh_serial_ch34x_class_alloc();
     if (ch34x_class == NULL) {
         log_e("Fail to alloc ch34x_class");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_NOMEM;
     }
 
     HPORT(ch34x_class) = hport;
     ch34x_class->intf = intf;
+    ch34x_class->minor = devnum;
 
     hport->config.intf[intf].priv = ch34x_class;
 
@@ -306,6 +296,7 @@ static int usbh_serial_ch34x_disconnect(struct usbh_hubport *hport, uint8_t intf
             usbh_serial_stop((struct usbh_serial_class *)ch34x_class);
         }
 
+        usbh_serial_decrement_count(ch34x_class->minor);
         usbh_serial_ch34x_class_free(ch34x_class);
     }
 

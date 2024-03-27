@@ -44,6 +44,7 @@
 struct usbh_serial_ch34x {
     struct usbh_serial_class base;
 
+    USB_MEM_ALIGNX uint8_t control_buf[64];
     uint8_t intf;
     uint8_t minor;
 };

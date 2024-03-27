@@ -6,15 +6,13 @@
 #include "usbh_core.h"
 #include "usbh_serial_cdc_acm.h"
 
+#include <FreeRTOS.h>
+#include <atomic.h>
+
 #define LOG_TAG "usbh_serial_cdc"
 #include <elog.h>
 
 #define DEV_FORMAT "/dev/ttyACM%d"
-
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_acm_buf[64];
-
-static struct usbh_serial_cdc_acm g_cdc_acm_class[CONFIG_USBHOST_MAX_CDC_ACM_CLASS];
-static uint32_t g_devinuse = 0;
 
 static int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
@@ -33,28 +31,17 @@ static struct usbh_serial_class_interface const vtable = {
 
 static struct usbh_serial_cdc_acm *usbh_serial_cdc_acm_class_alloc(void)
 {
-    int devno;
-
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_CDC_ACM_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
-            memset(&g_cdc_acm_class[devno], 0, sizeof(struct usbh_serial_cdc_acm));
-            g_cdc_acm_class[devno].base.vtable = &vtable;
-            g_cdc_acm_class[devno].minor = devno;
-            return &g_cdc_acm_class[devno];
-        }
+    struct usbh_serial_cdc_acm *cdc_acm_class = pvPortMalloc(sizeof(struct usbh_serial_cdc_acm));
+    if (cdc_acm_class) {
+        memset(cdc_acm_class, 0, sizeof(struct usbh_serial_cdc_acm));
+        cdc_acm_class->base.vtable = &vtable;
     }
-    return NULL;
+    return cdc_acm_class;
 }
 
 static void usbh_serial_cdc_acm_class_free(struct usbh_serial_cdc_acm *cdc_acm_class)
 {
-    int devno = cdc_acm_class->minor;
-
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
-    }
-    memset(cdc_acm_class, 0, sizeof(struct usbh_serial_cdc_acm));
+    vPortFree(cdc_acm_class);
 }
 
 int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
@@ -68,9 +55,9 @@ int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, 
     setup->wIndex = cdc_acm_class->intf;
     setup->wLength = 7;
 
-    memcpy(g_cdc_acm_buf, line_coding, sizeof(struct cdc_line_coding));
+    memcpy(cdc_acm_class->control_buf, line_coding, sizeof(struct cdc_line_coding));
 
-    return usbh_control_transfer(serial_class->hport, setup, g_cdc_acm_buf);
+    return usbh_control_transfer(serial_class->hport, setup, cdc_acm_class->control_buf);
 }
 
 int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
@@ -85,11 +72,11 @@ int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, 
     setup->wIndex = cdc_acm_class->intf;
     setup->wLength = 7;
 
-    ret = usbh_control_transfer(serial_class->hport, setup, g_cdc_acm_buf);
+    ret = usbh_control_transfer(serial_class->hport, setup, cdc_acm_class->control_buf);
     if (ret < 0) {
         return ret;
     }
-    memcpy(line_coding, g_cdc_acm_buf, sizeof(struct cdc_line_coding));
+    memcpy(line_coding, cdc_acm_class->control_buf, sizeof(struct cdc_line_coding));
     return ret;
 }
 
@@ -110,16 +97,24 @@ int usbh_serial_cdc_acm_set_line_state(struct usbh_serial_class *serial_class, b
 static int usbh_serial_cdc_acm_connect(struct usbh_hubport *hport, uint8_t intf)
 {
     struct usb_endpoint_descriptor *ep_desc;
+    uint8_t devnum = 0;
     int ret = 0;
+
+    if (!usbh_serial_increment_count(&devnum)) {
+        log_w("Too many serial devices attached");
+        return -USB_ERR_NODEV;
+    }
 
     struct usbh_serial_cdc_acm *cdc_acm_class = usbh_serial_cdc_acm_class_alloc();
     if (cdc_acm_class == NULL) {
         USB_LOG_ERR("Fail to alloc cdc_acm_class\r\n");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_NOMEM;
     }
 
     HPORT(cdc_acm_class) = hport;
     cdc_acm_class->intf = intf;
+    cdc_acm_class->minor = devnum;
 
     hport->config.intf[intf].priv = cdc_acm_class;
     hport->config.intf[intf + 1].priv = NULL;
@@ -172,6 +167,7 @@ static int usbh_serial_cdc_acm_disconnect(struct usbh_hubport *hport, uint8_t in
             usbh_serial_stop((struct usbh_serial_class *)cdc_acm_class);
         }
 
+        usbh_serial_decrement_count(cdc_acm_class->minor);
         usbh_serial_cdc_acm_class_free(cdc_acm_class);
     }
 

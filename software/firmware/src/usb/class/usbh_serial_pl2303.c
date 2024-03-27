@@ -6,10 +6,6 @@
 
 #define DEV_FORMAT "/dev/ttyUSB%d"
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_pl2303_buf[64];
-
-#define CONFIG_USBHOST_MAX_PL2303_CLASS 1
-
 #define PL2303_SET_REQUEST              0x01
 #define PL2303_SET_REQUEST_PL2303HXN    0x80
 #define PL2303_SET_CRTSCTS              0x41
@@ -38,9 +34,6 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_pl2303_buf[64];
 #define UT_READ_CLASS_INTERFACE  (USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE)
 #define UT_WRITE_VENDOR_DEVICE   (USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE)
 #define UT_READ_VENDOR_DEVICE    (USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE)
-
-static struct usbh_serial_pl2303 g_pl2303_class[CONFIG_USBHOST_MAX_PL2303_CLASS];
-static uint32_t g_devinuse = 0;
 
 static int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_pl2303_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
@@ -75,28 +68,17 @@ static int usbh_serial_pl2303_match(uint8_t class, uint8_t subclass, uint8_t pro
 
 static struct usbh_serial_pl2303 *usbh_serial_pl2303_class_alloc(void)
 {
-    int devno;
-
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_PL2303_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
-            memset(&g_pl2303_class[devno], 0, sizeof(struct usbh_serial_pl2303));
-            g_pl2303_class[devno].base.vtable = &vtable;
-            g_pl2303_class[devno].minor = devno;
-            return &g_pl2303_class[devno];
-        }
+    struct usbh_serial_pl2303 *pl2303_class = pvPortMalloc(sizeof(struct usbh_serial_pl2303));
+    if (pl2303_class) {
+        memset(pl2303_class, 0, sizeof(struct usbh_serial_pl2303));
+        pl2303_class->base.vtable = &vtable;
     }
-    return NULL;
+    return pl2303_class;
 }
 
 static void usbh_serial_pl2303_class_free(struct usbh_serial_pl2303 *pl2303_class)
 {
-    int devno = pl2303_class->minor;
-
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
-    }
-    memset(pl2303_class, 0, sizeof(struct usbh_serial_pl2303));
+    vPortFree(pl2303_class);
 }
 
 static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
@@ -118,11 +100,12 @@ static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
     setup->wIndex = index;
     setup->wLength = length;
 
-    return usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
+    return usbh_control_transfer(HPORT(pl2303_class), setup, pl2303_class->control_buf);
 }
 
 int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
+    struct usbh_serial_pl2303 *pl2303_class = (struct usbh_serial_pl2303 *)serial_class;
     struct usb_setup_packet *setup = serial_class->hport->setup;
 
     memcpy((uint8_t *)&serial_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
@@ -133,8 +116,8 @@ int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, s
     setup->wIndex = 0;
     setup->wLength = sizeof(struct cdc_line_coding);
 
-    memcpy(g_pl2303_buf, (uint8_t *)line_coding, sizeof(struct cdc_line_coding));
-    return usbh_control_transfer(serial_class->hport, setup, g_pl2303_buf);
+    memcpy(pl2303_class->control_buf, (uint8_t *)line_coding, sizeof(struct cdc_line_coding));
+    return usbh_control_transfer(serial_class->hport, setup, pl2303_class->control_buf);
 }
 
 int usbh_serial_pl2303_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
@@ -204,7 +187,7 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
         setup->wIndex = 0;
         setup->wLength = 1;
 
-        ret = usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
+        ret = usbh_control_transfer(HPORT(pl2303_class), setup, pl2303_class->control_buf);
         if (ret == -USB_ERR_STALL) {
             pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303HXN;
             ret = 0;
@@ -238,16 +221,24 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
 static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
 {
     struct usb_endpoint_descriptor *ep_desc;
+    uint8_t devnum = 0;
     int ret = 0;
+
+    if (!usbh_serial_increment_count(&devnum)) {
+        log_w("Too many serial devices attached");
+        return -USB_ERR_NODEV;
+    }
 
     struct usbh_serial_pl2303 *pl2303_class = usbh_serial_pl2303_class_alloc();
     if (pl2303_class == NULL) {
         log_e("Fail to alloc pl2303_class");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_NOMEM;
     }
 
     HPORT(pl2303_class) = hport;
     pl2303_class->intf = intf;
+    pl2303_class->minor = devnum;
 
     hport->config.intf[intf].priv = pl2303_class;
 
@@ -265,7 +256,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
             setup->wIndex = pl2303_class->intf;
             setup->wLength = 0;
 
-            ret = usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
+            ret = usbh_control_transfer(HPORT(pl2303_class), setup, pl2303_class->control_buf);
             if (ret < 0) {
                 log_w("Initialization reset failed: %d", ret);
                 break;
@@ -376,6 +367,7 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
             usbh_serial_stop((struct usbh_serial_class *)pl2303_class);
         }
 
+        usbh_serial_decrement_count(pl2303_class->minor);
         usbh_serial_pl2303_class_free(pl2303_class);
     }
 

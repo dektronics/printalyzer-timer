@@ -35,18 +35,11 @@
 
 #define DEV_FORMAT "/dev/ttyUSB%d"
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ftdi_buf[64];
-
-#define CONFIG_USBHOST_MAX_FTDI_CLASS 1
-
 /* Port Identifier Table */
 #define FTDI_PIT_DEFAULT    0   /* SIOA */
 #define FTDI_PIT_SIOA       1   /* SIOA */
 #define FTDI_PIT_SIOB       2   /* SIOB */
 #define FTDI_PIT_PARALLEL   3   /* Parallel */
-
-static struct usbh_serial_ftdi g_ftdi_class[CONFIG_USBHOST_MAX_FTDI_CLASS];
-static uint32_t g_devinuse = 0;
 
 static int usbh_serial_ftdi_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ftdi_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
@@ -86,28 +79,17 @@ static int usbh_serial_ftdi_match(uint8_t class, uint8_t subclass, uint8_t proto
 
 static struct usbh_serial_ftdi *usbh_serial_ftdi_class_alloc(void)
 {
-    int devno;
-
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_FTDI_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
-            memset(&g_ftdi_class[devno], 0, sizeof(struct usbh_serial_ftdi));
-            g_ftdi_class[devno].base.vtable = &vtable;
-            g_ftdi_class[devno].minor = devno;
-            return &g_ftdi_class[devno];
-        }
+    struct usbh_serial_ftdi *ftdi_class = pvPortMalloc(sizeof(struct usbh_serial_ftdi));
+    if (ftdi_class) {
+        memset(ftdi_class, 0, sizeof(struct usbh_serial_ftdi));
+        ftdi_class->base.vtable = &vtable;
     }
-    return NULL;
+    return ftdi_class;
 }
 
 static void usbh_serial_ftdi_class_free(struct usbh_serial_ftdi *ftdi_class)
 {
-    int devno = ftdi_class->minor;
-
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
-    }
-    memset(ftdi_class, 0, sizeof(struct usbh_serial_ftdi));
+    vPortFree(ftdi_class);
 }
 
 static uint32_t baudrate_get_divisor(usbh_ftdi_type_t ftdi_type, uint32_t baud)
@@ -273,11 +255,11 @@ static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_clas
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 2;
 
-    ret = usbh_control_transfer(HPORT(ftdi_class), setup, g_ftdi_buf);
+    ret = usbh_control_transfer(HPORT(ftdi_class), setup, ftdi_class->control_buf);
     if (ret < 0) {
         return ret;
     }
-    memcpy(ftdi_class->modem_status, g_ftdi_buf, 2);
+    memcpy(ftdi_class->modem_status, ftdi_class->control_buf, 2);
     return ret;
 }
 
@@ -342,22 +324,31 @@ static usbh_ftdi_type_t usbh_serial_ftdi_match_type(const struct usbh_hubport *h
 static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
 {
     struct usb_endpoint_descriptor *ep_desc;
+    uint8_t devnum = 0;
     int ret = 0;
+
+    if (!usbh_serial_increment_count(&devnum)) {
+        log_w("Too many serial devices attached");
+        return -USB_ERR_NODEV;
+    }
 
     usbh_ftdi_type_t ftdi_type = usbh_serial_ftdi_match_type(hport);
     if (ftdi_type == USBH_FTDI_TYPE_UNKNOWN) {
         log_e("Unrecognized chip type");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_INVAL;
     }
 
     struct usbh_serial_ftdi *ftdi_class = usbh_serial_ftdi_class_alloc();
     if (ftdi_class == NULL) {
         log_e("Fail to alloc ftdi_class");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_NOMEM;
     }
 
     HPORT(ftdi_class) = hport;
     ftdi_class->ftdi_type = ftdi_type;
+    ftdi_class->minor = devnum;
 
     if (ftdi_type == USBH_FTDI_TYPE_H) {
         //TODO Need to test this, as the device might simply show up differently on this USB stack
@@ -427,8 +418,10 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
             usbh_serial_stop((struct usbh_serial_class *)ftdi_class);
         }
 
+        usbh_serial_decrement_count(ftdi_class->minor);
         usbh_serial_ftdi_class_free(ftdi_class);
     }
+
 
     return ret;
 }

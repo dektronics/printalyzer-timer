@@ -1,5 +1,49 @@
 #include "usbh_serial_class.h"
 
+#define CONFIG_USBHOST_MAX_SERIAL_CLASS 1
+
+#include <FreeRTOS.h>
+#include <atomic.h>
+
+volatile uint8_t usbh_serial_count = 0;
+volatile static uint32_t usbh_serial_dev_in_use = 0;
+
+bool usbh_serial_increment_count(uint8_t *devnum)
+{
+    bool has_dev = false;
+    uint8_t devno;
+
+    ATOMIC_ENTER_CRITICAL();
+    {
+        for (devno = 0; devno < CONFIG_USBHOST_MAX_SERIAL_CLASS; devno++) {
+            if ((usbh_serial_dev_in_use & (1 << devno)) == 0) {
+                usbh_serial_dev_in_use |= (1 << devno);
+                has_dev = true;
+                break;
+            }
+        }
+    }
+    ATOMIC_EXIT_CRITICAL();
+
+    if (has_dev && devnum) {
+        *devnum = devno;
+    }
+    return has_dev;
+}
+
+void usbh_serial_decrement_count(uint8_t devnum)
+{
+    uint8_t devno = devnum;
+
+    ATOMIC_ENTER_CRITICAL();
+    {
+        if (devnum < 32) {
+            usbh_serial_dev_in_use &= ~(1 << devno);
+        }
+    }
+    ATOMIC_EXIT_CRITICAL();
+}
+
 int usbh_serial_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
     return serial_class->vtable->set_line_coding(serial_class, line_coding);

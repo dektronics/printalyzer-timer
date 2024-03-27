@@ -17,8 +17,6 @@
 
 #define DEV_FORMAT "/dev/ttyUSB%d"
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cp210x_buf[64];
-
 #define CONFIG_USBHOST_MAX_CP210X_CLASS 1
 
 /* CP210X_GET_PARTNUM values from hardware */
@@ -27,9 +25,6 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cp210x_buf[64];
 #define CP210X_PARTNUM_CP2103   3
 #define CP210X_PARTNUM_CP2104   4
 #define CP210X_PARTNUM_CP2105   5
-
-static struct usbh_serial_cp210x g_cp210x_class[CONFIG_USBHOST_MAX_CP210X_CLASS];
-static uint32_t g_devinuse = 0;
 
 static int usbh_serial_cp210x_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_cp210x_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
@@ -62,28 +57,17 @@ static int usbh_serial_cp210x_match(uint8_t class, uint8_t subclass, uint8_t pro
 
 static struct usbh_serial_cp210x *usbh_serial_cp210x_class_alloc(void)
 {
-    int devno;
-
-    for (devno = 0; devno < CONFIG_USBHOST_MAX_CP210X_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
-            memset(&g_cp210x_class[devno], 0, sizeof(struct usbh_serial_cp210x));
-            g_cp210x_class[devno].base.vtable = &vtable;
-            g_cp210x_class[devno].minor = devno;
-            return &g_cp210x_class[devno];
-        }
+    struct usbh_serial_cp210x *cp210x_class = pvPortMalloc(sizeof(struct usbh_serial_cp210x));
+    if (cp210x_class) {
+        memset(cp210x_class, 0, sizeof(struct usbh_serial_cp210x));
+        cp210x_class->base.vtable = &vtable;
     }
-    return NULL;
+    return cp210x_class;
 }
 
 static void usbh_serial_cp210x_class_free(struct usbh_serial_cp210x *cp210x_class)
 {
-    int devno = cp210x_class->minor;
-
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
-    }
-    memset(cp210x_class, 0, sizeof(struct usbh_serial_cp210x));
+    vPortFree(cp210x_class);
 }
 
 static int usbh_serial_cp210x_get_part_number(struct usbh_serial_cp210x *cp210x_class, uint8_t *value)
@@ -97,13 +81,13 @@ static int usbh_serial_cp210x_get_part_number(struct usbh_serial_cp210x *cp210x_
     setup->wIndex = cp210x_class->intf;
     setup->wLength = 1;
 
-    g_cp210x_buf[0] = 0;
-    ret = usbh_control_transfer(HPORT(cp210x_class), setup, g_cp210x_buf);
+    cp210x_class->control_buf[0] = 0;
+    ret = usbh_control_transfer(HPORT(cp210x_class), setup, cp210x_class->control_buf);
     if (ret < 0) {
         return ret;
     }
     if (value) {
-        *value = g_cp210x_buf[0];
+        *value = cp210x_class->control_buf[0];
     }
     return ret;
 }
@@ -131,9 +115,9 @@ static int usbh_serial_cp210x_set_flow(struct usbh_serial_cp210x *cp210x_class)
     setup->wIndex = cp210x_class->intf;
     setup->wLength = 16;
 
-    memset(g_cp210x_buf, 0, 16);
-    g_cp210x_buf[13] = 0x20;
-    return usbh_control_transfer(HPORT(cp210x_class), setup, g_cp210x_buf);
+    memset(cp210x_class->control_buf, 0, 16);
+    cp210x_class->control_buf[13] = 0x20;
+    return usbh_control_transfer(HPORT(cp210x_class), setup, cp210x_class->control_buf);
 }
 
 static int usbh_serial_cp210x_set_chars(struct usbh_serial_cp210x *cp210x_class)
@@ -146,11 +130,11 @@ static int usbh_serial_cp210x_set_chars(struct usbh_serial_cp210x *cp210x_class)
     setup->wIndex = cp210x_class->intf;
     setup->wLength = 6;
 
-    memset(g_cp210x_buf, 0, 6);
-    g_cp210x_buf[0] = 0x80;
-    g_cp210x_buf[4] = 0x88;
-    g_cp210x_buf[5] = 0x28;
-    return usbh_control_transfer(HPORT(cp210x_class), setup, g_cp210x_buf);
+    memset(cp210x_class->control_buf, 0, 6);
+    cp210x_class->control_buf[0] = 0x80;
+    cp210x_class->control_buf[4] = 0x88;
+    cp210x_class->control_buf[5] = 0x28;
+    return usbh_control_transfer(HPORT(cp210x_class), setup, cp210x_class->control_buf);
 }
 
 static int usbh_serial_cp210x_set_baudrate(struct usbh_serial_cp210x *cp210x_class, uint32_t baudrate)
@@ -185,8 +169,8 @@ static int usbh_serial_cp210x_set_baudrate(struct usbh_serial_cp210x *cp210x_cla
     setup->wIndex = cp210x_class->intf;
     setup->wLength = 4;
 
-    memcpy(g_cp210x_buf, (uint8_t *)&baudrate, 4);
-    return usbh_control_transfer(HPORT(cp210x_class), setup, g_cp210x_buf);
+    memcpy(cp210x_class->control_buf, (uint8_t *)&baudrate, 4);
+    return usbh_control_transfer(HPORT(cp210x_class), setup, cp210x_class->control_buf);
 }
 
 static int usbh_serial_cp210x_set_data_format(struct usbh_serial_cp210x *cp210x_class, uint8_t databits, uint8_t parity, uint8_t stopbits)
@@ -245,16 +229,24 @@ int usbh_serial_cp210x_set_line_state(struct usbh_serial_class *serial_class, bo
 static int usbh_serial_cp210x_connect(struct usbh_hubport *hport, uint8_t intf)
 {
     struct usb_endpoint_descriptor *ep_desc;
+    uint8_t devnum = 0;
     int ret = 0;
+
+    if (!usbh_serial_increment_count(&devnum)) {
+        log_w("Too many serial devices attached");
+        return -USB_ERR_NODEV;
+    }
 
     struct usbh_serial_cp210x *cp210x_class = usbh_serial_cp210x_class_alloc();
     if (cp210x_class == NULL) {
         log_e("Fail to alloc cp210x_class");
+        usbh_serial_decrement_count(devnum);
         return -USB_ERR_NOMEM;
     }
 
     HPORT(cp210x_class) = hport;
     cp210x_class->intf = intf;
+    cp210x_class->minor = devnum;
 
     hport->config.intf[intf].priv = cp210x_class;
 
@@ -336,6 +328,7 @@ static int usbh_serial_cp210x_disconnect(struct usbh_hubport *hport, uint8_t int
             usbh_serial_stop((struct usbh_serial_class *)cp210x_class);
         }
 
+        usbh_serial_decrement_count(cp210x_class->minor);
         usbh_serial_cp210x_class_free(cp210x_class);
     }
 

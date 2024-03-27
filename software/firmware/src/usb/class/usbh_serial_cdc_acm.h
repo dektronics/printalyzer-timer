@@ -17,6 +17,7 @@ struct usbh_serial_cdc_acm {
     struct usbh_urb intin_urb;
 #endif
 
+    USB_MEM_ALIGNX uint8_t control_buf[64];
     uint8_t intf;
     uint8_t minor;
 };
