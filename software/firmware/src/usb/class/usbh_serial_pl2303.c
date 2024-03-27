@@ -182,7 +182,7 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
     if (pl2303_class->chiptype == USBH_PL2303_TYPE_PL2303HX) {
         struct usb_setup_packet *setup = pl2303_class->hport->setup;
 
-        setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
+        setup->bmRequestType = UT_READ_VENDOR_DEVICE;
         setup->bRequest = PL2303_SET_REQUEST;
         setup->wValue = PL2303_STATUS_REG_PL2303HX;
         setup->wIndex = 0;
@@ -244,7 +244,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
         if (pl2303_class->chiptype != USBH_PL2303_TYPE_PL2303HXN) {
             struct usb_setup_packet *setup = pl2303_class->hport->setup;
 
-            setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
+            setup->bmRequestType = UT_WRITE_VENDOR_DEVICE;
             setup->bRequest = PL2303_SET_REQUEST;
             setup->wValue = 0;
             setup->wIndex = pl2303_class->intf;
