@@ -48,6 +48,21 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ftdi_buf[64];
 static struct usbh_serial_ftdi g_ftdi_class[CONFIG_USBHOST_MAX_FTDI_CLASS];
 static uint32_t g_devinuse = 0;
 
+static int usbh_serial_ftdi_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
+static int usbh_serial_ftdi_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
+static int usbh_serial_ftdi_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);
+
+static struct usbh_serial_class_interface const vtable = {
+    .set_line_coding = usbh_serial_ftdi_set_line_coding,
+    .get_line_coding = usbh_serial_ftdi_get_line_coding,
+    .set_line_state = usbh_serial_ftdi_set_line_state,
+    .bulk_out_transfer = NULL, /* default implementation */
+    .bulk_in_transfer = NULL /* default implementation */
+};
+
+#define HPORT(x) (x->base.hport)
+#define SETUP_PACKET(x) (x->base.hport->setup)
+
 static int usbh_serial_ftdi_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
 {
     /*
@@ -76,6 +91,7 @@ static struct usbh_serial_ftdi *usbh_serial_ftdi_class_alloc(void)
         if ((g_devinuse & (1 << devno)) == 0) {
             g_devinuse |= (1 << devno);
             memset(&g_ftdi_class[devno], 0, sizeof(struct usbh_serial_ftdi));
+            g_ftdi_class[devno].base.vtable = &vtable;
             g_ftdi_class[devno].minor = devno;
             return &g_ftdi_class[devno];
         }
@@ -141,7 +157,7 @@ static uint32_t baudrate_get_divisor(usbh_ftdi_type_t ftdi_type, uint32_t baud)
 
 int usbh_serial_ftdi_reset(struct usbh_serial_ftdi *ftdi_class)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_RESET_REQUEST;
@@ -149,12 +165,12 @@ int usbh_serial_ftdi_reset(struct usbh_serial_ftdi *ftdi_class)
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_set_modem(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_MODEM_CTRL_REQUEST;
@@ -162,12 +178,12 @@ static int usbh_serial_ftdi_set_modem(struct usbh_serial_ftdi *ftdi_class, uint1
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_set_baudrate(struct usbh_serial_ftdi *ftdi_class, uint32_t baudrate)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
     uint32_t itdf_divisor;
     uint16_t value;
     uint8_t baudrate_high;
@@ -182,7 +198,7 @@ static int usbh_serial_ftdi_set_baudrate(struct usbh_serial_ftdi *ftdi_class, ui
     setup->wIndex = (baudrate_high << 8) | ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class, uint8_t databits, uint8_t parity, uint8_t stopbits, uint8_t isbreak)
@@ -196,7 +212,7 @@ static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class,
 
     uint16_t value = ((isbreak & 0x01) << 14) | ((stopbits & 0x03) << 11) | ((parity & 0x0f) << 8) | (databits & 0x0f);
 
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_DATA_REQUEST;
@@ -204,12 +220,12 @@ static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class,
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_set_latency_timer(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_LATENCY_TIMER_REQUEST;
@@ -217,12 +233,12 @@ static int usbh_serial_ftdi_set_latency_timer(struct usbh_serial_ftdi *ftdi_clas
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_set_flow_ctrl(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_FLOW_CTRL_REQUEST;
@@ -242,12 +258,12 @@ static int usbh_serial_ftdi_set_flow_ctrl(struct usbh_serial_ftdi *ftdi_class, u
     setup->wIndex = (value & 0xFF00) | ftdi_class->intf;
     setup->wLength = 0;
 
-    return usbh_control_transfer(ftdi_class->hport, setup, NULL);
+    return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
 }
 
 static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_class)
 {
-    struct usb_setup_packet *setup = ftdi_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
     int ret;
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
@@ -256,7 +272,7 @@ static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_clas
     setup->wIndex = ftdi_class->intf;
     setup->wLength = 2;
 
-    ret = usbh_control_transfer(ftdi_class->hport, setup, g_ftdi_buf);
+    ret = usbh_control_transfer(HPORT(ftdi_class), setup, g_ftdi_buf);
     if (ret < 0) {
         return ret;
     }
@@ -264,22 +280,24 @@ static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_clas
     return ret;
 }
 
-int usbh_serial_ftdi_set_line_coding(struct usbh_serial_ftdi *ftdi_class, struct cdc_line_coding *line_coding)
+int usbh_serial_ftdi_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
-    memcpy((uint8_t *)&ftdi_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
+    struct usbh_serial_ftdi *ftdi_class = (struct usbh_serial_ftdi *)serial_class;
+    memcpy((uint8_t *)&serial_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
     usbh_serial_ftdi_set_baudrate(ftdi_class, line_coding->dwDTERate);
     return usbh_serial_ftdi_set_data_format(ftdi_class, line_coding->bDataBits, line_coding->bParityType, line_coding->bCharFormat, 0);
 }
 
-int usbh_serial_ftdi_get_line_coding(struct usbh_serial_ftdi *ftdi_class, struct cdc_line_coding *line_coding)
+int usbh_serial_ftdi_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
-    memcpy(line_coding, (uint8_t *)&ftdi_class->line_coding, sizeof(struct cdc_line_coding));
+    memcpy(line_coding, (uint8_t *)&serial_class->line_coding, sizeof(struct cdc_line_coding));
     return 0;
 }
 
-int usbh_serial_ftdi_set_line_state(struct usbh_serial_ftdi *ftdi_class, bool dtr, bool rts)
+int usbh_serial_ftdi_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts)
 {
     int ret;
+    struct usbh_serial_ftdi *ftdi_class = (struct usbh_serial_ftdi *)serial_class;
 
     if (dtr) {
         usbh_serial_ftdi_set_modem(ftdi_class, SIO_SET_DTR_HIGH);
@@ -337,7 +355,7 @@ static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
         return -USB_ERR_NOMEM;
     }
 
-    ftdi_class->hport = hport;
+    HPORT(ftdi_class) = hport;
     ftdi_class->ftdi_type = ftdi_type;
 
     if (ftdi_type == USBH_FTDI_TYPE_H) {
@@ -374,9 +392,9 @@ static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
         ep_desc = &hport->config.intf[intf].altsetting[0].ep[i].ep_desc;
 
         if (ep_desc->bEndpointAddress & 0x80) {
-            USBH_EP_INIT(ftdi_class->bulkin, ep_desc);
+            USBH_EP_INIT(ftdi_class->base.bulkin, ep_desc);
         } else {
-            USBH_EP_INIT(ftdi_class->bulkout, ep_desc);
+            USBH_EP_INIT(ftdi_class->base.bulkout, ep_desc);
         }
     }
 
@@ -395,12 +413,12 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
     struct usbh_serial_ftdi *ftdi_class = (struct usbh_serial_ftdi *)hport->config.intf[intf].priv;
 
     if (ftdi_class) {
-        if (ftdi_class->bulkin) {
-            usbh_kill_urb(&ftdi_class->bulkin_urb);
+        if (ftdi_class->base.bulkin) {
+            usbh_kill_urb(&ftdi_class->base.bulkin_urb);
         }
 
-        if (ftdi_class->bulkout) {
-            usbh_kill_urb(&ftdi_class->bulkout_urb);
+        if (ftdi_class->base.bulkout) {
+            usbh_kill_urb(&ftdi_class->base.bulkout_urb);
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
@@ -411,32 +429,6 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
         usbh_serial_ftdi_class_free(ftdi_class);
     }
 
-    return ret;
-}
-
-int usbh_serial_ftdi_bulk_in_transfer(struct usbh_serial_ftdi *ftdi_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
-{
-    int ret;
-    struct usbh_urb *urb = &ftdi_class->bulkin_urb;
-
-    usbh_bulk_urb_fill(urb, ftdi_class->hport, ftdi_class->bulkin, buffer, buflen, timeout, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
-    }
-    return ret;
-}
-
-int usbh_serial_ftdi_bulk_out_transfer(struct usbh_serial_ftdi *ftdi_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
-{
-    int ret;
-    struct usbh_urb *urb = &ftdi_class->bulkout_urb;
-
-    usbh_bulk_urb_fill(urb, ftdi_class->hport, ftdi_class->bulkout, buffer, buflen, timeout, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
-    }
     return ret;
 }
 

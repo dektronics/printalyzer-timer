@@ -7,6 +7,7 @@
 #define USBH_CH34X_H
 
 #include "usb_cdc.h"
+#include "usbh_serial_class.h"
 
 /* Requests */
 #define CH34X_READ_VERSION 0x5F
@@ -41,13 +42,7 @@
 #define CH341_L_D5 0x00
 
 struct usbh_serial_ch34x {
-    struct usbh_hubport *hport;
-    struct usb_endpoint_descriptor *bulkin;  /* Bulk IN endpoint */
-    struct usb_endpoint_descriptor *bulkout; /* Bulk OUT endpoint */
-    struct usbh_urb bulkout_urb;
-    struct usbh_urb bulkin_urb;
-
-    struct cdc_line_coding line_coding;
+    struct usbh_serial_class base;
 
     uint8_t intf;
     uint8_t minor;
@@ -56,13 +51,6 @@ struct usbh_serial_ch34x {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-int usbh_serial_ch34x_set_line_coding(struct usbh_serial_ch34x *ch34x_class, struct cdc_line_coding *line_coding);
-int usbh_serial_ch34x_get_line_coding(struct usbh_serial_ch34x *ch34x_class, struct cdc_line_coding *line_coding);
-int usbh_serial_ch34x_set_line_state(struct usbh_serial_ch34x *ch34x_class, bool dtr, bool rts);
-
-int usbh_serial_ch34x_bulk_in_transfer(struct usbh_serial_ch34x *ch34x_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
-int usbh_serial_ch34x_bulk_out_transfer(struct usbh_serial_ch34x *ch34x_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 
 void usbh_serial_ch34x_run(struct usbh_serial_ch34x *ch34x_class);
 void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class);

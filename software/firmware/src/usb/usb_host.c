@@ -379,14 +379,14 @@ void usbh_hid_stop(struct usbh_hid *hid_class)
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_cdc_acm_run(struct usbh_cdc_acm *cdc_acm_class)
+void usbh_serial_cdc_acm_run(struct usbh_serial_cdc_acm *cdc_acm_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_cdc_attached(cdc_acm_class);
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_cdc_acm_stop(struct usbh_cdc_acm *cdc_acm_class)
+void usbh_serial_cdc_acm_stop(struct usbh_serial_cdc_acm *cdc_acm_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_cdc_detached(cdc_acm_class);

@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-struct usbh_cdc_acm;
+struct usbh_serial_cdc_acm;
 struct usbh_serial_ftdi;
 struct usbh_serial_cp210x;
 struct usbh_serial_ch34x;
@@ -16,8 +16,8 @@ typedef void (*usbh_serial_transmit_callback_t)();
 
 bool usbh_serial_init(usbh_serial_receive_callback_t receive_callback, usbh_serial_transmit_callback_t transmit_callback);
 
-void usbh_serial_cdc_attached(struct usbh_cdc_acm *cdc_acm_class);
-void usbh_serial_cdc_detached(struct usbh_cdc_acm *cdc_acm_class);
+void usbh_serial_cdc_attached(struct usbh_serial_cdc_acm *cdc_acm_class);
+void usbh_serial_cdc_detached(struct usbh_serial_cdc_acm *cdc_acm_class);
 
 void usbh_serial_ftdi_attached(struct usbh_serial_ftdi *ftdi_class);
 void usbh_serial_ftdi_detached(struct usbh_serial_ftdi *ftdi_class);

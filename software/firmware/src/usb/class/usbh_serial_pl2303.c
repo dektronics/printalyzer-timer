@@ -42,6 +42,21 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_pl2303_buf[64];
 static struct usbh_serial_pl2303 g_pl2303_class[CONFIG_USBHOST_MAX_PL2303_CLASS];
 static uint32_t g_devinuse = 0;
 
+static int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
+static int usbh_serial_pl2303_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
+static int usbh_serial_pl2303_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);
+
+static struct usbh_serial_class_interface const vtable = {
+    .set_line_coding = usbh_serial_pl2303_set_line_coding,
+    .get_line_coding = usbh_serial_pl2303_get_line_coding,
+    .set_line_state = usbh_serial_pl2303_set_line_state,
+    .bulk_out_transfer = NULL, /* default implementation */
+    .bulk_in_transfer = NULL /* default implementation */
+};
+
+#define HPORT(x) (x->base.hport)
+#define SETUP_PACKET(x) (x->base.hport->setup)
+
 static int usbh_serial_pl2303_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
 {
     switch (pid) {
@@ -66,6 +81,7 @@ static struct usbh_serial_pl2303 *usbh_serial_pl2303_class_alloc(void)
         if ((g_devinuse & (1 << devno)) == 0) {
             g_devinuse |= (1 << devno);
             memset(&g_pl2303_class[devno], 0, sizeof(struct usbh_serial_pl2303));
+            g_pl2303_class[devno].base.vtable = &vtable;
             g_pl2303_class[devno].minor = devno;
             return &g_pl2303_class[devno];
         }
@@ -94,7 +110,7 @@ static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
      * Requests with more obvious naming and typing information will have
      * their own dedicated functions.
      */
-    struct usb_setup_packet *setup = pl2303_class->hport->setup;
+    struct usb_setup_packet *setup = SETUP_PACKET(pl2303_class);
 
     setup->bmRequestType = req_type;
     setup->bRequest = request;
@@ -102,14 +118,14 @@ static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
     setup->wIndex = index;
     setup->wLength = length;
 
-    return usbh_control_transfer(pl2303_class->hport, setup, g_pl2303_buf);
+    return usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
 }
 
-int usbh_serial_pl2303_set_line_coding(struct usbh_serial_pl2303 *pl2303_class, struct cdc_line_coding *line_coding)
+int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
-    struct usb_setup_packet *setup = pl2303_class->hport->setup;
+    struct usb_setup_packet *setup = serial_class->hport->setup;
 
-    memcpy((uint8_t *)&pl2303_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
+    memcpy((uint8_t *)&serial_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
 
     setup->bmRequestType = UT_WRITE_CLASS_INTERFACE;
     setup->bRequest = CDC_REQUEST_SET_LINE_CODING;
@@ -118,18 +134,18 @@ int usbh_serial_pl2303_set_line_coding(struct usbh_serial_pl2303 *pl2303_class, 
     setup->wLength = sizeof(struct cdc_line_coding);
 
     memcpy(g_pl2303_buf, (uint8_t *)line_coding, sizeof(struct cdc_line_coding));
-    return usbh_control_transfer(pl2303_class->hport, setup, g_pl2303_buf);
+    return usbh_control_transfer(serial_class->hport, setup, g_pl2303_buf);
 }
 
-int usbh_serial_pl2303_get_line_coding(struct usbh_serial_pl2303 *pl2303_class, struct cdc_line_coding *line_coding)
+int usbh_serial_pl2303_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
-    memcpy(line_coding, (uint8_t *)&pl2303_class->line_coding, sizeof(struct cdc_line_coding));
+    memcpy(line_coding, (uint8_t *)&serial_class->line_coding, sizeof(struct cdc_line_coding));
     return 0;
 }
 
-int usbh_serial_pl2303_set_line_state(struct usbh_serial_pl2303 *pl2303_class, bool dtr, bool rts)
+int usbh_serial_pl2303_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts)
 {
-    struct usb_setup_packet *setup = pl2303_class->hport->setup;
+    struct usb_setup_packet *setup = serial_class->hport->setup;
 
     setup->bmRequestType = UT_WRITE_CLASS_INTERFACE;
     setup->bRequest = CDC_REQUEST_SET_CONTROL_LINE_STATE;
@@ -137,14 +153,14 @@ int usbh_serial_pl2303_set_line_state(struct usbh_serial_pl2303 *pl2303_class, b
     setup->wIndex = 0;
     setup->wLength = 0;
 
-    return usbh_control_transfer(pl2303_class->hport, setup, NULL);
+    return usbh_control_transfer(serial_class->hport, setup, NULL);
 }
 
 static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_class)
 {
     int ret = 0;
 
-    switch (pl2303_class->hport->device_desc.bcdDevice) {
+    switch (HPORT(pl2303_class)->device_desc.bcdDevice) {
     case 0x0300:
         pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303HX;
         /* or TA, that is HX with external crystal */
@@ -162,9 +178,9 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
         /* NOTE: I have no info about the bcdDevice for the base PL2303 (up to 1.2Mbaud,
            only fixed rates) and for PL2303SA (8-pin chip, up to 115200 baud */
         /* Determine the chip type.  This algorithm is taken from Linux. */
-        if (pl2303_class->hport->device_desc.bDeviceClass == 0x02) {
+        if (HPORT(pl2303_class)->device_desc.bDeviceClass == 0x02) {
             pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303;
-        } else if (pl2303_class->hport->device_desc.bMaxPacketSize0 == 0x40) {
+        } else if (HPORT(pl2303_class)->device_desc.bMaxPacketSize0 == 0x40) {
             pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303HX;
         } else {
             pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303;
@@ -180,7 +196,7 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
      * (on a status register) to the new chip and checking the error.
      */
     if (pl2303_class->chiptype == USBH_PL2303_TYPE_PL2303HX) {
-        struct usb_setup_packet *setup = pl2303_class->hport->setup;
+        struct usb_setup_packet *setup = SETUP_PACKET(pl2303_class);
 
         setup->bmRequestType = UT_READ_VENDOR_DEVICE;
         setup->bRequest = PL2303_SET_REQUEST;
@@ -188,9 +204,8 @@ static int usbh_serial_pl2303_get_chiptype(struct usbh_serial_pl2303 *pl2303_cla
         setup->wIndex = 0;
         setup->wLength = 1;
 
-        ret = usbh_control_transfer(pl2303_class->hport, setup, g_pl2303_buf);
+        ret = usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
         if (ret == -USB_ERR_STALL) {
-            /* Not entirely sure this is the right error code to use, but its a starting point */
             pl2303_class->chiptype = USBH_PL2303_TYPE_PL2303HXN;
             ret = 0;
         } else if (ret < 0) {
@@ -231,7 +246,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
         return -USB_ERR_NOMEM;
     }
 
-    pl2303_class->hport = hport;
+    HPORT(pl2303_class) = hport;
     pl2303_class->intf = intf;
 
     hport->config.intf[intf].priv = pl2303_class;
@@ -242,7 +257,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
 
         /* Startup reset sequence, if necessary for the chip type */
         if (pl2303_class->chiptype != USBH_PL2303_TYPE_PL2303HXN) {
-            struct usb_setup_packet *setup = pl2303_class->hport->setup;
+            struct usb_setup_packet *setup = SETUP_PACKET(pl2303_class);
 
             setup->bmRequestType = UT_WRITE_VENDOR_DEVICE;
             setup->bRequest = PL2303_SET_REQUEST;
@@ -250,7 +265,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
             setup->wIndex = pl2303_class->intf;
             setup->wLength = 0;
 
-            ret = usbh_control_transfer(pl2303_class->hport, setup, g_pl2303_buf);
+            ret = usbh_control_transfer(HPORT(pl2303_class), setup, g_pl2303_buf);
             if (ret < 0) {
                 log_w("Initialization reset failed: %d", ret);
                 break;
@@ -326,9 +341,9 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
             continue;
         } else {
             if (ep_desc->bEndpointAddress & 0x80) {
-                USBH_EP_INIT(pl2303_class->bulkin, ep_desc);
+                USBH_EP_INIT(pl2303_class->base.bulkin, ep_desc);
             } else {
-                USBH_EP_INIT(pl2303_class->bulkout, ep_desc);
+                USBH_EP_INIT(pl2303_class->base.bulkout, ep_desc);
             }
         }
     }
@@ -348,12 +363,12 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
     struct usbh_serial_pl2303 *pl2303_class = (struct usbh_serial_pl2303 *)hport->config.intf[intf].priv;
 
     if (pl2303_class) {
-        if (pl2303_class->bulkin) {
-            usbh_kill_urb(&pl2303_class->bulkin_urb);
+        if (pl2303_class->base.bulkin) {
+            usbh_kill_urb(&pl2303_class->base.bulkin_urb);
         }
 
-        if (pl2303_class->bulkout) {
-            usbh_kill_urb(&pl2303_class->bulkout_urb);
+        if (pl2303_class->base.bulkout) {
+            usbh_kill_urb(&pl2303_class->base.bulkout_urb);
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
@@ -364,32 +379,6 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
         usbh_serial_pl2303_class_free(pl2303_class);
     }
 
-    return ret;
-}
-
-int usbh_serial_pl2303_bulk_in_transfer(struct usbh_serial_pl2303 *pl2303_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
-{
-    int ret;
-    struct usbh_urb *urb = &pl2303_class->bulkin_urb;
-
-    usbh_bulk_urb_fill(urb, pl2303_class->hport, pl2303_class->bulkin, buffer, buflen, timeout, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
-    }
-    return ret;
-}
-
-int usbh_serial_pl2303_bulk_out_transfer(struct usbh_serial_pl2303 *pl2303_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
-{
-    int ret;
-    struct usbh_urb *urb = &pl2303_class->bulkout_urb;
-
-    usbh_bulk_urb_fill(urb, pl2303_class->hport, pl2303_class->bulkout, buffer, buflen, timeout, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
-    }
     return ret;
 }
 

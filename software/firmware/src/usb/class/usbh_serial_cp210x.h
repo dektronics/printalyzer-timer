@@ -7,6 +7,7 @@
 #define USBH_CP210X_H
 
 #include "usb_cdc.h"
+#include "usbh_serial_class.h"
 
 /* Requests */
 #define CP210X_IFC_ENABLE      0x00
@@ -43,13 +44,7 @@
 #define CP210X_READ_LATCH      0x00C2
 
 struct usbh_serial_cp210x {
-    struct usbh_hubport *hport;
-    struct usb_endpoint_descriptor *bulkin;  /* Bulk IN endpoint */
-    struct usb_endpoint_descriptor *bulkout; /* Bulk OUT endpoint */
-    struct usbh_urb bulkout_urb;
-    struct usbh_urb bulkin_urb;
-
-    struct cdc_line_coding line_coding;
+    struct usbh_serial_class base;
 
     uint8_t partnum;
     uint8_t intf;
@@ -59,13 +54,6 @@ struct usbh_serial_cp210x {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-int usbh_serial_cp210x_set_line_coding(struct usbh_serial_cp210x *cp210x_class, struct cdc_line_coding *line_coding);
-int usbh_serial_cp210x_get_line_coding(struct usbh_serial_cp210x *cp210x_class, struct cdc_line_coding *line_coding);
-int usbh_serial_cp210x_set_line_state(struct usbh_serial_cp210x *cp210x_class, bool dtr, bool rts);
-
-int usbh_serial_cp210x_bulk_in_transfer(struct usbh_serial_cp210x *cp210x_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
-int usbh_serial_cp210x_bulk_out_transfer(struct usbh_serial_cp210x *cp210x_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 
 void usbh_serial_cp210x_run(struct usbh_serial_cp210x *cp210x_class);
 void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class);

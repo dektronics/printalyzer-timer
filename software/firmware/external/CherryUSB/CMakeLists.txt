@@ -36,7 +36,6 @@ if(CONFIG_CHERRYUSB_HOST)
     target_sources(cherryusb PRIVATE
         core/usbh_core.c
         class/hub/usbh_hub.c
-        class/cdc/usbh_cdc_acm.c
         class/hid/usbh_hid.c
         class/msc/usbh_msc.c
         port/dwc2/usb_hc_dwc2.c

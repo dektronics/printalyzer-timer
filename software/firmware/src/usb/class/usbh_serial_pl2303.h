@@ -38,6 +38,7 @@
 #define USBH_PL2303_H
 
 #include "usb_cdc.h"
+#include "usbh_serial_class.h"
 
 /* Different PL2303 IC types */
 typedef enum {
@@ -49,13 +50,7 @@ typedef enum {
 } usbh_pl2303_type_t;
 
 struct usbh_serial_pl2303 {
-    struct usbh_hubport *hport;
-    struct usb_endpoint_descriptor *bulkin;  /* Bulk IN endpoint */
-    struct usb_endpoint_descriptor *bulkout; /* Bulk OUT endpoint */
-    struct usbh_urb bulkout_urb;
-    struct usbh_urb bulkin_urb;
-
-    struct cdc_line_coding line_coding;
+    struct usbh_serial_class base;
 
     usbh_pl2303_type_t chiptype;
     uint8_t intf;
@@ -65,13 +60,6 @@ struct usbh_serial_pl2303 {
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-int usbh_serial_pl2303_set_line_coding(struct usbh_serial_pl2303 *pl2303_class, struct cdc_line_coding *line_coding);
-int usbh_serial_pl2303_get_line_coding(struct usbh_serial_pl2303 *pl2303_class, struct cdc_line_coding *line_coding);
-int usbh_serial_pl2303_set_line_state(struct usbh_serial_pl2303 *pl2303_class, bool dtr, bool rts);
-
-int usbh_serial_pl2303_bulk_in_transfer(struct usbh_serial_pl2303 *pl2303_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
-int usbh_serial_pl2303_bulk_out_transfer(struct usbh_serial_pl2303 *pl2303_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 
 void usbh_serial_pl2303_run(struct usbh_serial_pl2303 *pl2303_class);
 void usbh_serial_pl2303_stop(struct usbh_serial_pl2303 *pl2303_class);
