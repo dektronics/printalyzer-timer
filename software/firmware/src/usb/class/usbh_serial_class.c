@@ -48,3 +48,11 @@ int usbh_serial_bulk_out_transfer(struct usbh_serial_class *serial_class, uint8_
     }
     return ret;
 }
+
+__WEAK void usbh_serial_run(struct usbh_serial_class *serial_class)
+{
+}
+
+__WEAK void usbh_serial_stop(struct usbh_serial_class *serial_class)
+{
+}

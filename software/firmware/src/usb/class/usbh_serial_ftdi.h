@@ -57,15 +57,4 @@ struct usbh_serial_ftdi {
     uint8_t modem_status[2];
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void usbh_serial_ftdi_run(struct usbh_serial_ftdi *ftdi_class);
-void usbh_serial_ftdi_stop(struct usbh_serial_ftdi *ftdi_class);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* USBH_SERIAL_FTDI_H */

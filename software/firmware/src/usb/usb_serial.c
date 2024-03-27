@@ -16,18 +16,8 @@
 #define LOG_TAG "usb_serial"
 #include <elog.h>
 
-typedef enum {
-    USB_SERIAL_UNKNOWN = 0,
-    USB_SERIAL_CDC_ACM,
-    USB_SERIAL_FTDI,
-    USB_SERIAL_CP210X,
-    USB_SERIAL_CH34X,
-    USB_SERIAL_PL2303
-} usb_serial_driver_t;
-
 typedef struct {
     struct usbh_serial_class *serial_class;
-    usb_serial_driver_t driver;
     uint8_t connected;
     uint8_t active;
 } usb_serial_handle_t;
@@ -53,8 +43,6 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t bulk_in_buffer[64];
 static usbh_serial_receive_callback_t serial_receive_callback;
 static usbh_serial_transmit_callback_t serial_transmit_callback;
 
-static void usb_serial_attached();
-static void usb_serial_detached();
 static void usb_serial_thread(void *argument);
 
 bool usbh_serial_init(usbh_serial_receive_callback_t receive_callback, usbh_serial_transmit_callback_t transmit_callback)
@@ -65,107 +53,24 @@ bool usbh_serial_init(usbh_serial_receive_callback_t receive_callback, usbh_seri
     return true;
 }
 
-void usbh_serial_cdc_attached(struct usbh_serial_cdc_acm *cdc_acm_class)
+void usbh_serial_attached(struct usbh_serial_class *serial_class)
 {
     if (handle.connected) {
         return;
     }
-    handle.serial_class = (struct usbh_serial_class *)cdc_acm_class;
-    handle.driver = USB_SERIAL_CDC_ACM;
+    handle.serial_class = serial_class;
     handle.connected = 1;
-    usb_serial_attached();
-}
-
-void usbh_serial_cdc_detached(struct usbh_serial_cdc_acm *cdc_acm_class)
-{
-    if (handle.driver == USB_SERIAL_CDC_ACM && (struct usbh_serial_cdc_acm *)handle.serial_class == cdc_acm_class) {
-        usb_serial_detached();
-    }
-}
-
-void usbh_serial_ftdi_attached(struct usbh_serial_ftdi *ftdi_class)
-{
-    if (handle.connected) {
-        return;
-    }
-    handle.serial_class = (struct usbh_serial_class *)ftdi_class;
-    handle.driver = USB_SERIAL_FTDI;
-    handle.connected = 1;
-    usb_serial_attached();
-}
-
-void usbh_serial_ftdi_detached(struct usbh_serial_ftdi *ftdi_class)
-{
-    if (handle.driver == USB_SERIAL_FTDI && (struct usbh_serial_ftdi *)handle.serial_class == ftdi_class) {
-        usb_serial_detached();
-    }
-}
-
-void usbh_serial_cp210x_attached(struct usbh_serial_cp210x *cp210x_class)
-{
-    if (handle.connected) {
-        return;
-    }
-    handle.serial_class = (struct usbh_serial_class *)cp210x_class;
-    handle.driver = USB_SERIAL_CP210X;
-    handle.connected = 1;
-    usb_serial_attached();
-}
-
-void usbh_serial_cp210x_detached(struct usbh_serial_cp210x *cp210x_class)
-{
-    if (handle.driver == USB_SERIAL_CP210X && (struct usbh_serial_cp210x *)handle.serial_class == cp210x_class) {
-        usb_serial_detached();
-    }
-}
-
-void usbh_serial_ch34x_attached(struct usbh_serial_ch34x *ch34x_class)
-{
-    if (handle.connected) {
-        return;
-    }
-    handle.serial_class = (struct usbh_serial_class *)ch34x_class;
-    handle.driver = USB_SERIAL_CH34X;
-    handle.connected = 1;
-    usb_serial_attached();
-}
-
-void usbh_serial_ch34x_detached(struct usbh_serial_ch34x *ch34x_class)
-{
-    if (handle.driver == USB_SERIAL_CH34X && (struct usbh_serial_ch34x *)handle.serial_class == ch34x_class) {
-        usb_serial_detached();
-    }
-}
-
-void usbh_serial_pl2303_attached(struct usbh_serial_pl2303 *pl2303_class)
-{
-    if (handle.connected) {
-        return;
-    }
-    handle.serial_class = (struct usbh_serial_class *)pl2303_class;
-    handle.driver = USB_SERIAL_PL2303;
-    handle.connected = 1;
-    usb_serial_attached();
-}
-
-void usbh_serial_pl2303_detached(struct usbh_serial_pl2303 *pl2303_class)
-{
-    if (handle.driver == USB_SERIAL_PL2303 && (struct usbh_serial_pl2303 *)handle.serial_class == pl2303_class) {
-        usb_serial_detached();
-    }
-}
-
-void usb_serial_attached()
-{
     if (!serial_task) {
         serial_task = osThreadNew(usb_serial_thread, NULL, &serial_task_attrs);
     }
 }
 
-void usb_serial_detached()
+void usbh_serial_detached(struct usbh_serial_class *serial_class)
 {
-    if (handle.connected) {
-        memset(&handle, 0, sizeof(usb_serial_handle_t));
+    if (handle.serial_class == serial_class) {
+        if (handle.connected) {
+            memset(&handle, 0, sizeof(usb_serial_handle_t));
+        }
     }
 }
 
@@ -202,19 +107,9 @@ void usb_serial_thread(void *argument)
         }
 
         if (ret > 0) {
-            if (handle.driver == USB_SERIAL_FTDI) {
-                /* FTDI returns two modem status bytes that need to be skipped */
-                if (ret > 2) {
-                    //log_d("[len=%d], \"%.*s\"", ret - 2, ret - 2, bulk_in_buffer + 2);
-                    if (serial_receive_callback) {
-                        serial_receive_callback(bulk_in_buffer + 2, ret - 2);
-                    }
-                }
-            } else {
-                log_d("[len=%d], \"%.*s\"", ret, ret, bulk_in_buffer);
-                if (serial_receive_callback) {
-                    serial_receive_callback(bulk_in_buffer, ret);
-                }
+            log_d("[len=%d], \"%.*s\"", ret, ret, bulk_in_buffer);
+            if (serial_receive_callback) {
+                serial_receive_callback(bulk_in_buffer, ret);
             }
         }
     }

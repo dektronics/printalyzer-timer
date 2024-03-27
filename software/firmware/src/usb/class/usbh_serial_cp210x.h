@@ -51,15 +51,4 @@ struct usbh_serial_cp210x {
     uint8_t minor;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void usbh_serial_cp210x_run(struct usbh_serial_cp210x *cp210x_class);
-void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* USBH_CP210X_H */

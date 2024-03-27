@@ -21,15 +21,4 @@ struct usbh_serial_cdc_acm {
     uint8_t minor;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void usbh_serial_cdc_acm_run(struct usbh_serial_cdc_acm *cdc_acm_class);
-void usbh_serial_cdc_acm_stop(struct usbh_serial_cdc_acm *cdc_acm_class);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* USBH_SERIAL_CDC_ACM_H */

@@ -50,8 +50,8 @@ static struct usbh_serial_class_interface const vtable = {
     .set_line_coding = usbh_serial_pl2303_set_line_coding,
     .get_line_coding = usbh_serial_pl2303_get_line_coding,
     .set_line_state = usbh_serial_pl2303_set_line_state,
-    .bulk_out_transfer = NULL, /* default implementation */
-    .bulk_in_transfer = NULL /* default implementation */
+    .bulk_in_transfer = NULL, /* default implementation */
+    .bulk_out_transfer = NULL /* default implementation */
 };
 
 #define HPORT(x) (x->base.hport)
@@ -352,7 +352,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
 
     log_i("Register PL2303 Class:%s", hport->config.intf[intf].devname);
 
-    usbh_serial_pl2303_run(pl2303_class);
+    usbh_serial_run((struct usbh_serial_class *)pl2303_class);
     return ret;
 }
 
@@ -373,21 +373,13 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
 
         if (hport->config.intf[intf].devname[0] != '\0') {
             log_i("Unregister PL2303 Class:%s", hport->config.intf[intf].devname);
-            usbh_serial_pl2303_stop(pl2303_class);
+            usbh_serial_stop((struct usbh_serial_class *)pl2303_class);
         }
 
         usbh_serial_pl2303_class_free(pl2303_class);
     }
 
     return ret;
-}
-
-__WEAK void usbh_serial_pl2303_run(struct usbh_serial_pl2303 *pl2303_class)
-{
-}
-
-__WEAK void usbh_serial_pl2303_stop(struct usbh_serial_pl2303 *pl2303_class)
-{
 }
 
 const struct usbh_class_driver serial_pl2303_class_driver = {

@@ -35,6 +35,9 @@ int usbh_serial_set_line_state(struct usbh_serial_class *serial_class, bool dtr,
 int usbh_serial_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 int usbh_serial_bulk_out_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 
+void usbh_serial_run(struct usbh_serial_class *serial_class);
+void usbh_serial_stop(struct usbh_serial_class *serial_class);
+
 #ifdef __cplusplus
 }
 #endif

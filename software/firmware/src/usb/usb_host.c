@@ -379,73 +379,17 @@ void usbh_hid_stop(struct usbh_hid *hid_class)
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_serial_cdc_acm_run(struct usbh_serial_cdc_acm *cdc_acm_class)
+void usbh_serial_run(struct usbh_serial_class *serial_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_cdc_attached(cdc_acm_class);
+    usbh_serial_attached(serial_class);
     osMutexRelease(usb_attach_mutex);
 }
 
-void usbh_serial_cdc_acm_stop(struct usbh_serial_cdc_acm *cdc_acm_class)
+void usbh_serial_stop(struct usbh_serial_class *serial_class)
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_cdc_detached(cdc_acm_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_ftdi_run(struct usbh_serial_ftdi *ftdi_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_ftdi_attached(ftdi_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_ftdi_stop(struct usbh_serial_ftdi *ftdi_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_ftdi_detached(ftdi_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_cp210x_run(struct usbh_serial_cp210x *cp210x_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_cp210x_attached(cp210x_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_cp210x_detached(cp210x_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_ch34x_run(struct usbh_serial_ch34x *ch34x_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_ch34x_attached(ch34x_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_ch34x_detached(ch34x_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_pl2303_run(struct usbh_serial_pl2303 *pl2303_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_pl2303_attached(pl2303_class);
-    osMutexRelease(usb_attach_mutex);
-}
-
-void usbh_serial_pl2303_stop(struct usbh_serial_pl2303 *pl2303_class)
-{
-    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_serial_pl2303_detached(pl2303_class);
+    usbh_serial_detached(serial_class);
     osMutexRelease(usb_attach_mutex);
 }
 

@@ -39,8 +39,8 @@ static struct usbh_serial_class_interface const vtable = {
     .set_line_coding = usbh_serial_cp210x_set_line_coding,
     .get_line_coding = usbh_serial_cp210x_get_line_coding,
     .set_line_state = usbh_serial_cp210x_set_line_state,
-    .bulk_out_transfer = NULL, /* default implementation */
-    .bulk_in_transfer = NULL /* default implementation */
+    .bulk_in_transfer = NULL, /* default implementation */
+    .bulk_out_transfer = NULL /* default implementation */
 };
 
 #define HPORT(x) (x->base.hport)
@@ -312,7 +312,7 @@ static int usbh_serial_cp210x_connect(struct usbh_hubport *hport, uint8_t intf)
 
     log_i("Register CP210X Class:%s", hport->config.intf[intf].devname);
 
-    usbh_serial_cp210x_run(cp210x_class);
+    usbh_serial_run((struct usbh_serial_class *)cp210x_class);
     return ret;
 }
 
@@ -333,21 +333,13 @@ static int usbh_serial_cp210x_disconnect(struct usbh_hubport *hport, uint8_t int
 
         if (hport->config.intf[intf].devname[0] != '\0') {
             log_i("Unregister CP210X Class:%s", hport->config.intf[intf].devname);
-            usbh_serial_cp210x_stop(cp210x_class);
+            usbh_serial_stop((struct usbh_serial_class *)cp210x_class);
         }
 
         usbh_serial_cp210x_class_free(cp210x_class);
     }
 
     return ret;
-}
-
-__WEAK void usbh_serial_cp210x_run(struct usbh_serial_cp210x *cp210x_class)
-{
-}
-
-__WEAK void usbh_serial_cp210x_stop(struct usbh_serial_cp210x *cp210x_class)
-{
 }
 
 const struct usbh_class_driver serial_cp210x_class_driver = {

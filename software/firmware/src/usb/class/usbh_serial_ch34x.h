@@ -48,15 +48,4 @@ struct usbh_serial_ch34x {
     uint8_t minor;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void usbh_serial_ch34x_run(struct usbh_serial_ch34x *ch34x_class);
-void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* USBH_CH34X_H */

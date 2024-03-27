@@ -32,8 +32,8 @@ static struct usbh_serial_class_interface const vtable = {
     .set_line_coding = usbh_serial_ch34x_set_line_coding,
     .get_line_coding = usbh_serial_ch34x_get_line_coding,
     .set_line_state = usbh_serial_ch34x_set_line_state,
-    .bulk_out_transfer = NULL, /* default implementation */
-    .bulk_in_transfer = NULL /* default implementation */
+    .bulk_in_transfer = NULL, /* default implementation */
+    .bulk_out_transfer = NULL /* default implementation */
 };
 
 #define HPORT(x) (x->base.hport)
@@ -282,7 +282,7 @@ static int usbh_serial_ch34x_connect(struct usbh_hubport *hport, uint8_t intf)
 
     log_i("Register CH34X Class:%s", hport->config.intf[intf].devname);
 
-    usbh_serial_ch34x_run(ch34x_class);
+    usbh_serial_run((struct usbh_serial_class *)ch34x_class);
     return ret;
 }
 
@@ -303,21 +303,13 @@ static int usbh_serial_ch34x_disconnect(struct usbh_hubport *hport, uint8_t intf
 
         if (hport->config.intf[intf].devname[0] != '\0') {
             log_i("Unregister CH34X Class:%s", hport->config.intf[intf].devname);
-            usbh_serial_ch34x_stop(ch34x_class);
+            usbh_serial_stop((struct usbh_serial_class *)ch34x_class);
         }
 
         usbh_serial_ch34x_class_free(ch34x_class);
     }
 
     return ret;
-}
-
-__WEAK void usbh_serial_ch34x_run(struct usbh_serial_ch34x *ch34x_class)
-{
-}
-
-__WEAK void usbh_serial_ch34x_stop(struct usbh_serial_ch34x *ch34x_class)
-{
 }
 
 const struct usbh_class_driver serial_ch34x_class_driver = {

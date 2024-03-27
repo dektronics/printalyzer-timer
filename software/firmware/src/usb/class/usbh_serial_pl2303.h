@@ -57,15 +57,4 @@ struct usbh_serial_pl2303 {
     uint8_t minor;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void usbh_serial_pl2303_run(struct usbh_serial_pl2303 *pl2303_class);
-void usbh_serial_pl2303_stop(struct usbh_serial_pl2303 *pl2303_class);
-
-#ifdef __cplusplus
-}
-#endif
-
 #endif /* USBH_PL2303_H */

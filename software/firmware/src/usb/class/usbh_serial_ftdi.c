@@ -51,13 +51,14 @@ static uint32_t g_devinuse = 0;
 static int usbh_serial_ftdi_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ftdi_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ftdi_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);
+static int usbh_serial_ftdi_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
 
 static struct usbh_serial_class_interface const vtable = {
     .set_line_coding = usbh_serial_ftdi_set_line_coding,
     .get_line_coding = usbh_serial_ftdi_get_line_coding,
     .set_line_state = usbh_serial_ftdi_set_line_state,
-    .bulk_out_transfer = NULL, /* default implementation */
-    .bulk_in_transfer = NULL /* default implementation */
+    .bulk_in_transfer = usbh_serial_ftdi_bulk_in_transfer,
+    .bulk_out_transfer = NULL /* default implementation */
 };
 
 #define HPORT(x) (x->base.hport)
@@ -402,7 +403,7 @@ static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
 
     log_i("Register FTDI Class:%s", hport->config.intf[intf].devname);
 
-    usbh_serial_ftdi_run(ftdi_class);
+    usbh_serial_run((struct usbh_serial_class *)ftdi_class);
     return ret;
 }
 
@@ -423,7 +424,7 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
 
         if (hport->config.intf[intf].devname[0] != '\0') {
             log_i("Unregister FTDI Class:%s", hport->config.intf[intf].devname);
-            usbh_serial_ftdi_stop(ftdi_class);
+            usbh_serial_stop((struct usbh_serial_class *)ftdi_class);
         }
 
         usbh_serial_ftdi_class_free(ftdi_class);
@@ -432,12 +433,24 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 
-__WEAK void usbh_serial_ftdi_run(struct usbh_serial_ftdi *ftdi_class)
+int usbh_serial_ftdi_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
 {
-}
+    int ret;
+    struct usbh_urb *urb = &serial_class->bulkin_urb;
 
-__WEAK void usbh_serial_ftdi_stop(struct usbh_serial_ftdi *ftdi_class)
-{
+    usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkin, buffer, buflen, timeout, NULL, NULL);
+    ret = usbh_submit_urb(urb);
+    if (ret == 0) {
+        ret = urb->actual_length;
+    }
+
+    if (ret >= 2) {
+        /* FTDI returns two modem status bytes that need to be skipped */
+        memmove(buffer, buffer + 2, ret - 2);
+        ret -= 2;
+    }
+
+    return ret;
 }
 
 const struct usbh_class_driver serial_ftdi_class_driver = {
