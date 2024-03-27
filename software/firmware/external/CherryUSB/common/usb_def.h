@@ -336,7 +336,7 @@ struct usb_setup_packet {
 
     /** Number of bytes to transfer */
     uint16_t wLength;
-} __PACKED;
+} __attribute__((packed, aligned(sizeof(uint32_t)))); /* (DK) silence alignment warning */
 
 #define USB_SIZEOF_SETUP_PACKET 8
 
