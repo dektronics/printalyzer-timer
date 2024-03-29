@@ -372,7 +372,7 @@ densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t
     return DENSITOMETER_RESULT_OK;
 }
 
-densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading, uint32_t ms_to_wait)
+densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading)
 {
     char line_buf[64];
 
@@ -384,7 +384,7 @@ densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading,
         return DENSITOMETER_RESULT_NOT_CONNECTED;
     }
 
-    if (usb_serial_receive_line((uint8_t *)line_buf, sizeof(line_buf), ms_to_wait) == osOK) {
+    if (usb_serial_receive_line((uint8_t *)line_buf, sizeof(line_buf)) == osOK) {
         return densitometer_parse_reading(reading, line_buf);
     } else {
         return DENSITOMETER_RESULT_TIMEOUT;

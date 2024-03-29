@@ -16,7 +16,7 @@ bool usb_meter_probe_is_attached();
 
 osStatus_t usb_serial_transmit(const uint8_t *buf, size_t length);
 void usb_serial_clear_receive_buffer();
-osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_wait);
+osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length);
 
 i2c_handle_t *usb_get_meter_probe_i2c_interface();
 

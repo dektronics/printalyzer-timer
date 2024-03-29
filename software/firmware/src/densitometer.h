@@ -42,11 +42,10 @@ typedef enum {
  * to entering into the loop where this function is called.
  *
  * @param reading Latest reading, if one was received.
- * @param ms_to_wait Amount of time to wait for a reading
  * @return 'DENSITOMETER_RESULT_OK' if a reading was received,
  *         otherwise an appropriate error code
  */
-densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading, uint32_t ms_to_wait);
+densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading);
 
 /**
  * Log the provided reading for debugging purposes

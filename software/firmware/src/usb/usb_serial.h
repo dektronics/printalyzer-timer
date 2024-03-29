@@ -17,6 +17,6 @@ bool usbh_serial_is_attached();
 
 osStatus_t usbh_serial_transmit(const uint8_t *buf, size_t length);
 void usbh_serial_clear_receive_buffer();
-osStatus_t usbh_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_wait);
+osStatus_t usbh_serial_receive_line(uint8_t *buf, size_t length);
 
 #endif /* USB_SERIAL_H */

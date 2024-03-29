@@ -44,13 +44,14 @@
 static int usbh_serial_ftdi_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ftdi_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding);
 static int usbh_serial_ftdi_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts);
-static int usbh_serial_ftdi_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout);
+static int usbh_serial_ftdi_bulk_in_check_result(struct usbh_serial_class *serial_class, uint8_t *buffer, int nbytes);
 
 static struct usbh_serial_class_interface const vtable = {
     .set_line_coding = usbh_serial_ftdi_set_line_coding,
     .get_line_coding = usbh_serial_ftdi_get_line_coding,
     .set_line_state = usbh_serial_ftdi_set_line_state,
-    .bulk_in_transfer = usbh_serial_ftdi_bulk_in_transfer,
+    .bulk_in_transfer = NULL, /* default implementation */
+    .bulk_in_check_result = usbh_serial_ftdi_bulk_in_check_result,
     .bulk_out_transfer = NULL /* default implementation */
 };
 
@@ -426,24 +427,14 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 
-int usbh_serial_ftdi_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
+int usbh_serial_ftdi_bulk_in_check_result(struct usbh_serial_class *serial_class, uint8_t *buffer, int nbytes)
 {
-    int ret;
-    struct usbh_urb *urb = &serial_class->bulkin_urb;
-
-    usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkin, buffer, buflen, timeout, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
-    }
-
-    if (ret >= 2) {
+    if (nbytes >= 2) {
         /* FTDI returns two modem status bytes that need to be skipped */
-        memmove(buffer, buffer + 2, ret - 2);
-        ret -= 2;
+        memmove(buffer, buffer + 2, nbytes - 2);
+        nbytes -= 2;
     }
-
-    return ret;
+    return nbytes;
 }
 
 const struct usbh_class_driver serial_ftdi_class_driver = {

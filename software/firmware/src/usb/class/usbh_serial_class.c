@@ -57,35 +57,50 @@ int usbh_serial_set_line_state(struct usbh_serial_class *serial_class, bool dtr,
     return serial_class->vtable->set_line_state(serial_class, dtr, rts);
 }
 
-int usbh_serial_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
+int usbh_serial_bulk_in_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen,
+    uint32_t timeout, usbh_complete_callback_t complete, void *arg)
 {
     int ret;
     if (serial_class->vtable->bulk_in_transfer) {
-        ret = serial_class->vtable->bulk_in_transfer(serial_class, buffer, buflen, timeout);
+        ret = serial_class->vtable->bulk_in_transfer(serial_class, buffer, buflen, timeout, complete, arg);
     } else {
         struct usbh_urb *urb = &serial_class->bulkin_urb;
 
-        usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkin, buffer, buflen, timeout, NULL, NULL);
+        usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkin, buffer, buflen,
+            timeout, complete, arg);
         ret = usbh_submit_urb(urb);
         if (ret == 0) {
-            ret = urb->actual_length;
+            ret = (int)urb->actual_length;
         }
     }
     return ret;
 }
 
-int usbh_serial_bulk_out_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen, uint32_t timeout)
+int usbh_serial_bulk_in_check_result(struct usbh_serial_class *serial_class, uint8_t *buffer, int nbytes)
+{
+    int ret;
+    if (serial_class->vtable->bulk_in_check_result) {
+        ret = serial_class->vtable->bulk_in_check_result(serial_class, buffer, nbytes);
+    } else {
+        ret = nbytes;
+    }
+    return ret;
+}
+
+int usbh_serial_bulk_out_transfer(struct usbh_serial_class *serial_class, uint8_t *buffer, uint32_t buflen,
+    uint32_t timeout, usbh_complete_callback_t complete, void *arg)
 {
     int ret;
     if (serial_class->vtable->bulk_out_transfer) {
-        ret = serial_class->vtable->bulk_out_transfer(serial_class, buffer, buflen, timeout);
+        ret = serial_class->vtable->bulk_out_transfer(serial_class, buffer, buflen, timeout, complete, arg);
     } else {
         struct usbh_urb *urb = &serial_class->bulkout_urb;
 
-        usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkout, buffer, buflen, timeout, NULL, NULL);
+        usbh_bulk_urb_fill(urb, serial_class->hport, serial_class->bulkout, buffer, buflen,
+            timeout, complete, arg);
         ret = usbh_submit_urb(urb);
         if (ret == 0) {
-            ret = urb->actual_length;
+            ret = (int)urb->actual_length;
         }
     }
     return ret;

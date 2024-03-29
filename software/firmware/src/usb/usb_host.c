@@ -348,7 +348,11 @@ void usbh_serial_stop(struct usbh_serial_class *serial_class)
 
 bool usb_serial_is_attached()
 {
-    return usbh_serial_is_attached();
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_serial_is_attached();
+    osMutexRelease(usb_attach_mutex);
+    return result;
 }
 
 void usbh_serial_receive_callback(uint8_t *data, size_t length)
@@ -362,12 +366,18 @@ osStatus_t usb_serial_transmit(const uint8_t *buf, size_t length)
 
 void usb_serial_clear_receive_buffer()
 {
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     usbh_serial_clear_receive_buffer();
+    osMutexRelease(usb_attach_mutex);
 }
 
-osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_wait)
+osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length)
 {
-    return usbh_serial_receive_line(buf, length, ms_to_wait);
+    osStatus_t ret = osErrorTimeout;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    ret = usbh_serial_receive_line(buf, length);
+    osMutexRelease(usb_attach_mutex);
+    return ret;
 }
 
 bool usb_meter_probe_is_attached()

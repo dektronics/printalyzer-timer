@@ -722,7 +722,7 @@ menu_result_t diagnostics_densitometer()
             }
         }
 
-        dens_result = densitometer_reading_poll(&reading, 100);
+        dens_result = densitometer_reading_poll(&reading);
         if (dens_result == DENSITOMETER_RESULT_OK) {
             densitometer_log_reading(&reading);
             has_reading = true;
