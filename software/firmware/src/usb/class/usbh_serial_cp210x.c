@@ -78,7 +78,7 @@ static int usbh_serial_cp210x_get_part_number(struct usbh_serial_cp210x *cp210x_
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_VENDOR_SPECIFIC;
     setup->wValue = CP210X_GET_PARTNUM;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 1;
 
     cp210x_class->control_buf[0] = 0;
@@ -99,7 +99,7 @@ static int usbh_serial_cp210x_enable(struct usbh_serial_cp210x *cp210x_class)
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_IFC_ENABLE;
     setup->wValue = 1;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(cp210x_class), setup, NULL);
@@ -112,7 +112,7 @@ static int usbh_serial_cp210x_set_flow(struct usbh_serial_cp210x *cp210x_class)
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_FLOW;
     setup->wValue = 0;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 16;
 
     memset(cp210x_class->control_buf, 0, 16);
@@ -127,7 +127,7 @@ static int usbh_serial_cp210x_set_chars(struct usbh_serial_cp210x *cp210x_class)
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_CHARS;
     setup->wValue = 0;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 6;
 
     memset(cp210x_class->control_buf, 0, 6);
@@ -166,7 +166,7 @@ static int usbh_serial_cp210x_set_baudrate(struct usbh_serial_cp210x *cp210x_cla
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_BAUDRATE;
     setup->wValue = 0;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 4;
 
     memcpy(cp210x_class->control_buf, (uint8_t *)&baudrate, 4);
@@ -183,7 +183,7 @@ static int usbh_serial_cp210x_set_data_format(struct usbh_serial_cp210x *cp210x_
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_LINE_CTL;
     setup->wValue = value;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(cp210x_class), setup, NULL);
@@ -199,7 +199,7 @@ static int usbh_serial_cp210x_set_mhs(struct usbh_serial_cp210x *cp210x_class, u
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_MHS;
     setup->wValue = value;
-    setup->wIndex = cp210x_class->intf;
+    setup->wIndex = cp210x_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(cp210x_class), setup, NULL);
@@ -245,8 +245,8 @@ static int usbh_serial_cp210x_connect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     HPORT(cp210x_class) = hport;
-    cp210x_class->intf = intf;
-    cp210x_class->minor = devnum;
+    cp210x_class->base.intf = intf;
+    cp210x_class->base.devnum = devnum;
 
     hport->config.intf[intf].priv = cp210x_class;
 
@@ -300,7 +300,7 @@ static int usbh_serial_cp210x_connect(struct usbh_hubport *hport, uint8_t intf)
         }
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, cp210x_class->minor);
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, cp210x_class->base.devnum);
 
     log_i("Register CP210X Class:%s", hport->config.intf[intf].devname);
 
@@ -328,7 +328,7 @@ static int usbh_serial_cp210x_disconnect(struct usbh_hubport *hport, uint8_t int
             usbh_serial_stop((struct usbh_serial_class *)cp210x_class);
         }
 
-        usbh_serial_decrement_count(cp210x_class->minor);
+        usbh_serial_decrement_count(cp210x_class->base.devnum);
         usbh_serial_cp210x_class_free(cp210x_class);
     }
 

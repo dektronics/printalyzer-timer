@@ -4,6 +4,8 @@
 #include "usbh_core.h"
 #include "usb_cdc.h"
 
+#define CONFIG_USBHOST_MAX_SERIAL_CLASS 1
+
 struct usbh_serial_class_interface;
 
 struct usbh_serial_class {
@@ -14,6 +16,8 @@ struct usbh_serial_class {
     struct usbh_urb bulkout_urb;
     struct usbh_urb bulkin_urb;
 
+    uint8_t intf;
+    uint8_t devnum;
     struct cdc_line_coding line_coding;
 };
 

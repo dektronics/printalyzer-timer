@@ -53,8 +53,6 @@ struct usbh_serial_ftdi {
 
     USB_MEM_ALIGNX uint8_t control_buf[64];
     usbh_ftdi_type_t ftdi_type;
-    uint8_t intf;
-    uint8_t minor;
     uint8_t modem_status[2];
 };
 

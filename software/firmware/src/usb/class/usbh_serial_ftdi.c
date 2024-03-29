@@ -145,7 +145,7 @@ int usbh_serial_ftdi_reset(struct usbh_serial_ftdi *ftdi_class)
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_RESET_REQUEST;
     setup->wValue = 0;
-    setup->wIndex = ftdi_class->intf;
+    setup->wIndex = ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -158,7 +158,7 @@ static int usbh_serial_ftdi_set_modem(struct usbh_serial_ftdi *ftdi_class, uint1
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_MODEM_CTRL_REQUEST;
     setup->wValue = value;
-    setup->wIndex = ftdi_class->intf;
+    setup->wIndex = ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -178,7 +178,7 @@ static int usbh_serial_ftdi_set_baudrate(struct usbh_serial_ftdi *ftdi_class, ui
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_BAUDRATE_REQUEST;
     setup->wValue = value;
-    setup->wIndex = (baudrate_high << 8) | ftdi_class->intf;
+    setup->wIndex = (baudrate_high << 8) | ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -200,7 +200,7 @@ static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class,
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_DATA_REQUEST;
     setup->wValue = value;
-    setup->wIndex = ftdi_class->intf;
+    setup->wIndex = ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -213,7 +213,7 @@ static int usbh_serial_ftdi_set_latency_timer(struct usbh_serial_ftdi *ftdi_clas
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_LATENCY_TIMER_REQUEST;
     setup->wValue = value;
-    setup->wIndex = ftdi_class->intf;
+    setup->wIndex = ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -238,7 +238,7 @@ static int usbh_serial_ftdi_set_flow_ctrl(struct usbh_serial_ftdi *ftdi_class, u
         setup->wValue = 0;
     }
 
-    setup->wIndex = (value & 0xFF00) | ftdi_class->intf;
+    setup->wIndex = (value & 0xFF00) | ftdi_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(HPORT(ftdi_class), setup, NULL);
@@ -252,7 +252,7 @@ static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_clas
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_POLL_MODEM_STATUS_REQUEST;
     setup->wValue = 0x0000;
-    setup->wIndex = ftdi_class->intf;
+    setup->wIndex = ftdi_class->base.intf;
     setup->wLength = 2;
 
     ret = usbh_control_transfer(HPORT(ftdi_class), setup, ftdi_class->control_buf);
@@ -348,13 +348,13 @@ static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
 
     HPORT(ftdi_class) = hport;
     ftdi_class->ftdi_type = ftdi_type;
-    ftdi_class->minor = devnum;
+    ftdi_class->base.devnum = devnum;
 
     if (ftdi_type == USBH_FTDI_TYPE_H) {
         //TODO Need to test this, as the device might simply show up differently on this USB stack
-        ftdi_class->intf = intf + FTDI_PIT_SIOA;
+        ftdi_class->base.intf = intf + FTDI_PIT_SIOA;
     } else {
-        ftdi_class->intf = intf;
+        ftdi_class->base.intf = intf;
     }
 
     hport->config.intf[intf].priv = ftdi_class;
@@ -390,7 +390,7 @@ static int usbh_serial_ftdi_connect(struct usbh_hubport *hport, uint8_t intf)
         }
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, ftdi_class->minor);
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, ftdi_class->base.devnum);
 
     log_i("Register FTDI Class:%s", hport->config.intf[intf].devname);
 
@@ -418,7 +418,7 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
             usbh_serial_stop((struct usbh_serial_class *)ftdi_class);
         }
 
-        usbh_serial_decrement_count(ftdi_class->minor);
+        usbh_serial_decrement_count(ftdi_class->base.devnum);
         usbh_serial_ftdi_class_free(ftdi_class);
     }
 

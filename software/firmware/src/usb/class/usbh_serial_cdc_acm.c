@@ -52,7 +52,7 @@ int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CDC_REQUEST_SET_LINE_CODING;
     setup->wValue = 0;
-    setup->wIndex = cdc_acm_class->intf;
+    setup->wIndex = cdc_acm_class->base.intf;
     setup->wLength = 7;
 
     memcpy(cdc_acm_class->control_buf, line_coding, sizeof(struct cdc_line_coding));
@@ -69,7 +69,7 @@ int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CDC_REQUEST_GET_LINE_CODING;
     setup->wValue = 0;
-    setup->wIndex = cdc_acm_class->intf;
+    setup->wIndex = cdc_acm_class->base.intf;
     setup->wLength = 7;
 
     ret = usbh_control_transfer(serial_class->hport, setup, cdc_acm_class->control_buf);
@@ -88,7 +88,7 @@ int usbh_serial_cdc_acm_set_line_state(struct usbh_serial_class *serial_class, b
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CDC_REQUEST_SET_CONTROL_LINE_STATE;
     setup->wValue = (dtr << 0) | (rts << 1);
-    setup->wIndex = cdc_acm_class->intf;
+    setup->wIndex = cdc_acm_class->base.intf;
     setup->wLength = 0;
 
     return usbh_control_transfer(serial_class->hport, setup, NULL);
@@ -113,8 +113,8 @@ static int usbh_serial_cdc_acm_connect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     HPORT(cdc_acm_class) = hport;
-    cdc_acm_class->intf = intf;
-    cdc_acm_class->minor = devnum;
+    cdc_acm_class->base.intf = intf;
+    cdc_acm_class->base.devnum = devnum;
 
     hport->config.intf[intf].priv = cdc_acm_class;
     hport->config.intf[intf + 1].priv = NULL;
@@ -133,7 +133,7 @@ static int usbh_serial_cdc_acm_connect(struct usbh_hubport *hport, uint8_t intf)
         }
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, cdc_acm_class->minor);
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, cdc_acm_class->base.devnum);
 
     USB_LOG_INFO("Register CDC ACM Class:%s\r\n", hport->config.intf[intf].devname);
 
@@ -167,7 +167,7 @@ static int usbh_serial_cdc_acm_disconnect(struct usbh_hubport *hport, uint8_t in
             usbh_serial_stop((struct usbh_serial_class *)cdc_acm_class);
         }
 
-        usbh_serial_decrement_count(cdc_acm_class->minor);
+        usbh_serial_decrement_count(cdc_acm_class->base.devnum);
         usbh_serial_cdc_acm_class_free(cdc_acm_class);
     }
 

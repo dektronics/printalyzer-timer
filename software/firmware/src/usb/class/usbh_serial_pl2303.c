@@ -237,8 +237,8 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     HPORT(pl2303_class) = hport;
-    pl2303_class->intf = intf;
-    pl2303_class->minor = devnum;
+    pl2303_class->base.intf = intf;
+    pl2303_class->base.devnum = devnum;
 
     hport->config.intf[intf].priv = pl2303_class;
 
@@ -253,7 +253,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
             setup->bmRequestType = UT_WRITE_VENDOR_DEVICE;
             setup->bRequest = PL2303_SET_REQUEST;
             setup->wValue = 0;
-            setup->wIndex = pl2303_class->intf;
+            setup->wIndex = pl2303_class->base.intf;
             setup->wLength = 0;
 
             ret = usbh_control_transfer(HPORT(pl2303_class), setup, pl2303_class->control_buf);
@@ -339,7 +339,7 @@ static int usbh_serial_pl2303_connect(struct usbh_hubport *hport, uint8_t intf)
         }
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, pl2303_class->minor);
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, pl2303_class->base.devnum);
 
     log_i("Register PL2303 Class:%s", hport->config.intf[intf].devname);
 
@@ -367,7 +367,7 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
             usbh_serial_stop((struct usbh_serial_class *)pl2303_class);
         }
 
-        usbh_serial_decrement_count(pl2303_class->minor);
+        usbh_serial_decrement_count(pl2303_class->base.devnum);
         usbh_serial_pl2303_class_free(pl2303_class);
     }
 

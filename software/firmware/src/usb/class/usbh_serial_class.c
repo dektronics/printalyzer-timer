@@ -1,7 +1,5 @@
 #include "usbh_serial_class.h"
 
-#define CONFIG_USBHOST_MAX_SERIAL_CLASS 1
-
 #include <FreeRTOS.h>
 #include <atomic.h>
 

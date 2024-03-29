@@ -22,6 +22,9 @@ typedef struct {
     struct usbh_serial_class *serial_class;
     uint8_t connected;
     uint8_t active;
+    USB_MEM_ALIGNX uint8_t bulk_in_buf[64];
+    uint8_t recv_buf[SERIAL_RECV_BUF_SIZE];
+    size_t recv_buf_len;
 } usb_serial_handle_t;
 
 static usb_serial_handle_t handle = {0};
@@ -40,8 +43,6 @@ static struct cdc_line_coding serial_line_coding = {
     .bDataBits = 8     /* Number of data bits */
 };
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t bulk_in_buffer[64];
-
 /* Mutex to guard the serial buffers */
 static osMutexId_t usb_serial_mutex = NULL;
 static const osMutexAttr_t usb_serial_mutex_attributes = {
@@ -59,9 +60,6 @@ static osSemaphoreId_t usb_serial_receive_semaphore = NULL;
 static const osSemaphoreAttr_t usb_serial_receive_semaphore_attributes = {
     .name = "usb_serial_receive_semaphore"
 };
-
-static uint8_t usb_serial_recv_buf[SERIAL_RECV_BUF_SIZE] = {0};
-static size_t usb_serial_recv_buf_len = 0;
 
 static void usb_serial_thread(void *argument);
 
@@ -99,6 +97,8 @@ void usbh_serial_attached(struct usbh_serial_class *serial_class)
         return;
     }
     handle.serial_class = serial_class;
+    memset(handle.recv_buf, 0, SERIAL_RECV_BUF_SIZE);
+    handle.recv_buf_len = 0;
     handle.connected = 1;
     if (!serial_task) {
         serial_task = osThreadNew(usb_serial_thread, NULL, &serial_task_attrs);
@@ -110,6 +110,7 @@ void usbh_serial_detached(struct usbh_serial_class *serial_class)
     if (handle.serial_class == serial_class) {
         if (handle.connected) {
             memset(&handle, 0, sizeof(usb_serial_handle_t));
+            serial_task = NULL;
         }
     }
 }
@@ -140,22 +141,22 @@ void usb_serial_thread(void *argument)
     log_d("USB serial active");
 
     for (;;) {
-        ret = usbh_serial_bulk_in_transfer(handle.serial_class, bulk_in_buffer, sizeof(bulk_in_buffer), 0xfffffff);
+        ret = usbh_serial_bulk_in_transfer(handle.serial_class, handle.bulk_in_buf, sizeof(handle.bulk_in_buf), 0xfffffff);
         if (ret < 0 && ret != -USB_ERR_TIMEOUT) {
             log_w("usb_serial_bulk_in_transfer error: %d", ret);
             break;
         }
 
         if (ret > 0) {
-            log_d("[len=%d], \"%.*s\"", ret, ret, bulk_in_buffer);
+            log_d("[len=%d], \"%.*s\"", ret, ret, handle.bulk_in_buf);
 
             osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
 
             /* Append to the receive buffer */
-            size_t copy_len = MIN(SERIAL_RECV_BUF_SIZE - usb_serial_recv_buf_len, ret);
+            size_t copy_len = MIN(SERIAL_RECV_BUF_SIZE - handle.recv_buf_len, ret);
             if (copy_len > 0) {
-                memcpy(usb_serial_recv_buf + usb_serial_recv_buf_len, bulk_in_buffer, copy_len);
-                usb_serial_recv_buf_len += copy_len;
+                memcpy(handle.recv_buf + handle.recv_buf_len, handle.bulk_in_buf, copy_len);
+                handle.recv_buf_len += copy_len;
             }
 
             osMutexRelease(usb_serial_mutex);
@@ -163,7 +164,6 @@ void usb_serial_thread(void *argument)
             osSemaphoreRelease(usb_serial_receive_semaphore);
         }
     }
-    serial_task = NULL;
     osThreadExit();
 }
 
@@ -183,8 +183,8 @@ osStatus_t usbh_serial_transmit(const uint8_t *buf, size_t length)
 void usbh_serial_clear_receive_buffer()
 {
     osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
-    memset(usb_serial_recv_buf, 0, sizeof(usb_serial_recv_buf));
-    usb_serial_recv_buf_len = 0;
+    memset(handle.recv_buf, 0, sizeof(handle.recv_buf));
+    handle.recv_buf_len = 0;
     osMutexRelease(usb_serial_mutex);
 }
 
@@ -204,22 +204,22 @@ osStatus_t usbh_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_
         osMutexAcquire(usb_serial_mutex, portMAX_DELAY);
 
         /* Scan the buffer to see if it contains a line break */
-        for (size_t i = 0; i < usb_serial_recv_buf_len; i++) {
-            if (usb_serial_recv_buf[i] == '\r' || usb_serial_recv_buf[i] == '\n') {
+        for (size_t i = 0; i < handle.recv_buf_len; i++) {
+            if (handle.recv_buf[i] == '\r' || handle.recv_buf[i] == '\n') {
                 has_line = true;
                 break;
             }
         }
 
         /* Process the buffer if it has a line break or is otherwise full */
-        if (has_line || usb_serial_recv_buf_len == SERIAL_RECV_BUF_SIZE) {
+        if (has_line || handle.recv_buf_len == SERIAL_RECV_BUF_SIZE) {
             size_t i = 0;
             size_t j = 0;
             bool has_start = false;
             bool has_end = false;
-            for (i = 0; i < usb_serial_recv_buf_len; i++) {
+            for (i = 0; i < handle.recv_buf_len; i++) {
                 /* Strip line breaks out of the result, but use them as start/end markers */
-                if (usb_serial_recv_buf[i] == '\r' || usb_serial_recv_buf[i] == '\n') {
+                if (handle.recv_buf[i] == '\r' || handle.recv_buf[i] == '\n') {
                     if (has_start) {
                         has_end = true;
                     }
@@ -230,7 +230,7 @@ osStatus_t usbh_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_
                     has_start = true;
                     /* Populate the provided buffer as long as it has space */
                     if (j < length) {
-                        buf[j++] = usb_serial_recv_buf[i];
+                        buf[j++] = handle.recv_buf[i];
                     }
                 }
             }
@@ -242,12 +242,12 @@ osStatus_t usbh_serial_receive_line(uint8_t *buf, size_t length, uint32_t ms_to_
             buf[j] = '\0';
 
             /* Clear or adjust the internal buffer for the next receive */
-            if (i == usb_serial_recv_buf_len) {
-                usb_serial_recv_buf_len = 0;
+            if (i == handle.recv_buf_len) {
+                handle.recv_buf_len = 0;
             } else {
-                size_t remaining = usb_serial_recv_buf_len - i;
-                memmove(usb_serial_recv_buf, usb_serial_recv_buf + i, remaining);
-                usb_serial_recv_buf_len -= i;
+                size_t remaining = handle.recv_buf_len - i;
+                memmove(handle.recv_buf, handle.recv_buf + i, remaining);
+                handle.recv_buf_len -= i;
             }
         }
 

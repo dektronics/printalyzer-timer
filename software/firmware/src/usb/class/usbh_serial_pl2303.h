@@ -54,8 +54,6 @@ struct usbh_serial_pl2303 {
 
     USB_MEM_ALIGNX uint8_t control_buf[64];
     usbh_pl2303_type_t chiptype;
-    uint8_t intf;
-    uint8_t minor;
 };
 
 #endif /* USBH_PL2303_H */

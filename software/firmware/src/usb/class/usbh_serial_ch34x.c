@@ -247,8 +247,8 @@ static int usbh_serial_ch34x_connect(struct usbh_hubport *hport, uint8_t intf)
     }
 
     HPORT(ch34x_class) = hport;
-    ch34x_class->intf = intf;
-    ch34x_class->minor = devnum;
+    ch34x_class->base.intf = intf;
+    ch34x_class->base.devnum = devnum;
 
     hport->config.intf[intf].priv = ch34x_class;
 
@@ -268,7 +268,7 @@ static int usbh_serial_ch34x_connect(struct usbh_hubport *hport, uint8_t intf)
         }
     }
 
-    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, ch34x_class->minor);
+    snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, ch34x_class->base.devnum);
 
     log_i("Register CH34X Class:%s", hport->config.intf[intf].devname);
 
@@ -296,7 +296,7 @@ static int usbh_serial_ch34x_disconnect(struct usbh_hubport *hport, uint8_t intf
             usbh_serial_stop((struct usbh_serial_class *)ch34x_class);
         }
 
-        usbh_serial_decrement_count(ch34x_class->minor);
+        usbh_serial_decrement_count(ch34x_class->base.devnum);
         usbh_serial_ch34x_class_free(ch34x_class);
     }
 
