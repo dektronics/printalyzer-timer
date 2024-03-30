@@ -115,7 +115,7 @@ static const uint8_t cdc_descriptor[] = {
 };
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[4][2048];
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[4][2048] = { 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30 };
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[4][2048];
 
 volatile bool ep_tx_busy_flag = false;
 
@@ -139,6 +139,7 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         case USBD_EVENT_SUSPEND:
             break;
         case USBD_EVENT_CONFIGURED:
+            ep_tx_busy_flag = false;
             /* setup first out ep read transfer */
             usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, 2048);
             usbd_ep_start_read(busid, CDC_OUT_EP2, read_buffer, 2048);

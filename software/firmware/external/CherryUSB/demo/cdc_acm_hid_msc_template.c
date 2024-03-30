@@ -228,7 +228,7 @@ static struct usbd_endpoint hid_in_ep = {
 };
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t read_buffer[2048];
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048] = { 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x30 };
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
 
 volatile bool ep_tx_busy_flag = false;
 
@@ -252,6 +252,8 @@ static void usbd_event_handler(uint8_t busid, uint8_t event)
         case USBD_EVENT_SUSPEND:
             break;
         case USBD_EVENT_CONFIGURED:
+            ep_tx_busy_flag = false;
+            hid_state = HID_STATE_IDLE;
             /* setup first out ep read transfer */
             usbd_ep_start_read(busid, CDC_OUT_EP, read_buffer, 2048);
             break;

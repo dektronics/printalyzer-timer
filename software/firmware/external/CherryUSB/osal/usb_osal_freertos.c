@@ -153,13 +153,6 @@ void usb_osal_timer_delete(struct usb_osal_timer *timer)
 
 void usb_osal_timer_start(struct usb_osal_timer *timer)
 {
-    /* XXX (DK)
-     * This function gets called from inside an ISR in the latest master,
-     * and has had to be modified to handle the case correctly.
-     * Hopefully this is a temporary kludge until upstream notices
-     * the bug and fixes it for real.
-     */
-
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     int ret;
 

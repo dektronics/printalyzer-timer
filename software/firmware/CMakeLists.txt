@@ -133,8 +133,6 @@ add_subdirectory(${EXTERNAL_DIR}/u8g2)
 add_subdirectory(${EXTERNAL_DIR}/fatfs)
 target_include_directories(fatfs PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 
-set(CONFIG_CHERRYUSB_HOST 1)
-set(CONFIG_CHERRYUSB_OSAL "freertos")
 add_subdirectory(${EXTERNAL_DIR}/CherryUSB)
 target_include_directories(cherryusb PRIVATE ${PROJECT_INCLUDE_DIRECTORIES})
 target_link_libraries(cherryusb PRIVATE freertos)

@@ -101,12 +101,12 @@ CherryUSB Host 协议栈当前实现以下功能：
 - 自动加载支持的Class 驱动
 - 支持阻塞式传输和异步传输
 - 支持复合设备
-- 支持多级 HUB,最高可拓展到 7 级
+- 支持多级 HUB,最高可拓展到 7 级(目前测试 1拖 10 没有问题，当前仅支持 dwc2 和 ehci)
 - 支持 Communication Device Class (CDC_ACM, CDC_ECM)
 - 支持 Human Interface Device (HID)
 - 支持 Mass Storage Class (MSC)
-- Support USB Video CLASS
-- Support USB Audio CLASS
+- Support USB Video CLASS（商业收费）
+- Support USB Audio CLASS（商业收费）
 - 支持 Remote NDIS (RNDIS)
 - 支持 USB Bluetooth (支持 nimble and zephyr bluetooth 协议栈，支持 **CLASS: 0xE0** 或者厂家自定义类，类似于 cdc acm 功能)
 - 支持 Vendor 类 class
@@ -150,6 +150,23 @@ x 受以下宏影响：
 #define CONFIG_USBHOST_MAX_VIDEO_CLASS   1
 ```
 
+## USB IP 支持情况
+
+仅列举标准 USB IP 和商业性 USB IP
+
+|   IP             |  device    | host     | Support status |
+|:----------------:|:----------:|:--------:|:--------------:|
+|  OHCI(intel)     |  none      | OHCI     |  ×   |
+|  EHCI(intel)     |  none      | EHCI     |  √   |
+|  XHCI(intel)     |  none      | XHCI     |  √   |
+|  UHCI(intel)     |  none      | UHCI     |  ×  |
+|  DWC2(synopsys)  |  DWC2      | DWC2     |  √   |
+|  MUSB(mentor)    |  MUSB      | MUSB     |  √   |
+|  FOTG210(faraday)|  FOTG210   | EHCI     |  √   |
+|  CDNS2(cadence)  |  CDNS2     | CDNS2    |  √   |
+|  CDNS3(cadence)  |  CDNS3     | XHCI     |  ×   |
+|  DWC3(synopsys)  |  DWC3      | XHCI     |  ×   |
+
 ## 文档教程
 
 CherryUSB 快速入门、USB 基本概念，API 手册，Class 基本概念和例程，参考 [CherryUSB Documentation Tutorial](https://cherryusb.readthedocs.io/)
@@ -172,13 +189,15 @@ CherryUSB 快速入门、USB 基本概念，API 手册，Class 基本概念和�
 |ST    |  STM32F4/STM32H7 | dwc2 |[stm32_repo](https://github.com/CherryUSB/cherryusb_stm32)|<= latest | Long-term |
 |HPMicro    |  HPM6750 | hpm/ehci |[hpm_sdk](https://github.com/CherryUSB/hpm_sdk)|<= latest | Long-term |
 |Essemi    |  ES32F36xx | musb |[es32f369_repo](https://github.com/CherryUSB/cherryusb_es32)|<= latest | Long-term |
-|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|<= latest | the same with Essemi |
 |Phytium |  e2000 | pusb2/xhci |[phytium_repo](https://gitee.com/phytium_embedded/phytium-free-rtos-sdk)|v0.10.2  | Long-term |
+|artinchip |  d12x/d13x/d21x | dwc2/ehci/ohci |[luban-lite](https://gitee.com/artinchip/luban-lite)|<= latest  | Long-term |
+|Espressif    |  esp32s2/esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|<= latest | the same with ST |
+|AllwinnerTech    |  F1C100S/F1C200S | musb |[cherryusb_rtt_f1c100s](https://github.com/CherryUSB/cherryusb_rtt_f1c100s)|<= latest | the same with Essemi |
 |WCH    |  CH32V307/ch58x | ch32_usbfs/ch32_usbhs/ch58x |[wch_repo](https://github.com/CherryUSB/cherryusb_wch)|<= v0.10.2 | TBD |
-|Espressif    |  esp32s3 | dwc2 |[esp32_repo](https://github.com/CherryUSB/cherryusb_esp32)|<= latest | the same with ST |
 |Nordicsemi |  Nrf52840 | nrf5x |[nrf5x_repo](https://github.com/CherryUSB/cherryusb_nrf5x)|<= v0.10.2 | No more updated |
 |Raspberry pi |  rp2040 | rp2040 |[pico-examples](https://github.com/CherryUSB/pico-examples)|<= v0.10.2 | No more updated |
 
 ## Contact
 
-QQ 群:642693751
+CherryUSB QQ 群:642693751
+CherryUSB 微信群：与我联系后邀请加入

@@ -244,12 +244,11 @@ const struct usbh_class_driver cdc_data_class_driver = {
     .disconnect = usbh_cdc_data_disconnect
 };
 
-/* (DK) Protocol code matching disabled for better device compatibility */
 CLASS_INFO_DEFINE const struct usbh_class_info cdc_acm_class_info = {
-    .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS /*| USB_CLASS_MATCH_INTF_PROTOCOL*/,
+    .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
     .class = USB_DEVICE_CLASS_CDC,
     .subclass = CDC_ABSTRACT_CONTROL_MODEL,
-    .protocol = 0x00 /*CDC_COMMON_PROTOCOL_AT_COMMANDS*/,
+    .protocol = CDC_COMMON_PROTOCOL_AT_COMMANDS,
     .vid = 0x00,
     .pid = 0x00,
     .class_driver = &cdc_acm_class_driver
