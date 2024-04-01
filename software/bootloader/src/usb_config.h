@@ -9,8 +9,8 @@
 #include <FreeRTOS.h>
 #include "logger.h"
 
-#define CHERRYUSB_VERSION     0x010100
-#define CHERRYUSB_VERSION_STR "v1.1.0"
+#define CHERRYUSB_VERSION     0x010200
+#define CHERRYUSB_VERSION_STR "v1.2.0"
 
 /* ================ USB common Configuration ================ */
 
@@ -42,13 +42,13 @@
 #define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
 
 /* Setup packet log for debug */
-// #define CONFIG_USBDEV_SETUP_LOG_PRINT
+/* #define CONFIG_USBDEV_SETUP_LOG_PRINT */
 
 /* Check if the input descriptor is correct */
-// #define CONFIG_USBDEV_DESC_CHECK
+/* #define CONFIG_USBDEV_DESC_CHECK */
 
 /* Enable test mode */
-// #define CONFIG_USBDEV_TEST_MODE
+/* #define CONFIG_USBDEV_TEST_MODE */
 
 #ifndef CONFIG_USBDEV_MSC_MAX_LUN
 #define CONFIG_USBDEV_MSC_MAX_LUN 1
@@ -123,9 +123,9 @@
 #define CONFIG_USBHOST_PSC_STACKSIZE 4096
 #endif
 
-//#define CONFIG_USBHOST_GET_STRING_DESC
+/* #define CONFIG_USBHOST_GET_STRING_DESC */
 
-// #define CONFIG_USBHOST_MSOS_ENABLE
+/* #define CONFIG_USBHOST_MSOS_ENABLE */
 #define CONFIG_USBHOST_MSOS_VENDOR_CODE 0x00
 
 /* Ep0 max transfer buffer */
@@ -139,33 +139,17 @@
 #define CONFIG_USBHOST_MSC_TIMEOUT 5000
 #endif
 
-#define CONFIG_USBHOST_BLUETOOTH_HCI_H4
-// #define CONFIG_USBHOST_BLUETOOTH_HCI_LOG
-
-#ifndef CONFIG_USBHOST_BLUETOOTH_TX_SIZE
-#define CONFIG_USBHOST_BLUETOOTH_TX_SIZE 2048
-#endif
-#ifndef CONFIG_USBHOST_BLUETOOTH_RX_SIZE
-#define CONFIG_USBHOST_BLUETOOTH_RX_SIZE 2048
-#endif
-
 /* ================ USB Device Port Configuration ================*/
 
-#define CONFIG_USBDEV_EP_NUM 6
-#define CONFIG_USB_DWC2_RAM_SIZE 4096
+#ifndef CONFIG_USBDEV_EP_NUM
+#define CONFIG_USBDEV_EP_NUM 8
+#endif
 
 /* ================ USB Host Port Configuration ==================*/
 
 #define CONFIG_USBHOST_PIPE_NUM 16
-
-/* ================ EHCI Configuration ================ */
-
-#define CONFIG_USB_EHCI_HCCR_OFFSET     (0x0)
-#define CONFIG_USB_EHCI_HCOR_OFFSET     (0x10)
-#define CONFIG_USB_EHCI_FRAME_LIST_SIZE 1024
-// #define CONFIG_USB_EHCI_HCOR_RESERVED_DISABLE
-// #define CONFIG_USB_EHCI_CONFIGFLAG
-// #define CONFIG_USB_EHCI_PORT_POWER
-// #define CONFIG_USB_EHCI_PRINT_HW_PARAM
+#define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (512 / 4)
+#define CONFIG_USB_DWC2_PTX_FIFO_SIZE (1024 / 4)
+#define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
 
 #endif

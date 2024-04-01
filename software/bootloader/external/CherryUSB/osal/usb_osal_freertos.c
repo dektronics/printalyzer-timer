@@ -153,13 +153,6 @@ void usb_osal_timer_delete(struct usb_osal_timer *timer)
 
 void usb_osal_timer_start(struct usb_osal_timer *timer)
 {
-    /* XXX (DK)
-     * This function gets called from inside an ISR in the latest master,
-     * and has had to be modified to handle the case correctly.
-     * Hopefully this is a temporary kludge until upstream notices
-     * the bug and fixes it for real.
-     */
-
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     int ret;
 
@@ -180,13 +173,23 @@ void usb_osal_timer_stop(struct usb_osal_timer *timer)
 
 size_t usb_osal_enter_critical_section(void)
 {
-    taskDISABLE_INTERRUPTS();
-    return 1;
+    /* (DK) This is probably the correct way to handle critical sections */
+    if (xPortIsInsideInterrupt()) {
+        return taskENTER_CRITICAL_FROM_ISR();
+    } else {
+        taskENTER_CRITICAL();
+        return 1;
+    }
 }
 
 void usb_osal_leave_critical_section(size_t flag)
 {
-    taskENABLE_INTERRUPTS();
+    /* (DK) This is probably the correct way to handle critical sections */
+    if (xPortIsInsideInterrupt()) {
+        taskEXIT_CRITICAL_FROM_ISR(flag);
+    } else {
+        taskEXIT_CRITICAL();
+    }
 }
 
 void usb_osal_msleep(uint32_t delay)
