@@ -1,6 +1,8 @@
 #include "usb_hid_keyboard.h"
 
 #include <cmsis_os.h>
+#include <FreeRTOS.h>
+#include <timers.h>
 
 #include "usbh_core.h"
 #include "usbh_hid.h"
@@ -9,9 +11,13 @@
 #define LOG_TAG "usb_kbd"
 #include <elog.h>
 
-#define EVENT_ATTACH 0
-#define EVENT_DATA   1
-#define EVENT_SHUTDOWN 99
+#define HID_BUF_SIZE 16
+
+typedef enum {
+    USB_KBD_ATTACH = 0,
+    USB_KBD_DETACH,
+    USB_KBD_DATA
+} usb_keyboard_event_type_t;
 
 typedef struct {
     uint8_t state;
@@ -19,44 +25,51 @@ typedef struct {
 } keyboard_info_t;
 
 typedef struct {
-    uint8_t connected;
+    uint8_t attached;
     uint8_t report_state;
     keyboard_info_t last_event_info;
     uint32_t last_event_time;
+    USB_MEM_ALIGNX uint8_t hid_in_buffer[HID_BUF_SIZE];
+    USB_MEM_ALIGNX uint8_t hid_out_buffer[HID_BUF_SIZE];
+    TimerHandle_t int_timer;
 } usb_hid_keyboard_handle_t;
 
 typedef struct {
+    usb_keyboard_event_type_t event_type;
     struct usbh_hid *hid_class;
-    uint8_t event_type;
     uint32_t event_time;
     keyboard_info_t info;
 } usb_hid_keyboard_event_t;
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t hid_in_buffer[16];
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t hid_out_buffer[16];
 static usb_hid_keyboard_handle_t keyboard_handles[CONFIG_USBHOST_MAX_HID_CLASS];
-static volatile uint8_t keyboard_count = 0;
 
 static osThreadId_t keyboard_task = NULL;
 static const osThreadAttr_t keyboard_task_attrs = {
-    .name = "hid_keyboard_task",
+    .name = "hid_kbd_task",
     .stack_size = 2048,
     .priority = osPriorityNormal
+};
+
+/* Semaphore to synchronize startup and shutdown of the USB keyboard task */
+static osSemaphoreId_t usb_hid_keyboard_semaphore = NULL;
+static const osSemaphoreAttr_t usb_hid_keyboard_semaphore_attrs = {
+    .name = "usb_hid_kbd_semaphore"
 };
 
 /* Queue for communication with the USB HID keyboard task */
 static osMessageQueueId_t usb_hid_keyboard_queue = NULL;
 static const osMessageQueueAttr_t usb_hid_keyboard_queue_attributes = {
-    .name = "usb_hid_keyboard_queue"
+    .name = "usb_hid_kbd_queue"
 };
 
 static void usbh_hid_keyboard_thread(void *argument);
 static void usbh_hid_keyboard_callback(void *arg, int nbytes);
+static void usbh_hid_keyboard_int_timer(TimerHandle_t xTimer);
 static uint8_t keyboard_ascii_code(const keyboard_info_t *info);
 static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
 
-static const uint8_t  keyboard_keys[] = {
+static const uint8_t keyboard_keys[] = {
     '\0',  '`',  '1',  '2',  '3',  '4',  '5',  '6',
     '7',  '8',  '9',  '0',  '-',  '=',  '\0', '\r',
     '\t',  'q',  'w',  'e',  'r',  't',  'y',  'u',
@@ -77,7 +90,7 @@ static const uint8_t  keyboard_keys[] = {
     '\0', '\0', '\0', '\0'
 };
 
-static  const  uint8_t  keyboard_shift_keys[] = {
+static const uint8_t keyboard_shift_keys[] = {
     '\0', '~',  '!',  '@',  '#',  '$',  '%',  '^',  '&',  '*',  '(',  ')',
     '_',  '+',  '\0', '\0', '\0', 'Q',  'W',  'E',  'R',  'T',  'Y',  'U',
     'I',  'O',  'P',  '{',  '}',  '|',  '\0', 'A',  'S',  'D',  'F',  'G',
@@ -126,89 +139,68 @@ static const uint8_t keyboard_codes[] = {
 
 bool usbh_hid_keyboard_init()
 {
-    memset(hid_in_buffer, 0, sizeof(hid_in_buffer));
-    memset(hid_out_buffer, 0, sizeof(hid_out_buffer));
-    memset(keyboard_handles, 0, sizeof(keyboard_handles));
-    keyboard_count = 0;
-    keyboard_task = NULL;
+    /* Create the semaphore used to synchronize keyboard task startup and shutdown */
+    usb_hid_keyboard_semaphore = osSemaphoreNew(1, 0, &usb_hid_keyboard_semaphore_attrs);
+    if (!usb_hid_keyboard_semaphore) {
+        log_e("usb_hid_keyboard_semaphore create error");
+        return false;
+    }
 
+    /* Create the keyboard task event queue */
     usb_hid_keyboard_queue = osMessageQueueNew(10, sizeof(usb_hid_keyboard_event_t), &usb_hid_keyboard_queue_attributes);
     if (!usb_hid_keyboard_queue) {
         log_e("Unable to create USB HID keyboard event queue");
         return false;
     }
 
+    memset(keyboard_handles, 0, sizeof(keyboard_handles));
+    keyboard_task = NULL;
+
     return true;
 }
 
 void usbh_hid_keyboard_attached(struct usbh_hid *hid_class)
 {
-    /*
-     * Attach and detach events are protected by a common mutex, so its
-     * safe to perform connection-related state updates in these functions.
-     */
-
-    if (keyboard_handles[hid_class->minor].connected) {
-        log_w("Keyboard %d already attached", hid_class->minor);
-        return;
-    }
-
     /* If the keyboard task isn't running, then start it */
     if (!keyboard_task) {
         keyboard_task = osThreadNew(usbh_hid_keyboard_thread, NULL, &keyboard_task_attrs);
+        if (!keyboard_task) {
+            log_w("keyboard_task create error");
+            return;
+        }
     }
-
-    /* Initialize keyboard-specific state */
-    memset(&keyboard_handles[hid_class->minor], 0, sizeof(usb_hid_keyboard_handle_t));
-    keyboard_handles[hid_class->minor].connected = 1;
 
     /* Send a message informing the task of the connection event */
     usb_hid_keyboard_event_t event = {
+        .event_type = USB_KBD_ATTACH,
         .hid_class = hid_class,
-        .event_type = EVENT_ATTACH,
         .event_time = osKernelGetTickCount(),
         .info = {0}
     };
     osMessageQueuePut(usb_hid_keyboard_queue, &event, 0, 0);
+
+    /* Block until the attach has been processed */
+    osSemaphoreAcquire(usb_hid_keyboard_semaphore, portMAX_DELAY);
 }
 
 void usbh_hid_keyboard_detached(struct usbh_hid *hid_class)
 {
-    bool keyboard_connected = false;
-
-    if (!keyboard_handles[hid_class->minor].connected) {
-        log_w("Keyboard %d not attached", hid_class->minor);
-        return;
-    }
-
     if (!keyboard_task) {
         log_w("Keyboard task not running");
         return;
     }
 
-    keyboard_handles[hid_class->minor].connected = 0;
+    /* Send a message informing the task of the detach event */
+    usb_hid_keyboard_event_t event = {
+        .event_type = USB_KBD_DETACH,
+        .hid_class = hid_class,
+        .event_time = osKernelGetTickCount(),
+        .info = {0}
+    };
+    osMessageQueuePut(usb_hid_keyboard_queue, &event, 0, 0);
 
-    /* Check if any keyboards are still connected */
-    for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_HID_CLASS; i++) {
-        if (keyboard_handles[i].connected) {
-            keyboard_connected = true;
-            break;
-        }
-    }
-
-    if (!keyboard_connected) {
-        /* If no keyboards still connected, tell the task to shutdown */
-        usb_hid_keyboard_event_t event = {
-            .hid_class = hid_class,
-            .event_type = EVENT_SHUTDOWN,
-            .event_time = osKernelGetTickCount(),
-            .info = {0}
-        };
-        osMessageQueuePut(usb_hid_keyboard_queue, &event, 0, 0);
-
-        /* Assume the task is ending and clear its pointer */
-        keyboard_task = NULL;
-    }
+    /* Block until the detach has been processed */
+    osSemaphoreAcquire(usb_hid_keyboard_semaphore, portMAX_DELAY);
 }
 
 void usbh_hid_keyboard_thread(void *argument)
@@ -216,46 +208,103 @@ void usbh_hid_keyboard_thread(void *argument)
     for (;;) {
         usb_hid_keyboard_event_t event;
         if(osMessageQueueGet(usb_hid_keyboard_queue, &event, NULL, portMAX_DELAY) == osOK) {
-            if (event.event_type == EVENT_ATTACH) {
-                int ret;
-                struct usbh_hid *hid_class = event.hid_class;
+            struct usbh_hid *hid_class = event.hid_class;
+            usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
 
+            if (event.event_type == USB_KBD_ATTACH) {
+                int ret;
+                if (handle->attached) {
+                    log_w("Keyboard %d already attached", hid_class->minor);
+                    break;
+                }
+
+                TimerHandle_t int_timer = xTimerCreate(
+                    "kbd_int_tim",
+                    pdMS_TO_TICKS(10),
+                    pdFALSE, (void *)hid_class,
+                    usbh_hid_keyboard_int_timer);
+                if (!int_timer) {
+                    log_w("Unable to create device int timer");
+                    break;
+                }
+
+                memset(handle, 0, sizeof(usb_hid_keyboard_handle_t));
+                handle->int_timer = int_timer;
+                handle->attached = 1;
+
+                /* Submit the initial request */
                 usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
-                    hid_in_buffer, hid_class->intin->wMaxPacketSize, 0,
-                    usbh_hid_keyboard_callback, hid_class);
+                    handle->hid_in_buffer, MIN(hid_class->intin->wMaxPacketSize, HID_BUF_SIZE),
+                    0, usbh_hid_keyboard_callback, hid_class);
                 ret = usbh_submit_urb(&hid_class->intin_urb);
                 if (ret < 0) {
                     log_d("usbh_submit_urb error: %d", ret);
                 }
 
-            } else if (event.event_type == EVENT_DATA) {
-                keyboard_process_event(event.hid_class, event.event_time, &event.info);
+            } else if (event.event_type == USB_KBD_DETACH) {
+                if (!handle->attached) {
+                    log_w("Keyboard %d already detached", hid_class->minor);
+                    continue;
+                }
 
-            } else if (event.event_type == EVENT_SHUTDOWN) {
-                break;
+                xTimerDelete(handle->int_timer, portMAX_DELAY);
+                handle->int_timer = NULL;
+                handle->attached = 0;
+
+            } else if (event.event_type == USB_KBD_DATA) {
+                if (handle->attached) {
+                    keyboard_process_event(event.hid_class, event.event_time, &event.info);
+                }
+            }
+
+            if (event.event_type != USB_KBD_DATA) {
+                /* Check if anything is still connected */
+                bool devices_connected = false;
+                for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_HID_CLASS; i++) {
+                    if (keyboard_handles[i].attached) {
+                        devices_connected = true;
+                        break;
+                    }
+                }
+
+                if (devices_connected) {
+                    /* If devices are still connected, release the semaphore here */
+                    osSemaphoreRelease(usb_hid_keyboard_semaphore);
+                } else {
+                    /* Otherwise, exit the task loop then release the semaphore */
+                    break;
+                }
+
             }
         }
     }
 
+    keyboard_task = NULL;
+    osSemaphoreRelease(usb_hid_keyboard_semaphore);
     osThreadExit();
 }
 
 void usbh_hid_keyboard_callback(void *arg, int nbytes)
 {
     struct usbh_hid *hid_class = (struct usbh_hid *)arg;
+    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
+
+    if (!handle->attached) {
+        return;
+    }
 
     if (nbytes > 0) {
         if (nbytes == 8) {
             usb_hid_keyboard_event_t event = {
                 .hid_class = hid_class,
-                .event_type = EVENT_DATA,
+                .event_type = USB_KBD_DATA,
                 .event_time = osKernelGetTickCount(),
             };
 
-            event.info.state = hid_in_buffer[0];
+            event.info.state = handle->hid_in_buffer[0];
 
             for (uint8_t i = 0; i < 6; i++) {
-                event.info.keys[i] = hid_in_buffer[i + 2];
+                event.info.keys[i] = handle->hid_in_buffer[i + 2];
             }
 
             osMessageQueuePut (usb_hid_keyboard_queue, &event, 0, 0);
@@ -266,9 +315,21 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
 
         usbh_submit_urb(&hid_class->intin_urb);
 
-    } else if (nbytes == -USB_ERR_NAK) { /* for dwc2 */
-        usbh_submit_urb(&hid_class->intin_urb);
+    } else if (nbytes == -USB_ERR_NAK) {
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        if (xTimerStartFromISR(handle->int_timer, &xHigherPriorityTaskWoken) == pdPASS) {
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+        }
+    } else if (nbytes < 0) {
+        log_w("usbh_hid_keyboard_callback[dev=%d] error: %d", hid_class->minor, nbytes);
     }
+}
+
+void usbh_hid_keyboard_int_timer(TimerHandle_t xTimer)
+{
+    struct usbh_hid *hid_class = (struct usbh_hid *)pvTimerGetTimerID(xTimer);
+
+    usbh_submit_urb(&hid_class->intin_urb);
 }
 
 uint8_t keyboard_ascii_code(const keyboard_info_t *info)
@@ -284,6 +345,7 @@ uint8_t keyboard_ascii_code(const keyboard_info_t *info)
 
 void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info)
 {
+    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
     uint8_t key = keyboard_ascii_code(info);
     uint8_t report_state = keyboard_handles[hid_class->minor].report_state;
 
@@ -294,12 +356,12 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
      * handling of those keys. For now, the easy fix is to simply
      * detect and ignore such events.
      */
-    if (memcmp(info, &keyboard_handles[hid_class->minor].last_event_info, sizeof(keyboard_info_t)) == 0
-        && (event_time - keyboard_handles[hid_class->minor].last_event_time) < 20) {
+    if (memcmp(info, &handle->last_event_info, sizeof(keyboard_info_t)) == 0
+        && (event_time - handle->last_event_time) < 20) {
         return;
     } else {
-        memcpy(&keyboard_handles[hid_class->minor].last_event_info, info, sizeof(keyboard_info_t));
-        keyboard_handles[hid_class->minor].last_event_time = event_time;
+        memcpy(&handle->last_event_info, info, sizeof(keyboard_info_t));
+        handle->last_event_time = event_time;
     }
 
 #if 1
@@ -324,10 +386,10 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
     }
 
 
-    if (report_state != keyboard_handles[hid_class->minor].report_state) {
+    if (report_state != handle->report_state) {
         int ret = hid_keyboard_set_report(hid_class, HID_REPORT_OUTPUT, 0x00, &report_state, 1);
         if (ret >= 0) {
-            keyboard_handles[hid_class->minor].report_state = report_state;
+            handle->report_state = report_state;
         } else {
             log_w("usbh_hid_set_report error: %d", ret);
         }
@@ -368,6 +430,7 @@ int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uin
      * share the same buffer.
      */
     struct usb_setup_packet *setup = hid_class->hport->setup;
+    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = HID_REQUEST_SET_REPORT;
@@ -375,6 +438,6 @@ int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uin
     setup->wIndex = 0;
     setup->wLength = buflen;
 
-    memcpy(hid_out_buffer, buffer, buflen);
-    return usbh_control_transfer(hid_class->hport, setup, hid_out_buffer);
+    memcpy(handle->hid_out_buffer, buffer, buflen);
+    return usbh_control_transfer(hid_class->hport, setup, handle->hid_out_buffer);
 }
