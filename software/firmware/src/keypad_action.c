@@ -196,5 +196,18 @@ osStatus_t keypad_action_wait(keypad_action_t *action, int msecs_to_wait)
         }
     }
 
+    /* Do basic handling of USB keyboard equivalent events */
+    if (keypad_event.key == KEYPAD_USB_KEYBOARD) {
+        keypad_key_t key_equiv = keypad_usb_get_keypad_equivalent(&keypad_event);
+        for (i = 0; i < action_state.key_action_len; i++) {
+            keypad_key_action_state_t *key_action = &action_state.key_action[i];
+            if (key_equiv == key_action->key) {
+                action->action_id = key_action->action_id;
+                action->key = key_equiv;
+                break;
+            }
+        }
+    }
+
     return osOK;
 }
