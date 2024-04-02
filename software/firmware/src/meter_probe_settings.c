@@ -103,7 +103,6 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         memcpy(handle->id.memory_id, header_data, 3);
         handle->id.probe_type = METER_PROBE_TYPE_TSL2585;
         handle->id.probe_revision = 5;
-        handle->id.probe_serial = 1234;
 
         handle->initialized = true;
     } while (0);

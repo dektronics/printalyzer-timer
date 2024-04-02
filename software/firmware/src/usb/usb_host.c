@@ -32,8 +32,8 @@ typedef enum {
     HID_DEVICE_UNKNOWN = 0,
     HID_DEVICE_KEYBOARD,
     HID_DEVICE_MOUSE,
-    HID_DEVICE_FT260,
-    HID_DEVICE_METER_PROBE
+    HID_DEVICE_FT260_DEFAULT,
+    HID_DEVICE_FT260_METER_PROBE
 } hid_device_type_t;
 
 static HAL_StatusTypeDef smbus_master_block_write(
@@ -255,9 +255,9 @@ void usbh_msc_stop(struct usbh_msc *msc_class)
 hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class)
 {
     if (hid_class->hport->device_desc.idVendor == 0x0403 && hid_class->hport->device_desc.idProduct == 0x6030) {
-        return HID_DEVICE_FT260;
+        return HID_DEVICE_FT260_DEFAULT;
     } else if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x132C) {
-        return HID_DEVICE_METER_PROBE;
+        return HID_DEVICE_FT260_METER_PROBE;
     } else {
         /* Grab the interface descriptor */
         struct usb_interface_descriptor *intf_desc;
@@ -283,9 +283,9 @@ void usbh_hid_run(struct usbh_hid *hid_class)
     hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
 
     switch (device_type) {
-    case HID_DEVICE_FT260: //XXX for testing
-    case HID_DEVICE_METER_PROBE:
-        log_d("Meter probe attached (intf=%d)", hid_class->intf);
+    case HID_DEVICE_FT260_DEFAULT:
+    case HID_DEVICE_FT260_METER_PROBE:
+        log_d("FT260 device attached (intf=%d, minor=%d)", hid_class->intf, hid_class->minor);
         usbh_ft260_attached(hid_class);
         break;
     case HID_DEVICE_KEYBOARD:
@@ -312,9 +312,9 @@ void usbh_hid_stop(struct usbh_hid *hid_class)
     hid_device_type_t device_type = usbh_hid_check_device_type(hid_class);
 
     switch (device_type) {
-    case HID_DEVICE_FT260: //XXX for testing
-    case HID_DEVICE_METER_PROBE:
-        log_d("Meter probe detached (intf=%d)", hid_class->intf);
+    case HID_DEVICE_FT260_DEFAULT:
+    case HID_DEVICE_FT260_METER_PROBE:
+        log_d("FT260 device detached (intf=%d, minor=%d)", hid_class->intf, hid_class->minor);
         usbh_ft260_detached(hid_class);
         break;
     case HID_DEVICE_KEYBOARD:
@@ -382,12 +382,9 @@ osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length)
 
 bool usb_meter_probe_is_attached()
 {
-    return usbh_ft260_is_attached(0x16D0, 0x132C)
-     || usbh_ft260_is_attached(0x0403, 0x6030); //XXX also checking base FT260 for testing
-}
-
-i2c_handle_t *usb_get_meter_probe_i2c_interface()
-{
-    //TODO Make sure this actually matches the meter probe VID/PID
-    return usbh_ft260_get_i2c_interface();
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_ft260_is_attached(FT260_METER_PROBE);
+    osMutexRelease(usb_attach_mutex);
+    return result;
 }

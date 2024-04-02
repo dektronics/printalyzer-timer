@@ -112,7 +112,7 @@ menu_result_t meter_probe_device_info()
         offset += menu_build_padded_str_row(buf + offset, "Probe Type",
             meter_probe_type_str(info.probe_id.probe_type));
         offset += menu_build_padded_format_row(buf + offset, "Revision", "%d", info.probe_id.probe_revision);
-        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%03d", info.probe_id.probe_serial);
+        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%s", info.probe_id.probe_serial);
         offset += menu_build_padded_format_row(buf + offset, "Sensor ID", "%02X%02X%02X",
             info.sensor_id[0], info.sensor_id[1], info.sensor_id[2]);
         offset += menu_build_padded_format_row(buf + offset, "Memory ID", "%02X%02X%02X",
@@ -604,7 +604,7 @@ bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_se
 menu_result_t meter_probe_sensor_calibration_export()
 {
     char buf[256];
-    char filename[32];
+    char filename[64];
     uint8_t option;
 
     if (!usb_msc_is_mounted()) {
@@ -640,7 +640,7 @@ menu_result_t meter_probe_sensor_calibration_export()
         return MENU_OK;
     }
 
-    sprintf(filename, "mp-cal-%03ld.dat", info.probe_id.probe_serial);
+    sprintf(filename, "mp-cal-%s.dat", info.probe_id.probe_serial);
     do {
         if (display_input_text("Calibration File Name", filename, sizeof(filename)) == 0) {
             return MENU_OK;
@@ -712,7 +712,7 @@ bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
     json_write_string(fp, 4, "device", "Printalyzer Meter Probe", true);
     json_write_string(fp, 4, "type", meter_probe_type_str(info->probe_id.probe_type), true);
     json_write_int(fp, 4, "revision", info->probe_id.probe_revision, true);
-    json_write_int(fp, 4, "serial", (int)info->probe_id.probe_serial, false);
+    json_write_string(fp, 4, "serial", info->probe_id.probe_serial, false);
     f_printf(fp, "\n  }");
     return true;
 }

@@ -16,6 +16,7 @@
 #include "tsl2585.h"
 #include "keypad.h"
 #include "usb_host.h"
+#include "usb_ft260.h"
 #include "i2c_interface.h"
 #include "util.h"
 
@@ -109,7 +110,8 @@ typedef struct {
     bool overflow;
 } tsl2585_fifo_data_t;
 
-/* Global I2C handle for the meter probe */
+/* Global handles for the meter probe */
+static ft260_device_t *device = NULL;
 static i2c_handle_t *hi2c = NULL;
 
 static bool meter_probe_initialized = false;
@@ -289,24 +291,26 @@ osStatus_t meter_probe_control_start()
 
     log_d("meter_probe_control_start");
 
-    /* Apply power to the meter probe port */
-    //HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_RESET);
-
-    /* Brief delay to ensure power has stabilized */
-    osDelay(10);
-
     do {
         if (!usb_meter_probe_is_attached()) {
             log_w("Meter probe not attached");
             break;
         }
 
-        hi2c = usb_get_meter_probe_i2c_interface();
+        if (!device) {
+            device = usbh_ft260_get_device(FT260_METER_PROBE);
+            if (!device) {
+                log_w("Unable to get meter probe interface");
+                break;
+            }
+            hi2c = usbh_ft260_get_device_i2c(device);
+        }
 
         //FIXME Replace this kludge with a settings code update
         probe_settings_handle.id.probe_type = METER_PROBE_TYPE_TSL2585;
         probe_settings_handle.id.probe_revision = 5;
-        probe_settings_handle.id.probe_serial = 0xFF;
+
+        usbh_ft260_get_device_serial_number(device, probe_settings_handle.id.probe_serial);
 
         /* Read the meter probe's settings memory */
         ret = meter_probe_settings_init(&probe_settings_handle, hi2c);
@@ -314,7 +318,7 @@ osStatus_t meter_probe_control_start()
             break;
         }
 
-        log_i("Meter probe: type=%s, rev=%d, serial=%ld",
+        log_i("Meter probe: type=%s, rev=%d, serial=%s",
             meter_probe_type_str(probe_settings_handle.id.probe_type),
             probe_settings_handle.id.probe_revision,
             probe_settings_handle.id.probe_serial);

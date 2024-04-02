@@ -18,6 +18,4 @@ osStatus_t usb_serial_transmit(const uint8_t *buf, size_t length);
 void usb_serial_clear_receive_buffer();
 osStatus_t usb_serial_receive_line(uint8_t *buf, size_t length);
 
-i2c_handle_t *usb_get_meter_probe_i2c_interface();
-
 #endif /* USB_HOST_H */

@@ -18,7 +18,7 @@ typedef struct __meter_probe_id_t {
     uint8_t memory_id[3];
     meter_probe_type_t probe_type;
     uint8_t probe_revision;
-    uint32_t probe_serial;
+    char probe_serial[32];
 } meter_probe_id_t;
 
 typedef struct __meter_probe_settings_handle_t {

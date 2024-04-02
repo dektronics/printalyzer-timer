@@ -195,6 +195,18 @@ int ft260_i2c_mem_write(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t
     return ret;
 }
 
+int ft260_i2c_is_device_ready(struct usbh_hid *hid_class, uint8_t dev_address)
+{
+    int ret;
+    //TODO Need to test this and see if we're actually doing things correctly and what error codes to expect
+    ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, NULL, 0);
+    if (ret < 0) {
+        log_w("ft260_i2c_is_device_ready[1]: %d", ret);
+        return ret;
+    }
+    return ret;
+}
+
 int ft260_set_uart_enable_dcd_ri(struct usbh_hid *hid_class, bool enable)
 {
     int ret;
@@ -318,7 +330,9 @@ int ft260_i2c_write_request(struct usbh_hid *hid_class, uint8_t dev_address, uin
     g_ft260_buf[1] = dev_address;
     g_ft260_buf[2] = flags;
     g_ft260_buf[3] = buflen;
-    memcpy(g_ft260_buf + 4, buffer, buflen);
+    if (buflen > 0) {
+        memcpy(g_ft260_buf + 4, buffer, buflen);
+    }
 
     usbh_int_urb_fill(&hid_class->intout_urb, hid_class->hport, hid_class->intout, g_ft260_buf, transfer_len, 500, NULL, NULL);
     ret = usbh_submit_urb(&hid_class->intout_urb);

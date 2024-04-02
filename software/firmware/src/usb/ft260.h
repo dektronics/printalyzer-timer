@@ -68,6 +68,7 @@ int ft260_get_i2c_status(struct usbh_hid *hid_class, uint8_t *bus_status, uint16
 
 int ft260_i2c_mem_read(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, uint8_t *data, uint16_t size);
 int ft260_i2c_mem_write(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, const uint8_t *data, uint8_t size);
+int ft260_i2c_is_device_ready(struct usbh_hid *hid_class, uint8_t dev_address);
 
 int ft260_set_uart_enable_dcd_ri(struct usbh_hid *hid_class, bool enable);
 
