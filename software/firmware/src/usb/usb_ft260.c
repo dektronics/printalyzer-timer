@@ -47,7 +47,8 @@ static ft260_device_t meter_probe_handle = {0};
 typedef enum {
     FT260_CONTROL_ATTACH = 0,
     FT260_CONTROL_DETACH,
-    FT260_CONTROL_INTERRUPT
+    FT260_CONTROL_INTERRUPT,
+    FT260_CONTROL_SUBMIT_URB
 } ft260_control_event_type_t;
 
 typedef struct {
@@ -67,6 +68,7 @@ typedef struct {
     union {
         ft260_connection_params_t connection;
         ft260_interrupt_params_t interrupt;
+        struct usbh_urb *urb;
     };
 } ft260_control_event_t;
 
@@ -201,9 +203,11 @@ void usbh_ft260_thread(void *argument)
             } else if (event.event_type == FT260_CONTROL_INTERRUPT) {
                 ft260_interrupt_params_t *params = &event.interrupt;
                 usbh_ft260_control_interrupt(params);
+            } else if (event.event_type == FT260_CONTROL_SUBMIT_URB) {
+                usbh_submit_urb(event.urb);
             }
 
-            if (event.event_type != FT260_CONTROL_INTERRUPT) {
+            if (event.event_type != FT260_CONTROL_INTERRUPT && event.event_type != FT260_CONTROL_SUBMIT_URB) {
                 /* Check if anything is still connected */
                 bool devices_connected = false;
                 for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_HID_CLASS; i++) {
@@ -572,6 +576,7 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
 void usbh_ft260_int_callback(void *arg, int nbytes)
 {
     usb_ft260_handle_t *dev_handle = (usb_ft260_handle_t *)arg;
+    bool submit_urb = false;
 
     if (!dev_handle->active || !dev_handle->connected) { return; }
 
@@ -589,18 +594,28 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
 
         osMessageQueuePut(ft260_control_queue, &control_event, 0, 0);
 
-        usbh_submit_urb(&dev_handle->hid_class1->intin_urb);
+        submit_urb = true;
+
     } else if (nbytes > 0) {
         for (size_t i = 0; i < nbytes; i++) {
             log_d("0x%02x ", dev_handle->ft260_in_buffer[i]);
         }
         log_d("nbytes:%d\r\n", nbytes);
-        usbh_submit_urb(&dev_handle->hid_class1->intin_urb);
+        submit_urb = true;
+
     } else if (nbytes == -USB_ERR_NAK) { /* for dwc2 */
-        //FIXME Probably need a timer or queue to avoid this being in the IRQ context
-        usbh_submit_urb(&dev_handle->hid_class1->intin_urb);
+        submit_urb = true;
+
     } else {
         log_d("Fell out of callback: %d", nbytes);
+    }
+
+    if (submit_urb) {
+        ft260_control_event_t control_event = {
+            .event_type = FT260_CONTROL_SUBMIT_URB,
+            .urb = &dev_handle->hid_class1->intin_urb
+        };
+        osMessageQueuePut(ft260_control_queue, &control_event, 0, 0);
     }
 }
 
