@@ -10,7 +10,7 @@
 typedef struct i2c_handle_t i2c_handle_t;
 
 #define M24C08_PAGE_SIZE  0x10UL
-#define M24C08_MEM_SIZE   0x200UL
+#define M24C08_MEM_SIZE   0x400UL
 
 /**
  * Read a byte from the specified address.

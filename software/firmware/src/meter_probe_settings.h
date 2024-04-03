@@ -15,9 +15,9 @@ typedef enum {
 } meter_probe_type_t;
 
 typedef struct __meter_probe_id_t {
-    uint8_t memory_id[3];
     meter_probe_type_t probe_type;
-    uint8_t probe_revision;
+    uint8_t probe_rev_major;
+    uint8_t probe_rev_minor;
     char probe_serial[32];
 } meter_probe_id_t;
 

@@ -23,15 +23,15 @@ extern CRC_HandleTypeDef hcrc;
 #define PAGE_RESERVED          0x000UL
 #define PAGE_RESERVED_SIZE     (256UL)
 
-/* TODO: Come up with a new structure for this page */
+/* Meter Probe Memory Header (16B) */
 #define PAGE_HEADER            0x100UL
 #define PAGE_HEADER_SIZE       (16UL)
 
-#define ID_MEMORY_ID             0 /* 3B */
-#define ID_PROBE_TYPE            3 /* 1B (uint8_t) */
-#define ID_PROBE_REVISION        4 /* 1B (uint8_t) */
-#define ID_PROBE_RESERVED0       5 /* 7B (for page alignment) */
-#define ID_PROBE_SERIAL         12 /* 4B (uint32_t) */
+#define HEADER_MAGIC             0 /* 3B = {'D', 'P', 'D'} */
+#define HEADER_VERSION           3 /* 1B (uint8_t) */
+#define HEADER_DEV_TYPE          4 /* 1B (uint8_t) */
+#define HEADER_DEV_REV_MAJOR     5 /* 1B (uint8_t) */
+#define HEADER_DEV_REV_MINOR     6 /* 1B (uint8_t) */
 
 #define PAGE_CAL               0x110UL
 #define PAGE_CAL_SIZE          (112UL)
@@ -78,13 +78,13 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         ret = m24c08_read_buffer(hi2c, PAGE_HEADER, header_data, sizeof(header_data));
         if (ret != HAL_OK) { break; }
 
-#if 0
-        //TODO Enable this once the header page format is redefined
-        log_d("Memory ID: 0x%02X%02X%02X", header_data[0], header_data[1], header_data[2]);
-
-        /* Verify the memory device identification code */
-        if (header_data[0] != 0x20 && header_data[1] != 0xE0 && header_data[2] != 0x08) {
-            log_w("Unexpected memory type");
+        /* Verify the memory header prefix */
+        if (header_data[0] != 'D'
+            && header_data[1] != 'P'
+            && header_data[2] != 'D'
+            && header_data[3] != 0x01) {
+            log_w("Unexpected memory header: %02X%02X%02X%02X",
+                header_data[0], header_data[1], header_data[2], header_data[3]);
             ret = HAL_ERROR;
             break;
         }
@@ -92,17 +92,11 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         handle->hi2c = hi2c;
 
         /* Read the probe type information out of the rest of the ID page */
-        memcpy(handle->id.memory_id, header_data, 3);
-        handle->id.probe_type = header_data[ID_PROBE_TYPE];
-        handle->id.probe_revision = header_data[ID_PROBE_REVISION];
-        handle->id.probe_serial = copy_to_u32(header_data + ID_PROBE_SERIAL);
-#endif
-        handle->hi2c = hi2c;
+        handle->id.probe_type = header_data[HEADER_DEV_TYPE];
+        handle->id.probe_rev_major = header_data[HEADER_DEV_REV_MAJOR];
+        handle->id.probe_rev_minor = header_data[HEADER_DEV_REV_MINOR];
 
-        //FIXME This data is hard-coded until a new header format is defined
-        memcpy(handle->id.memory_id, header_data, 3);
-        handle->id.probe_type = METER_PROBE_TYPE_TSL2585;
-        handle->id.probe_revision = 5;
+        handle->hi2c = hi2c;
 
         handle->initialized = true;
     } while (0);

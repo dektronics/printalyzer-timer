@@ -306,10 +306,7 @@ osStatus_t meter_probe_control_start()
             hi2c = usbh_ft260_get_device_i2c(device);
         }
 
-        //FIXME Replace this kludge with a settings code update
-        probe_settings_handle.id.probe_type = METER_PROBE_TYPE_TSL2585;
-        probe_settings_handle.id.probe_revision = 5;
-
+        /* Populate values that come from the USB descriptor */
         usbh_ft260_get_device_serial_number(device, probe_settings_handle.id.probe_serial);
 
         /* Read the meter probe's settings memory */
@@ -318,9 +315,10 @@ osStatus_t meter_probe_control_start()
             break;
         }
 
-        log_i("Meter probe: type=%s, rev=%d, serial=%s",
+        log_i("Meter probe: type=%s, rev=[%d,%d], serial=%s",
             meter_probe_type_str(probe_settings_handle.id.probe_type),
-            probe_settings_handle.id.probe_revision,
+            probe_settings_handle.id.probe_rev_major,
+            probe_settings_handle.id.probe_rev_minor,
             probe_settings_handle.id.probe_serial);
 
         /*
