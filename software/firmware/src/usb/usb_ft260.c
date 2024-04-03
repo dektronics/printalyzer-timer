@@ -6,8 +6,6 @@
 #include "usbh_hid.h"
 #include "ft260.h"
 #include "i2c_interface.h"
-#include "meter_probe.h"
-#include "keypad.h"
 
 #define LOG_TAG "usb_meter_probe"
 #include <elog.h>
@@ -40,6 +38,7 @@ static usb_ft260_handle_t *ft260_handles[CONFIG_USBHOST_MAX_HID_CLASS] = {0};
 struct ft260_device_t {
     i2c_handle_t i2c_handle;
     usb_ft260_handle_t *dev_handle;
+    ft260_device_event_callback_t callback;
     osMutexId_t mutex;
 };
 
@@ -334,9 +333,16 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
     if (!dev_handle->hid_class0 && !dev_handle->hid_class1) {
         log_d("FT260_CONTROL_DETACH");
 
+        ft260_device_event_callback_t callback = NULL;
+        if (meter_probe_handle.dev_handle == dev_handle) {
+            osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
+            callback = meter_probe_handle.callback;
+            osMutexRelease(meter_probe_handle.mutex);
+        }
+
         /* Inject a release event just in case */
-        if (dev_handle->button_pressed && dev_handle->device_type == FT260_METER_PROBE) {
-            keypad_inject_raw_event(KEYPAD_METER_PROBE, false, osKernelGetTickCount());
+        if (dev_handle->button_pressed && callback) {
+            callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount());
         }
 
         vPortFree(dev_handle);
@@ -538,15 +544,26 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
     log_d("Interrupt: [dcd_ri=%02X int=%02X]",
                     control_event.interrupt.status_int, control_event.interrupt.status_dcd_ri);
 #endif
+    ft260_device_event_callback_t callback = NULL;
+    if (meter_probe_handle.dev_handle == params->handle) {
+        osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
+        callback = meter_probe_handle.callback;
+        osMutexRelease(meter_probe_handle.mutex);
+    }
+
     if (params->status_int & 0x01) {
-        meter_probe_int_handler();
+        if (callback) {
+            callback(&meter_probe_handle, FT260_EVENT_INTERRUPT, params->ticks);
+        }
     }
     if (params->status_dcd_ri & 0x04) {
         const bool pressed = (params->status_dcd_ri & 0x08) == 0;
         if (params->handle->button_pressed != pressed) {
             params->handle->button_pressed = pressed;
-            if (params->handle->device_type == FT260_METER_PROBE) {
-                keypad_inject_raw_event(KEYPAD_METER_PROBE, pressed, params->ticks);
+            if (callback) {
+                callback(&meter_probe_handle,
+                    pressed ? FT260_EVENT_BUTTON_DOWN : FT260_EVENT_BUTTON_UP,
+                    params->ticks);
             }
         }
     }
@@ -706,6 +723,15 @@ ft260_device_t *usbh_ft260_get_device(ft260_device_type_t device_type)
     } else {
         return NULL;
     }
+}
+
+void usbh_ft260_set_device_callback(ft260_device_t *device, ft260_device_event_callback_t callback)
+{
+    if (!device) { return; }
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    device->callback = callback;
+    osMutexRelease(device->mutex);
 }
 
 bool usbh_ft260_get_device_serial_number(const ft260_device_t *device, char *str)

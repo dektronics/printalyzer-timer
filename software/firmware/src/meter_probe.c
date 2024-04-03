@@ -111,7 +111,7 @@ typedef struct {
 } tsl2585_fifo_data_t;
 
 /* Global handles for the meter probe */
-static ft260_device_t *device = NULL;
+static ft260_device_t *device_handle = NULL;
 static i2c_handle_t *hi2c = NULL;
 
 static bool meter_probe_initialized = false;
@@ -167,6 +167,9 @@ static osStatus_t meter_probe_control_sensor_disable_agc();
 static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
 
+static void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks);
+static void meter_probe_int_handler();
+
 static HAL_StatusTypeDef sensor_osc_calibration();
 
 static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data);
@@ -198,6 +201,17 @@ void task_meter_probe_run(void *argument)
         log_e("meter_probe_control_semaphore create error");
         return;
     }
+
+    /* Get the persistent device handles used to talk to a connected meter probe */
+    device_handle = usbh_ft260_get_device(FT260_METER_PROBE);
+    if (!device_handle) {
+        log_e("Unable to get meter probe interface");
+        return;
+    }
+    hi2c = usbh_ft260_get_device_i2c(device_handle);
+
+    /* Set the meter probe event callback */
+    usbh_ft260_set_device_callback(device_handle, usb_meter_probe_event_callback);
 
     meter_probe_initialized = true;
 
@@ -266,6 +280,25 @@ void task_meter_probe_run(void *argument)
 
 }
 
+void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks)
+{
+    if (device_handle != device) { return; }
+
+    switch (event_type) {
+    case FT260_EVENT_INTERRUPT:
+        meter_probe_int_handler();
+        break;
+    case FT260_EVENT_BUTTON_DOWN:
+        keypad_inject_raw_event(KEYPAD_METER_PROBE, true, ticks);
+        break;
+    case FT260_EVENT_BUTTON_UP:
+        keypad_inject_raw_event(KEYPAD_METER_PROBE, false, ticks);
+        break;
+    default:
+        break;
+    }
+}
+
 bool meter_probe_is_started()
 {
     return meter_probe_started;
@@ -297,17 +330,8 @@ osStatus_t meter_probe_control_start()
             break;
         }
 
-        if (!device) {
-            device = usbh_ft260_get_device(FT260_METER_PROBE);
-            if (!device) {
-                log_w("Unable to get meter probe interface");
-                break;
-            }
-            hi2c = usbh_ft260_get_device_i2c(device);
-        }
-
         /* Populate values that come from the USB descriptor */
-        usbh_ft260_get_device_serial_number(device, probe_settings_handle.id.probe_serial);
+        usbh_ft260_get_device_serial_number(device_handle, probe_settings_handle.id.probe_serial);
 
         /* Read the meter probe's settings memory */
         ret = meter_probe_settings_init(&probe_settings_handle, hi2c);

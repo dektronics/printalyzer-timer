@@ -274,14 +274,6 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
 float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading);
 
 /**
- * Meter probe interrupt handler
- *
- * This function should only be called from within the ISR for the
- * meter probe's interrupt pin.
- */
-void meter_probe_int_handler();
-
-/**
  * Meter probe oscillator calibration interrupt handler
  *
  * This function should only be called from within the ISR for the
