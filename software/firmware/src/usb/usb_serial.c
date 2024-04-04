@@ -2,8 +2,6 @@
 
 #include <string.h>
 #include <cmsis_os.h>
-#include <FreeRTOS.h>
-#include <timers.h>
 
 #include "usbh_core.h"
 #include "usbh_msc.h"
@@ -37,7 +35,6 @@ typedef struct {
 typedef struct {
     struct usbh_serial_class *serial_class;
     uint8_t active;
-    TimerHandle_t int_timer;
     USB_MEM_ALIGNX uint8_t bulk_in_buf[SERIAL_BULK_IN_BUF_SIZE];
     uint8_t bulk_in_buf_len;
     uint8_t recv_buf[SERIAL_RECV_BUF_SIZE];
@@ -79,7 +76,6 @@ static void usb_serial_thread(void *argument);
 static bool usb_serial_start_device(usb_serial_handle_t *dev_handle);
 static bool usb_serial_start_next_bulk_in(usb_serial_handle_t *dev_handle);
 static void usb_serial_bulk_in_complete(void *arg, int nbytes);
-static void usb_serial_int_timer(TimerHandle_t xTimer);
 static bool usb_serial_handle_recv_line(usb_serial_handle_t *dev_handle);
 
 bool usbh_serial_init()
@@ -168,25 +164,12 @@ void usb_serial_thread(void *argument)
                         break;
                     }
 
-                    TimerHandle_t int_timer = xTimerCreate(
-                        "serial_int_tim",
-                        pdMS_TO_TICKS(10),
-                        pdFALSE, (void *)dev_handle,
-                        usb_serial_int_timer);
-                    if (!int_timer) {
-                        log_w("Unable to create device int timer");
-                        vPortFree(dev_handle);
-                        break;
-                    }
-
                     memset(dev_handle, 0, sizeof(usb_serial_handle_t));
                     dev_handle->serial_class = event.serial_class;
-                    dev_handle->int_timer = int_timer;
 
                     serial_handles[event.serial_class->devnum] = dev_handle;
 
                     if (!usb_serial_start_device(dev_handle)) {
-                        xTimerDelete(dev_handle->int_timer, portMAX_DELAY);
                         vPortFree(dev_handle);
                         serial_handles[event.serial_class->devnum] = NULL;
                         break;
@@ -202,7 +185,6 @@ void usb_serial_thread(void *argument)
                     }
 
                     /* Destroy the device-specific state handle */
-                    xTimerDelete(serial_handles[event.serial_class->devnum]->int_timer, portMAX_DELAY);
                     vPortFree(serial_handles[event.serial_class->devnum]);
                     serial_handles[event.serial_class->devnum] = NULL;
                 } while (0);
@@ -341,20 +323,18 @@ void usb_serial_bulk_in_complete(void *arg, int nbytes)
             .serial_class = dev_handle->serial_class
         };
         osMessageQueuePut(usb_serial_queue, &event, 0, 0);
+
     } else if (ret == -USB_ERR_NAK) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        if (xTimerStartFromISR(dev_handle->int_timer, &xHigherPriorityTaskWoken) == pdPASS) {
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-        }
+        dev_handle->bulk_in_buf_len = 0;
+
+        usb_serial_event_t event = {
+            .event_type = USB_SERIAL_DATA,
+            .serial_class = dev_handle->serial_class
+        };
+        osMessageQueuePut(usb_serial_queue, &event, 0, 0);
     } else if (ret < 0) {
         log_w("usb_serial_bulk_in_complete[dev=%d] error: %d", dev_handle->serial_class->devnum, ret);
     }
-}
-
-void usb_serial_int_timer(TimerHandle_t xTimer)
-{
-    usb_serial_handle_t *dev_handle = (usb_serial_handle_t *)pvTimerGetTimerID(xTimer);
-    usb_serial_start_next_bulk_in(dev_handle);
 }
 
 bool usb_serial_handle_recv_line(usb_serial_handle_t *dev_handle)

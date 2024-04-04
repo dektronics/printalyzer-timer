@@ -1,8 +1,6 @@
 #include "usb_hid_keyboard.h"
 
 #include <cmsis_os.h>
-#include <FreeRTOS.h>
-#include <timers.h>
 
 #include "usbh_core.h"
 #include "usbh_hid.h"
@@ -16,7 +14,8 @@
 typedef enum {
     USB_KBD_ATTACH = 0,
     USB_KBD_DETACH,
-    USB_KBD_DATA
+    USB_KBD_DATA,
+    USB_KBD_SUBMIT_URB
 } usb_keyboard_event_type_t;
 
 typedef struct {
@@ -31,7 +30,6 @@ typedef struct {
     uint32_t last_event_time;
     USB_MEM_ALIGNX uint8_t hid_in_buffer[HID_BUF_SIZE];
     USB_MEM_ALIGNX uint8_t hid_out_buffer[HID_BUF_SIZE];
-    TimerHandle_t int_timer;
 } usb_hid_keyboard_handle_t;
 
 typedef struct {
@@ -64,7 +62,6 @@ static const osMessageQueueAttr_t usb_hid_keyboard_queue_attributes = {
 
 static void usbh_hid_keyboard_thread(void *argument);
 static void usbh_hid_keyboard_callback(void *arg, int nbytes);
-static void usbh_hid_keyboard_int_timer(TimerHandle_t xTimer);
 static uint8_t keyboard_ascii_code(const keyboard_info_t *info);
 static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
@@ -218,18 +215,7 @@ void usbh_hid_keyboard_thread(void *argument)
                     break;
                 }
 
-                TimerHandle_t int_timer = xTimerCreate(
-                    "kbd_int_tim",
-                    pdMS_TO_TICKS(10),
-                    pdFALSE, (void *)hid_class,
-                    usbh_hid_keyboard_int_timer);
-                if (!int_timer) {
-                    log_w("Unable to create device int timer");
-                    break;
-                }
-
                 memset(handle, 0, sizeof(usb_hid_keyboard_handle_t));
-                handle->int_timer = int_timer;
                 handle->attached = 1;
 
                 /* Submit the initial request */
@@ -247,17 +233,17 @@ void usbh_hid_keyboard_thread(void *argument)
                     continue;
                 }
 
-                xTimerDelete(handle->int_timer, portMAX_DELAY);
-                handle->int_timer = NULL;
                 handle->attached = 0;
 
             } else if (event.event_type == USB_KBD_DATA) {
                 if (handle->attached) {
                     keyboard_process_event(event.hid_class, event.event_time, &event.info);
                 }
+            } else if (event.event_type == USB_KBD_SUBMIT_URB) {
+                usbh_submit_urb(&hid_class->intin_urb);
             }
 
-            if (event.event_type != USB_KBD_DATA) {
+            if (event.event_type != USB_KBD_DATA && event.event_type != USB_KBD_SUBMIT_URB) {
                 /* Check if anything is still connected */
                 bool devices_connected = false;
                 for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_HID_CLASS; i++) {
@@ -288,6 +274,7 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
 {
     struct usbh_hid *hid_class = (struct usbh_hid *)arg;
     usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
+    bool submit_urb = false;
 
     if (!handle->attached) {
         return;
@@ -296,8 +283,8 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
     if (nbytes > 0) {
         if (nbytes == 8) {
             usb_hid_keyboard_event_t event = {
-                .hid_class = hid_class,
                 .event_type = USB_KBD_DATA,
+                .hid_class = hid_class,
                 .event_time = osKernelGetTickCount(),
             };
 
@@ -313,23 +300,21 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
             log_w("Unexpected byte count: %d", nbytes);
         }
 
-        usbh_submit_urb(&hid_class->intin_urb);
+        submit_urb = true;
 
     } else if (nbytes == -USB_ERR_NAK) {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        if (xTimerStartFromISR(handle->int_timer, &xHigherPriorityTaskWoken) == pdPASS) {
-            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-        }
+        submit_urb = true;
     } else if (nbytes < 0) {
         log_w("usbh_hid_keyboard_callback[dev=%d] error: %d", hid_class->minor, nbytes);
     }
-}
 
-void usbh_hid_keyboard_int_timer(TimerHandle_t xTimer)
-{
-    struct usbh_hid *hid_class = (struct usbh_hid *)pvTimerGetTimerID(xTimer);
-
-    usbh_submit_urb(&hid_class->intin_urb);
+    if (submit_urb) {
+        usb_hid_keyboard_event_t event = {
+            .event_type = USB_KBD_SUBMIT_URB,
+            .hid_class = hid_class
+        };
+        osMessageQueuePut(usb_hid_keyboard_queue, &event, 0, 0);
+    }
 }
 
 uint8_t keyboard_ascii_code(const keyboard_info_t *info)
