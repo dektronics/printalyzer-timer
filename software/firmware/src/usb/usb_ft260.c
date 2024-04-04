@@ -104,6 +104,7 @@ static HAL_StatusTypeDef usb_ft260_i2c_receive(i2c_handle_t *hi2c, uint8_t dev_a
 static HAL_StatusTypeDef usb_ft260_i2c_mem_write(i2c_handle_t *hi2c, uint8_t dev_address, uint16_t mem_address, uint16_t mem_addr_size, const uint8_t *data, uint16_t len, uint32_t timeout);
 static HAL_StatusTypeDef usb_ft260_i2c_mem_read(i2c_handle_t *hi2c, uint8_t dev_address, uint16_t mem_address, uint16_t mem_addr_size, uint8_t *data, uint16_t len, uint32_t timeout);
 static HAL_StatusTypeDef usb_ft260_i2c_is_device_ready(i2c_handle_t *hi2c, uint8_t dev_address, uint32_t timeout);
+static HAL_StatusTypeDef usb_ft260_i2c_reset(i2c_handle_t *hi2c);
 
 bool usbh_ft260_init()
 {
@@ -128,6 +129,7 @@ bool usbh_ft260_init()
         .mem_write = usb_ft260_i2c_mem_write,
         .mem_read = usb_ft260_i2c_mem_read,
         .is_device_ready = usb_ft260_i2c_is_device_ready,
+        .reset = usb_ft260_i2c_reset,
         .priv = NULL
     };
     memcpy(&meter_probe_handle.i2c_handle, &i2c_handle_ft260, sizeof(i2c_handle_t));
@@ -396,7 +398,7 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
 
         log_system_status(&system_status);
 
-        ret = ft250_set_i2c_clock_speed(dev_handle->hid_class0, 400);
+        ret = ft260_set_i2c_clock_speed(dev_handle->hid_class0, 400);
         if (ret < 0) { break; }
 
         ret = ft260_get_i2c_status(dev_handle->hid_class0, &bus_status, &speed);
@@ -722,6 +724,33 @@ static HAL_StatusTypeDef usb_ft260_i2c_is_device_ready(i2c_handle_t *hi2c, uint8
         struct usbh_hid *hid_class = dev_handle->hid_class0;
 
         int status = ft260_i2c_is_device_ready(hid_class, dev_address);
+        if (status < 0) {
+            result = usb_to_hal_status(status);
+        }
+    } while (0);
+    osMutexRelease(device->mutex);
+
+    return result;
+}
+
+HAL_StatusTypeDef usb_ft260_i2c_reset(i2c_handle_t *hi2c)
+{
+    HAL_StatusTypeDef result = HAL_OK;
+    if (!hi2c || !hi2c->priv) { return HAL_ERROR; }
+
+    ft260_device_t *device = (ft260_device_t *)hi2c->priv;
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    do {
+        usb_ft260_handle_t *dev_handle = device->dev_handle;
+        if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
+            result = HAL_ERROR;
+            break;
+        }
+
+        struct usbh_hid *hid_class = dev_handle->hid_class0;
+
+        int status = ft260_i2c_reset(hid_class);
         if (status < 0) {
             result = usb_to_hal_status(status);
         }

@@ -1,5 +1,7 @@
 #include "ft260.h"
 
+#include <cmsis_os.h>
+
 #include "usbh_core.h"
 #include "usbh_hid.h"
 
@@ -24,6 +26,8 @@
 #define FT260_I2C_REPEATED_START 0x03
 #define FT260_I2C_STOP           0x04
 #define FT260_I2C_START_AND_STOP 0x06
+
+#define RETRY_TIMEOUT pdMS_TO_TICKS(500)
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ft260_buf[64];
 
@@ -94,7 +98,25 @@ int ft260_get_system_status(struct usbh_hid *hid_class, ft260_system_status_t *s
     return ret;
 }
 
-int ft250_set_i2c_clock_speed(struct usbh_hid *hid_class, uint16_t speed)
+int ft260_set_system_clock(struct usbh_hid *hid_class, uint8_t clock_rate)
+{
+    int ret;
+    uint8_t buf[3];
+
+    buf[0] = HID_REPORT_FT260_SYSTEM_SETTING;
+    buf[1] = 0x01; /* Set system clock */
+    buf[2] = clock_rate;
+
+    ret = ft260_set_report(hid_class, HID_REPORT_FEATURE, HID_REPORT_FT260_SYSTEM_SETTING, buf, 3);
+    if (ret < 0) {
+        log_w("ft260_set_system_clock failed: %d", ret);
+        return ret;
+    }
+
+    return ret;
+}
+
+int ft260_set_i2c_clock_speed(struct usbh_hid *hid_class, uint16_t speed)
 {
     int ret;
     uint8_t buf[4];
@@ -111,7 +133,6 @@ int ft250_set_i2c_clock_speed(struct usbh_hid *hid_class, uint16_t speed)
     }
 
     return ret;
-
 }
 
 int ft260_get_i2c_status(struct usbh_hid *hid_class, uint8_t *bus_status, uint16_t *speed)
@@ -136,37 +157,59 @@ int ft260_get_i2c_status(struct usbh_hid *hid_class, uint8_t *bus_status, uint16
     return ret;
 }
 
+int ft260_i2c_reset(struct usbh_hid *hid_class)
+{
+    int ret;
+    uint8_t buf[2];
+
+    buf[0] = HID_REPORT_FT260_SYSTEM_SETTING;
+    buf[1] = 0x20; /* I2C reset */
+
+    ret = ft260_set_report(hid_class, HID_REPORT_FEATURE, HID_REPORT_FT260_SYSTEM_SETTING, buf, 2);
+    if (ret < 0) {
+        log_w("ft260_i2c_reset failed: %d", ret);
+        return ret;
+    }
+
+    return ret;
+}
+
 int ft260_i2c_mem_read(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, uint8_t *data, uint16_t size)
 {
     int ret;
+    int step = 0;
     uint8_t buf[64];
 
     // Note: This is somewhat scratch code with minimal error checking, and no support for multi-packet reads
 
     memset(buf, 0, sizeof(buf));
 
-    /* Write request to set the memory address */
-    ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, &mem_address, 1);
-    if (ret < 0) {
-        log_w("ft260_i2c_mem_read[1]: %d", ret);
-        return ret;
-    }
+    do {
+        /* Write request to set the memory address */
+        ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, &mem_address, 1);
+        if (ret < 0) {
+            step = 1;
+            break;
+        }
 
-    /* Read request for the data */
-    ret = ft260_i2c_read_request(hid_class, dev_address, FT260_I2C_REPEATED_START | FT260_I2C_STOP, size);
-    if (ret < 0) {
-        log_w("ft260_i2c_mem_read[2]: %d", ret);
-        return ret;
-    }
+        /* Read request for the data */
+        ret = ft260_i2c_read_request(hid_class, dev_address, FT260_I2C_REPEATED_START | FT260_I2C_STOP, size);
+        if (ret < 0) {
+            step = 2;
+            break;
+        }
 
-    /* Input report to read the data */
-    ret = ft260_i2c_input_report(hid_class, data, size);
-    if (ret < 0) {
-        log_w("ft260_i2c_mem_read[3]: %d", ret);
-        return ret;
-    }
+        /* Input report to read the data */
+        ret = ft260_i2c_input_report(hid_class, data, size);
+        if (ret < 0) {
+            step = 3;
+            break;
+        }
+    } while (0);
 
-    if (ret != size) {
+    if (ret < 0) {
+        log_w("ft260_i2c_mem_read[%d]: dev=0x%02X, mem=0x%02X, ret=%d", step, dev_address, mem_address, ret);
+    } else if (ret != size) {
         log_w("Unexpected size returned: %d != %d", ret, size);
     }
 
@@ -176,20 +219,27 @@ int ft260_i2c_mem_read(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t 
 int ft260_i2c_mem_write(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, const uint8_t *data, uint8_t size)
 {
     int ret;
+    int step = 0;
 
-    /* Write request to set the memory address */
-    ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, &mem_address, 1);
+    do {
+        /* Write request to set the memory address */
+        ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, &mem_address, 1);
+        if (ret < 0) {
+            step = 1;
+            break;
+        }
+
+
+        /* Write request with the data to be written */
+        ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_STOP, data, size);
+        if (ret < 0) {
+            step = 2;
+            break;
+        }
+    } while (0);
+
     if (ret < 0) {
-        log_w("ft260_i2c_mem_write[1]: %d", ret);
-        return ret;
-    }
-
-
-    /* Write request with the data to be written */
-    ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_STOP, data, size);
-    if (ret < 0) {
-        log_w("ft260_i2c_mem_write[2]: %d", ret);
-        return ret;
+        log_w("ft260_i2c_mem_write[%d]: dev=0x%02X, mem=0x%02X, ret=%d", step, dev_address, mem_address, ret);
     }
 
     return ret;
@@ -201,7 +251,7 @@ int ft260_i2c_is_device_ready(struct usbh_hid *hid_class, uint8_t dev_address)
     //TODO Need to test this and see if we're actually doing things correctly and what error codes to expect
     ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, NULL, 0);
     if (ret < 0) {
-        log_w("ft260_i2c_is_device_ready[1]: %d", ret);
+        log_w("ft260_i2c_is_device_ready: dev=0x%02X, ret=%d", dev_address, ret);
         return ret;
     }
     return ret;
@@ -349,7 +399,7 @@ int ft260_i2c_read_request(struct usbh_hid *hid_class, uint8_t dev_address, uint
 
     memset(g_ft260_buf, 0, 5);
 
-    g_ft260_buf[0] = 0xC2;
+    g_ft260_buf[0] = HID_REPORT_FT260_I2C_READ_REQUEST;
     g_ft260_buf[1] = dev_address;
     g_ft260_buf[2] = flags;
     g_ft260_buf[3] = len & 0x00FF;
@@ -366,8 +416,8 @@ int ft260_i2c_read_request(struct usbh_hid *hid_class, uint8_t dev_address, uint
 int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t buflen)
 {
     int ret;
-    int retry_count = 0;
     uint32_t offset = 0;
+    uint32_t start_time = osKernelGetTickCount();
 
     if (!buffer) { return -USB_ERR_INVAL; }
 
@@ -375,10 +425,12 @@ int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t
 
     do {
         usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
-            g_ft260_buf, (buflen - offset) + 2, 500, NULL, NULL);
+            g_ft260_buf, sizeof(g_ft260_buf), 500, NULL, NULL);
         ret = usbh_submit_urb(&hid_class->intin_urb);
         if (ret == -USB_ERR_NAK) {
-            if (retry_count < 5) { retry_count++; continue; }
+            if (osKernelGetTickCount() - start_time < RETRY_TIMEOUT) {
+                continue;
+            }
         }
         if (ret < 0) { break; }
 
@@ -393,7 +445,7 @@ int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t
 
         memcpy(buffer + offset, g_ft260_buf + 2, g_ft260_buf[1]);
         offset += g_ft260_buf[1];
-        retry_count = 0;
+        start_time = osKernelGetTickCount();
     } while (offset < buflen);
 
     if (ret < 0) {

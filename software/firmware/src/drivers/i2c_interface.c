@@ -29,6 +29,11 @@ HAL_StatusTypeDef i2c_is_device_ready(i2c_handle_t *hi2c, uint8_t dev_address, u
     return hi2c->is_device_ready(hi2c, dev_address, timeout);
 }
 
+HAL_StatusTypeDef i2c_reset(i2c_handle_t *hi2c)
+{
+    return hi2c->reset(hi2c);
+}
+
 static HAL_StatusTypeDef hal_i2c_transmit(i2c_handle_t *hi2c, uint8_t dev_address, const uint8_t *data, uint16_t len, uint32_t timeout)
 {
     return HAL_I2C_Master_Transmit(&hi2c1, dev_address << 1, (uint8_t *)data, len, timeout);
@@ -54,12 +59,30 @@ static HAL_StatusTypeDef hal_i2c_is_device_ready(i2c_handle_t *hi2c, uint8_t dev
     return HAL_I2C_IsDeviceReady(&hi2c1, dev_address << 1, 1, timeout);
 }
 
+static HAL_StatusTypeDef hal_i2c_reset(i2c_handle_t *hi2c)
+{
+    HAL_StatusTypeDef ret;
+    do {
+        ret = HAL_I2C_DeInit(&hi2c1);
+        if (ret != HAL_OK) {
+            break;
+        }
+
+        ret = HAL_I2C_Init(&hi2c1);
+        if (ret != HAL_OK) {
+            break;
+        }
+    } while (0);
+    return ret;
+}
+
 static i2c_handle_t i2c_handle_hal_i2c1 = {
     .transmit = hal_i2c_transmit,
     .receive = hal_i2c_receive,
     .mem_write = hal_i2c_mem_write,
     .mem_read = hal_i2c_mem_read,
     .is_device_ready = hal_i2c_is_device_ready,
+    .reset = hal_i2c_reset,
     .priv = NULL
 };
 

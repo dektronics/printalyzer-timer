@@ -34,17 +34,12 @@ HAL_StatusTypeDef m24c08_read_buffer(i2c_handle_t *hi2c, uint16_t address, uint8
 
     log_d("m24c08_read_buffer: address=0x%02X, size=%d", address, data_len);
 
-    /* Reads are broken up into chunks to avoid asking too much of our USB<->I2C bridge */
-    for (size_t offset = 0; offset < data_len; offset += 32) {
-        const uint8_t dev_address = (uint16_t)M24C08_ADDRESS | (((address + offset) & 0x0300) >> 8);
-        const uint8_t mem_address = (address + offset) & 0x00FF;
+    const uint8_t dev_address = (uint16_t)M24C08_ADDRESS | ((address & 0x0300) >> 8);
+    const uint8_t mem_address = address & 0x00FF;
 
-        ret = i2c_mem_read(hi2c, dev_address, mem_address, I2C_MEMADD_SIZE_8BIT,
-            data + offset, MIN(32, data_len - offset), HAL_MAX_DELAY);
-        if (ret != HAL_OK) {
-            log_e("i2c_mem_read error: %d", ret);
-            break;
-        }
+    ret = i2c_mem_read(hi2c, dev_address, mem_address, I2C_MEMADD_SIZE_8BIT, data, data_len, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        log_e("i2c_mem_read error: %d", ret);
     }
 
     return ret;
