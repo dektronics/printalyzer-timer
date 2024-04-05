@@ -404,7 +404,7 @@ void tim1_init(void)
 void tim3_init(void)
 {
     /*
-     * TIM3 is used to control LED brightness and as a source for sensor oscillator calibration
+     * TIM3 is used to control LED brightness
      */
     TIM_MasterConfigTypeDef sMasterConfig = {0};
     TIM_OC_InitTypeDef sConfigOC = {0};
@@ -658,8 +658,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM11) {
         HAL_IncTick();
-    } else if (htim->Instance == TIM3) {
-        meter_probe_notify_cal_timer();
     } else if (htim->Instance == TIM10) {
         main_task_notify_countdown_timer();
     }

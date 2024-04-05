@@ -726,7 +726,9 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
 
 HAL_StatusTypeDef sensor_osc_calibration()
 {
+    //FIXME This routine will need to be rewritten to use an HW trigger synchronized to USB SOF or just removed
     HAL_StatusTypeDef ret = HAL_OK;
+#if 0
     uint8_t status3 = 0;
     uint16_t vsync_period = 0;
     uint32_t sync_start;
@@ -792,27 +794,8 @@ HAL_StatusTypeDef sensor_osc_calibration()
         log_w("VSYNC calibration failed");
         tsl2585_disable(hi2c);
     }
-
+#endif
     return ret;
-}
-
-void meter_probe_notify_cal_timer()
-{
-    /*
-     * This ISR waits for at least one call to ensure consistent
-     * timing, then sends two consecutive SW_VSYNC_TRIGGER commands
-     * via I2C. After the second command, it disables itself.
-     */
-    if (sensor_osc_sync_count == 1 || sensor_osc_sync_count == 2) {
-        HAL_StatusTypeDef ret = tsl2585_set_vsync_control(hi2c, 0x01);
-        if (ret != HAL_OK) {
-            sensor_osc_sync_count = 0xF0;
-        }
-    }
-    if (sensor_osc_sync_count >= 2) {
-        __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
-    }
-    sensor_osc_sync_count++;
 }
 
 osStatus_t meter_probe_sensor_disable()
