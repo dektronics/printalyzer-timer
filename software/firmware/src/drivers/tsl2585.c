@@ -800,6 +800,91 @@ HAL_StatusTypeDef tsl2585_set_single_shot_mode(i2c_handle_t *hi2c, bool enabled)
     return ret;
 }
 
+HAL_StatusTypeDef tsl2585_get_wtime(i2c_handle_t *hi2c, uint8_t *value)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_WTIME, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (value) {
+        *value = data;
+    }
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef tsl2585_set_wtime(i2c_handle_t *hi2c, uint8_t value)
+{
+    return i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_WTIME, I2C_MEMADD_SIZE_8BIT, &value, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef tsl2585_get_trigger_mode(i2c_handle_t *hi2c, tsl2585_trigger_mode_t *trigger_mode)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_TRIGGER_MODE, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (trigger_mode) {
+        *trigger_mode = (data & 0x07);
+    }
+
+    return HAL_OK;
+}
+
+HAL_StatusTypeDef tsl2585_set_trigger_mode(i2c_handle_t *hi2c, tsl2585_trigger_mode_t trigger_mode)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    data = (uint8_t)trigger_mode & 0x07;
+
+    ret = i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_TRIGGER_MODE, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_get_vsync_wait_pattern(i2c_handle_t *hi2c, tsl2585_step_t *steps)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_MEAS_SEQR_APERS_AND_VSYNC_WAIT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (steps) {
+        *steps = (data & 0xF0) >> 4;
+    }
+
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_set_vsync_wait_pattern(i2c_handle_t *hi2c, tsl2585_step_t steps)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data;
+
+    ret =  i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_MEAS_SEQR_APERS_AND_VSYNC_WAIT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    data = (data & 0x0F) | (((uint8_t)steps & 0x0F) << 4);
+
+    ret = i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_MEAS_SEQR_APERS_AND_VSYNC_WAIT, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
+
+    return ret;
+}
+
 HAL_StatusTypeDef tsl2585_get_vsync_period(i2c_handle_t *hi2c, uint16_t *period)
 {
     HAL_StatusTypeDef ret;

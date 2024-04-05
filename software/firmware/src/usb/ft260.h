@@ -36,6 +36,24 @@ struct usbh_hid;
 #define FT260_I2C_IDLE                    0x20
 #define FT260_I2C_BUS_BUSY                0x40
 
+/* GPIO 0-5 bits */
+#define FT260_GPIO_0 0x01
+#define FT260_GPIO_1 0x02
+#define FT260_GPIO_2 0x04
+#define FT260_GPIO_3 0x08
+#define FT260_GPIO_4 0x10
+#define FT260_GPIO_5 0x20
+
+/* GPIO(EX) A-H bits */
+#define FT260_GPIOEX_A 0x01
+#define FT260_GPIOEX_B 0x02
+#define FT260_GPIOEX_C 0x04
+#define FT260_GPIOEX_D 0x08
+#define FT260_GPIOEX_E 0x10
+#define FT260_GPIOEX_F 0x20
+#define FT260_GPIOEX_G 0x40
+#define FT260_GPIOEX_H 0x80
+
 typedef struct {
     uint16_t chip;
     uint8_t major;
@@ -59,6 +77,13 @@ typedef struct {
     uint8_t enable_power_saving;
 } ft260_system_status_t;
 
+typedef struct {
+    uint8_t gpio_value;
+    uint8_t gpio_dir;
+    uint8_t gpio_ex_value;
+    uint8_t gpio_ex_dir;
+} ft260_gpio_report_t;
+
 int ft260_get_chip_version(struct usbh_hid *hid_class, ft260_chip_version_t *chip_version);
 int ft260_get_system_status(struct usbh_hid *hid_class, ft260_system_status_t *system_status);
 int ft260_set_system_clock(struct usbh_hid *hid_class, uint8_t clock_rate);
@@ -76,5 +101,8 @@ int ft260_set_uart_enable_dcd_ri(struct usbh_hid *hid_class, bool enable);
 
 int ft260_set_uart_enable_ri_wakeup(struct usbh_hid *hid_class, bool enable);
 int ft260_set_uart_ri_wakeup_config(struct usbh_hid *hid_class, bool edge);
+
+int ft260_gpio_read(struct usbh_hid *hid_class, ft260_gpio_report_t *gpio_report);
+int ft260_gpio_write(struct usbh_hid *hid_class, const ft260_gpio_report_t *gpio_report);
 
 #endif /* FT260_H */

@@ -69,6 +69,15 @@ typedef enum {
     TSL2585_ALS_FIFO_32BIT = 0x03
 } tsl2585_als_fifo_data_format_t;
 
+typedef enum {
+    TSL2585_TRIGGER_OFF      = 0x00, /*!< Off */
+    TSL2585_TRIGGER_NORMAL   = 0x01, /*!< 2.844ms * WTIME */
+    TSL2585_TRIGGER_LONG     = 0x02, /*!< 45.511ms * WTIME */
+    TSL2585_TRIGGER_FAST     = 0x03, /*!< 88.889us * WTIME */
+    TSL2585_TRIGGER_FASTLONG = 0x04, /*!< 1.422ms * WTIME */
+    TSL2585_TRIGGER_VSYNC    = 0x05  /*!< One VSYNC per WTIME step */
+} tsl2585_trigger_mode_t;
+
 /* ENABLE register values */
 #define TSL2585_ENABLE_FDEN 0x40 /*!< Flicker detection enable */
 #define TSL2585_ENABLE_AEN  0x02 /*!< ALS Enable */
@@ -204,6 +213,15 @@ HAL_StatusTypeDef tsl2585_set_agc_calibration(i2c_handle_t *hi2c, bool enabled);
 
 HAL_StatusTypeDef tsl2585_get_single_shot_mode(i2c_handle_t *hi2c, bool *enabled);
 HAL_StatusTypeDef tsl2585_set_single_shot_mode(i2c_handle_t *hi2c, bool enabled);
+
+HAL_StatusTypeDef tsl2585_get_wtime(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_set_wtime(i2c_handle_t *hi2c, uint8_t value);
+
+HAL_StatusTypeDef tsl2585_get_trigger_mode(i2c_handle_t *hi2c, tsl2585_trigger_mode_t *trigger_mode);
+HAL_StatusTypeDef tsl2585_set_trigger_mode(i2c_handle_t *hi2c, tsl2585_trigger_mode_t trigger_mode);
+
+HAL_StatusTypeDef tsl2585_get_vsync_wait_pattern(i2c_handle_t *hi2c, tsl2585_step_t *steps);
+HAL_StatusTypeDef tsl2585_set_vsync_wait_pattern(i2c_handle_t *hi2c, tsl2585_step_t steps);
 
 HAL_StatusTypeDef tsl2585_get_vsync_period(i2c_handle_t *hi2c, uint16_t *period);
 HAL_StatusTypeDef tsl2585_set_vsync_period(i2c_handle_t *hi2c, uint16_t period);

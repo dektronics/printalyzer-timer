@@ -802,3 +802,32 @@ i2c_handle_t *usbh_ft260_get_device_i2c(ft260_device_t *device)
     if (!device) { return NULL; }
     return &device->i2c_handle;
 }
+
+bool usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
+{
+    bool result = true;
+    if (!device) { return false; }
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    do {
+        usb_ft260_handle_t *dev_handle = device->dev_handle;
+        if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
+            result = false;
+            break;
+        }
+
+        struct usbh_hid *hid_class = dev_handle->hid_class0;
+
+        ft260_gpio_report_t gpio_report = {
+            .gpio_ex_value = value ? FT260_GPIOEX_A : 0,
+            .gpio_ex_dir = FT260_GPIOEX_A
+        };
+        int status = ft260_gpio_write(hid_class, &gpio_report);
+        if (status < 0) {
+            result = usb_to_hal_status(status);
+        }
+    } while (0);
+    osMutexRelease(device->mutex);
+
+    return result;
+}

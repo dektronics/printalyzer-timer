@@ -455,3 +455,50 @@ int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t
 
     return offset;
 }
+
+int ft260_gpio_read(struct usbh_hid *hid_class, ft260_gpio_report_t *gpio_report)
+{
+    int ret;
+    uint8_t buf[5];
+
+    ret = ft260_get_report(hid_class, HID_REPORT_FEATURE, HID_REPORT_FT260_GPIO, buf, sizeof(buf));
+    if (ret < 0) {
+        log_w("ft260_gpio_read failed: %d", ret);
+        return ret;
+    }
+    if (ret < sizeof(buf)) {
+        log_w("ft260_gpio_read unexpected length: %d", ret);
+        return -USB_ERR_INVAL;
+    }
+
+    if (gpio_report) {
+        gpio_report->gpio_value = buf[1];
+        gpio_report->gpio_dir = buf[2];
+        gpio_report->gpio_ex_value = buf[3];
+        gpio_report->gpio_ex_dir = buf[4];
+    }
+
+    return ret;
+}
+
+int ft260_gpio_write(struct usbh_hid *hid_class, const ft260_gpio_report_t *gpio_report)
+{
+    int ret;
+    uint8_t buf[5];
+
+    if (!gpio_report) { return -USB_ERR_INVAL; }
+
+    buf[0] = HID_REPORT_FT260_GPIO;
+    buf[1] = gpio_report->gpio_value;
+    buf[2] = gpio_report->gpio_dir;
+    buf[3] = gpio_report->gpio_ex_value;
+    buf[4] = gpio_report->gpio_ex_dir;
+
+    ret = ft260_set_report(hid_class, HID_REPORT_FEATURE, HID_REPORT_FT260_GPIO, buf, sizeof(buf));
+    if (ret < 0) {
+        log_w("ft260_gpio_write failed: %d", ret);
+        return ret;
+    }
+
+    return ret;
+}
