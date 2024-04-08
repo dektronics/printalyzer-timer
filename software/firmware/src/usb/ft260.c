@@ -128,7 +128,7 @@ int ft260_set_i2c_clock_speed(struct usbh_hid *hid_class, uint16_t speed)
 
     ret = ft260_set_report(hid_class, HID_REPORT_FEATURE, HID_REPORT_FT260_SYSTEM_SETTING, buf, 4);
     if (ret < 0) {
-        log_w("ft250_set_i2c_clock_speed failed: %d", ret);
+        log_w("ft260_set_i2c_clock_speed failed: %d", ret);
         return ret;
     }
 
