@@ -387,16 +387,16 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (sensor_reading.result_status != METER_SENSOR_RESULT_VALID) {
+    if (sensor_reading.reading[0].status != METER_SENSOR_RESULT_VALID) {
         log_w("Could not find a gain setting with a valid unsaturated reading");
         return CALIBRATION_SENSOR_SATURATED;
     }
 
-    if (sensor_reading.als_data < SENSOR_ZERO_THRESHOLD) {
+    if (sensor_reading.reading[0].data < SENSOR_ZERO_THRESHOLD) {
         log_w("Could not find a gain setting with a reading above the zero threshold");
         return CALIBRATION_ZERO_READING;
     }
-    sensor_gain = sensor_reading.gain;
+    sensor_gain = sensor_reading.reading[0].gain;
 
     log_i("Selected gain: %s", tsl2585_gain_str(sensor_gain));
 
@@ -419,7 +419,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = sensor_reading.als_data;
+        readings[i] = sensor_reading.reading[0].data;
     }
 
     /* Turn the enlarger off */
@@ -445,7 +445,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = sensor_reading.als_data;
+        readings[i] = sensor_reading.reading[0].data;
         sensor_times[i] = sensor_reading.ticks - last_sensor_ticks;
         last_sensor_ticks = sensor_reading.ticks;
     }
@@ -570,7 +570,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Break if the reading exceeds the rising threshold */
-            if (sensor_reading.als_data > rising_threshold) {
+            if (sensor_reading.reading[0].data > rising_threshold) {
                 time_rise_start = time_reading;
                 break;
             }
@@ -597,11 +597,11 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Integrate all readings during the rise period */
-            integrated_rise += sensor_reading.als_data;
+            integrated_rise += sensor_reading.reading[0].data;
             rise_counts++;
 
             /* Break once we've reached the fully-on state */
-            if (sensor_reading.als_data >= enlarger_on_threshold) {
+            if (sensor_reading.reading[0].data >= enlarger_on_threshold) {
                 time_rise_end = time_reading;
                 break;
             }
@@ -642,7 +642,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Break if the reading falls below the fully-on threshold */
-            if (sensor_reading.als_data < stats_on->min) {
+            if (sensor_reading.reading[0].data < stats_on->min) {
                 time_fall_start = time_reading;
                 break;
             }
@@ -667,11 +667,11 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
             time_reading = sensor_reading.ticks - sensor_integration_mid;
 
             /* Integrate all readings during the fall period */
-            integrated_fall += sensor_reading.als_data;
+            integrated_fall += sensor_reading.reading[0].data;
             fall_counts++;
 
             /* Break once we've reached the fully-off state */
-            if (sensor_reading.als_data < falling_threshold) {
+            if (sensor_reading.reading[0].data < falling_threshold) {
                 time_fall_end = time_reading;
                 break;
             }

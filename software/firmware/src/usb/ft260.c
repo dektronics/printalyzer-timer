@@ -174,15 +174,40 @@ int ft260_i2c_reset(struct usbh_hid *hid_class)
     return ret;
 }
 
+int ft260_i2c_receive(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t *data, uint16_t size)
+{
+    int ret;
+    int step = 0;
+
+    do {
+        /* Read request for the data */
+        ret = ft260_i2c_read_request(hid_class, dev_address, FT260_I2C_START | FT260_I2C_STOP, size);
+        if (ret < 0) {
+            step = 1;
+            break;
+        }
+
+        /* Input report to read the data */
+        ret = ft260_i2c_input_report(hid_class, data, size);
+        if (ret < 0) {
+            step = 2;
+            break;
+        }
+    } while (0);
+
+    if (ret < 0) {
+        log_w("ft260_i2c_receive[%d]: dev=0x%02X, ret=%d", step, dev_address, ret);
+    } else if (ret != size) {
+        log_w("Unexpected size returned: %d != %d", ret, size);
+    }
+
+    return ret;
+}
+
 int ft260_i2c_mem_read(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, uint8_t *data, uint16_t size)
 {
     int ret;
     int step = 0;
-    uint8_t buf[64];
-
-    // Note: This is somewhat scratch code with minimal error checking, and no support for multi-packet reads
-
-    memset(buf, 0, sizeof(buf));
 
     do {
         /* Write request to set the memory address */

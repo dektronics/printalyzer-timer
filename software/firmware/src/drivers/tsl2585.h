@@ -298,16 +298,18 @@ HAL_StatusTypeDef tsl2585_set_als_num_samples(i2c_handle_t *hi2c, uint16_t value
  * interrupt is generated. The meaning of specific values is described in the
  * datasheet, however a value of 0 will interrupt on every ALS cycle.
  *
+ * @param channel Modulator channel used for ALS threshold metering
  * @param value A 4-bit value from 0x0 to 0xF
  */
-HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t *value);
+HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, tsl2585_modulator_t *channel, uint8_t *value);
 
 /**
  * Set the ALS interrupt persistence value.
  *
+ * @param channel Modulator channel used for ALS threshold metering
  * @param value A 4-bit value from 0x0 to 0xF
  */
-HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t value);
+HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(i2c_handle_t *hi2c, tsl2585_modulator_t channel, uint8_t value);
 
 HAL_StatusTypeDef tsl2585_get_als_status(i2c_handle_t *hi2c, uint8_t *status);
 HAL_StatusTypeDef tsl2585_get_als_status2(i2c_handle_t *hi2c, uint8_t *status);
@@ -331,9 +333,13 @@ HAL_StatusTypeDef tsl2585_get_als_data2(i2c_handle_t *hi2c, uint16_t *data);
 
 HAL_StatusTypeDef tsl2585_set_fifo_data_write_enable(i2c_handle_t *hi2c, tsl2585_modulator_t mod, bool enable);
 
+HAL_StatusTypeDef tsl2585_set_fifo_threshold(i2c_handle_t *hi2c, uint16_t threshold);
+
 HAL_StatusTypeDef tsl2585_get_fifo_status(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status);
 
 HAL_StatusTypeDef tsl2585_read_fifo(i2c_handle_t *hi2c, uint8_t *data, uint16_t len);
+
+HAL_StatusTypeDef tsl2585_read_fifo_combo(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status, uint8_t *data, uint16_t len);
 
 const char* tsl2585_gain_str(tsl2585_gain_t gain);
 float tsl2585_gain_value(tsl2585_gain_t gain);

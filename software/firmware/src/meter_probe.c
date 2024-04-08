@@ -20,7 +20,11 @@
 #include "i2c_interface.h"
 #include "util.h"
 
-extern TIM_HandleTypeDef htim3;
+/*
+ * Size of an ALS reading in the TSL2585 FIFO, when using our
+ * preferred settings: 3B status, 4B ALS data
+ */
+#define FIFO_ALS_ENTRY_SIZE 7
 
 /**
  * Meter probe control event types.
@@ -29,7 +33,6 @@ typedef enum {
     METER_PROBE_CONTROL_STOP = 0,
     METER_PROBE_CONTROL_START,
     METER_PROBE_CONTROL_SENSOR_ENABLE,
-    METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT,
     METER_PROBE_CONTROL_SENSOR_DISABLE,
     METER_PROBE_CONTROL_SENSOR_SET_GAIN,
     METER_PROBE_CONTROL_SENSOR_SET_INTEGRATION,
@@ -39,6 +42,12 @@ typedef enum {
     METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING,
     METER_PROBE_CONTROL_INTERRUPT
 } meter_probe_control_event_type_t;
+
+typedef enum {
+    METER_PROBE_START_NORMAL = 0,
+    METER_PROBE_START_FAST_MODE,
+    METER_PROBE_START_SINGLE_SHOT
+} sensor_control_start_mode_t;
 
 typedef struct {
     tsl2585_gain_t gain;
@@ -69,6 +78,7 @@ typedef struct {
     meter_probe_control_event_type_t event_type;
     osStatus_t *result;
     union {
+        sensor_control_start_mode_t start_mode;
         sensor_control_gain_params_t gain;
         sensor_control_integration_params_t integration;
         sensor_control_mod_cal_params_t mod_calibration;
@@ -83,6 +93,7 @@ typedef struct {
 typedef struct {
     bool running;
     bool single_shot;
+    bool fast_mode;
     uint8_t uv_calibration;
     tsl2585_gain_t gain[3];
     uint16_t sample_time;
@@ -107,7 +118,6 @@ typedef struct {
     uint8_t als_status2;
     uint8_t als_status3;
     uint32_t als_data0;
-    bool overflow;
 } tsl2585_fifo_data_t;
 
 /* Global handles for the meter probe */
@@ -157,7 +167,8 @@ static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
 /* Meter probe control implementation functions */
 static osStatus_t meter_probe_control_start();
 static osStatus_t meter_probe_control_stop();
-static osStatus_t meter_probe_control_sensor_enable(bool single_shot);
+static osStatus_t meter_probe_sensor_enable_impl(sensor_control_start_mode_t start_mode);
+static osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_mode);
 static osStatus_t meter_probe_control_sensor_disable();
 static osStatus_t meter_probe_control_sensor_set_gain(const sensor_control_gain_params_t *params);
 static osStatus_t meter_probe_control_sensor_integration(const sensor_control_integration_params_t *params);
@@ -168,11 +179,12 @@ static osStatus_t meter_probe_control_sensor_trigger_next_reading();
 static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t *params);
 
 static void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks);
-static void meter_probe_int_handler();
+static void meter_probe_int_handler(uint32_t ticks);
 
 static HAL_StatusTypeDef sensor_osc_calibration();
 
-static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data);
+static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data, bool *overflow);
+static HAL_StatusTypeDef sensor_control_read_fifo_fast_mode(tsl2585_fifo_data_t *fifo_data, bool *overflow, uint32_t ticks);
 
 void task_meter_probe_run(void *argument)
 {
@@ -233,10 +245,7 @@ void task_meter_probe_run(void *argument)
                 ret = meter_probe_control_start();
                 break;
             case METER_PROBE_CONTROL_SENSOR_ENABLE:
-                ret = meter_probe_control_sensor_enable(false);
-                break;
-            case METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT:
-                ret = meter_probe_control_sensor_enable(true);
+                ret = meter_probe_control_sensor_enable(control_event.start_mode);
                 break;
             case METER_PROBE_CONTROL_SENSOR_DISABLE:
                 ret = meter_probe_control_sensor_disable();
@@ -286,7 +295,7 @@ void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t
 
     switch (event_type) {
     case FT260_EVENT_INTERRUPT:
-        meter_probe_int_handler();
+        meter_probe_int_handler(ticks);
         break;
     case FT260_EVENT_BUTTON_DOWN:
         keypad_inject_raw_event(KEYPAD_METER_PROBE, true, ticks);
@@ -327,11 +336,19 @@ osStatus_t meter_probe_control_start()
     do {
         if (!usb_meter_probe_is_attached()) {
             log_w("Meter probe not attached");
+            ret = HAL_ERROR;
             break;
         }
 
         /* Populate values that come from the USB descriptor */
         usbh_ft260_get_device_serial_number(device_handle, probe_settings_handle.id.probe_serial);
+
+        /* Set the FT260 I2C clock speed to the default of 400kHz */
+        if (usbh_ft260_set_i2c_clock_speed(device_handle, 400) != osOK) {
+            log_w("Unable to set I2C clock speed");
+            ret = HAL_ERROR;
+            break;
+        }
 
         /* Read the meter probe's settings memory */
         ret = meter_probe_settings_init(&probe_settings_handle, hi2c);
@@ -410,9 +427,6 @@ osStatus_t meter_probe_stop()
 osStatus_t meter_probe_control_stop()
 {
     log_d("meter_probe_control_stop");
-
-    /* Remove power from the meter probe port */
-    //HAL_GPIO_WritePin(SENSOR_VBUS_GPIO_Port, SENSOR_VBUS_Pin, GPIO_PIN_SET);
 
     /* Reset state variables */
     meter_probe_started = false;
@@ -516,37 +530,58 @@ osStatus_t meter_probe_sensor_disable_osc_calibration()
 
 osStatus_t meter_probe_sensor_enable()
 {
+    return meter_probe_sensor_enable_impl(METER_PROBE_START_NORMAL);
+}
+
+osStatus_t meter_probe_sensor_enable_fast_mode()
+{
+    return meter_probe_sensor_enable_impl(METER_PROBE_START_FAST_MODE);
+}
+
+osStatus_t meter_probe_sensor_enable_single_shot()
+{
+    return meter_probe_sensor_enable_impl(METER_PROBE_START_SINGLE_SHOT);
+}
+
+osStatus_t meter_probe_sensor_enable_impl(sensor_control_start_mode_t start_mode)
+{
     if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
         .event_type = METER_PROBE_CONTROL_SENSOR_ENABLE,
-        .result = &result
+        .result = &result,
+        .start_mode = start_mode
     };
     osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
     osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
     return result;
 }
 
-osStatus_t meter_probe_sensor_enable_single_shot()
-{
-    if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
-
-    osStatus_t result = osOK;
-    meter_probe_control_event_t control_event = {
-        .event_type = METER_PROBE_CONTROL_SENSOR_ENABLE_SINGLE_SHOT,
-        .result = &result
-    };
-    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
-    osSemaphoreAcquire(meter_probe_control_semaphore, portMAX_DELAY);
-    return result;
-}
-
-osStatus_t meter_probe_control_sensor_enable(bool single_shot)
+osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_mode)
 {
     HAL_StatusTypeDef ret = HAL_OK;
 
-    log_d("meter_probe_control_sensor_enable: %s", single_shot ? "single_shot" : "continuous");
+    bool fast_mode;
+    bool single_shot;
+    switch (start_mode) {
+    case METER_PROBE_START_FAST_MODE:
+        fast_mode = true;
+        single_shot = false;
+        log_d("meter_probe_control_sensor_enable: fast_mode");
+        break;
+    case METER_PROBE_START_SINGLE_SHOT:
+        fast_mode = false;
+        single_shot = true;
+        log_d("meter_probe_control_sensor_enable: single_shot");
+        break;
+    case METER_PROBE_START_NORMAL:
+    default:
+        fast_mode = false;
+        single_shot = false;
+        log_d("meter_probe_control_sensor_enable: continuous");
+        break;
+    }
 
     do {
         /* Query the initial state of the sensor */
@@ -689,21 +724,45 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         ret = tsl2585_set_sleep_after_interrupt(hi2c, single_shot);
         if (ret != HAL_OK) { break; }
 
-        /* Configure to interrupt on every ALS cycle */
-        ret = tsl2585_set_als_interrupt_persistence(hi2c, 0);
-        if (ret != HAL_OK) {
-            break;
-        }
 
-        /* Enable sensor interrupts */
-        ret = tsl2585_set_interrupt_enable(hi2c, TSL2585_INTENAB_AIEN);
-        if (ret != HAL_OK) {
-            break;
+        if (fast_mode) {
+            /* Set ALS interrupt persistence to track an unused modulator to avoid unwanted interrupts */
+            ret = tsl2585_set_als_interrupt_persistence(hi2c, TSL2585_MOD1, 1);
+            if (ret != HAL_OK) { break; }
+
+            /* Set FIFO threshold to a group of readings */
+            ret = tsl2585_set_fifo_threshold(hi2c, (FIFO_ALS_ENTRY_SIZE * MAX_ALS_COUNT) - 1);
+            if (ret != HAL_OK) { break; }
+
+            /* Enable sensor FIFO interrupt */
+            ret = tsl2585_set_interrupt_enable(hi2c, TSL2585_INTENAB_FIEN);
+            if (ret != HAL_OK) { break; }
+        } else {
+            /* Configure to interrupt on every ALS cycle */
+            ret = tsl2585_set_als_interrupt_persistence(hi2c, TSL2585_MOD0, 0);
+            if (ret != HAL_OK) { break; }
+
+            /* Set FIFO threshold to default value */
+            ret = tsl2585_set_fifo_threshold(hi2c, 255);
+            if (ret != HAL_OK) { break; }
+
+            /* Enable sensor ALS interrupt */
+            ret = tsl2585_set_interrupt_enable(hi2c, TSL2585_INTENAB_AIEN);
+            if (ret != HAL_OK) { break; }
         }
 
         if (sensor_osc_calibration_enabled) {
             ret = sensor_osc_calibration();
             if (ret != HAL_OK) {
+                break;
+            }
+        }
+
+        if (fast_mode) {
+            /* Set the FT260 I2C clock speed to 1MHz for faster FIFO reads */
+            if (usbh_ft260_set_i2c_clock_speed(device_handle, 1000) != osOK) {
+                log_w("Unable to set I2C clock speed");
+                ret = HAL_ERROR;
                 break;
             }
         }
@@ -718,6 +777,7 @@ osStatus_t meter_probe_control_sensor_enable(bool single_shot)
         sensor_state.agc_disabled_reset_gain = false;
         sensor_state.discard_next_reading = false;
         sensor_state.single_shot = single_shot;
+        sensor_state.fast_mode = fast_mode;
         sensor_state.running = true;
     } while (0);
 
@@ -821,6 +881,14 @@ osStatus_t meter_probe_control_sensor_disable()
     do {
         ret = tsl2585_disable(hi2c);
         if (ret != HAL_OK) { break; }
+
+        if (sensor_state.fast_mode) {
+            /* Return the FT260 I2C clock speed its default */
+            if (usbh_ft260_set_i2c_clock_speed(device_handle, 400) != osOK) {
+                log_w("Unable to set I2C clock speed");
+            }
+        }
+
         sensor_state.running = false;
     } while (0);
 
@@ -1126,7 +1194,7 @@ meter_probe_result_t meter_probe_measure(float *lux)
         if (ret == osErrorTimeout) { return METER_READING_TIMEOUT; }
         else if (ret != osOK) { return METER_READING_FAIL; }
 
-        if (reading.result_status == METER_SENSOR_RESULT_VALID) {
+        if (reading.reading[0].status == METER_SENSOR_RESULT_VALID) {
             has_result = true;
             break;
         }
@@ -1136,7 +1204,7 @@ meter_probe_result_t meter_probe_measure(float *lux)
     } while (count < max_count);
 
     if (has_result) {
-        if (reading.result_status == METER_SENSOR_RESULT_VALID) {
+        if (reading.reading[0].status == METER_SENSOR_RESULT_VALID) {
             reading_lux = meter_probe_lux_result(&reading);
             if (!isnormal(reading_lux)) {
                 log_w("Could not calculate lux from sensor reading");
@@ -1147,8 +1215,8 @@ meter_probe_result_t meter_probe_measure(float *lux)
             } else {
                 result = METER_READING_OK;
             }
-        } else if (reading.result_status == METER_SENSOR_RESULT_SATURATED_ANALOG
-            || reading.result_status == METER_SENSOR_RESULT_SATURATED_DIGITAL) {
+        } else if (reading.reading[0].status == METER_SENSOR_RESULT_SATURATED_ANALOG
+            || reading.reading[0].status == METER_SENSOR_RESULT_SATURATED_DIGITAL) {
             result = METER_READING_HIGH;
         } else {
             result = METER_READING_FAIL;
@@ -1168,16 +1236,16 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
     const float atime_ms = tsl2585_integration_time_ms(sensor_reading->sample_time, sensor_reading->sample_count);
 
     float als_gain;
-    if (sensor_reading->gain <= TSL2585_GAIN_256X) {
-        als_gain = sensor_settings.cal_gain.values[sensor_reading->gain];
+    if (sensor_reading->reading[0].gain <= TSL2585_GAIN_256X) {
+        als_gain = sensor_settings.cal_gain.values[sensor_reading->reading[0].gain];
     } else {
-        als_gain = tsl2585_gain_value(sensor_reading->gain);
+        als_gain = tsl2585_gain_value(sensor_reading->reading[0].gain);
     }
 
     if (!is_valid_number(atime_ms) || !is_valid_number(als_gain)) { return NAN; }
 
     /* Divide to get numbers in a similar range as previous sensors */
-    float als_reading = (float)sensor_reading->als_data / 16.0F;
+    float als_reading = (float)sensor_reading->reading[0].data / 16.0F;
 
     /* Calculate the basic reading */
     float basic_reading = als_reading / (atime_ms * als_gain);
@@ -1194,7 +1262,7 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
 float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!sensor_reading) { return NAN; }
-    if (sensor_reading->gain >= TSL2585_GAIN_MAX) { return NAN; }
+    if (sensor_reading->reading[0].gain >= TSL2585_GAIN_MAX) { return NAN; }
     if (!meter_probe_has_sensor_settings) { return NAN; }
 
     const float lux_slope = sensor_settings.cal_target.lux_slope;
@@ -1214,14 +1282,14 @@ float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
     return lux;
 }
 
-void meter_probe_int_handler()
+void meter_probe_int_handler(uint32_t ticks)
 {
     if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) { return; }
 
     meter_probe_control_event_t control_event = {
         .event_type = METER_PROBE_CONTROL_INTERRUPT,
         .interrupt = {
-            .ticks = osKernelGetTickCount()
+            .ticks = ticks
         }
     };
 
@@ -1232,11 +1300,8 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t status = 0;
-    meter_probe_sensor_reading_t reading = {0};
+    meter_probe_sensor_reading_t sensor_reading = {0};
     bool has_reading = false;
-
-    /* Prevent task switching to ensure fast processing of incoming sensor data */
-    //vTaskSuspendAll();
 
 #if 0
     log_d("meter_probe_control_interrupt");
@@ -1260,49 +1325,65 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
             (status & TSL2585_STATUS_SINT) != 0);
 #endif
 
-        if ((status & TSL2585_STATUS_AINT) != 0) {
+        if ((!sensor_state.fast_mode && (status & TSL2585_STATUS_AINT) != 0) || (sensor_state.fast_mode && (status & TSL2585_STATUS_FINT) != 0)) {
             uint32_t elapsed_ticks = params->ticks - last_aint_ticks;
             last_aint_ticks = params->ticks;
 
-            tsl2585_fifo_data_t fifo_data;
+            tsl2585_fifo_data_t fifo_data[MAX_ALS_COUNT];
+            bool overflow = false;
 
-            ret = sensor_control_read_fifo(&fifo_data);
+            if (sensor_state.fast_mode) {
+                ret = sensor_control_read_fifo_fast_mode(fifo_data, &overflow, params->ticks);
+            } else {
+                ret = sensor_control_read_fifo(&fifo_data[0], &overflow);
+            }
             if (ret != HAL_OK) { break; }
 
-            if (fifo_data.overflow) {
-                reading.als_data = UINT32_MAX;
-                reading.gain = sensor_state.gain[0];
-                reading.result_status = METER_SENSOR_RESULT_INVALID;
-            } else if ((fifo_data.als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0) {
-#if 0
-                log_d("TSL2585: [analog saturation]");
-#endif
-                reading.als_data = UINT32_MAX;
-                reading.gain = sensor_state.gain[0];
-                reading.result_status = METER_SENSOR_RESULT_SATURATED_ANALOG;
-            } else {
-                tsl2585_gain_t als_gain = (fifo_data.als_status2 & 0x0F);
-
-                /* If AGC is enabled, then update the configured gain value */
-                if (sensor_state.agc_enabled) {
-                    sensor_state.gain[0] = als_gain;
-                }
-
-                reading.als_data = fifo_data.als_data0;
-                reading.gain = als_gain;
-                reading.result_status = METER_SENSOR_RESULT_VALID;
+            /* FIFO reads implicitly clear the FINT bit */
+            if (sensor_state.fast_mode) {
+                status &= ~TSL2585_STATUS_FINT;
             }
 
-            if (!sensor_state.discard_next_reading) {
+            if (sensor_state.discard_next_reading) {
+                sensor_state.discard_next_reading = false;
+            } else {
+                if (overflow) {
+                    for (uint8_t i = 0; i < (uint8_t) (sensor_state.fast_mode ? MAX_ALS_COUNT : 1); i++) {
+                        sensor_reading.reading[i].data = UINT32_MAX;
+                        sensor_reading.reading[i].gain = sensor_state.gain[i];
+                        sensor_reading.reading[i].status = METER_SENSOR_RESULT_INVALID;
+                    }
+                } else {
+                    for (uint8_t i = 0; i < (uint8_t) (sensor_state.fast_mode ? MAX_ALS_COUNT : 1); i++) {
+                        if ((fifo_data[i].als_status & TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS) != 0) {
+#if 0
+                            log_d("TSL2585: [analog saturation]");
+#endif
+                            sensor_reading.reading[i].data = UINT32_MAX;
+                            sensor_reading.reading[i].gain = sensor_state.gain[i];
+                            sensor_reading.reading[i].status = METER_SENSOR_RESULT_SATURATED_ANALOG;
+                        } else {
+                            tsl2585_gain_t als_gain = (fifo_data[i].als_status2 & 0x0F);
+
+                            /* If AGC is enabled, then update the configured gain value */
+                            if (sensor_state.agc_enabled) {
+                                sensor_state.gain[0] = als_gain;
+                            }
+
+                            sensor_reading.reading[i].data = fifo_data[i].als_data0;
+                            sensor_reading.reading[i].gain = als_gain;
+                            sensor_reading.reading[i].status = METER_SENSOR_RESULT_VALID;
+                        }
+                    }
+                }
+
                 /* Fill out other reading fields */
-                reading.sample_time = sensor_state.sample_time;
-                reading.sample_count = sensor_state.sample_count;
-                reading.ticks = params->ticks;
-                reading.elapsed_ticks = elapsed_ticks;
+                sensor_reading.sample_time = sensor_state.sample_time;
+                sensor_reading.sample_count = sensor_state.sample_count;
+                sensor_reading.ticks = params->ticks;
+                sensor_reading.elapsed_ticks = elapsed_ticks;
 
                 has_reading = true;
-            } else {
-                sensor_state.discard_next_reading = false;
             }
 
             /*
@@ -1320,9 +1401,11 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
             }
         }
 
-        /* Clear the interrupt status */
-        ret = tsl2585_set_status(hi2c, status);
-        if (ret != HAL_OK) { break; }
+        if (status != 0) {
+            /* Clear the interrupt status */
+            ret = tsl2585_set_status(hi2c, status);
+            if (ret != HAL_OK) { break; }
+        }
 
         /* Check single-shot specific state */
         if (sensor_state.single_shot) {
@@ -1338,9 +1421,6 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
         }
     } while (0);
 
-    /* Resume normal task switching */
-    //xTaskResumeAll();
-
     if (has_reading) {
 #if 0
         log_d("TSL2585: MOD0=%lu, Gain=[%s], Time=%.2fms",
@@ -1349,19 +1429,19 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
 #endif
 
         QueueHandle_t queue = (QueueHandle_t)sensor_reading_queue;
-        xQueueOverwrite(queue, &reading);
+        xQueueOverwrite(queue, &sensor_reading);
     }
 
     return hal_to_os_status(ret);
 }
 
-HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
+HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data, bool *overflow)
 {
     HAL_StatusTypeDef ret;
     tsl2585_fifo_status_t fifo_status;
-    uint8_t data[7];
+    uint8_t data[FIFO_ALS_ENTRY_SIZE];
     uint8_t counter = 0;
-    const uint8_t data_size = 7;
+    const uint8_t data_size = FIFO_ALS_ENTRY_SIZE;
 
     do {
         ret = tsl2585_get_fifo_status(hi2c, &fifo_status);
@@ -1378,7 +1458,9 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
 
             if (fifo_data) {
                 memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t));
-                fifo_data->overflow = true;
+            }
+            if (overflow) {
+                *overflow = true;
             }
 
             break;
@@ -1415,7 +1497,86 @@ HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data)
             fifo_data->als_status2 = data[5];
             fifo_data->als_status3 = data[6];
         }
+        if (overflow) {
+            *overflow = false;
+        }
     } while (0);
 
+    return ret;
+}
+
+HAL_StatusTypeDef sensor_control_read_fifo_fast_mode(tsl2585_fifo_data_t *fifo_data, bool *overflow, uint32_t ticks)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    tsl2585_fifo_status_t fifo_status;
+    uint8_t data[FIFO_ALS_ENTRY_SIZE * MAX_ALS_COUNT];
+
+#if 0
+    /* Need to track any receive overhead */
+    const uint32_t time_elapsed = osKernelGetTickCount() - ticks;
+#endif
+
+    do {
+        /* Read FIFO status and data in a single operation */
+        ret = tsl2585_read_fifo_combo(hi2c, &fifo_status, data, sizeof(data));
+        if (ret != HAL_OK) { break; }
+
+#if 0
+        const uint32_t time_read = osKernelGetTickCount() - ticks;
+        log_d("FIFO_STATUS: OVERFLOW=%d, UNDERFLOW=%d, LEVEL=%d", fifo_status.overflow, fifo_status.underflow, fifo_status.level);
+        log_d("tt_process=%dms, tt_read=%dms", time_elapsed, time_read - time_elapsed);
+#endif
+
+        if (fifo_status.overflow) {
+            log_w("FIFO overflow, clearing");
+            ret = tsl2585_clear_fifo(hi2c);
+            if (ret != HAL_OK) { break; }
+
+            if (fifo_data) {
+                memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t));
+            }
+            if (overflow) {
+                *overflow = true;
+            }
+
+            break;
+        } else {
+            uint16_t fifo_readings = (fifo_status.level / 7);
+
+            if (fifo_readings >= MAX_ALS_COUNT * 2) {
+                log_w("Missed %d sensor read cycles", (fifo_readings / MAX_ALS_COUNT) - 1);
+                ret = tsl2585_clear_fifo(hi2c);
+                if (ret != HAL_OK) { break; }
+                if (fifo_data) {
+                    memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t));
+                }
+                if (overflow) {
+                    *overflow = true;
+                }
+            }
+        }
+
+        /* Parse out the received FIFO data set */
+        if (fifo_data) {
+            uint8_t offset = 0;
+            memset(fifo_data, 0, sizeof(tsl2585_fifo_data_t) * MAX_ALS_COUNT);
+
+            for (uint8_t i = 0; i < MAX_ALS_COUNT; i++) {
+                fifo_data[i].als_data0 =
+                    (uint32_t) data[offset + 3] << 24
+                    | (uint32_t) data[offset + 2] << 16
+                    | (uint32_t) data[offset + 1] << 8
+                    | (uint32_t) data[offset + 0];
+
+                fifo_data[i].als_status = data[offset + 4];
+                fifo_data[i].als_status2 = data[offset + 5];
+                fifo_data[i].als_status3 = data[offset + 6];
+                offset += FIFO_ALS_ENTRY_SIZE;
+            }
+        }
+        if (overflow) {
+            *overflow = false;
+        }
+    } while (0);
     return ret;
 }

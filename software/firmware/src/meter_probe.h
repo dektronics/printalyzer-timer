@@ -18,6 +18,9 @@
 #include "tsl2585.h"
 #include "meter_probe_settings.h"
 
+/* Maximum number of ALS readings that can be in a result */
+#define MAX_ALS_COUNT 8
+
 typedef struct {
     meter_probe_id_t probe_id;
     uint8_t sensor_id[3];
@@ -43,10 +46,27 @@ typedef enum {
     METER_SENSOR_RESULT_SATURATED_DIGITAL
 } meter_probe_sensor_result_t;
 
+/*
+ * This structure contains a single ALS sensor result, with all of its
+ * associated properties. It is separated out to allow sensor results
+ * to be returned in batches in certain modes.
+ */
 typedef struct {
-    uint32_t als_data;     /*!< Full ALS sensor reading */
-    meter_probe_sensor_result_t result_status; /*!< Sensor result status. */
-    tsl2585_gain_t gain;   /*!< Sensor ADC gain */
+    uint32_t data; /*!< Raw ALS sensor reading value */
+    meter_probe_sensor_result_t status; /*!< Sensor result status */
+    tsl2585_gain_t gain; /*!< Sensor ADC gain for the reading */
+} meter_probe_als_result_t;
+
+/**
+ * Meter probe reading structure.
+ * Normally, it only contains a single ALS reading and its properties.
+ * However, when "fast mode" is enabled, it will return MAX_ALS_COUNT
+ * readings. For this set of readings, many of the properties are
+ * common, and the tick time is based on when the complete set was
+ * read out.
+ */
+typedef struct {
+    meter_probe_als_result_t reading[MAX_ALS_COUNT]; /*!< Full ALS sensor reading(s) */
     uint16_t sample_time;  /*!< Sensor integration sample time */
     uint16_t sample_count; /*!< Sensor integration sample count */
     uint32_t ticks;        /*!< Tick time when the integration cycle finished */
@@ -149,6 +169,22 @@ osStatus_t meter_probe_sensor_disable_osc_calibration();
  * integration cycle and make results available as they come in.
  */
 osStatus_t meter_probe_sensor_enable();
+
+/**
+ * Enable the meter probe sensor in fast mode.
+ *
+ * In fast mode, sensor interrupt handling behavior is changed to allow for
+ * faster integration times by collecting readings in batches and by reducing
+ * the number of device transactions necessary to receive those batches.
+ *
+ * In this mode, the reading structure will contain multiple actual sensor
+ * readings and will be timestamped based on when the whole batch was read
+ * out.
+ *
+ * This mode may also result in less robust handling of sensor errors,
+ * and is primarily intended for dedicated time-critical measurements.
+ */
+osStatus_t meter_probe_sensor_enable_fast_mode();
 
 /**
  * Enable the meter probe sensor in single-shot mode.

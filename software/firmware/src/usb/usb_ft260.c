@@ -640,8 +640,29 @@ static HAL_StatusTypeDef usb_ft260_i2c_transmit(i2c_handle_t *hi2c, uint8_t dev_
 
 static HAL_StatusTypeDef usb_ft260_i2c_receive(i2c_handle_t *hi2c, uint8_t dev_address, uint8_t *data, uint16_t len, uint32_t timeout)
 {
-    // Not actually using this function, not yet implemented
-    return HAL_ERROR;
+    HAL_StatusTypeDef result = HAL_OK;
+    if (!hi2c || !hi2c->priv) { return HAL_ERROR; }
+
+    ft260_device_t *device = (ft260_device_t *)hi2c->priv;
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    do {
+        usb_ft260_handle_t *dev_handle = device->dev_handle;
+        if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
+            result = HAL_ERROR;
+            break;
+        }
+
+        struct usbh_hid *hid_class = dev_handle->hid_class0;
+
+        int status = ft260_i2c_receive(hid_class, dev_address, data, len);
+        if (status < 0) {
+            result = usb_to_hal_status(status);
+        }
+    } while (0);
+    osMutexRelease(device->mutex);
+
+    return result;
 }
 
 static HAL_StatusTypeDef usb_ft260_i2c_mem_write(i2c_handle_t *hi2c, uint8_t dev_address, uint16_t mem_address, uint16_t mem_addr_size, const uint8_t *data, uint16_t len, uint32_t timeout)
@@ -778,16 +799,16 @@ void usbh_ft260_set_device_callback(ft260_device_t *device, ft260_device_event_c
     osMutexRelease(device->mutex);
 }
 
-bool usbh_ft260_get_device_serial_number(const ft260_device_t *device, char *str)
+osStatus_t usbh_ft260_get_device_serial_number(const ft260_device_t *device, char *str)
 {
-    bool result = true;
-    if (!device || !str) { return false; }
+    osStatus_t result = osOK;
+    if (!device || !str) { return osErrorParameter; }
 
     osMutexAcquire(device->mutex, portMAX_DELAY);
     do {
         usb_ft260_handle_t *dev_handle = device->dev_handle;
         if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
-            result = false;
+            result = osErrorResource;
             break;
         }
         strncpy(str, (const char *)dev_handle->serial_number, FT260_SERIAL_SIZE);
@@ -797,22 +818,48 @@ bool usbh_ft260_get_device_serial_number(const ft260_device_t *device, char *str
     return result;
 }
 
+osStatus_t usbh_ft260_set_i2c_clock_speed(ft260_device_t *device, uint16_t speed)
+{
+    osStatus_t result = osOK;
+    if (!device) { return osErrorParameter; }
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    do {
+        usb_ft260_handle_t *dev_handle = device->dev_handle;
+        if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
+            result = osErrorResource;
+            break;
+        }
+
+        struct usbh_hid *hid_class = dev_handle->hid_class0;
+
+        int status = ft260_set_i2c_clock_speed(hid_class, speed);
+        if (status < 0) {
+            result = usb_to_os_status(status);
+        }
+    } while (0);
+    osMutexRelease(device->mutex);
+
+    return result;
+
+}
+
 i2c_handle_t *usbh_ft260_get_device_i2c(ft260_device_t *device)
 {
     if (!device) { return NULL; }
     return &device->i2c_handle;
 }
 
-bool usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
+osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
 {
-    bool result = true;
-    if (!device) { return false; }
+    osStatus_t result = osOK;
+    if (!device) { return osErrorParameter; }
 
     osMutexAcquire(device->mutex, portMAX_DELAY);
     do {
         usb_ft260_handle_t *dev_handle = device->dev_handle;
         if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
-            result = false;
+            result = osErrorResource;
             break;
         }
 
@@ -824,7 +871,7 @@ bool usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
         };
         int status = ft260_gpio_write(hid_class, &gpio_report);
         if (status < 0) {
-            result = usb_to_hal_status(status);
+            result = usb_to_os_status(status);
         }
     } while (0);
     osMutexRelease(device->mutex);

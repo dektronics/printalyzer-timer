@@ -45,7 +45,7 @@ static bool export_calibration_file(const char *filename, const meter_probe_devi
 static bool write_section_header(FIL *fp, const meter_probe_device_info_t *info);
 static bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings);
 
-static menu_result_t meter_probe_diagnostics();
+static menu_result_t meter_probe_diagnostics(bool fast_mode);
 
 menu_result_t menu_meter_probe()
 {
@@ -73,14 +73,17 @@ menu_result_t menu_meter_probe()
             "Meter Probe", option,
             "Device Info\n"
             "Sensor Calibration\n"
-            "Diagnostics");
+            "Diagnostics (Normal Mode)\n"
+            "Diagnostics (Fast Mode)");
 
         if (option == 1) {
             menu_result = meter_probe_device_info();
         } else if (option == 2) {
             menu_result = meter_probe_sensor_calibration();
         } else if (option == 3) {
-            menu_result = meter_probe_diagnostics();
+            menu_result = meter_probe_diagnostics(false);
+        } else if (option == 4) {
+            menu_result = meter_probe_diagnostics(true);
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -754,7 +757,7 @@ bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
     return true;
 }
 
-menu_result_t meter_probe_diagnostics()
+menu_result_t meter_probe_diagnostics(bool fast_mode)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     char buf[512];
@@ -770,13 +773,15 @@ menu_result_t meter_probe_diagnostics()
     uint16_t sample_count = 0;
     bool agc_enabled = false;
     bool single_shot = false;
-    meter_probe_sensor_reading_t reading = {0};
+    meter_probe_sensor_reading_t sensor_reading = {0};
     keypad_event_t keypad_event;
     bool key_changed = false;
     uint32_t elapsed_tick_buf[10] = {0};
     bool elapsed_tick_buf_full = false;
     size_t elapsed_tick_buf_pos = 0;
     const size_t elapsed_tick_buf_len = sizeof(elapsed_tick_buf) / sizeof(uint32_t);
+    float atime;
+    uint32_t expected_reading_time;
 
     /* Get meter probe device info */
     meter_probe_device_info_t info;
@@ -799,17 +804,19 @@ menu_result_t meter_probe_diagnostics()
         gain = TSL2585_GAIN_256X;
     }
 
-    if (meter_probe_sensor_set_integration(719, 99) == osOK) {
-        sample_time = 719;
-        sample_count = 99;
+    sample_time = fast_mode ? 359 : 719;
+    sample_count = fast_mode ? 59 : 99;
+
+    if (meter_probe_sensor_set_integration(sample_time, sample_count) != osOK) {
+        log_w("Unable to set integration time");
     }
 
     /* Enable internal calibration on every sequencer round */
-    meter_probe_sensor_set_mod_calibration(1);
+    meter_probe_sensor_set_mod_calibration(fast_mode ? 0xFF : 1);
 
     for (;;) {
         if (!sensor_initialized) {
-            if (meter_probe_sensor_enable() == osOK) {
+            if ((fast_mode ? meter_probe_sensor_enable_fast_mode() : meter_probe_sensor_enable()) == osOK) {
                 sensor_initialized = true;
             } else {
                 log_e("Error initializing TSL2585: %d", ret);
@@ -847,24 +854,44 @@ menu_result_t meter_probe_diagnostics()
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
-                    if (sample_count > 10) {
-                        sample_count -= 10;
-                        time_changed = true;
+                    if (fast_mode) {
+                        if (sample_count > 10) {
+                            sample_count -= 10;
+                            time_changed = true;
+                        } else if (sample_count > 4) {
+                            sample_count--;
+                            time_changed = true;
+                        }
+                    } else {
+                        if (sample_count > 30) {
+                            sample_count -= 10;
+                            time_changed = true;
+                        }
                     }
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (sensor_initialized && !sensor_error) {
-                    if (sample_count < (2047 - 10)) {
-                        sample_count += 10;
-                        time_changed = true;
+                    if (fast_mode) {
+                        if (sample_count < 9) {
+                            sample_count++;
+                            time_changed = true;
+                        } else if (sample_count < 50) {
+                            sample_count += 10;
+                            time_changed = true;
+                        }
+                    } else {
+                        if (sample_count < (2047 - 10)) {
+                            sample_count += 10;
+                            time_changed = true;
+                        }
                     }
                 }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT) && !fast_mode) {
                 if (sensor_initialized && !sensor_error) {
                     agc_enabled = !agc_enabled;
                     agc_changed = true;
                 }
-            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_TEST_STRIP)) {
+            } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_TEST_STRIP) && !fast_mode) {
                 if (meter_probe_sensor_disable() == osOK) {
                     if (single_shot) {
                         if (meter_probe_sensor_enable() == osOK) {
@@ -924,15 +951,18 @@ menu_result_t meter_probe_diagnostics()
             }
         }
 
-        if (meter_probe_sensor_get_next_reading(&reading, single_shot ? 10 : 1000) == osOK) {
-            const float basic_result = meter_probe_basic_result(&reading);
-            const float atime = tsl2585_integration_time_ms(reading.sample_time, reading.sample_count);
-            const float lux_result = meter_probe_lux_result(&reading);
+        atime = tsl2585_integration_time_ms(sensor_reading.sample_time, sensor_reading.sample_count);
+        if (fast_mode) {
+            expected_reading_time = lroundf(atime * MAX_ALS_COUNT);
+        } else {
+            expected_reading_time = lroundf(atime);
+        }
+        if (meter_probe_sensor_get_next_reading(&sensor_reading, single_shot ? 10 : (expected_reading_time * 2)) == osOK) {
             float elapsed_tick_avg = 0;
 
-            if (reading.elapsed_ticks < lroundf(atime * 2)) {
+            if (sensor_reading.elapsed_ticks < (expected_reading_time * 2)) {
                 /* Track the moving average of measured integration time */
-                elapsed_tick_buf[elapsed_tick_buf_pos] = reading.elapsed_ticks;
+                elapsed_tick_buf[elapsed_tick_buf_pos] = sensor_reading.elapsed_ticks;
                 elapsed_tick_buf_pos++;
 
                 float elapsed_tick_sum = 0;
@@ -948,54 +978,91 @@ menu_result_t meter_probe_diagnostics()
                 }
             }
 
-            if (reading.result_status == METER_SENSOR_RESULT_VALID) {
-                sprintf(buf,
-                    "%s (%s, %.2fms)\n"
-                    "Data: %lu\n"
-                    "Basic: %f, Lux: %f\n"
-                    "[%s][%s] {%.2f}\n"
-                    "%s",
+            if (fast_mode) {
+                size_t offset;
+
+                offset = sprintf(buf, "%s (%s, %.2fms)\n",
                     meter_probe_type_str(info.probe_id.probe_type),
-                    tsl2585_gain_str(reading.gain), atime,
-                    reading.als_data,
-                    basic_result, lux_result,
-                    (enlarger_enabled ? "**" : "--"),
-                    (agc_enabled ? "AGC" : "---"), elapsed_tick_avg,
-                    (single_shot ? "Single Shot" : "Continuous"));
-            } else {
-                const char *status_str;
-                switch (reading.result_status) {
-                case METER_SENSOR_RESULT_INVALID:
-                    status_str = "Invalid";
-                    break;
-                case METER_SENSOR_RESULT_SATURATED_ANALOG:
-                    status_str = "Analog Saturation";
-                    break;
-                case METER_SENSOR_RESULT_SATURATED_DIGITAL:
-                    status_str = "Digital Saturation";
-                    break;
-                default:
-                    status_str = "";
-                    break;
+                    tsl2585_gain_str(sensor_reading.reading[0].gain), atime);
+
+                for (uint8_t i = 0; i < MAX_ALS_COUNT; i++) {
+                    if (i > 0) {
+                        offset += sprintf(buf + offset, ",");
+                        if ((i % 4) == 0) { offset += sprintf(buf + offset, "\n"); }
+                    }
+
+                    switch (sensor_reading.reading[i].status) {
+                    case METER_SENSOR_RESULT_INVALID:
+                        offset += sprintf(buf + offset, "INVL");
+                        break;
+                    case METER_SENSOR_RESULT_SATURATED_ANALOG:
+                        offset += sprintf(buf + offset, "ASAT");
+                        break;
+                    case METER_SENSOR_RESULT_SATURATED_DIGITAL:
+                        offset += sprintf(buf + offset, "DSAT");
+                        break;
+                    default:
+                        offset += sprintf(buf + offset, "%lu", sensor_reading.reading[i].data);
+                        break;
+                    }
                 }
-                sprintf(buf,
-                    "%s (%s, %.2fms)\n"
-                    "%s\n"
-                    "\n"
-                    "[%s][%s]\n"
-                    "%s",
-                    meter_probe_type_str(info.probe_id.probe_type),
-                    tsl2585_gain_str(reading.gain), atime,
-                    status_str,
+
+                sprintf(buf + offset, "\n[%s] {%.2f}",
                     (enlarger_enabled ? "**" : "--"),
-                    (agc_enabled ? "AGC" : "---"),
-                    (single_shot ? "Single Shot" : "Continuous"));
+                    elapsed_tick_avg);
+            }
+            else {
+                if (sensor_reading.reading[0].status == METER_SENSOR_RESULT_VALID) {
+                    const float basic_result = meter_probe_basic_result(&sensor_reading);
+                    const float lux_result = meter_probe_lux_result(&sensor_reading);
+                    sprintf(buf,
+                        "%s (%s, %.2fms)\n"
+                        "Data: %lu\n"
+                        "Basic: %f, Lux: %f\n"
+                        "[%s][%s] {%.2f}\n"
+                        "%s",
+                        meter_probe_type_str(info.probe_id.probe_type),
+                        tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
+                        sensor_reading.reading[0].data,
+                        basic_result, lux_result,
+                        (enlarger_enabled ? "**" : "--"),
+                        (agc_enabled ? "AGC" : "---"), elapsed_tick_avg,
+                        (single_shot ? "Single Shot" : "Continuous"));
+                } else {
+                    const char *status_str;
+                    switch (sensor_reading.reading[0].status) {
+                    case METER_SENSOR_RESULT_INVALID:
+                        status_str = "Invalid";
+                        break;
+                    case METER_SENSOR_RESULT_SATURATED_ANALOG:
+                        status_str = "Analog Saturation";
+                        break;
+                    case METER_SENSOR_RESULT_SATURATED_DIGITAL:
+                        status_str = "Digital Saturation";
+                        break;
+                    default:
+                        status_str = "";
+                        break;
+                    }
+                    sprintf(buf,
+                        "%s (%s, %.2fms)\n"
+                        "%s\n"
+                        "\n"
+                        "[%s][%s]\n"
+                        "%s",
+                        meter_probe_type_str(info.probe_id.probe_type),
+                        tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
+                        status_str,
+                        (enlarger_enabled ? "**" : "--"),
+                        (agc_enabled ? "AGC" : "---"),
+                        (single_shot ? "Single Shot" : "Continuous"));
+                }
             }
             display_static_list("Meter Probe Diagnostics", buf);
 
-            gain = reading.gain;
-            sample_time = reading.sample_time;
-            sample_count = reading.sample_count;
+            gain = sensor_reading.reading[0].gain;
+            sample_time = sensor_reading.sample_time;
+            sample_count = sensor_reading.sample_count;
         }
 
         if (keypad_wait_for_event(&keypad_event, 100) == HAL_OK) {

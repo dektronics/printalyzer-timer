@@ -8,6 +8,7 @@
 #include <elog.h>
 
 #include <math.h>
+#include <string.h>
 
 /* I2C device address */
 static const uint8_t TSL2585_ADDRESS = 0x39; // Use 7-bit address
@@ -1133,7 +1134,7 @@ HAL_StatusTypeDef tsl2585_set_als_num_samples(i2c_handle_t *hi2c, uint16_t value
     return ret;
 }
 
-HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t *value)
+HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, tsl2585_modulator_t *channel, uint8_t *value)
 {
     HAL_StatusTypeDef ret;
     uint8_t data;
@@ -1146,21 +1147,38 @@ HAL_StatusTypeDef tsl2585_get_als_interrupt_persistence(i2c_handle_t *hi2c, uint
     if (value) {
         *value = data & 0x0F;
     }
+    if (channel) {
+        if ((data & 0x10) != 0) {
+            *channel = TSL2585_MOD1;
+        } else if ((data & 0x20) != 0) {
+            *channel = TSL2585_MOD2;
+        } else {
+            /* 0x00 or 0x30 */
+            *channel = TSL2585_MOD0;
+        }
+    }
 
     return HAL_OK;
 }
 
-HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(i2c_handle_t *hi2c, uint8_t value)
+HAL_StatusTypeDef tsl2585_set_als_interrupt_persistence(i2c_handle_t *hi2c, tsl2585_modulator_t channel, uint8_t value)
 {
     HAL_StatusTypeDef ret;
     uint8_t data;
 
-    ret =  i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_CFG5, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
-    if (ret != HAL_OK) {
-        return ret;
+    switch (channel) {
+    case TSL2585_MOD1:
+        data = 0x10;
+        break;
+    case TSL2585_MOD2:
+        data = 0x20;
+        break;
+    case TSL2585_MOD0:
+    default:
+        data = 0x00;
     }
 
-    data = (data & 0xF0) | (value & 0x0F);
+    data |= value & 0x0F;
 
     ret = i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_CFG5, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
 
@@ -1409,6 +1427,38 @@ HAL_StatusTypeDef tsl2585_set_fifo_data_write_enable(i2c_handle_t *hi2c, tsl2585
     return ret;
 }
 
+HAL_StatusTypeDef tsl2585_set_fifo_threshold(i2c_handle_t *hi2c, uint16_t threshold)
+{
+    HAL_StatusTypeDef ret;
+    uint8_t data0;
+    uint8_t data1;
+
+    if (threshold > 0x01FF) { return HAL_ERROR; }
+
+    ret = i2c_mem_read(hi2c, TSL2585_ADDRESS,
+        TSL2585_CFG2, I2C_MEMADD_SIZE_8BIT, &data0, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    data0 = (data0 & 0xFE) | (threshold & 0x0001);
+    data1 = threshold >> 1;
+
+    /* CFG2 contains FIFO_THR[0] */
+    ret = i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_CFG2, I2C_MEMADD_SIZE_8BIT, &data0, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    /* FIFO_THR contains FIFO_THR[8:1] */
+    ret = i2c_mem_write(hi2c, TSL2585_ADDRESS, TSL2585_FIFO_THR, I2C_MEMADD_SIZE_8BIT, &data1, 1, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    return ret;
+}
+
 HAL_StatusTypeDef tsl2585_get_fifo_status(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status)
 {
     HAL_StatusTypeDef ret;
@@ -1441,6 +1491,37 @@ HAL_StatusTypeDef tsl2585_read_fifo(i2c_handle_t *hi2c, uint8_t *data, uint16_t 
     ret = i2c_mem_read(hi2c, TSL2585_ADDRESS,
         TSL2585_FIFO_DATA, I2C_MEMADD_SIZE_8BIT,
         data, len, HAL_MAX_DELAY);
+
+    return ret;
+}
+
+HAL_StatusTypeDef tsl2585_read_fifo_combo(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status, uint8_t *data, uint16_t len)
+{
+    int ret;
+    uint8_t buf[64];
+
+    /* Limiting read size to far less than the maximum FIFO for simplicity of implementation */
+    if (len > sizeof(buf) - 2) {
+        return HAL_ERROR;
+    }
+
+    /* Read the FIFO status and a chunk of the FIFO itself all in one transaction */
+    ret = i2c_mem_read(hi2c, TSL2585_ADDRESS,
+        TSL2585_FIFO_STATUS0, I2C_MEMADD_SIZE_8BIT,
+        buf, len + 2, HAL_MAX_DELAY);
+    if (ret != HAL_OK) {
+        return ret;
+    }
+
+    if (status) {
+        status->overflow = (buf[1] & 0x80) ==  0x80;
+        status->underflow = (buf[1] & 0x40) == 0x40;
+        status->level = ((uint16_t)buf[0] << 2) | ((uint16_t)buf[1] & 0x03);
+    }
+
+    if (data) {
+        memcpy(data, buf + 2, len);
+    }
 
     return ret;
 }
