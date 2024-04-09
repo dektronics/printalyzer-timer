@@ -26,14 +26,15 @@
 #include "util.h"
 
 #define LIGHT_STABLIZE_WAIT_MS       (5000U)
-#define REFERENCE_READING_ITERATIONS (100U)
+#define REFERENCE_READING_ITERATIONS (MAX_ALS_COUNT * 12U)
 #define PROFILE_ITERATIONS           (5U)
 #define MAX_LOOP_DURATION pdMS_TO_TICKS(10000)
 
 /* Sensor settings for a 2.5ms integration time */
-#define SENSOR_SAMPLE_TIME 179
-#define SENSOR_NUM_SAMPLES 9
-#define SENSOR_READING_TIMEOUT (10U)
+#define SENSOR_SAMPLE_TIME 359
+#define SENSOR_NUM_SAMPLES 4
+
+#define SENSOR_READING_TIMEOUT (50U)
 
 /* Minimum value we'll accept for a non-zero reading */
 #define SENSOR_ZERO_THRESHOLD (100U)
@@ -76,10 +77,11 @@ static void enlarger_calibration_preview_result(const enlarger_config_t *config)
 static void enlarger_calibration_show_error(calibration_result_t result_error);
 static calibration_result_t calibration_collect_reference_stats(const enlarger_control_t *enlarger_control,
     reading_stats_t *stats_on, reading_stats_t *stats_off, reading_stats_t *stats_sensor);
-static calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off);
+static calibration_result_t calibration_validate_reference_stats(
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off, const reading_stats_t *stats_sensor);
 static calibration_result_t calibration_build_timing_profile(const enlarger_control_t *enlarger_control,
     enlarger_timing_t *timing_profile,
-    const reading_stats_t *stats_on, const reading_stats_t *stats_off);
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off, const reading_stats_t *stats_sensor);
 
 static void calculate_reading_stats(reading_stats_t *stats, uint32_t *readings, size_t len);
 static bool delay_with_cancel(uint32_t time_ms);
@@ -192,7 +194,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
         sensor_stats.mean, sensor_stats.min, sensor_stats.max,
         sensor_stats.stddev);
 
-    calibration_result = calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats);
+    calibration_result = calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
     if (calibration_result != CALIBRATION_OK) {
         log_w("Reference stats are not usable for calibration");
         meter_probe_stop();
@@ -224,7 +226,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
 
         calibration_result = calibration_build_timing_profile(&config->control,
             &timing_profile_inc,
-            &enlarger_on_stats, &enlarger_off_stats);
+            &enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
         if (calibration_result != CALIBRATION_OK) {
             log_e("Could not build profile");
             meter_probe_stop();
@@ -351,7 +353,8 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     tsl2585_gain_t sensor_gain;
     uint32_t last_sensor_ticks = 0;
     uint32_t readings[REFERENCE_READING_ITERATIONS];
-    uint32_t sensor_times[REFERENCE_READING_ITERATIONS];
+    uint32_t sensor_times[REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT];
+    uint32_t index;
 
     if (!stats_on || !stats_off || !stats_sensor) { return CALIBRATION_FAIL; }
 
@@ -359,9 +362,6 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     enlarger_control_set_state_focus(enlarger_control, true);
 
     log_i("Activating light sensor with AGC");
-    if (meter_probe_sensor_enable_osc_calibration() != osOK) {
-        return CALIBRATION_SENSOR_ERROR;
-    }
     if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
@@ -374,7 +374,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     if (meter_probe_sensor_enable_agc(SENSOR_NUM_SAMPLES) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_enable() != osOK) {
+    if (meter_probe_sensor_enable_fast_mode() != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
 
@@ -401,25 +401,37 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     log_i("Selected gain: %s", tsl2585_gain_str(sensor_gain));
 
     log_i("Reconfiguring light sensor without AGC");
+    if (meter_probe_sensor_disable() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
     if (meter_probe_sensor_disable_agc() != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_mod_calibration(0) != osOK) {
+    if (meter_probe_sensor_set_mod_calibration(0xFF) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (meter_probe_sensor_set_gain(sensor_gain) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
+    if (meter_probe_sensor_set_integration(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
+    if (meter_probe_sensor_enable_fast_mode() != osOK) {
+        return CALIBRATION_SENSOR_ERROR;
+    }
 
     /* Skip a few integration cycles, just to be safe */
-    osDelay(50);
+    osDelay(100);
 
     log_i("Collecting data with enlarger on");
-    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
+    index = 0;
+    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT; i++) {
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = sensor_reading.reading[0].data;
+        for (unsigned int j = 0; j < MAX_ALS_COUNT; j++) {
+            readings[index++] = sensor_reading.reading[j].data;
+        }
     }
 
     /* Turn the enlarger off */
@@ -441,26 +453,30 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     }
     last_sensor_ticks = sensor_reading.ticks;
 
-    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS; i++) {
+    index = 0;
+    for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT; i++) {
         if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
-        readings[i] = sensor_reading.reading[0].data;
-        sensor_times[i] = sensor_reading.ticks - last_sensor_ticks;
+        for (unsigned int j = 0; j < MAX_ALS_COUNT; j++) {
+            readings[index++] = sensor_reading.reading[j].data;
+        }
+        sensor_times[i] = (sensor_reading.ticks - last_sensor_ticks) / MAX_ALS_COUNT;
         last_sensor_ticks = sensor_reading.ticks;
     }
 
     log_i("Computing baseline darkness reading statistics");
     calculate_reading_stats(stats_off, readings, REFERENCE_READING_ITERATIONS);
 
-    calculate_reading_stats(stats_sensor, sensor_times, REFERENCE_READING_ITERATIONS);
+    calculate_reading_stats(stats_sensor, sensor_times, REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT);
 
     return CALIBRATION_OK;
 }
 
-calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats_on, reading_stats_t *stats_off)
+calibration_result_t calibration_validate_reference_stats(
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off, const reading_stats_t *stats_sensor)
 {
-    if (!stats_on || !stats_off) { return CALIBRATION_FAIL; }
+    if (!stats_on || !stats_off || !stats_sensor) { return CALIBRATION_FAIL; }
 
     if (stats_on->min <= stats_off->max) {
         log_w("On and off ranges overlap");
@@ -477,12 +493,18 @@ calibration_result_t calibration_validate_reference_stats(reading_stats_t *stats
         return CALIBRATION_INVALID_REFERENCE_STATS;
     }
 
+    const float sensor_integration_time = tsl2585_integration_time_ms(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES);
+    if (stats_sensor->mean < sensor_integration_time) {
+        log_w("Sensor cycle time is less than integration time");
+        return CALIBRATION_INVALID_REFERENCE_STATS;
+    }
+
     return CALIBRATION_OK;
 }
 
 calibration_result_t calibration_build_timing_profile(const enlarger_control_t *enlarger_control,
     enlarger_timing_t *timing_profile,
-    const reading_stats_t *stats_on, const reading_stats_t *stats_off)
+    const reading_stats_t *stats_on, const reading_stats_t *stats_off, const reading_stats_t *stats_sensor)
 {
     if (!enlarger_control || !timing_profile || !stats_on || !stats_off) {
         return CALIBRATION_FAIL;
@@ -513,8 +535,8 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
     uint32_t fall_counts = 0;
 
     const float sensor_integration_time = tsl2585_integration_time_ms(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES);
-    const uint32_t sensor_integration_ceil = lroundf(ceilf(sensor_integration_time));
-    const uint32_t sensor_integration_mid = lroundf(sensor_integration_time / 2.0F);
+    //const uint32_t sensor_integration_ceil = lroundf(ceilf(sensor_integration_time));
+    const float sensor_integration_mid = sensor_integration_time / 2.0F;
 
     /*
      * The reading threshold that is used to determine that the enlarger is
@@ -561,19 +583,31 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
                 break;
             }
 
-            /* Skip if this reading started before the time mark */
-            if ((sensor_reading.ticks - sensor_integration_ceil) < time_relay_on) {
-                continue;
-            }
+            /* Calculate the start time of the reading group */
+            const uint32_t reading_start_ticks = sensor_reading.ticks - lroundf(stats_sensor->mean * MAX_ALS_COUNT);
 
-            /* Record the reading time as the midpoint of the integration cycle */
-            time_reading = sensor_reading.ticks - sensor_integration_mid;
+            for (unsigned int i = 0; i < MAX_ALS_COUNT; i++) {
+                /* Calculate the offset of the current reading within the group */
+                float element_offset = stats_sensor->mean * (float)i;
 
-            /* Break if the reading exceeds the rising threshold */
-            if (sensor_reading.reading[0].data > rising_threshold) {
-                time_rise_start = time_reading;
-                break;
+                /* Calculate the start time of the current element */
+                uint32_t element_start_ceil = reading_start_ticks + lroundf(ceilf(element_offset));
+
+                /* Skip if this element started before the time mark */
+                if (element_start_ceil < time_relay_on) {
+                    continue;
+                }
+
+                /* Record the reading time as the midpoint of the integration cycle */
+                time_reading = reading_start_ticks + lroundf(element_offset + sensor_integration_mid);
+
+                /* Break if the reading exceeds the rising threshold */
+                if (sensor_reading.reading[i].data > rising_threshold) {
+                    time_rise_start = time_reading;
+                    break;
+                }
             }
+            if (time_rise_start > 0) { break; }
 
             /* Check if we've been waiting in this loop for too long */
             if (xTaskGetTickCount() - time_relay_on > MAX_LOOP_DURATION) {
@@ -593,18 +627,27 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
                 break;
             }
 
-            /* Record the reading time as the midpoint of the integration cycle */
-            time_reading = sensor_reading.ticks - sensor_integration_mid;
+            /* Calculate the start time of the reading group */
+            const uint32_t reading_start_ticks = sensor_reading.ticks - lroundf(stats_sensor->mean * MAX_ALS_COUNT);
 
-            /* Integrate all readings during the rise period */
-            integrated_rise += sensor_reading.reading[0].data;
-            rise_counts++;
+            for (unsigned int i = 0; i < MAX_ALS_COUNT; i++) {
+                /* Calculate the offset of the current reading within the group */
+                float element_offset = stats_sensor->mean * (float)i;
 
-            /* Break once we've reached the fully-on state */
-            if (sensor_reading.reading[0].data >= enlarger_on_threshold) {
-                time_rise_end = time_reading;
-                break;
+                /* Record the reading time as the midpoint of the integration cycle */
+                time_reading = reading_start_ticks + lroundf(element_offset + sensor_integration_mid);
+
+                /* Integrate all readings during the rise period */
+                integrated_rise += sensor_reading.reading[i].data;
+                rise_counts++;
+
+                /* Break once we've reached the fully-on state */
+                if (sensor_reading.reading[i].data >= enlarger_on_threshold) {
+                    time_rise_end = time_reading;
+                    break;
+                }
             }
+            if (time_rise_end > 0) { break; }
 
             if (xTaskGetTickCount() - time_rise_start > MAX_LOOP_DURATION) {
                 log_w("Took too long for the light level to rise");
@@ -633,19 +676,31 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
                 break;
             }
 
-            /* Skip if this reading started before the time mark */
-            if ((sensor_reading.ticks - sensor_integration_ceil) < time_relay_off) {
-                continue;
-            }
+            /* Calculate the start time of the reading group */
+            const uint32_t reading_start_ticks = sensor_reading.ticks - lroundf(stats_sensor->mean * MAX_ALS_COUNT);
 
-            /* Record the reading time as the midpoint of the integration cycle */
-            time_reading = sensor_reading.ticks - sensor_integration_mid;
+            for (unsigned int i = 0; i < MAX_ALS_COUNT; i++) {
+                /* Calculate the offset of the current reading within the group */
+                float element_offset = stats_sensor->mean * (float) i;
 
-            /* Break if the reading falls below the fully-on threshold */
-            if (sensor_reading.reading[0].data < stats_on->min) {
-                time_fall_start = time_reading;
-                break;
+                /* Calculate the start time of the current element */
+                uint32_t element_start_ceil = reading_start_ticks + lroundf(ceilf(element_offset));
+
+                /* Skip if this reading started before the time mark */
+                if (element_start_ceil < time_relay_off) {
+                    continue;
+                }
+
+                /* Record the reading time as the midpoint of the integration cycle */
+                time_reading = reading_start_ticks + lroundf(element_offset + sensor_integration_mid);
+
+                /* Break if the reading falls below the fully-on threshold */
+                if (sensor_reading.reading[i].data < stats_on->min) {
+                    time_fall_start = time_reading;
+                    break;
+                }
             }
+            if (time_fall_start > 0) { break; }
 
             if (xTaskGetTickCount() - time_relay_off > MAX_LOOP_DURATION) {
                 result = CALIBRATION_TIMEOUT;
@@ -663,18 +718,27 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
                 break;
             }
 
-            /* Record the reading time as the midpoint of the integration cycle */
-            time_reading = sensor_reading.ticks - sensor_integration_mid;
+            /* Calculate the start time of the reading group */
+            const uint32_t reading_start_ticks = sensor_reading.ticks - lroundf(stats_sensor->mean * MAX_ALS_COUNT);
 
-            /* Integrate all readings during the fall period */
-            integrated_fall += sensor_reading.reading[0].data;
-            fall_counts++;
+            for (unsigned int i = 0; i < MAX_ALS_COUNT; i++) {
+                /* Calculate the offset of the current reading within the group */
+                float element_offset = stats_sensor->mean * (float) i;
 
-            /* Break once we've reached the fully-off state */
-            if (sensor_reading.reading[0].data < falling_threshold) {
-                time_fall_end = time_reading;
-                break;
+                /* Record the reading time as the midpoint of the integration cycle */
+                time_reading = reading_start_ticks + lroundf(element_offset + sensor_integration_mid);
+
+                /* Integrate all readings during the fall period */
+                integrated_fall += sensor_reading.reading[i].data;
+                fall_counts++;
+
+                /* Break once we've reached the fully-off state */
+                if (sensor_reading.reading[i].data < falling_threshold) {
+                    time_fall_end = time_reading;
+                    break;
+                }
             }
+            if (time_fall_end > 0) { break; }
 
             if (xTaskGetTickCount() - time_fall_start > MAX_LOOP_DURATION) {
                 result = CALIBRATION_TIMEOUT;
