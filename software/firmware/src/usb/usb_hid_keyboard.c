@@ -61,9 +61,12 @@ static const osMessageQueueAttr_t usb_hid_keyboard_queue_attributes = {
 };
 
 static void usbh_hid_keyboard_thread(void *argument);
+static void usbh_hid_keyboard_control_attach(struct usbh_hid *hid_class);
+static void usbh_hid_keyboard_control_detach(struct usbh_hid *hid_class);
 static void usbh_hid_keyboard_callback(void *arg, int nbytes);
 static uint8_t keyboard_ascii_code(const keyboard_info_t *info);
 static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info);
+static int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
 
 static const uint8_t keyboard_keys[] = {
@@ -206,36 +209,13 @@ void usbh_hid_keyboard_thread(void *argument)
         usb_hid_keyboard_event_t event;
         if(osMessageQueueGet(usb_hid_keyboard_queue, &event, NULL, portMAX_DELAY) == osOK) {
             struct usbh_hid *hid_class = event.hid_class;
-            usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
 
             if (event.event_type == USB_KBD_ATTACH) {
-                int ret;
-                if (handle->attached) {
-                    log_w("Keyboard %d already attached", hid_class->minor);
-                    break;
-                }
-
-                memset(handle, 0, sizeof(usb_hid_keyboard_handle_t));
-                handle->attached = 1;
-
-                /* Submit the initial request */
-                usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
-                    handle->hid_in_buffer, MIN(hid_class->intin->wMaxPacketSize, HID_BUF_SIZE),
-                    0, usbh_hid_keyboard_callback, hid_class);
-                ret = usbh_submit_urb(&hid_class->intin_urb);
-                if (ret < 0) {
-                    log_d("usbh_submit_urb error: %d", ret);
-                }
-
+                usbh_hid_keyboard_control_attach(hid_class);
             } else if (event.event_type == USB_KBD_DETACH) {
-                if (!handle->attached) {
-                    log_w("Keyboard %d already detached", hid_class->minor);
-                    continue;
-                }
-
-                handle->attached = 0;
-
+                usbh_hid_keyboard_control_detach(hid_class);
             } else if (event.event_type == USB_KBD_DATA) {
+                usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
                 if (handle->attached) {
                     keyboard_process_event(event.hid_class, event.event_time, &event.info);
                 }
@@ -270,6 +250,48 @@ void usbh_hid_keyboard_thread(void *argument)
     osThreadExit();
 }
 
+void usbh_hid_keyboard_control_attach(struct usbh_hid *hid_class)
+{
+    int ret;
+    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
+
+    if (handle->attached) {
+        log_w("Keyboard %d already attached", hid_class->minor);
+        return;
+    }
+
+    /* Set keyboard to "Boot Protocol" mode */
+    ret = hid_keyboard_set_protocol(hid_class, 0);
+    if (ret < 0) {
+        log_d("hid_keyboard_set_protocol error: %d", ret);
+        return;
+    }
+
+    memset(handle, 0, sizeof(usb_hid_keyboard_handle_t));
+    handle->attached = 1;
+
+    /* Submit the initial request */
+    usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
+        handle->hid_in_buffer, MIN(hid_class->intin->wMaxPacketSize, HID_BUF_SIZE),
+        0, usbh_hid_keyboard_callback, hid_class);
+    ret = usbh_submit_urb(&hid_class->intin_urb);
+    if (ret < 0) {
+        log_d("usbh_submit_urb error: %d", ret);
+    }
+}
+
+void usbh_hid_keyboard_control_detach(struct usbh_hid *hid_class)
+{
+    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
+
+    if (!handle->attached) {
+        log_w("Keyboard %d already detached", hid_class->minor);
+        return;
+    }
+
+    handle->attached = 0;
+}
+
 void usbh_hid_keyboard_callback(void *arg, int nbytes)
 {
     struct usbh_hid *hid_class = (struct usbh_hid *)arg;
@@ -281,17 +303,29 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
     }
 
     if (nbytes > 0) {
-        if (nbytes == 8) {
+        if (nbytes >= 8) {
             usb_hid_keyboard_event_t event = {
                 .event_type = USB_KBD_DATA,
                 .hid_class = hid_class,
                 .event_time = osKernelGetTickCount(),
             };
 
-            event.info.state = handle->hid_in_buffer[0];
+            /*
+             * If a device returns more than 8 bytes, then the first byte is a report ID and the
+             * next 8 bytes must still be the standard boot protocol report.
+             * As long as we stick to only supporting keyboards that implement the boot protocol,
+             * and never send the request to change them out of that mode, these assumptions
+             * should hold.
+             */
+            uint8_t offset = 0;
+            if (nbytes > 8) {
+                offset = 1;
+            }
+
+            event.info.state = handle->hid_in_buffer[offset];
 
             for (uint8_t i = 0; i < 6; i++) {
-                event.info.keys[i] = handle->hid_in_buffer[i + 2];
+                event.info.keys[i] = handle->hid_in_buffer[offset + i + 2];
             }
 
             osMessageQueuePut (usb_hid_keyboard_queue, &event, 0, 0);
@@ -306,6 +340,9 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
         submit_urb = true;
     } else if (nbytes < 0) {
         log_w("usbh_hid_keyboard_callback[dev=%d] error: %d", hid_class->minor, nbytes);
+    } else {
+        /* Sometimes a device may return 0 bytes */
+        submit_urb = true;
     }
 
     if (submit_urb) {
@@ -404,6 +441,19 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
         };
         keypad_inject_event(&keypad_event);
     }
+}
+
+int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol)
+{
+    struct usb_setup_packet *setup = hid_class->hport->setup;
+
+    setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
+    setup->bRequest = HID_REQUEST_SET_PROTOCOL;
+    setup->wValue = protocol;
+    setup->wIndex = 0;
+    setup->wLength = 0;
+
+    return usbh_control_transfer(hid_class->hport, setup, NULL);
 }
 
 int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen)
