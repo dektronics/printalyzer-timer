@@ -10,6 +10,7 @@
 #include <elog.h>
 
 #define HID_BUF_SIZE 16
+#define KEY_SET_SIZE 6
 
 typedef enum {
     USB_KBD_ATTACH = 0,
@@ -20,14 +21,13 @@ typedef enum {
 
 typedef struct {
     uint8_t state;
-    uint8_t keys[6];
+    uint8_t keys[KEY_SET_SIZE];
 } keyboard_info_t;
 
 typedef struct {
     uint8_t attached;
     uint8_t report_state;
-    keyboard_info_t last_event_info;
-    uint32_t last_event_time;
+    uint8_t key_state[KEY_SET_SIZE];
     USB_MEM_ALIGNX uint8_t hid_in_buffer[HID_BUF_SIZE];
     USB_MEM_ALIGNX uint8_t hid_out_buffer[HID_BUF_SIZE];
 } usb_hid_keyboard_handle_t;
@@ -64,7 +64,7 @@ static void usbh_hid_keyboard_thread(void *argument);
 static void usbh_hid_keyboard_control_attach(struct usbh_hid *hid_class);
 static void usbh_hid_keyboard_control_detach(struct usbh_hid *hid_class);
 static void usbh_hid_keyboard_callback(void *arg, int nbytes);
-static uint8_t keyboard_ascii_code(const keyboard_info_t *info);
+static uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode);
 static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info);
 static int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
@@ -289,6 +289,19 @@ void usbh_hid_keyboard_control_detach(struct usbh_hid *hid_class)
         return;
     }
 
+    /* Inject release events for all currently pressed keys */
+    for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
+        if (handle->key_state[i] == 0) { continue; }
+        uint8_t key = keyboard_ascii_code(handle->report_state, 0, handle->key_state[i]);
+
+        keypad_event_t keypad_event = {
+            .key = KEYPAD_USB_KEYBOARD,
+            .pressed = false,
+            .keypad_state = ((uint16_t) handle->key_state[i] << 8) | key
+        };
+        keypad_inject_event(&keypad_event);
+    }
+
     handle->attached = 0;
 }
 
@@ -324,7 +337,7 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
 
             event.info.state = handle->hid_in_buffer[offset];
 
-            for (uint8_t i = 0; i < 6; i++) {
+            for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
                 event.info.keys[i] = handle->hid_in_buffer[offset + i + 2];
             }
 
@@ -354,60 +367,101 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
     }
 }
 
-uint8_t keyboard_ascii_code(const keyboard_info_t *info)
+uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode)
 {
-    uint8_t output;
-    if ((info->state & (HID_MODIFER_LSHIFT | HID_MODIFER_RSHIFT)) != 0) {
-        output = keyboard_shift_keys[keyboard_codes[info->keys[0]]];
-    } else {
-        output = keyboard_keys[keyboard_codes[info->keys[0]]];
+    uint8_t key = keyboard_keys[keyboard_codes[keycode]];
+
+    if (((report_state & HID_KBD_OUTPUT_REPORT_CAPSLOCK) != 0
+        && ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z'))) ||
+        (state & (HID_MODIFER_LSHIFT | HID_MODIFER_RSHIFT)) != 0) {
+        key = keyboard_shift_keys[keyboard_codes[keycode]];
     }
-    return output;
+    return key;
 }
 
 void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info)
 {
     usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
-    uint8_t key = keyboard_ascii_code(info);
     uint8_t report_state = keyboard_handles[hid_class->minor].report_state;
+    uint8_t active_keys[KEY_SET_SIZE] = {0};
+    uint8_t pressed_keys[KEY_SET_SIZE] = {0};
+    uint8_t released_keys[KEY_SET_SIZE] = {0};
 
-    /*
-     * Sometimes we seem to receive the same event twice, in very quick
-     * succession. This mostly happens with the CapsLock/NumLock keys
-     * during the first press after startup, and it messes up our
-     * handling of those keys. For now, the easy fix is to simply
-     * detect and ignore such events.
-     */
-    if (memcmp(info, &handle->last_event_info, sizeof(keyboard_info_t)) == 0
-        && (event_time - handle->last_event_time) < 20) {
-        return;
-    } else {
-        memcpy(&handle->last_event_info, info, sizeof(keyboard_info_t));
-        handle->last_event_time = event_time;
+    /* Figure out what keys were pressed, released, or still active */
+    if(info->keys[0] != HID_KBD_USAGE_ERRORROLLOVER) {
+        uint8_t k = 0;
+        uint8_t l = 0;
+        uint8_t m = 0;
+        for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
+            if (info->keys[i] > 0) {
+                bool is_active = false;
+                for (uint8_t j = 0; j < KEY_SET_SIZE; j++) {
+                    if (info->keys[i] == handle->key_state[j]) {
+                        is_active = true;
+                        break;
+                    }
+                }
+                if (!is_active) {
+                    pressed_keys[k++] = info->keys[i];
+                }
+                active_keys[l++] = info->keys[i];
+            }
+            if (handle->key_state[i] > 0) {
+                bool is_pressed = false;
+                for (uint8_t j = 0; j < KEY_SET_SIZE; j++) {
+                    if (handle->key_state[i] == info->keys[j]) {
+                        is_pressed = true;
+                        break;
+                    }
+                }
+                if (!is_pressed) {
+                    released_keys[m++] = handle->key_state[i];
+                }
+            }
+        }
+
+        /* Copy the active set back to the key state */
+        memcpy(handle->key_state, active_keys, KEY_SET_SIZE);
+    }
+
+#if 0
+    log_d("Pressed: {%02X,%02X,%02X,%02X,%02X,%02X}",
+        pressed_keys[0], pressed_keys[1], pressed_keys[2],
+        pressed_keys[3], pressed_keys[4], pressed_keys[5]);
+    log_d("Released: {%02X,%02X,%02X,%02X,%02X,%02X}",
+        released_keys[0], released_keys[1], released_keys[2],
+        released_keys[3], released_keys[4], released_keys[5]);
+#endif
+
+    /* Update the report state of the locking modifier keys */
+    for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
+        if (pressed_keys[i] == HID_KBD_USAGE_KPDNUMLOCK) {
+            report_state ^= HID_KBD_OUTPUT_REPORT_NUMLOCK;
+        } else  if (pressed_keys[i] == HID_KBD_USAGE_CAPSLOCK) {
+            report_state ^= HID_KBD_OUTPUT_REPORT_CAPSLOCK;
+        } else if (pressed_keys[i] == HID_KBD_USAGE_SCROLLLOCK) {
+            report_state ^= HID_KBD_OUTPUT_REPORT_SCROLLLOCK;
+        }
     }
 
 #if 1
-    if (key >= 32 && key <= 126) {
-        log_d("Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
-            key, info->keys[0], info->keys[1], info->keys[2],
-            info->keys[3], info->keys[4], info->keys[5]);
+    if(info->keys[0] == HID_KBD_USAGE_ERRORROLLOVER) {
+        log_d("Keyboard: ERROR ROLLOVER");
     } else {
-        log_d("Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
-            key, info->keys[0], info->keys[1], info->keys[2],
-            info->keys[3], info->keys[4], info->keys[5]);
+        uint8_t key = keyboard_ascii_code(report_state, info->state, info->keys[0]);
+        if (key >= 32 && key <= 126) {
+            log_d("Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, info->keys[0], info->keys[1], info->keys[2],
+                info->keys[3], info->keys[4], info->keys[5]);
+        } else {
+            log_d("Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, info->keys[0], info->keys[1], info->keys[2],
+                info->keys[3], info->keys[4], info->keys[5]);
+        }
     }
 #endif
 
-
-    if (info->keys[0] == HID_KBD_USAGE_KPDNUMLOCK) {
-        report_state ^= HID_KBD_OUTPUT_REPORT_NUMLOCK;
-    } else if (info->keys[0] == HID_KBD_USAGE_CAPSLOCK) {
-        report_state ^= HID_KBD_OUTPUT_REPORT_CAPSLOCK;
-    } else if (info->keys[0] == HID_KBD_USAGE_SCROLLLOCK) {
-        report_state ^= HID_KBD_OUTPUT_REPORT_SCROLLLOCK;
-    }
-
-
+    /* If the locking modifier key state changed, send a report to update keyboard indicators */
     if (report_state != handle->report_state) {
         int ret = hid_keyboard_set_report(hid_class, HID_REPORT_OUTPUT, 0x00, &report_state, 1);
         if (ret >= 0) {
@@ -415,29 +469,30 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
         } else {
             log_w("usbh_hid_set_report error: %d", ret);
         }
-    } else {
-        /*
-         * Toggle the state of the shift keys based on the state
-         * of CapsLock so the correct character is generated.
-         */
-        if ((report_state & HID_KBD_OUTPUT_REPORT_CAPSLOCK) != 0
-            && ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z'))) {
-            keyboard_info_t key_info = {0};
+    }
 
-            key_info.state = info->state & ~(HID_MODIFER_LSHIFT | HID_MODIFER_RSHIFT);
-            key_info.keys[0] = info->keys[0];
-
-            if ((info->state & (HID_MODIFER_LSHIFT | HID_MODIFER_RSHIFT)) == 0) {
-                key_info.state |= HID_MODIFER_LSHIFT;
-            }
-
-            key = keyboard_ascii_code(&key_info);
-        }
+    /* Inject the pressed keys */
+    for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
+        if (pressed_keys[i] == 0) { continue; }
+        uint8_t key = keyboard_ascii_code(report_state, info->state, pressed_keys[i]);
 
         keypad_event_t keypad_event = {
             .key = KEYPAD_USB_KEYBOARD,
             .pressed = true,
-            .keypad_state = ((uint16_t)info->keys[0] << 8) | key
+            .keypad_state = ((uint16_t) pressed_keys[i] << 8) | key
+        };
+        keypad_inject_event(&keypad_event);
+    }
+
+    /* Inject the released keys */
+    for (uint8_t i = 0; i < KEY_SET_SIZE; i++) {
+        if (released_keys[i] == 0) { continue; }
+        uint8_t key = keyboard_ascii_code(report_state, info->state, released_keys[i]);
+
+        keypad_event_t keypad_event = {
+            .key = KEYPAD_USB_KEYBOARD,
+            .pressed = false,
+            .keypad_state = ((uint16_t) released_keys[i] << 8) | key
         };
         keypad_inject_event(&keypad_event);
     }

@@ -97,7 +97,7 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
 
         // Some USB keys have mappings that don't make sense in the context
         // of the above logic, or that can't easily be done generically.
-        if (result == 0 && event.key == KEYPAD_USB_KEYBOARD) {
+        if (result == 0 && event.key == KEYPAD_USB_KEYBOARD && event.pressed) {
             uint8_t keycode = keypad_usb_get_keycode(&event);
             char keychar = keypad_usb_get_ascii(&event);
 

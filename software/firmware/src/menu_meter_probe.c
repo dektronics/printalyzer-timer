@@ -916,7 +916,7 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
-            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD && keypad_event.pressed
                 && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
                 break;
             }
