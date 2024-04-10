@@ -749,7 +749,8 @@ bool state_home_change_time_increment_process(state_t *state_base, state_control
             exposure_adj_increment_increase(exposure_state);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
             exposure_adj_increment_decrease(exposure_state);
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
         return true;
@@ -840,7 +841,8 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
         } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
             state->accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
         return true;
@@ -897,7 +899,8 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
             state->value_accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
 
@@ -998,7 +1001,8 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
             state->value_accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
 

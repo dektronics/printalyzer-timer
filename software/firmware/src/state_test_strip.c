@@ -234,7 +234,8 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
                 state_controller_set_next_state(controller, STATE_HOME, 0);
                 canceled = true;
             }
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
             canceled = true;
         }
@@ -258,7 +259,8 @@ static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uin
     /* Handle the next keypad event without blocking */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, 0) == HAL_OK) {
-        if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+            || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             log_i("Canceling test strip timer at %ldms", time_ms);
             return false;
         }

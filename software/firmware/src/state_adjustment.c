@@ -241,7 +241,8 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     state_controller_set_next_state(controller, STATE_HOME, 0);
                 }
             }
-        } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state->value_accepted = false;
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
