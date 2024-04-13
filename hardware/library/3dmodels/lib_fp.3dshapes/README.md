@@ -36,114 +36,169 @@ models for components that are no longer part of the actual board design.
 Models that are explicitly excluded from the repository have been added to
 this directory's `.gitignore` file.
 
-### AMS_TCS3472
+### AMS\_TCS3472
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:AMS_TCS3472_DFN-6`
 
 ### B2B-PH-K-S(LF)(SN)
 * Status: Included (CC BY-SA /w Design Exception 1.0)
 * Source: SnapEDA <https://www.snapeda.com/parts/B2B-PH-K-S(LF)(SN)/JST%20Sales/view-part/?company=&amp;ref=digikey&amp;welcome=home>
 
-### CUI_ACZ11BR1E-15FD1
+### CUI\_ACZ11BR1E-15FD1
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:RotaryEncoder_CUI_ACZ11BR1E-Switch_Vertical_H15mm`
 
 ### CUI\_MD-60SM
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cuidevices.com/product/resource/3dmodel/md-60sm>
+* Footprint: `lib_fp:CUI_MD-60SM`
+* Rotation: X = -90 deg
+* Offset: X = -7 mm
 
-### CUI_PSK-6B-S12
+### CUI\_PSK-6B-S12
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cui.com/product/resource/3dmodel/psk-6b-s12>
+* Footprint: `lib_fp:Converter_ACDC_CUI_PSK-6B`
+* Rotation: X = -90 deg
+* Offset: X = 22.85 mm, Y = -10.15 mm
 
 ### FTSH-107-01-L-DV-K-A
 * Status: Included ([Terms](https://www.cadenas.de/terms-of-use-3d-cad-models)
   somewhat unclear, but may be okay for project use.)
 * Source: Manufacturer <https://www.samtec.com/partnumber/ftsh-107-01-l-dv-k-a>
+* Footprint: `lib_fp:Samtec_FTSH-107-01-L-DV-K-A_2x07_P1.27mm`
+* Rotation: X = -90 deg
 
 ### G2RL-1A
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <http://download.ia.omron.com/download/page/G2RL_1A/ECB>
+* Footprint: `lib_fp:Relay_SPST_Omron_G2RL-1A`
+* Rotation: X = -90 deg
+* Offset: Y = -7.5 mm
 
 ### G2RL-1A-E
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://download.ia.omron.com/download/page/G2RL_1A_E/ECB>
+* Footprint: `lib_fp:Relay_SPST_Omron_G2RL-1A-E`
+* Rotation: X = -90 deg
+* Offset: Y = -7.5 mm
 
 ### Marquardt\_6425\_0101
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:SW_Key_6425_0101`
 
 ### Marquardt\_6425\_1101
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:SW_Key_6425_1101`
 
 ### Marquardt\_6425\_3111
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:SW_Key_6425_0101_LED`
 
-### Molex_676432910
+### Molex\_676432910
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.molex.com/molex/products/part-detail/io_connectors/0676432910>
 
 ### NHD-3.12-25664UCxx
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.newhavendisplay.com/nhd31225664ucy2-p-3537.html>
+* Footprint: `lib_fp:NHD-3.12-25664`
+* Rotation: Z = -90 deg
+* Offset: X = 24.13 mm, Y = 19.50 mm
 
 ### PKM22EPPH4001-B0
 * Status: Included (Same license as project)
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:PKM22EPPH4001-B0`
 
 ### PX0580-PC
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via TraceParts <https://www.traceparts.com/en/product/bulgin-iec-connectors-px0580pc?CatalogPath=TRACEPARTS%3ATP09002002006004&Product=90-08022019-044332&PartNumber=px0580-pc>
+* Footprint: `lib_fp:Bulgin_PX0580-PC`
+* Rotation: X = -180 deg, Z = 180 deg
+* Offset: Y = 6.25 mm
 
 ### PX0675-PC
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via TraceParts <https://www.traceparts.com/en/product/bulgin-iec-outlets-600-series-px0675pc?CatalogPath=BULGIN%3ABULGIN.010.020.230&Product=90-08022019-044408&PartNumber=px0675-pc>
+* Footprint: `lib_fp:Bulgin_PX0675-PC`
+* Rotation: X = -180 deg, Z = 180 deg
+* Offset: Y = 8.75 mm, Z = 16.00 mm
 
 ### RLS-126
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://recom-power.com/en/products/dc-dc-converters/rec-p-RLS-126.html>
+* Footprint: `lib_fp:L_Recom_RLS-126`
+* Rotation: X = -90 deg
 
 ### ER-OLEDM032-xx
 * Status: Included (Contributed to source by Roman Ty, no terms listed with download)
 * Source: 3D ContentCentral <https://www.3dcontentcentral.com/download-model.aspx?catalogid=171&id=559278>
+* Footprint: `lib_fp:ER-OLEDM032-1`
+* Rotation: Y = -180 deg
+* Offset: X = 49.00 mm, Y = 7.38 mm, Z = 3.00 mm
 
 ### Neutrik\_NC5FBH
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.neutrik.com/en/product/nc5fbh>
+* Footprint: `Connector_Audio:Jack_XLR_Neutrik_NC5FBH_Horizontal`
+* Rotation: X = -90 deg, Z = 90 deg
+* Offset: X = 17.15 mm, Y = -3.81 mm, Z = 12.50 mm
 
 ### Keystone\_5005
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5005/Keystone%20Electronics%20Corp./view-part/>
+* Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
+* Rotation: X = -90 deg
 
 ### Keystone\_5006
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5006/Keystone%20Electronics%20Corp./view-part/>
+* Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
+* Rotation: X = -90 deg
 
 ### Keystone\_5007
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5007/Keystone%20Electronics%20Corp./view-part/>
+* Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
+* Rotation: X = -90 deg
 
 ### Keystone\_5008
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5008/Keystone%20Electronics%20Corp./view-part/>
+* Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
+* Rotation: X = -90 deg
 
 ### Keystone\_5009
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/5009/Keystone%20Electronics%20Corp./view-part/>
+* Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
+* Rotation: X = -90 deg
 
 ### SM06B-SRSS-TB-LF
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/SM06B-SRSS-TB(LF)(SN)/JST%20Sales/view-part/>
+* Footprint: `Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal`
+* Rotation: -90 deg
 
 ### S4B-PH-SM4-TB
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=199>
+* Footprint: `Connector_JST:JST_PH_S4B-PH-SM4-TB_1x04-1MP_P2.00mm_Horizontal`
+* Rotation: X = -90 deg
+* Offset: X = -11.9 mm, Y = 12.5 mm
 
 ### DF22-2P-7.92DSA
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.hirose.com/en/product/p/CL0680-1014-8-53>
+* Footprint: `lib_fp:Hirose_DF22-2P-7.92DSA_1x02_P7.92mm_Vertical`
+* Rotation: Y = 180 deg, Z = 180 deg
+* Offset: X = -6.67 mm, Y = -6.67 mm, Z = 20.00 mm
 
 ### DF63M-2P-3.96DSA
 * Status: Not included (Not redistributable)
@@ -152,56 +207,94 @@ this directory's `.gitignore` file.
 ### TE\_350428-01
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.te.com/usa-en/product-350428-1.html>
+* Footprint: `lib_fp:TE_MATE-N-LOK_350428-x_1x02_P6.35mm_Vertical`
+* Rotation: Z = 90 deg
+* Offset: Z = 14.73 mm
 
 ### Cincom\_CFM06Sxxx-E
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cincon.com/productdetail/CFM06S.html>
+* Footprint: `lib_fp:Converter_ACDC_Cincom_CFM06Sxxx-E`
+* Rotation: X = 90 deg
+* Offset: X = -1.75 mm, Z = 7.10 mm
 
 ### Schurter\_6182\_0033.step
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=6182.0033>
+* Footprint: `lib_fp:Schurter_6182_0033`
+* Rotation: X = -90 deg, Z = 180 deg
+* Offset: Y = 6.2 mm, Z = 16.0 mm
 
 ### Schurter\_GSP1\_9113\_1.step
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=GSP1.9113.1>
 * Notes: Original model has been modified to better reflect the specific part variant being used.
+* Footprint: `lib_fp:Schurter_GSP1_9113_1`
+* Rotation: X = -90 deg, Z = 180 deg
+* Offset: Y = 8.70 mm, Z = 15.85 mm
 
 ### Molex\_768290002
 * Status: Included (Vague terms listed with download)
 * Source: Manufacturer <https://www.molex.com/molex/part/partModels.jsp?&prodLevel=part&partNo=768290002&channel=products>
+* Footprint: `Connector_Molex:Molex_Mega-Fit_76829-0002_2x01_P5.70mm_Vertical`
+* Rotation: X = -180 deg
+* Offset: X = 21.376000 mm, Y = -0.466200 mm, Z = 12.654200 mm
 
 ### L\_XND5050XA
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXND5050XAT3R3MMG&u=M>
+* Footprint: `Inductor_SMD:L_Taiyo-Yuden_NR-50xx`
 
 ### L\_XNH8080YK
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXNH8080YKL100MJG&u=M>
+* Footprint: `Inductor_SMD:L_Taiyo-Yuden_NR-80xx`
 
 ### CUI\_MJ-3502
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cuidevices.com/product/resource/digikey3dmodel/mj-3502>
+* Footprint: `lib_fp:Jack_3.5mm_CUI_MJ-3502_Horizontal`
+* Rotation: Y = 180 deg, Z = 90 deg
+* Offset: Y = 5.0 mm, Z = 6.9 mm
 
 ### CNC\_3220-14-0300
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <http://www.cnctech.us/pdfs/3220-14-0300.zip>
 * Notes: Original model has been modified to convert from IGES to STEP and to add colors
+* Footprint: `lib_fp:CNC_3220-14-0300-00_2x07_P1.27mm`
+* Rotation: X = -90 deg
 
 ### B2B-PH-SM4-TB(LF)(SN)
 * Status: Included (CC BY-SA /w Design Exception 1.0)
 * Source: SnapEDA <https://www.snapeda.com/parts/B2B-PH-SM4-TB(LF)(SN)/JST%20SALES%20AMERICA%20INC%20(VA)/view-part/>
+* Footprint: `Connector_JST:JST_PH_B2B-PH-SM4-TB_1x02-1MP_P2.00mm_Vertical`
+* Rotation: X = -90 deg
+* Offset: Y = 1.75 mm
 
 ### B4B-PH-SM4-TB(LF)(SN)
 * Status: Included (CC BY-SA /w Design Exception 1.0)
 * Source: SnapEDA <https://www.snapeda.com/parts/B4B-PH-SM4-TB%28LF%29%28SN%29/JST%20Sales/view-part/>
+* Footprint: `Connector_JST:JST_PH_B4B-PH-SM4-TB_1x04-1MP_P2.00mm_Vertical`
+* Rotation: X = -90 deg
+* Offset: Y = 1.75 mm
 
 ### B5B-PH-SM4-TB(LF)(SN)
 * Status: Included (CC BY-SA /w Design Exception 1.0)
 * Source: SnapEDA <https://www.snapeda.com/parts/B5B-PH-SM4-TB(LF)(SN)/JST%20Sales/view-part/>
+* Footprint: `Connector_JST:JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical`
+* Rotation: X = -90 deg
+* Offset: Y = 1.75 mm
 
 ### BM02B-SRSS-TB
 * Status: Not included (Not redistributable)
 * Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=231>
+
+### BM06B-SRSS-TB
+* Status: Not included (Not redistributable)
+* Source: Manufacturer <https://www.jst-mfg.com/product/index.php?series=231>
+* Footprint: `Connector_JST:JST_SH_BM06B-SRSS-TB_1x06-1MP_P1.00mm_Vertical`
+* Rotation: X = -90 deg
+* Offset: Y = 1.25 mm
 
 ### LED\_XLUR11D\_ELM-2-120\_Assembly
 * Created as a merged and customized version of two component models
@@ -214,43 +307,69 @@ this directory's `.gitignore` file.
 * ELM 2-120
   * Status: Included (No terms listed with download)
   * Source: Manufacturer via link on Digi-Key <https://www.bivar.com/parts_content/Models/ELM%202.IGS>
+* Footprint: `lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120`
+* Rotation: X = -90 deg
+* Offset: X = 1.27 mm
 
 ### AVX-00-9175-003-001-906
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.kyocera-avx.com/products/connectors/wire-to-board/standard-26-28-awg-00-9175/>
+* Footprint: `lib_fp:AVX_IDC-009175-003-001`
+* Rotation: X = -90 deg, Z = 90 deg
+* Offset: Y = 5 mm
 
 ### IRM-10-12
 * Status: Included (Contributed to source by Glenn McKie, no terms listed with download)
 * Source: 3D ContentCentral <https://www.3dcontentcentral.com/Download-Model.aspx?catalogid=171&id=609491>
+* Footprint: `Converter_ACDC:Converter_ACDC_MeanWell_IRM-10-xx_THT`
+* Rotation: X = -90 deg, Z = 90 deg
+* Offset: X = 19.25 mm, Y = 11.25 mm
 
 ### Schurter\_FPG5\_3101\_0050
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schurter.com/en/info-center/support-tools/cad-drawings?format=STEP&text=3101.0050>
+* Footprint: `lib_fp:Fuseholder_Cylinder-5x20mm_Schurter_FPG5_3101.0050_Horizontal_Closed`
+* Rotation: X = -90 deg, Z = -90 deg
+* Offset: X = 24.75 mm
 
 ### Amphenol\_87583-3010xx
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on Digi-Key <https://cdn.amphenol-cs.com/media/wysiwyg/files/3d/s87583-3010xx.zip>
+* Footprint: `lib_fp:USB_A_Amphenol_87583_Horizontal`
+* Rotation: X = -90 deg
+* Offset: Y = 6.4 mm
 
 ### Amphenol\_74626-11S0BPLF
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/74626-11S0BPLF/Amphenol%20ICC%20(FCI)/view-part/>
+* Footprint: `lib_fp:USB_A_Amphenol_74626_Horizontal_Reversed`
+* Rotation: X = -90 deg
+* Offset: Y = 2.7 mm
 
 ### Weidmuller\_1825960000
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on product page <https://catalog.weidmueller.com/catalog/Start.do?ObjectID=1825960000>
+* Footprint: `lib_fp:Weidmuller_1825960000_1x02_P5.0mm`
+* Offset: X = -4.5500 mm, Y = -4.0500 mm, Z = -3.4999 mm
 
 ### AMS\_TSL2585
 * Status: Included
 * Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:AMS_TSL2585_OLGA-6_2x1mm_P0.65mm`
 
 ### RAC10E-SK\_277
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://recom-power.com/en/products/ac-dc-power-supplies/ac-dc-pcb-mounted/rec-p-RAC10E-12SK!s277.html>
+* Footprint: `lib_fp:Converter_ACDC_RECOM_RAC10E-xxSK_277_THT`
+* Rotation: X = -180 deg
+* Offset: X = -1.75 mm, Y = 9.30 mm, Z = 16.50 mm
 
 ### SW-PEC11L-4220F-S0015
 * Status: Included
 * Source: GrabCAD <https://grabcad.com/library/bourns-pec-encoder-series-1>
+* Footprint: `lib_fp:RotaryEncoder_Bourns_PEC11L-Switch_Vertical_H20mm`
 
 ### OnSemi\_SC-74-6\_1.5x3.0mm\_P0.95mm
 * Status: Included
 * Source: Created for project using KiCad packages3D generator and datasheet specs
+* Footprint: `lib_fp:OnSemi_SC-74-6_1.5x3.0mm_P0.95mm`
