@@ -394,3 +394,10 @@ this directory's `.gitignore` file.
 * Footprint: `lib_fp:C_Rect_L18.0mm_W5.0mm_P15.00mm_Kemet_R46`
 * Rotation: X = -90 deg
 * Offset: X = -1.65 mm, Y = 2.60 mm
+
+### Vishay\_VY1222M47Y5UQ63V0
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/2824500>
+* Note: Original model edited to trim lead length
+* Footprint: `lib_fp:C_Disc_D12.0mm_W5.0mm_P10.00mm_Vishay_VY1`
+* Offset: X = 5.0 mm, Y = -0.8 mm, X = 10.0 mm
