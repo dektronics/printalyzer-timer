@@ -380,3 +380,10 @@ this directory's `.gitignore` file.
 * Status: Included
 * Source: Created for project using KiCad packages3D generator and datasheet specs
 * Footprint: `lib_fp:OnSemi_SC-74-6_1.5x3.0mm_P0.95mm`
+
+### Schaffner\_RN212-x-02.step
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schaffner.com/fileadmin/user_upload/pim/products/Schaffner_cad_data_RN_series.zip>
+* Footprint: `lib_fp:Choke_Schaffner_RN212-02-12.5x18.0mm`
+* Rotation: X = -180 deg, Z = 90 deg
+* Offset: X = 5.0 mm, Y = -7.5 mm, Z = 20.0 mm
