@@ -240,6 +240,13 @@ this directory's `.gitignore` file.
 * Rotation: X = -180 deg
 * Offset: X = 21.376000 mm, Y = -0.466200 mm, Z = 12.654200 mm
 
+### Molex\_1724470002
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.molex.com/en-us/products/part-detail/1724470002>
+* Footprint: `lib_fp:Molex_Mini-Fit_Jr_172447_2x01_P4.20mm_Vertical`
+* Rotation: X = 90 deg, Z = -180 deg
+* Offset: Y = 2.25 mm, Z = 12.80 mm
+
 ### L\_XND5050XA
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://ds.yuden.co.jp/TYCOMPAS/ut/detail?pn=LSXND5050XAT3R3MMG&u=M>
