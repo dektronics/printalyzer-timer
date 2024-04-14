@@ -387,3 +387,10 @@ this directory's `.gitignore` file.
 * Footprint: `lib_fp:Choke_Schaffner_RN212-02-12.5x18.0mm`
 * Rotation: X = -180 deg, Z = 90 deg
 * Offset: X = 5.0 mm, Y = -7.5 mm, Z = 20.0 mm
+
+### Kemet\_R46KI3100JHM1M
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/13176410>
+* Footprint: `lib_fp:C_Rect_L18.0mm_W5.0mm_P15.00mm_Kemet_R46`
+* Rotation: X = -90 deg
+* Offset: X = -1.65 mm, Y = 2.60 mm
