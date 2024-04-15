@@ -77,8 +77,8 @@
         "silk_overlap|120310000|89000000|4239c1da-7aaf-4bbc-9b7f-2a3576676bc1|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
         "silk_overlap|191400000|95600000|eaefd67e-3e05-438b-8b01-0e5e04e83e95|94092418-e372-4d66-abb8-c0a423fc48e0",
         "silk_overlap|227500000|76000000|388d9225-5696-4d52-8667-f4cdb007a1b1|c3ca39e5-ff8b-4abe-9473-ddff3265b0ba",
-        "silk_overlap|70690000|89000000|5d0e1d68-41c0-40b5-9c8c-19042f8ec3ff|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
-        "silk_overlap|83310000|89000000|b5750e89-6a08-49e5-a3d1-17b9845d28eb|73a99276-4e05-45ea-8a7d-e4cadc51f96d"
+        "silk_overlap|70690000|89000000|73a99276-4e05-45ea-8a7d-e4cadc51f96d|5d0e1d68-41c0-40b5-9c8c-19042f8ec3ff",
+        "silk_overlap|83310000|89000000|73a99276-4e05-45ea-8a7d-e4cadc51f96d|b5750e89-6a08-49e5-a3d1-17b9845d28eb"
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -208,6 +208,7 @@
         0.254,
         0.508,
         0.762,
+        3.0,
         3.5
       ],
       "tuning_pattern_settings": {
@@ -516,7 +517,7 @@
       },
       {
         "bus_width": 12,
-        "clearance": 1.5,
+        "clearance": 2.5,
         "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25,
         "diff_pair_width": 0.2,
@@ -526,7 +527,7 @@
         "name": "Mains",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 3.500001,
+        "track_width": 3.0,
         "via_diameter": 0.8,
         "via_drill": 0.4,
         "wire_width": 6
@@ -550,7 +551,15 @@
       },
       {
         "netclass": "Mains",
-        "pattern": "*AC_L"
+        "pattern": "*AC_*"
+      },
+      {
+        "netclass": "Mains",
+        "pattern": "*J1*"
+      },
+      {
+        "netclass": "Mains",
+        "pattern": "*F1*"
       }
     ]
   },
