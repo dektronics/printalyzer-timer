@@ -74,12 +74,12 @@
         "silk_edge_clearance|36380000|40000000|0e4f8ef6-5aae-4779-896e-fe3ea375a537|b3270b29-9d0e-4dec-8930-7a9d20285694",
         "silk_edge_clearance|61620000|40000000|0e4f8ef6-5aae-4779-896e-fe3ea375a537|b55b8722-e1db-4725-8ba0-fe4fbd90df42",
         "silk_edge_clearance|62890000|40000000|0e4f8ef6-5aae-4779-896e-fe3ea375a537|ad66ce40-4ad9-4d40-9812-1f15c5b6b336",
-        "silk_overlap|107690000|89000000|b66ae6d9-4474-436c-8f82-8576803b07a2|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
-        "silk_overlap|120310000|89000000|bd08bbd9-d15b-45a7-8325-7dede1fdc89f|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
+        "silk_overlap|107690000|89000000|706cf336-3b3d-48d9-9a27-952f45560e83|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
+        "silk_overlap|120310000|89000000|4239c1da-7aaf-4bbc-9b7f-2a3576676bc1|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
         "silk_overlap|191400000|95600000|eaefd67e-3e05-438b-8b01-0e5e04e83e95|94092418-e372-4d66-abb8-c0a423fc48e0",
         "silk_overlap|227500000|76000000|388d9225-5696-4d52-8667-f4cdb007a1b1|c3ca39e5-ff8b-4abe-9473-ddff3265b0ba",
-        "silk_overlap|70690000|89000000|ae36720c-586e-42b5-9ef6-229e44b3c3a3|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
-        "silk_overlap|83310000|89000000|514b57eb-d679-4561-be15-915dc6ac2d09|73a99276-4e05-45ea-8a7d-e4cadc51f96d"
+        "silk_overlap|70690000|89000000|5d0e1d68-41c0-40b5-9c8c-19042f8ec3ff|73a99276-4e05-45ea-8a7d-e4cadc51f96d",
+        "silk_overlap|83310000|89000000|b5750e89-6a08-49e5-a3d1-17b9845d28eb|73a99276-4e05-45ea-8a7d-e4cadc51f96d"
       ],
       "meta": {
         "filename": "board_design_settings.json",
@@ -551,11 +551,7 @@
       },
       {
         "netclass": "Mains",
-        "pattern": "Net-(F1-Pad2)"
-      },
-      {
-        "netclass": "Mains",
-        "pattern": "Net-(J1-Pad1)"
+        "pattern": "*AC_L"
       }
     ]
   },
@@ -647,13 +643,13 @@
           "group_by": false,
           "label": "Supplier",
           "name": "Supplier",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
           "label": "Supplier PN",
           "name": "Supplier PN",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,

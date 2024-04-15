@@ -1567,394 +1567,6 @@
 				)
 			)
 		)
-		(symbol "G2RL-1A4-E-DC12_1"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "K"
-				(at 10.795 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "G2RL-1A4-E-DC12_1"
-				(at 10.795 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A-E"
-				(at 10.795 -2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf"
-				(at 0 -17.145 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Omron G2RL low profile power relay, SPST-NO"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "Single Pole Relay SPST"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "G2RL-1A4-E-DC12_1_0_0"
-				(polyline
-					(pts
-						(xy 6.985 3.81) (xy 6.985 1.27) (xy 6.35 1.905) (xy 6.985 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "G2RL-1A4-E-DC12_1_0_1"
-				(rectangle
-					(start -10.16 5.08)
-					(end 10.16 -5.08)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -8.255 1.905)
-					(end -1.905 -1.905)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -7.62 -1.905) (xy -2.54 1.905)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.08 -5.08) (xy -5.08 -1.905)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.08 5.08) (xy -5.08 1.905)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.905 0) (xy -1.27 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.635 0) (xy 0 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.635 0) (xy 1.27 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.905 0) (xy 2.54 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 3.175 0) (xy 3.81 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 4.445 0) (xy 5.08 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 -3.81) (xy 5.08 -5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 3.81) (xy 5.08 5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 6.985 -2.54) (xy 5.08 2.54)
-					)
-					(stroke
-						(width 0.508)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 6.985 -2.54) (xy 6.985 -3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 8.89 -5.08) (xy 8.89 -3.81) (xy 5.08 -3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 8.89 5.08) (xy 8.89 3.81) (xy 5.08 3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "G2RL-1A4-E-DC12_1_1_1"
-				(pin passive line
-					(at -5.08 -7.62 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 -7.62 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 7.62 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 8.89 7.62 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 8.89 -7.62 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 7.62 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "Mechanical:Fiducial"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -2540,12 +2152,12 @@
 				)
 			)
 		)
-		(symbol "Project:G2RL-1A4-E-DC12"
+		(symbol "Project:G2RL-1A4-DC12"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "K"
-				(at 10.795 2.54 0)
+				(at 8.89 3.81 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2553,8 +2165,8 @@
 					(justify left)
 				)
 			)
-			(property "Value" "G2RL-1A4-E-DC12"
-				(at 10.795 0 0)
+			(property "Value" "G2RL-1A4-DC12"
+				(at 8.89 1.27 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2562,8 +2174,8 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A-E"
-				(at 10.795 -2.54 0)
+			(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A"
+				(at 8.89 -1.27 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2573,7 +2185,7 @@
 				)
 			)
 			(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf"
-				(at 0 -17.145 0)
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2599,10 +2211,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "G2RL-1A4-E-DC12_0_0"
+			(symbol "G2RL-1A4-DC12_0_0"
 				(polyline
 					(pts
-						(xy 6.985 3.81) (xy 6.985 1.27) (xy 6.35 1.905) (xy 6.985 2.54)
+						(xy 5.08 5.08) (xy 5.08 2.54) (xy 4.445 3.175) (xy 5.08 3.81)
 					)
 					(stroke
 						(width 0)
@@ -2613,10 +2225,10 @@
 					)
 				)
 			)
-			(symbol "G2RL-1A4-E-DC12_0_1"
+			(symbol "G2RL-1A4-DC12_0_1"
 				(rectangle
 					(start -10.16 5.08)
-					(end 10.16 -5.08)
+					(end 7.62 -5.08)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -2734,43 +2346,7 @@
 				)
 				(polyline
 					(pts
-						(xy 4.445 0) (xy 5.08 0)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 -3.81) (xy 5.08 -5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 3.81) (xy 5.08 5.08)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 6.985 -2.54) (xy 5.08 2.54)
+						(xy 5.08 -2.54) (xy 3.175 3.81)
 					)
 					(stroke
 						(width 0.508)
@@ -2782,31 +2358,7 @@
 				)
 				(polyline
 					(pts
-						(xy 6.985 -2.54) (xy 6.985 -3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 8.89 -5.08) (xy 8.89 -3.81) (xy 5.08 -3.81)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 8.89 5.08) (xy 8.89 3.81) (xy 5.08 3.81)
+						(xy 5.08 -2.54) (xy 5.08 -5.08)
 					)
 					(stroke
 						(width 0)
@@ -2817,7 +2369,7 @@
 					)
 				)
 			)
-			(symbol "G2RL-1A4-E-DC12_1_1"
+			(symbol "G2RL-1A4-DC12_1_1"
 				(pin passive line
 					(at -5.08 -7.62 90)
 					(length 2.54)
@@ -2873,42 +2425,6 @@
 					)
 				)
 				(pin passive line
-					(at 8.89 7.62 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 8.89 -7.62 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
 					(at -5.08 7.62 270)
 					(length 2.54)
 					(name "~"
@@ -2918,7 +2434,7 @@
 							)
 						)
 					)
-					(number "8"
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -5048,10 +4564,10 @@
 		)
 	)
 	(junction
-		(at 207.645 71.12)
+		(at 207.645 39.37)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "02963f51-ab76-4bc4-be6d-b16038908ac0")
+		(uuid "0802e51f-d3de-450c-b817-70c4558fa8b3")
 	)
 	(junction
 		(at 95.25 80.01)
@@ -5078,16 +4594,16 @@
 		(uuid "14a2b76d-d7d3-486e-b914-e7e5fc29abff")
 	)
 	(junction
-		(at 202.565 20.32)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "14db3a6e-8beb-4241-9b9b-07e5dc5083fe")
-	)
-	(junction
 		(at 101.6 72.39)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2052e8fa-85a8-4800-af6c-4bbfbb946ab2")
+	)
+	(junction
+		(at 186.055 54.61)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "27368797-b602-4462-95f9-43a8c6b29349")
 	)
 	(junction
 		(at 27.94 146.685)
@@ -5102,10 +4618,10 @@
 		(uuid "2bdcffa3-f891-4963-be06-75da18a9b5aa")
 	)
 	(junction
-		(at 202.565 39.37)
+		(at 207.645 71.12)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "36cd6c47-a371-4b89-9e35-551cfa4215d5")
+		(uuid "47bcc8f3-0408-4422-a60c-73244a63ecb5")
 	)
 	(junction
 		(at 95.25 72.39)
@@ -5132,18 +4648,6 @@
 		(uuid "56d845b6-ac9e-44fa-be1e-cec21db6c2c8")
 	)
 	(junction
-		(at 202.565 24.13)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6c563abf-a058-4150-af99-d3c3ad32984c")
-	)
-	(junction
-		(at 207.645 55.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "70e70764-18e0-41a4-9898-ce7f85130457")
-	)
-	(junction
 		(at 85.09 72.39)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5154,12 +4658,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a0a8226b-02e4-49a0-a269-5fac09cf5290")
-	)
-	(junction
-		(at 207.645 53.34)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a27ab88a-0c75-40ad-9b42-2afaadfff493")
 	)
 	(junction
 		(at 85.09 80.01)
@@ -5201,23 +4699,13 @@
 	)
 	(wire
 		(pts
-			(xy 202.565 24.13) (xy 206.375 24.13)
+			(xy 258.445 62.23) (xy 258.445 63.5)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "0097e924-3627-4c70-a25d-28e32f22adb0")
-	)
-	(wire
-		(pts
-			(xy 259.715 20.32) (xy 202.565 20.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "06c75726-2e62-45ec-9d6e-607858ce386b")
+		(uuid "050147c9-fda8-4eb3-ad14-b9c29f3c67b1")
 	)
 	(wire
 		(pts
@@ -5228,16 +4716,6 @@
 			(type default)
 		)
 		(uuid "07aaefa8-78f5-4814-9222-c30853ac0542")
-	)
-	(wire
-		(pts
-			(xy 202.565 42.545) (xy 210.82 42.545)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "086ddc9e-c31e-44db-8d01-cbd1ccab248d")
 	)
 	(wire
 		(pts
@@ -5258,16 +4736,6 @@
 			(type default)
 		)
 		(uuid "0c2d9cf3-b03b-4816-89b1-35f3fb0dc0c1")
-	)
-	(wire
-		(pts
-			(xy 207.645 74.295) (xy 215.9 74.295)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0da25d04-15cd-4df4-9f6b-d3fde04b8ee0")
 	)
 	(wire
 		(pts
@@ -5308,6 +4776,16 @@
 			(type default)
 		)
 		(uuid "118ceac1-b248-4107-ad71-d38199354613")
+	)
+	(wire
+		(pts
+			(xy 207.645 71.12) (xy 231.14 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "12325312-daac-41e0-9c5f-ef7b1767ff0a")
 	)
 	(wire
 		(pts
@@ -5391,7 +4869,7 @@
 	)
 	(wire
 		(pts
-			(xy 184.785 39.37) (xy 192.405 39.37)
+			(xy 184.785 39.37) (xy 197.485 39.37)
 		)
 		(stroke
 			(width 0)
@@ -5431,16 +4909,6 @@
 	)
 	(wire
 		(pts
-			(xy 207.645 71.12) (xy 211.455 71.12)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "266460fe-1eb5-4de2-b10a-7612c158c0b9")
-	)
-	(wire
-		(pts
 			(xy 125.095 144.145) (xy 132.715 144.145)
 		)
 		(stroke
@@ -5451,16 +4919,6 @@
 	)
 	(wire
 		(pts
-			(xy 202.565 39.37) (xy 202.565 42.545)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2a498ab0-80f9-4ff4-b1cd-d304964f7371")
-	)
-	(wire
-		(pts
 			(xy 85.09 72.39) (xy 95.25 72.39)
 		)
 		(stroke
@@ -5468,6 +4926,16 @@
 			(type default)
 		)
 		(uuid "2aa4cb82-9cc4-4490-8a36-1186765da308")
+	)
+	(wire
+		(pts
+			(xy 207.645 39.37) (xy 231.14 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2afafd68-cc78-4b7b-b53e-7d2a16893fc4")
 	)
 	(wire
 		(pts
@@ -5501,6 +4969,16 @@
 	)
 	(wire
 		(pts
+			(xy 231.14 39.37) (xy 231.14 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "319cb988-dcb9-4205-8bcf-80b1d8f62a66")
+	)
+	(wire
+		(pts
 			(xy 83.82 145.415) (xy 97.155 145.415)
 		)
 		(stroke
@@ -5521,6 +4999,26 @@
 	)
 	(wire
 		(pts
+			(xy 231.14 31.75) (xy 233.045 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3a88d48c-a195-4b58-b86f-f0b4975ac947")
+	)
+	(wire
+		(pts
+			(xy 186.055 44.45) (xy 186.055 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3ac8fa13-d066-464b-acaa-c8db0b04ca88")
+	)
+	(wire
+		(pts
 			(xy 57.785 153.67) (xy 69.85 153.67)
 		)
 		(stroke
@@ -5528,16 +5026,6 @@
 			(type default)
 		)
 		(uuid "3b95f1e4-d6f6-4c7c-a0c0-fd6f3d10e213")
-	)
-	(wire
-		(pts
-			(xy 202.565 39.37) (xy 206.375 39.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3ee20e40-8eb5-4bfe-b310-cad234444a37")
 	)
 	(wire
 		(pts
@@ -5641,16 +5129,6 @@
 	)
 	(wire
 		(pts
-			(xy 207.645 53.34) (xy 207.645 55.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "586a8c13-dea5-4fd5-a070-1f4013711795")
-	)
-	(wire
-		(pts
 			(xy 85.09 80.01) (xy 95.25 80.01)
 		)
 		(stroke
@@ -5688,16 +5166,6 @@
 			(type default)
 		)
 		(uuid "60444c32-8315-460c-9a17-c2d7b929cb47")
-	)
-	(wire
-		(pts
-			(xy 227.965 63.5) (xy 233.045 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "61eb9a26-62a4-4eea-bfa2-70a96d76bb7e")
 	)
 	(wire
 		(pts
@@ -5741,16 +5209,6 @@
 	)
 	(wire
 		(pts
-			(xy 259.715 63.5) (xy 259.715 53.34)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "67aa64a9-8205-4958-8b58-419653857b4c")
-	)
-	(wire
-		(pts
 			(xy 88.9 99.06) (xy 86.36 99.06)
 		)
 		(stroke
@@ -5768,16 +5226,6 @@
 			(type default)
 		)
 		(uuid "68ca8605-cd68-493d-b75b-9686f4d1946e")
-	)
-	(wire
-		(pts
-			(xy 202.565 20.32) (xy 202.565 24.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "69adb7d4-88fc-45cc-9475-db0e8ed68224")
 	)
 	(wire
 		(pts
@@ -5828,16 +5276,6 @@
 			(type default)
 		)
 		(uuid "726a33d8-2039-4a64-8807-88a2941087f1")
-	)
-	(wire
-		(pts
-			(xy 207.645 71.12) (xy 207.645 74.295)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "74b485c4-bfeb-4cab-aa76-59e98977b6f7")
 	)
 	(wire
 		(pts
@@ -5921,16 +5359,6 @@
 	)
 	(wire
 		(pts
-			(xy 227.965 62.23) (xy 227.965 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8aff74e7-7148-44bb-8575-4c0f630e0382")
-	)
-	(wire
-		(pts
 			(xy 17.145 151.765) (xy 27.94 151.765)
 		)
 		(stroke
@@ -5941,7 +5369,7 @@
 	)
 	(wire
 		(pts
-			(xy 253.365 63.5) (xy 259.715 63.5)
+			(xy 253.365 63.5) (xy 258.445 63.5)
 		)
 		(stroke
 			(width 0)
@@ -6021,16 +5449,6 @@
 	)
 	(wire
 		(pts
-			(xy 227.965 29.21) (xy 227.965 30.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9e008b27-61c2-4c28-b25f-e2eb2446e809")
-	)
-	(wire
-		(pts
 			(xy 139.065 41.91) (xy 161.925 41.91)
 		)
 		(stroke
@@ -6058,16 +5476,6 @@
 			(type default)
 		)
 		(uuid "a2903119-f92a-4f4f-b741-f61bf4d5d658")
-	)
-	(wire
-		(pts
-			(xy 227.965 30.48) (xy 233.045 30.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a6d631ee-3a4f-4c8b-b719-ef50a6e2aeac")
 	)
 	(wire
 		(pts
@@ -6101,16 +5509,6 @@
 	)
 	(wire
 		(pts
-			(xy 207.645 55.88) (xy 211.455 55.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b37586cc-8123-47bf-992d-785d59faf682")
-	)
-	(wire
-		(pts
 			(xy 189.865 71.12) (xy 197.485 71.12)
 		)
 		(stroke
@@ -6118,6 +5516,16 @@
 			(type default)
 		)
 		(uuid "b5717251-aa2c-424e-b883-843ddbc8807f")
+	)
+	(wire
+		(pts
+			(xy 231.14 63.5) (xy 233.045 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b69670be-d131-4be2-84e7-f15def4d716b")
 	)
 	(wire
 		(pts
@@ -6151,13 +5559,13 @@
 	)
 	(wire
 		(pts
-			(xy 259.715 53.34) (xy 207.645 53.34)
+			(xy 231.14 71.12) (xy 231.14 63.5)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "beec2840-eb71-4652-b8aa-cd9a8c829829")
+		(uuid "bdda158c-7af4-4a35-9c75-cd14203c83ef")
 	)
 	(wire
 		(pts
@@ -6171,7 +5579,7 @@
 	)
 	(wire
 		(pts
-			(xy 184.785 44.45) (xy 192.405 44.45)
+			(xy 184.785 44.45) (xy 186.055 44.45)
 		)
 		(stroke
 			(width 0)
@@ -6208,16 +5616,6 @@
 			(type default)
 		)
 		(uuid "ceb0bba4-a6b4-4550-b031-f1ec31b4c54f")
-	)
-	(wire
-		(pts
-			(xy 259.715 30.48) (xy 259.715 20.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d2727da2-dacc-4998-9bf5-9ec60aeb240a")
 	)
 	(wire
 		(pts
@@ -6281,6 +5679,16 @@
 	)
 	(wire
 		(pts
+			(xy 258.445 30.48) (xy 258.445 31.75)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e2c8cceb-1f1c-4e84-a6d3-31cee51ea1c2")
+	)
+	(wire
+		(pts
 			(xy 49.53 78.74) (xy 47.625 78.74)
 		)
 		(stroke
@@ -6341,7 +5749,7 @@
 	)
 	(wire
 		(pts
-			(xy 253.365 30.48) (xy 259.715 30.48)
+			(xy 253.365 31.75) (xy 258.445 31.75)
 		)
 		(stroke
 			(width 0)
@@ -6615,7 +6023,7 @@
 		(uuid "188544f8-76c0-44a6-8bc4-94ad5db31f40")
 	)
 	(label "ENLG_AC_L"
-		(at 206.375 20.32 0)
+		(at 210.82 39.37 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6780,7 +6188,7 @@
 		(uuid "ec4f4fe0-09ab-4984-9899-40e5c9352de3")
 	)
 	(label "SFLT_AC_L"
-		(at 211.455 53.34 0)
+		(at 210.82 71.12 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7009,7 +6417,7 @@
 	)
 	(symbol
 		(lib_id "power:LINE")
-		(at 215.9 74.295 0)
+		(at 207.645 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7017,7 +6425,7 @@
 		(dnp no)
 		(uuid "02cdef75-6568-443c-b33d-1fb82594be90")
 		(property "Reference" "#PWR012"
-			(at 215.9 78.105 0)
+			(at 207.645 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7026,7 +6434,7 @@
 			)
 		)
 		(property "Value" "LINE"
-			(at 216.281 69.9008 0)
+			(at 207.645 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7034,7 +6442,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 215.9 74.295 0)
+			(at 207.645 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7043,7 +6451,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 215.9 74.295 0)
+			(at 207.645 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7052,7 +6460,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"LINE\""
-			(at 215.9 74.295 0)
+			(at 207.645 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7073,8 +6481,7 @@
 		)
 	)
 	(symbol
-		(lib_name "G2RL-1A4-E-DC12_1")
-		(lib_id "Project:G2RL-1A4-E-DC12")
+		(lib_id "Project:G2RL-1A4-DC12")
 		(at 202.565 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7083,7 +6490,7 @@
 		(dnp no)
 		(uuid "095602ca-bddc-4293-9257-0b7959bff13d")
 		(property "Reference" "K2"
-			(at 213.36 60.96 0)
+			(at 210.82 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7092,7 +6499,7 @@
 			)
 		)
 		(property "Value" "SPST-NO"
-			(at 213.36 63.5 0)
+			(at 210.82 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7100,8 +6507,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A-E"
-			(at 213.36 66.04 0)
+		(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A"
+			(at 211.455 64.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7111,7 +6518,7 @@
 			)
 		)
 		(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf"
-			(at 202.565 80.645 0)
+			(at 202.565 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7119,7 +6526,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RELAY GEN PURPOSE SPST 12A 12V"
+		(property "Description" "Omron G2RL low profile power relay, SPST-NO"
 			(at 202.565 63.5 0)
 			(effects
 				(font
@@ -7129,7 +6536,7 @@
 			)
 		)
 		(property "User Label" "Safelight Relay"
-			(at 213.36 66.04 0)
+			(at 210.82 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7146,7 +6553,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "G2RL-1A4-E DC12"
+		(property "Manufacturer PN" "G2RL-1A DC12"
 			(at 202.565 63.5 0)
 			(effects
 				(font
@@ -7164,7 +6571,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "Z3083-ND"
+		(property "Supplier PN" "Z140-ND"
 			(at 202.565 63.5 0)
 			(effects
 				(font
@@ -7184,12 +6591,6 @@
 		)
 		(pin "5"
 			(uuid "e9619974-cdc4-4e96-ab0c-0a2b5a861bbb")
-		)
-		(pin "6"
-			(uuid "e3c6aaa4-2411-4351-b871-79203f93f21e")
-		)
-		(pin "8"
-			(uuid "e4981416-cc1a-4522-8424-103fd5b10ea4")
 		)
 		(instances
 			(project "power-board"
@@ -7284,7 +6685,7 @@
 			)
 		)
 		(property "Value" "+12V"
-			(at 197.866 51.4858 0)
+			(at 197.485 52.07 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7446,7 +6847,7 @@
 	)
 	(symbol
 		(lib_id "power:Earth")
-		(at 243.205 38.1 0)
+		(at 243.205 39.37 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7454,7 +6855,7 @@
 		(dnp no)
 		(uuid "0e26d9c9-ffe0-4984-907a-9deb366b2205")
 		(property "Reference" "#PWR015"
-			(at 243.205 44.45 0)
+			(at 243.205 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7463,7 +6864,7 @@
 			)
 		)
 		(property "Value" "Earth"
-			(at 243.205 41.91 0)
+			(at 243.205 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7472,7 +6873,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 243.205 38.1 0)
+			(at 243.205 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7481,7 +6882,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 243.205 38.1 0)
+			(at 243.205 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7490,7 +6891,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"Earth\""
-			(at 243.205 38.1 0)
+			(at 243.205 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8080,6 +7481,7 @@
 	(symbol
 		(lib_id "Project:Conn_PX0675-PC")
 		(at 243.205 63.5 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8100,7 +7502,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "lib_fp:Schurter_6182_0033"
@@ -8113,7 +7515,7 @@
 			)
 		)
 		(property "Datasheet" "https://us.schurter.com/bundles/snceschurter/epim/_ProdPool_/newDS/en/typ_5001.pdf"
-			(at 253.365 63.5 0)
+			(at 233.045 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8752,7 +8154,7 @@
 	)
 	(symbol
 		(lib_id "power:+12V")
-		(at 192.405 24.13 0)
+		(at 197.485 24.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8760,7 +8162,7 @@
 		(dnp no)
 		(uuid "5593f739-ab3e-45ee-8928-a8da72ec666c")
 		(property "Reference" "#PWR08"
-			(at 192.405 27.94 0)
+			(at 197.485 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8769,7 +8171,7 @@
 			)
 		)
 		(property "Value" "+12V"
-			(at 192.786 19.7358 0)
+			(at 197.485 20.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8777,7 +8179,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 192.405 24.13 0)
+			(at 197.485 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8786,7 +8188,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 192.405 24.13 0)
+			(at 197.485 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8795,7 +8197,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+12V\""
-			(at 192.405 24.13 0)
+			(at 197.485 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8817,7 +8219,8 @@
 	)
 	(symbol
 		(lib_id "Project:Conn_PX0675-PC")
-		(at 243.205 30.48 0)
+		(at 243.205 31.75 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8825,7 +8228,7 @@
 		(dnp no)
 		(uuid "562c622e-0a58-40c0-8915-6389676b4b8a")
 		(property "Reference" "P2"
-			(at 243.205 22.225 0)
+			(at 243.205 23.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8833,16 +8236,16 @@
 			)
 		)
 		(property "Value" "IEC320-C13"
-			(at 245.745 34.29 0)
+			(at 245.745 35.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "lib_fp:Schurter_6182_0033"
-			(at 243.205 42.926 0)
+			(at 243.205 44.196 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8851,7 +8254,7 @@
 			)
 		)
 		(property "Datasheet" "https://us.schurter.com/bundles/snceschurter/epim/_ProdPool_/newDS/en/typ_5001.pdf"
-			(at 253.365 30.48 0)
+			(at 233.045 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8860,7 +8263,7 @@
 			)
 		)
 		(property "Description" "PWR ENT RCPT IEC320-2-2F PANEL"
-			(at 243.205 30.48 0)
+			(at 243.205 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8869,7 +8272,7 @@
 			)
 		)
 		(property "User Label" "Enlarger Power Output"
-			(at 243.205 24.765 0)
+			(at 243.205 26.035 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8877,7 +8280,7 @@
 			)
 		)
 		(property "Manufacturer" "Schurter"
-			(at 243.205 30.48 0)
+			(at 243.205 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8886,7 +8289,7 @@
 			)
 		)
 		(property "Manufacturer PN" "6182.0033"
-			(at 243.205 30.48 0)
+			(at 243.205 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8895,7 +8298,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 243.205 30.48 0)
+			(at 243.205 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8904,7 +8307,7 @@
 			)
 		)
 		(property "Supplier PN" "486-1343-ND"
-			(at 243.205 30.48 0)
+			(at 243.205 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10047,7 +9450,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 207.645 53.34 0)
+		(at 207.645 71.12 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10055,7 +9458,7 @@
 		(dnp no)
 		(uuid "8a837c8c-e1e6-451e-a59c-9065c4460a61")
 		(property "Reference" "#FLG03"
-			(at 207.645 51.435 0)
+			(at 207.645 73.025 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10064,7 +9467,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 207.645 49.53 0)
+			(at 207.645 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10073,7 +9476,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 207.645 53.34 0)
+			(at 207.645 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10082,7 +9485,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 207.645 53.34 0)
+			(at 207.645 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10091,7 +9494,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 207.645 53.34 0)
+			(at 207.645 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10106,71 +9509,6 @@
 			(project "power-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
 					(reference "#FLG03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 192.405 44.45 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8b6ae423-2f11-4533-b65f-8412671b6e6e")
-		(property "Reference" "#PWR09"
-			(at 192.405 50.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 192.405 48.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 192.405 44.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 192.405 44.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 192.405 44.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c8e5ee16-2994-441f-a6ed-b259b4813f89")
-		)
-		(instances
-			(project "power-board"
-				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -10309,7 +9647,7 @@
 	)
 	(symbol
 		(lib_id "power:NEUT")
-		(at 227.965 62.23 0)
+		(at 258.445 62.23 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10317,7 +9655,7 @@
 		(dnp no)
 		(uuid "970bf679-9998-4f92-b906-5f1fcfb2f548")
 		(property "Reference" "#PWR014"
-			(at 227.965 66.04 0)
+			(at 258.445 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10326,7 +9664,7 @@
 			)
 		)
 		(property "Value" "NEUT"
-			(at 228.346 57.8358 0)
+			(at 258.445 58.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10334,7 +9672,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 227.965 62.23 0)
+			(at 258.445 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10343,7 +9681,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 227.965 62.23 0)
+			(at 258.445 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10352,7 +9690,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"NEUT\""
-			(at 227.965 62.23 0)
+			(at 258.445 62.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11467,7 +10805,7 @@
 	)
 	(symbol
 		(lib_id "power:NEUT")
-		(at 227.965 29.21 0)
+		(at 258.445 30.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11475,7 +10813,7 @@
 		(dnp no)
 		(uuid "d51161f8-9001-4145-a84c-6aca468ce082")
 		(property "Reference" "#PWR013"
-			(at 227.965 33.02 0)
+			(at 258.445 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11484,7 +10822,7 @@
 			)
 		)
 		(property "Value" "NEUT"
-			(at 228.346 24.8158 0)
+			(at 258.445 26.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11492,7 +10830,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 227.965 29.21 0)
+			(at 258.445 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11501,7 +10839,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 227.965 29.21 0)
+			(at 258.445 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11510,7 +10848,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"NEUT\""
-			(at 227.965 29.21 0)
+			(at 258.445 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11662,7 +11000,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 202.565 20.32 0)
+		(at 207.645 39.37 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11670,7 +11008,7 @@
 		(dnp no)
 		(uuid "e071c301-ea3b-4b50-ad10-cc35083d809c")
 		(property "Reference" "#FLG04"
-			(at 202.565 18.415 0)
+			(at 207.645 41.275 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11679,7 +11017,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 202.565 16.51 0)
+			(at 207.645 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11688,7 +11026,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 202.565 20.32 0)
+			(at 207.645 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11697,7 +11035,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 202.565 20.32 0)
+			(at 207.645 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11706,7 +11044,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 202.565 20.32 0)
+			(at 207.645 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11859,8 +11197,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Project:G2RL-1A4-E-DC12")
-		(at 197.485 31.75 0)
+		(lib_id "Project:G2RL-1A4-DC12")
+		(at 202.565 31.75 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11868,7 +11206,7 @@
 		(dnp no)
 		(uuid "f2f6ed47-1935-4acf-9e3d-4f99e2d89a41")
 		(property "Reference" "K1"
-			(at 208.28 29.21 0)
+			(at 210.82 29.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11877,7 +11215,7 @@
 			)
 		)
 		(property "Value" "SPST-NO"
-			(at 208.28 31.75 0)
+			(at 210.82 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11885,8 +11223,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A-E"
-			(at 208.28 34.29 0)
+		(property "Footprint" "lib_fp:Relay_SPST_Omron_G2RL-1A"
+			(at 211.455 33.02 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11896,7 +11234,7 @@
 			)
 		)
 		(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-g2rl.pdf"
-			(at 197.485 48.895 0)
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11904,8 +11242,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RELAY GEN PURPOSE SPST 12A 12V"
-			(at 197.485 31.75 0)
+		(property "Description" "Omron G2RL low profile power relay, SPST-NO"
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11914,7 +11252,7 @@
 			)
 		)
 		(property "User Label" "Enlarger Relay"
-			(at 208.28 34.29 0)
+			(at 210.82 34.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11923,7 +11261,7 @@
 			)
 		)
 		(property "Manufacturer" "Omron"
-			(at 197.485 31.75 0)
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11931,8 +11269,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "G2RL-1A4-E DC12"
-			(at 197.485 31.75 0)
+		(property "Manufacturer PN" "G2RL-1A DC12"
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11941,7 +11279,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 197.485 31.75 0)
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11949,8 +11287,8 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "Z3083-ND"
-			(at 197.485 31.75 0)
+		(property "Supplier PN" "Z140-ND"
+			(at 202.565 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11969,12 +11307,6 @@
 		)
 		(pin "5"
 			(uuid "55bade7f-c045-4cb0-9596-493ec71e45ec")
-		)
-		(pin "6"
-			(uuid "bc5354e1-83e2-45e8-9186-1e2f67d3932e")
-		)
-		(pin "8"
-			(uuid "c1c6e53b-097f-4c0f-ab47-3a48dda0c57b")
 		)
 		(instances
 			(project "power-board"
@@ -12159,7 +11491,7 @@
 	)
 	(symbol
 		(lib_id "power:LINE")
-		(at 210.82 42.545 0)
+		(at 207.645 24.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12167,7 +11499,7 @@
 		(dnp no)
 		(uuid "f6b6efe3-76f1-4b0e-a2c0-50c08d2a8909")
 		(property "Reference" "#PWR011"
-			(at 210.82 46.355 0)
+			(at 207.645 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12176,7 +11508,7 @@
 			)
 		)
 		(property "Value" "LINE"
-			(at 211.201 38.1508 0)
+			(at 207.645 20.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12184,7 +11516,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 210.82 42.545 0)
+			(at 207.645 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12193,7 +11525,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 210.82 42.545 0)
+			(at 207.645 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12202,7 +11534,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"LINE\""
-			(at 210.82 42.545 0)
+			(at 207.645 24.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
