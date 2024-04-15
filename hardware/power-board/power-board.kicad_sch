@@ -6829,7 +6829,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.5mm_Pad_Via"
 			(at 91.44 99.06 0)
 			(effects
 				(font
@@ -6932,7 +6932,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_3.5mm_Pad_Via"
 			(at 91.44 104.14 0)
 			(effects
 				(font
