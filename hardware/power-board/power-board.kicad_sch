@@ -6734,7 +6734,6 @@
 	(symbol
 		(lib_id "Switch:SW_SPST")
 		(at 41.91 52.07 0)
-		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6758,7 +6757,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "Connector_Molex:Molex_Mega-Fit_76829-0002_2x01_P5.70mm_Vertical"
+		(property "Footprint" "lib_fp:Molex_Mini-Fit_Jr_172447_2x01_P4.20mm_Vertical"
 			(at 41.91 52.07 0)
 			(effects
 				(font
@@ -6767,7 +6766,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.molex.com/en-us/products/part-detail/768290002?display=pdf"
+		(property "Datasheet" "https://www.molex.com/en-us/products/part-detail/1724470002?display=pdf"
 			(at 41.91 52.07 0)
 			(effects
 				(font
@@ -6802,7 +6801,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "0768290002"
+		(property "Manufacturer PN" "1724470002"
 			(at 41.91 52.07 0)
 			(effects
 				(font
@@ -6812,7 +6811,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Digi-Key"
+		(property "Supplier" "Mouser"
 			(at 41.91 52.07 0)
 			(effects
 				(font
@@ -6821,7 +6820,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "WM11975-ND"
+		(property "Supplier PN" "538-172447-0002"
 			(at 41.91 52.07 0)
 			(effects
 				(font
