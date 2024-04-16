@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Meter Probe")
-		(date "2024-02-27")
+		(date "2024-04-16")
 		(rev "E")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
@@ -6749,7 +6749,7 @@
 		(uuid "144ebbe2-df87-46e6-9033-9986c865d77b")
 	)
 	(label "USB_D+"
-		(at 41.275 102.87 0)
+		(at 41.275 105.41 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6936,7 +6936,7 @@
 		(uuid "f0039e8e-9aae-47ab-a2b0-86737bf697cf")
 	)
 	(label "USB_D-"
-		(at 41.275 105.41 0)
+		(at 41.275 102.87 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7297,7 +7297,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 91.44 36.83 0)
+		(at 100.965 36.83 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -7306,7 +7306,7 @@
 		(dnp no)
 		(uuid "0161b491-9ed3-41f9-8e55-988465847c49")
 		(property "Reference" "C3"
-			(at 93.345 36.195 0)
+			(at 102.87 36.195 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7315,7 +7315,7 @@
 			)
 		)
 		(property "Value" "47pF"
-			(at 93.345 38.1 0)
+			(at 102.87 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7324,7 +7324,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7333,7 +7333,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7342,7 +7342,7 @@
 			)
 		)
 		(property "Description" "CAP CER 47PF 50V C0G/NPO 0603"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7351,7 +7351,7 @@
 			)
 		)
 		(property "Manufacturer" "YAGEO"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7360,7 +7360,7 @@
 			)
 		)
 		(property "Manufacturer PN" "CC0603JRNPO9BN470"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7369,7 +7369,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7378,7 +7378,7 @@
 			)
 		)
 		(property "Supplier PN" "311-1065-1-ND"
-			(at 91.44 36.83 0)
+			(at 100.965 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9726,7 +9726,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 100.965 36.83 0)
+		(at 91.44 36.83 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9735,7 +9735,7 @@
 		(dnp no)
 		(uuid "53015133-2783-45e5-b351-0edd65e1b2c4")
 		(property "Reference" "C4"
-			(at 102.87 36.195 0)
+			(at 93.345 36.195 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9744,7 +9744,7 @@
 			)
 		)
 		(property "Value" "47pF"
-			(at 102.87 38.1 0)
+			(at 93.345 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9753,7 +9753,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9762,7 +9762,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/mlcc/UPY-GP_NP0_16V-to-50V_18.pdf"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9771,7 +9771,7 @@
 			)
 		)
 		(property "Description" "CAP CER 47PF 50V C0G/NPO 0603"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9780,7 +9780,7 @@
 			)
 		)
 		(property "Manufacturer" "YAGEO"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9789,7 +9789,7 @@
 			)
 		)
 		(property "Manufacturer PN" "CC0603JRNPO9BN470"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9798,7 +9798,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9807,7 +9807,7 @@
 			)
 		)
 		(property "Supplier PN" "311-1065-1-ND"
-			(at 100.965 36.83 0)
+			(at 91.44 36.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12730,7 +12730,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 109.22 24.765 270)
+		(at 109.22 32.385 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12739,7 +12739,7 @@
 		(dnp no)
 		(uuid "b469e594-5f8f-4513-b0ff-f7c814cb3f11")
 		(property "Reference" "R2"
-			(at 109.22 22.86 90)
+			(at 109.22 30.48 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12747,7 +12747,7 @@
 			)
 		)
 		(property "Value" "33R"
-			(at 109.22 26.67 90)
+			(at 109.22 34.29 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12755,7 +12755,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 109.22 26.543 90)
+			(at 109.22 34.163 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12764,7 +12764,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12773,7 +12773,7 @@
 			)
 		)
 		(property "Description" "RES 33 OHM 5% 1/10W 0603"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12782,7 +12782,7 @@
 			)
 		)
 		(property "Manufacturer" "YAGEO"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12791,7 +12791,7 @@
 			)
 		)
 		(property "Manufacturer PN" "RC0603JR-0733RL"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12800,7 +12800,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12809,7 +12809,7 @@
 			)
 		)
 		(property "Supplier PN" "311-33GRCT-ND"
-			(at 109.22 24.765 0)
+			(at 109.22 32.385 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14968,7 +14968,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 109.22 32.385 270)
+		(at 109.22 24.765 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -14977,7 +14977,7 @@
 		(dnp no)
 		(uuid "e8838bbd-6cbc-41ed-a99e-9ed85967fd5b")
 		(property "Reference" "R3"
-			(at 109.22 30.48 90)
+			(at 109.22 22.86 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14985,7 +14985,7 @@
 			)
 		)
 		(property "Value" "33R"
-			(at 109.22 34.29 90)
+			(at 109.22 26.67 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14993,7 +14993,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 109.22 34.163 90)
+			(at 109.22 26.543 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15002,7 +15002,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15011,7 +15011,7 @@
 			)
 		)
 		(property "Description" "RES 33 OHM 5% 1/10W 0603"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15020,7 +15020,7 @@
 			)
 		)
 		(property "Manufacturer" "YAGEO"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15029,7 +15029,7 @@
 			)
 		)
 		(property "Manufacturer PN" "RC0603JR-0733RL"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15038,7 +15038,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15047,7 +15047,7 @@
 			)
 		)
 		(property "Supplier PN" "311-33GRCT-ND"
-			(at 109.22 32.385 0)
+			(at 109.22 24.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
