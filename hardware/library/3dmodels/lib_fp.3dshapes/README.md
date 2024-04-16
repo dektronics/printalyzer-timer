@@ -419,4 +419,11 @@ this directory's `.gitignore` file.
 * Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/2824500>
 * Note: Original model edited to trim lead length
 * Footprint: `lib_fp:C_Disc_D12.0mm_W5.0mm_P10.00mm_Vishay_VY1`
-* Offset: X = 5.0 mm, Y = -0.8 mm, X = 10.0 mm
+* Offset: X = 5.0 mm, Y = -0.8 mm, Z = 10.0 mm
+
+### Vishay\_VY2152M31Y5US63V7
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/6561861>
+* Note: Original model edited to trim lead length
+* Footprint: `lib_fp:C_Disc_D8.0mm_W5.0mm_P7.50mm_Vishay_VY2`
+* Offset: X = 3.75 mm, Y = -0.45 mm, Z = 8.00 mm
