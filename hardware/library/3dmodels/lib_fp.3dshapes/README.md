@@ -50,6 +50,11 @@ this directory's `.gitignore` file.
 * Source: Created for project using Autodesk Fusion 360
 * Footprint: `lib_fp:RotaryEncoder_CUI_ACZ11BR1E-Switch_Vertical_H15mm`
 
+### CUI\_ACZ11BR2E-20FD1
+* Status: Included (Same license as project)
+* Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:RotaryEncoder_CUI_ACZ11BR2E-Switch_Vertical_H20mm`
+
 ### CUI\_MD-60SM
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.cuidevices.com/product/resource/3dmodel/md-60sm>
