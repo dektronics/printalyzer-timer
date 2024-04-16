@@ -407,6 +407,13 @@ this directory's `.gitignore` file.
 * Rotation: X = -90 deg
 * Offset: X = -1.65 mm, Y = 2.60 mm
 
+### Kemet\_R46KF310000P1M
+* Status: Included (No terms listed with download)
+* Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/3724657>
+* Footprint: `lib_fp:C_Rect_L13.0mm_W5.0mm_P10.00mm_Kemet_R46`
+* Rotation: X = -90 deg
+* Offset: X = -1.6 mm, Y = 2.6 mm
+
 ### Vishay\_VY1222M47Y5UQ63V0
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/2824500>
