@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Main Board (User Input)")
-		(date "2024-02-27")
+		(date "2024-04-16")
 		(rev "D")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
@@ -7058,7 +7058,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "lib_fp:RotaryEncoder_Bourns_PEC11L-Switch_Vertical_H20mm"
+		(property "Footprint" "lib_fp:RotaryEncoder_CUI_ACZ11BR2E-Switch_Vertical_H20mm"
 			(at 213.36 30.226 0)
 			(effects
 				(font
@@ -7067,7 +7067,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.bourns.com/docs/Product-Datasheets/PEC11L.pdf"
+		(property "Datasheet" "https://www.cuidevices.com/product/resource/acz11.pdf"
 			(at 217.17 27.686 0)
 			(effects
 				(font
@@ -7093,7 +7093,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Bourns Inc."
+		(property "Manufacturer" "CUI Devices"
 			(at 217.17 34.29 0)
 			(effects
 				(font
@@ -7102,7 +7102,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "PEC11L-4120F-S0020"
+		(property "Manufacturer PN" "ACZ11BR2E-20FD1-20C"
 			(at 217.17 34.29 0)
 			(effects
 				(font
@@ -7111,7 +7111,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" "Digi-Key"
 			(at 217.17 34.29 0)
 			(effects
 				(font
@@ -7120,7 +7120,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "652-PEC11L4120FS0020"
+		(property "Supplier PN" "102-3992-ND"
 			(at 217.17 34.29 0)
 			(effects
 				(font
