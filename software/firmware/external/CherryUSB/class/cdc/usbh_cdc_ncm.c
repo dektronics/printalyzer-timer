@@ -10,21 +10,29 @@
 #define USB_DBG_TAG "usbh_cdc_ncm"
 #include "usb_log.h"
 
-#define DEV_FORMAT                            "/dev/cdc_ncm"
+#define DEV_FORMAT "/dev/cdc_ncm"
 
 /* general descriptor field offsets */
-#define DESC_bLength                          0 /** Length offset */
-#define DESC_bDescriptorType                  1 /** Descriptor type offset */
-#define DESC_bDescriptorSubType               2 /** Descriptor subtype offset */
+#define DESC_bLength            0 /** Length offset */
+#define DESC_bDescriptorType    1 /** Descriptor type offset */
+#define DESC_bDescriptorSubType 2 /** Descriptor subtype offset */
 
 /* interface descriptor field offsets */
-#define INTF_DESC_bInterfaceNumber            2 /** Interface number offset */
-#define INTF_DESC_bAlternateSetting           3 /** Alternate setting offset */
+#define INTF_DESC_bInterfaceNumber  2 /** Interface number offset */
+#define INTF_DESC_bAlternateSetting 3 /** Alternate setting offset */
 
 #define CONFIG_USBHOST_CDC_NCM_ETH_MAX_SEGSZE 1514U
 
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_rx_buffer[2048];
-static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_tx_buffer[2048];
+/* eth rx size must be a multiple of 512 or 64 */
+#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE
+#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE (2048)
+#endif
+#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE
+#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE (2048)
+#endif
+
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_rx_buffer[CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE];
+static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_tx_buffer[CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_inttx_buffer[16];
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_buf[32];
@@ -250,6 +258,11 @@ void usbh_cdc_ncm_rx_thread(void *argument)
     int ret;
     err_t err;
     struct pbuf *p;
+#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+    pbuf_type type = PBUF_ROM;
+#else
+    pbuf_type type = PBUF_POOL;
+#endif
     struct netif *netif = (struct netif *)argument;
 
     USB_LOG_INFO("Create cdc ncm rx thread\r\n");
@@ -271,7 +284,7 @@ find_class:
 
     g_cdc_ncm_rx_length = 0;
     while (1) {
-        usbh_bulk_urb_fill(&g_cdc_ncm_class.bulkin_urb, g_cdc_ncm_class.hport, g_cdc_ncm_class.bulkin, &g_cdc_ncm_rx_buffer[g_cdc_ncm_rx_length], USB_GET_MAXPACKETSIZE(g_cdc_ncm_class.bulkin->wMaxPacketSize), USB_OSAL_WAITING_FOREVER, NULL, NULL);
+        usbh_bulk_urb_fill(&g_cdc_ncm_class.bulkin_urb, g_cdc_ncm_class.hport, g_cdc_ncm_class.bulkin, &g_cdc_ncm_rx_buffer[g_cdc_ncm_rx_length], CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
         ret = usbh_submit_urb(&g_cdc_ncm_class.bulkin_urb);
         if (ret < 0) {
             goto find_class;
@@ -279,7 +292,7 @@ find_class:
 
         g_cdc_ncm_rx_length += g_cdc_ncm_class.bulkin_urb.actual_length;
 
-        if (g_cdc_ncm_class.bulkin_urb.actual_length != USB_GET_MAXPACKETSIZE(g_cdc_ncm_class.bulkin->wMaxPacketSize)) {
+        if (g_cdc_ncm_rx_length % USB_GET_MAXPACKETSIZE(g_cdc_ncm_class.bulkin->wMaxPacketSize)) {
             USB_LOG_DBG("rxlen:%d\r\n", g_cdc_ncm_rx_length);
 
             struct cdc_ncm_nth16 *nth16 = (struct cdc_ncm_nth16 *)&g_cdc_ncm_rx_buffer[0];
@@ -306,10 +319,13 @@ find_class:
                 if (ndp16_datagram->wDatagramIndex && ndp16_datagram->wDatagramLength) {
                     USB_LOG_DBG("ndp16_datagram index:%02x, length:%02x\r\n", ndp16_datagram->wDatagramIndex, ndp16_datagram->wDatagramLength);
 
-                    p = pbuf_alloc(PBUF_RAW, ndp16_datagram->wDatagramLength, PBUF_POOL);
+                    p = pbuf_alloc(PBUF_RAW, ndp16_datagram->wDatagramLength, type);
                     if (p != NULL) {
+#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+                        p->payload = (uint8_t *)&g_cdc_ncm_rx_buffer[ndp16_datagram->wDatagramIndex];
+#else
                         memcpy(p->payload, (uint8_t *)&g_cdc_ncm_rx_buffer[ndp16_datagram->wDatagramIndex], ndp16_datagram->wDatagramLength);
-
+#endif
                         err = netif->input(p, netif);
                         if (err != ERR_OK) {
                             pbuf_free(p);
@@ -323,6 +339,10 @@ find_class:
             g_cdc_ncm_rx_length = 0;
 
         } else {
+            if (g_cdc_ncm_rx_length > CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE) {
+                USB_LOG_ERR("Rx packet is overflow\r\n");
+                g_cdc_ncm_rx_length = 0;
+            }
         }
     }
     // clang-format off
@@ -344,7 +364,7 @@ err_t usbh_cdc_ncm_linkoutput(struct netif *netif, struct pbuf *p)
     }
 
     struct cdc_ncm_nth16 *nth16 = (struct cdc_ncm_nth16 *)&g_cdc_ncm_tx_buffer[0];
-    
+
     nth16->dwSignature = CDC_NCM_NTH16_SIGNATURE;
     nth16->wHeaderLength = 12;
     nth16->wSequence = g_cdc_ncm_class.bulkout_sequence++;
@@ -402,7 +422,6 @@ CLASS_INFO_DEFINE const struct usbh_class_info cdc_ncm_class_info = {
     .class = USB_DEVICE_CLASS_CDC,
     .subclass = CDC_NETWORK_CONTROL_MODEL,
     .protocol = CDC_COMMON_PROTOCOL_NONE,
-    .vid = 0x00,
-    .pid = 0x00,
+    .id_table = NULL,
     .class_driver = &cdc_ncm_class_driver
 };

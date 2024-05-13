@@ -82,15 +82,15 @@
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX6_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX6_FIFO_SIZE (64 / 4)
+#define CONFIG_USB_DWC2_TX6_FIFO_SIZE (0 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX7_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX7_FIFO_SIZE (64 / 4)
+#define CONFIG_USB_DWC2_TX7_FIFO_SIZE (0 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX8_FIFO_SIZE
-#define CONFIG_USB_DWC2_TX8_FIFO_SIZE (64 / 4)
+#define CONFIG_USB_DWC2_TX8_FIFO_SIZE (0 / 4)
 #endif
 
 #define USBD_BASE (g_usbdev_bus[0].reg_base)
@@ -671,7 +671,7 @@ int usbd_set_address(uint8_t busid, const uint8_t addr)
     return 0;
 }
 
-uint8_t usbd_get_port_speed(uint8_t busid, const uint8_t port)
+uint8_t usbd_get_port_speed(uint8_t busid)
 {
     uint8_t speed;
     uint32_t DevEnumSpeed = USB_OTG_DEV->DSTS & USB_OTG_DSTS_ENUMSPD;
@@ -710,6 +710,17 @@ int usbd_ep_open(uint8_t busid, const struct usb_endpoint_descriptor *ep)
                                               USB_OTG_DOEPCTL_USBAEP;
         }
     } else {
+        uint16_t fifo_size;
+        if (ep_idx == 0) {
+            fifo_size = (USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ >> 16);
+        } else {
+            fifo_size = (USB_OTG_GLB->DIEPTXF[ep_idx - 1U] >> 16);
+        }
+        if ((fifo_size * 4) < USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize)) {
+            USB_LOG_ERR("Ep addr %02x fifo overflow\r\n", ep->bEndpointAddress);
+            return -2;
+        }
+
         g_dwc2_udc.in_ep[ep_idx].ep_mps = USB_GET_MAXPACKETSIZE(ep->wMaxPacketSize);
         g_dwc2_udc.in_ep[ep_idx].ep_type = USB_GET_ENDPOINT_TYPE(ep->bmAttributes);
 

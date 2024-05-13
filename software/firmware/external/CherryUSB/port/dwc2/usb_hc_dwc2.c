@@ -22,9 +22,9 @@
 #endif
 
 /*  
-(largest USB packet used / 4) + 1 for status information + 1 transfer complete + 
-1 location each for Bulk/Control endpoint for handling NAK/NYET scenario 
-*/
+ * (largest USB packet used / 4) + 1 for status information + 1 transfer complete + 
+ * 1 location each for Bulk/Control endpoint for handling NAK/NYET scenario 
+ */
 #ifndef CONFIG_USB_DWC2_RX_FIFO_SIZE
 #define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
 #endif
@@ -87,7 +87,7 @@ static inline int dwc2_reset(struct usbh_bus *bus)
 static inline int dwc2_core_init(struct usbh_bus *bus)
 {
     int ret;
-#if defined(CONFIG_USB_DWC2_ULPI_PHY)
+#if defined(CONFIG_USB_HS)
     /* Init The ULPI Interface */
     USB_OTG_GLB->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
 
@@ -811,7 +811,6 @@ int usbh_kill_urb(struct usbh_urb *urb)
     urb->errorcode = -USB_ERR_SHUTDOWN;
 
     if (urb->timeout) {
-        urb->timeout = 0;
         usb_osal_sem_give(chan->waitsem);
     } else {
         dwc2_chan_free(chan);
@@ -831,7 +830,6 @@ static inline void dwc2_urb_waitup(struct usbh_urb *urb)
     urb->hcpriv = NULL;
 
     if (urb->timeout) {
-        urb->timeout = 0;
         usb_osal_sem_give(chan->waitsem);
     } else {
         dwc2_chan_free(chan);
@@ -1024,7 +1022,7 @@ static void dwc2_port_irq_handler(struct usbh_bus *bus)
         g_dwc2_hcd[bus->hcd.hcd_id].port_pec = 1;
 
         if ((hprt0 & USB_OTG_HPRT_PENA) == USB_OTG_HPRT_PENA) {
-#if defined(CONFIG_USB_DWC2_ULPI_PHY)
+#if defined(CONFIG_USB_HS)
 #else
             if ((hprt0 & USB_OTG_HPRT_PSPD) == (HPRT0_PRTSPD_LOW_SPEED << 17)) {
                 USB_OTG_HOST->HFIR = 6000U;

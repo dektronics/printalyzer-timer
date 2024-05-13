@@ -22,8 +22,8 @@
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hub_buf[CONFIG_USBHOST_MAX_BUS][USB_ALIGN_UP(32, CONFIG_USB_ALIGN_SIZE)];
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hub_intbuf[CONFIG_USBHOST_MAX_BUS][CONFIG_USBHOST_MAX_EXTHUBS + 1][USB_ALIGN_UP(1, CONFIG_USB_ALIGN_SIZE)];
 
-extern int usbh_free_devaddr(struct usbh_hubport *hport);
 extern int usbh_enumerate(struct usbh_hubport *hport);
+extern void usbh_hubport_release(struct usbh_hubport *hport);
 
 static const char *speed_table[] = { "error-speed", "low-speed", "full-speed", "high-speed", "wireless-speed", "super-speed", "superplus-speed" };
 
@@ -91,7 +91,7 @@ static int _usbh_hub_get_hub_descriptor(struct usbh_hub *hub, uint8_t *buffer)
     if (ret < 0) {
         return ret;
     }
-    memcpy(buffer, g_hub_buf, USB_SIZEOF_HUB_DESC);
+    memcpy(buffer, g_hub_buf[hub->bus->busid], USB_SIZEOF_HUB_DESC);
     return ret;
 }
 #if 0
@@ -108,11 +108,11 @@ static int _usbh_hub_get_status(struct usbh_hub *hub, uint8_t *buffer)
     setup->wIndex = 0;
     setup->wLength = 2;
 
-    ret = usbh_control_transfer(hub->parent, setup, g_hub_buf);
+    ret = usbh_control_transfer(hub->parent, setup, g_hub_buf[hub->bus->busid]);
     if (ret < 0) {
         return ret;
     }
-    memcpy(buffer, g_hub_buf, 2);
+    memcpy(buffer, g_hub_buf[hub->bus->busid], 2);
     return ret;
 }
 #endif
@@ -280,22 +280,6 @@ static int usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
     }
 }
 
-static void usbh_hubport_release(struct usbh_hubport *child)
-{
-    if (child->connected) {
-        child->connected = false;
-        usbh_free_devaddr(child);
-        for (uint8_t i = 0; i < child->config.config_desc.bNumInterfaces; i++) {
-            if (child->config.intf[i].class_driver && child->config.intf[i].class_driver->disconnect) {
-                CLASS_DISCONNECT(child, i);
-            }
-        }
-        child->config.config_desc.bNumInterfaces = 0;
-        usbh_kill_urb(&child->ep0_urb);
-        usb_osal_mutex_delete(child->mutex);
-    }
-}
-
 #if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static void hub_int_complete_callback(void *arg, int nbytes)
 {
@@ -396,6 +380,10 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
     hub->int_buffer = g_hub_intbuf[hub->bus->busid][hub->index - 1];
 
     hub->int_timer = usb_osal_timer_create("hubint_tim", USBH_GET_URB_INTERVAL(hub->intin->bInterval, hport->speed), hub_int_timeout, hub, 0);
+    if (hub->int_timer == NULL) {
+        USB_LOG_ERR("No memory to alloc int_timer\r\n");
+        return -USB_ERR_NOMEM;
+    }
     usb_osal_timer_start(hub->int_timer);
     return 0;
 }
@@ -412,7 +400,9 @@ static int usbh_hub_disconnect(struct usbh_hubport *hport, uint8_t intf)
             usbh_kill_urb(&hub->intin_urb);
         }
 
-        usb_osal_timer_delete(hub->int_timer);
+        if (hub->int_timer) {
+            usb_osal_timer_delete(hub->int_timer);
+        }
 
         for (uint8_t port = 0; port < hub->hub_desc.bNbrPorts; port++) {
             child = &hub->child[port];
@@ -715,8 +705,7 @@ CLASS_INFO_DEFINE const struct usbh_class_info hub_class_info = {
     .class = USB_DEVICE_CLASS_HUB,
     .subclass = 0,
     .protocol = 0,
-    .vid = 0x00,
-    .pid = 0x00,
+    .id_table = NULL,
     .class_driver = &hub_class_driver
 };
 #endif

@@ -1,7 +1,12 @@
-#include <rtconfig.h>
+/*
+ * Copyright (c) 2024, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "usbh_core.h"
 #include "usbh_msc.h"
 
+#include "rtthread.h"
 #include <dfs_fs.h>
 
 #define DEV_FORMAT "/sd%c"
@@ -51,7 +56,7 @@ static rt_err_t rt_udisk_init(rt_device_t dev)
     return RT_EOK;
 }
 
-static rt_ssize_t rt_udisk_read(rt_device_t dev, rt_off_t pos, void *buffer,
+static ssize_t rt_udisk_read(rt_device_t dev, rt_off_t pos, void *buffer,
                                 rt_size_t size)
 {
     struct usbh_msc *msc_class = (struct usbh_msc *)dev->user_data;
@@ -90,7 +95,7 @@ static rt_ssize_t rt_udisk_read(rt_device_t dev, rt_off_t pos, void *buffer,
     return size;
 }
 
-static rt_ssize_t rt_udisk_write(rt_device_t dev, rt_off_t pos, const void *buffer,
+static ssize_t rt_udisk_write(rt_device_t dev, rt_off_t pos, const void *buffer,
                                  rt_size_t size)
 {
     struct usbh_msc *msc_class = (struct usbh_msc *)dev->user_data;

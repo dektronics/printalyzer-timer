@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2022, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 #include "usbd_core.h"
 #include "usb_ch32_usbfs_reg.h"
 
@@ -96,7 +101,7 @@ int usbd_set_address(uint8_t busid, const uint8_t addr)
     return 0;
 }
 
-uint8_t usbd_get_port_speed(uint8_t busid, const uint8_t port)
+uint8_t usbd_get_port_speed(uint8_t busid)
 {
     return USB_SPEED_FULL;
 }
