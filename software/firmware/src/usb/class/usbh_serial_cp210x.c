@@ -41,20 +41,6 @@ static struct usbh_serial_class_interface const vtable = {
 #define HPORT(x) (x->base.hport)
 #define SETUP_PACKET(x) (x->base.hport->setup)
 
-static int usbh_serial_cp210x_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
-{
-    /* CP210X devices can show up under several different PIDs */
-    switch (pid) {
-    case 0xEA60: /* CP2102 - SILABS USB UART */
-    case 0xEA61: /* CP210X_2 - CP210x Serial */
-    case 0xEA70: /* CP210X_3 - CP210x Serial */
-    case 0xEA80: /* CP210X_4 - CP210x Serial */
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 static struct usbh_serial_cp210x *usbh_serial_cp210x_class_alloc(void)
 {
     struct usbh_serial_cp210x *cp210x_class = pvPortMalloc(sizeof(struct usbh_serial_cp210x));
@@ -335,19 +321,25 @@ static int usbh_serial_cp210x_disconnect(struct usbh_hubport *hport, uint8_t int
     return ret;
 }
 
+static const uint16_t serial_cp210x_id_table[][2] = {
+    { 0x10C4, 0xEA60 }, /* CP2102 - SILABS USB UART */
+    { 0x10C4, 0xEA61 }, /* CP210X_2 - CP210x Serial */
+    { 0x10C4, 0xEA70 }, /* CP210X_3 - CP210x Serial */
+    { 0x10C4, 0xEA80 }, /* CP210X_4 - CP210x Serial */
+    { 0, 0 },
+};
+
 const struct usbh_class_driver serial_cp210x_class_driver = {
     .driver_name = "cp210x",
     .connect = usbh_serial_cp210x_connect,
-    .disconnect = usbh_serial_cp210x_disconnect,
-    .match = usbh_serial_cp210x_match
+    .disconnect = usbh_serial_cp210x_disconnect
 };
 
 CLASS_INFO_DEFINE const struct usbh_class_info serial_cp210x_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_CUSTOM_FUNC,
+    .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
     .class = 0xff,
-    .subclass = 0xff,
-    .protocol = 0xff,
-    .vid = 0x10C4,
-    .pid = 0x00,
+    .subclass = 0x00,
+    .protocol = 0x00,
+    .id_table = serial_cp210x_id_table,
     .class_driver = &serial_cp210x_class_driver
 };

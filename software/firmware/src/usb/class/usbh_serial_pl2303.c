@@ -50,22 +50,6 @@ static struct usbh_serial_class_interface const vtable = {
 #define HPORT(x) (x->base.hport)
 #define SETUP_PACKET(x) (x->base.hport->setup)
 
-static int usbh_serial_pl2303_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
-{
-    switch (pid) {
-    case 0x2303: // PL2303 Serial (ATEN/IOGEAR UC232A)
-    case 0x23A3: // PL2303HXN Serial, type GC
-    case 0x23B3: // PL2303HXN Serial, type GB
-    case 0x23C3: // PL2303HXN Serial, type GT
-    case 0x23D3: // PL2303HXN Serial, type GL
-    case 0x23E3: // PL2303HXN Serial, type GE
-    case 0x23F3: // PL2303HXN Serial, type GS
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 static struct usbh_serial_pl2303 *usbh_serial_pl2303_class_alloc(void)
 {
     struct usbh_serial_pl2303 *pl2303_class = pvPortMalloc(sizeof(struct usbh_serial_pl2303));
@@ -374,19 +358,28 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
     return ret;
 }
 
+static const uint16_t serial_pl2303_id_table[][2] = {
+    { 0x067B, 0x2303 }, /* PL2303 Serial (ATEN/IOGEAR UC232A) */
+    { 0x067B, 0x23A3 }, /* PL2303HXN Serial, type GC */
+    { 0x067B, 0x23B3 }, /* PL2303HXN Serial, type GB */
+    { 0x067B, 0x23C3 }, /* PL2303HXN Serial, type GT */
+    { 0x067B, 0x23D3 }, /* PL2303HXN Serial, type GL */
+    { 0x067B, 0x23E3 }, /* PL2303HXN Serial, type GE */
+    { 0x067B, 0x23F3 }, /* PL2303HXN Serial, type GS */
+    { 0, 0 },
+};
+
 const struct usbh_class_driver serial_pl2303_class_driver = {
     .driver_name = "pl2303",
     .connect = usbh_serial_pl2303_connect,
-    .disconnect = usbh_serial_pl2303_disconnect,
-    .match = usbh_serial_pl2303_match
+    .disconnect = usbh_serial_pl2303_disconnect
 };
 
 CLASS_INFO_DEFINE const struct usbh_class_info serial_pl2303_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_CUSTOM_FUNC,
+    .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
     .class = 0xff,
-    .subclass = 0xff,
-    .protocol = 0xff,
-    .vid = 0x067B,
-    .pid = 0x00,
+    .subclass = 0x00,
+    .protocol = 0x00,
+    .id_table = serial_pl2303_id_table,
     .class_driver = &serial_pl2303_class_driver
 };

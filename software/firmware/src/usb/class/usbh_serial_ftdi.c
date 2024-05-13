@@ -58,26 +58,6 @@ static struct usbh_serial_class_interface const vtable = {
 #define HPORT(x) (x->base.hport)
 #define SETUP_PACKET(x) (x->base.hport->setup)
 
-static int usbh_serial_ftdi_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
-{
-    /*
-     * FTDI devices can show up under several different PIDs, so we need to
-     * check them all. The VID and other properties are already matched
-     * against the class info structure before this function is called.
-     */
-    switch (pid) {
-    case 0x6001:
-    case 0x6010:
-    case 0x6011:
-    case 0x6014:
-    case 0x6015:
-    case 0xE2E6:
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 static struct usbh_serial_ftdi *usbh_serial_ftdi_class_alloc(void)
 {
     struct usbh_serial_ftdi *ftdi_class = pvPortMalloc(sizeof(struct usbh_serial_ftdi));
@@ -437,19 +417,27 @@ int usbh_serial_ftdi_bulk_in_check_result(struct usbh_serial_class *serial_class
     return nbytes;
 }
 
+static const uint16_t serial_ftdi_id_table[][2] = {
+    { 0x0403, 0x6001 },
+    { 0x0403, 0x6010 },
+    { 0x0403, 0x6011 },
+    { 0x0403, 0x6014 },
+    { 0x0403, 0x6015 },
+    { 0x0403, 0xE2E6 },
+    { 0, 0 },
+};
+
 const struct usbh_class_driver serial_ftdi_class_driver = {
     .driver_name = "ftdi",
     .connect = usbh_serial_ftdi_connect,
-    .disconnect = usbh_serial_ftdi_disconnect,
-    .match = usbh_serial_ftdi_match
+    .disconnect = usbh_serial_ftdi_disconnect
 };
 
 CLASS_INFO_DEFINE const struct usbh_class_info serial_ftdi_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_CUSTOM_FUNC,
+    .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
     .class = 0xff,
-    .subclass = 0xff,
-    .protocol = 0xff,
-    .vid = 0x0403,
-    .pid = 0x00,
+    .subclass = 0x00,
+    .protocol = 0x00,
+    .id_table = serial_ftdi_id_table,
     .class_driver = &serial_ftdi_class_driver
 };

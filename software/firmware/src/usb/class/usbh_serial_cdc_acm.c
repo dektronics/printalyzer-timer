@@ -185,7 +185,6 @@ CLASS_INFO_DEFINE const struct usbh_class_info cdc_serial_acm_class_info = {
     .class = USB_DEVICE_CLASS_CDC,
     .subclass = CDC_ABSTRACT_CONTROL_MODEL,
     .protocol = 0x00,
-    .vid = 0x00,
-    .pid = 0x00,
+    .id_table = NULL,
     .class_driver = &cdc_serial_acm_class_driver
 };

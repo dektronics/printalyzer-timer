@@ -32,19 +32,6 @@ static struct usbh_serial_class_interface const vtable = {
 #define HPORT(x) (x->base.hport)
 #define SETUP_PACKET(x) (x->base.hport->setup)
 
-static int usbh_serial_ch34x_match(uint8_t class, uint8_t subclass, uint8_t protocol, uint16_t vid, uint16_t pid)
-{
-    switch (pid) {
-    case 0x7523: /* CH340 */
-    case 0x7522: /* CH340K */
-    case 0x5523: /* CH341 */
-    case 0xe523: /* CH330 */
-        return 1;
-    default:
-        return 0;
-    }
-}
-
 static struct usbh_serial_ch34x *usbh_serial_ch34x_class_alloc(void)
 {
     struct usbh_serial_ch34x *ch34x_class = pvPortMalloc(sizeof(struct usbh_serial_ch34x));
@@ -303,19 +290,25 @@ static int usbh_serial_ch34x_disconnect(struct usbh_hubport *hport, uint8_t intf
     return ret;
 }
 
+static const uint16_t serial_ch34x_id_table[][2] = {
+    { 0x1A86, 0x7523 }, /* CH340 */
+    { 0x1A86, 0x7522 }, /* CH340K */
+    { 0x1A86, 0x5523 }, /* CH341 */
+    { 0x1A86, 0xe523 }, /* CH330 */
+    { 0, 0 },
+};
+
 const struct usbh_class_driver serial_ch34x_class_driver = {
     .driver_name = "ch34x",
     .connect = usbh_serial_ch34x_connect,
     .disconnect = usbh_serial_ch34x_disconnect,
-    .match = usbh_serial_ch34x_match
 };
 
 CLASS_INFO_DEFINE const struct usbh_class_info serial_ch34x_class_info = {
-    .match_flags = USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_CUSTOM_FUNC,
+    .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
     .class = 0xff,
-    .subclass = 0xff,
-    .protocol = 0xff,
-    .vid = 0x1A86,
-    .pid = 0x00,
+    .subclass = 0x00,
+    .protocol = 0x00,
+    .id_table = serial_ch34x_id_table,
     .class_driver = &serial_ch34x_class_driver
 };
