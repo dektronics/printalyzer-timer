@@ -26,6 +26,9 @@ void usbh_hub_thread_wakeup(struct usbh_hub *hub);
 int usbh_hub_initialize(struct usbh_bus *bus);
 int usbh_hub_deinitialize(struct usbh_bus *bus);
 
+void usbh_hub_run(struct usbh_hub *hub); /* (DK) */
+void usbh_hub_stop(struct usbh_hub *hub); /* (DK) */
+
 #ifdef __cplusplus
 }
 #endif

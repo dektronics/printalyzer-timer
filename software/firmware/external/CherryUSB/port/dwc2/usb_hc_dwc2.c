@@ -431,6 +431,10 @@ __WEAK void usb_hc_low_level_deinit(struct usbh_bus *bus)
 {
 }
 
+__WEAK void usb_hc_sof(struct usbh_bus *bus) /* (DK) */
+{
+}
+
 int usb_hc_init(struct usbh_bus *bus)
 {
     int ret;
@@ -510,7 +514,7 @@ int usb_hc_init(struct usbh_bus *bus)
 
     /* Enable interrupts matching to the Host mode ONLY */
     USB_OTG_GLB->GINTMSK |= (USB_OTG_GINTMSK_PRTIM | USB_OTG_GINTMSK_HCIM |
-                             USB_OTG_GINTSTS_DISCINT);
+                             USB_OTG_GINTMSK_SOFM | USB_OTG_GINTSTS_DISCINT); /* (DK) Added SOFM */
 
     USB_OTG_GLB->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
 
@@ -1077,6 +1081,10 @@ void USBH_IRQHandler(uint8_t busid)
             usbh_hub_thread_wakeup(&bus->hcd.roothub);
 
             USB_OTG_GLB->GINTSTS = USB_OTG_GINTSTS_DISCINT;
+        }
+        if (gint_status & USB_OTG_GINTSTS_SOF) { /* (DK) SOF interrupt handling */
+            usb_hc_sof(bus);
+            USB_OTG_GLB->GINTSTS = USB_OTG_GINTSTS_SOF;
         }
         if (gint_status & USB_OTG_GINTSTS_HCINT) {
             chan_int = (USB_OTG_HOST->HAINT & USB_OTG_HOST->HAINTMSK) & 0xFFFFU;

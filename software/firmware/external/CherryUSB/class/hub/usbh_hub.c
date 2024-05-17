@@ -385,6 +385,7 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
         return -USB_ERR_NOMEM;
     }
     usb_osal_timer_start(hub->int_timer);
+    usbh_hub_run(hub); /* (DK) */
     return 0;
 }
 
@@ -412,6 +413,7 @@ static int usbh_hub_disconnect(struct usbh_hubport *hport, uint8_t intf)
 
         if (hport->config.intf[intf].devname[0] != '\0') {
             USB_LOG_INFO("Unregister HUB Class:%s\r\n", hport->config.intf[intf].devname);
+            usbh_hub_stop(hub); /* (DK) */
             usb_slist_remove(&hub->bus->hub_list, &hub->list);
         }
 
@@ -691,6 +693,14 @@ int usbh_hub_deinitialize(struct usbh_bus *bus)
     usb_osal_thread_delete(bus->hub_thread);
 
     return 0;
+}
+
+__WEAK void usbh_hub_run(struct usbh_hub *hub) /* (DK) */
+{
+}
+
+__WEAK void usbh_hub_stop(struct usbh_hub *hub) /* (DK) */
+{
 }
 
 #if CONFIG_USBHOST_MAX_EXTHUBS > 0
