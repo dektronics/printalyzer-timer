@@ -302,6 +302,18 @@ void usbh_ft260_control_attach(struct usbh_hid *hid_class)
         dev_handle->connected = 1;
         usbh_ft260_control_startup(dev_handle);
     }
+
+    /* Invoke the callback to notify of the connection event */
+    ft260_device_event_callback_t callback = NULL;
+    if (meter_probe_handle.dev_handle == dev_handle) {
+        osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
+        callback = meter_probe_handle.callback;
+        osMutexRelease(meter_probe_handle.mutex);
+    }
+
+    if (callback) {
+        callback(&meter_probe_handle, FT260_EVENT_ATTACH, osKernelGetTickCount());
+    }
 }
 
 void usbh_ft260_control_detach(struct usbh_hid *hid_class)
@@ -313,6 +325,7 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
     }
 
     usb_ft260_handle_t *dev_handle = ft260_handles[hid_class->minor];
+    ft260_device_event_callback_t callback = NULL;
 
     /* Disconnect the external handle before we break any internal state */
     if (dev_handle->device_type == FT260_METER_PROBE) {
@@ -320,6 +333,7 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
         if (meter_probe_handle.dev_handle == dev_handle) {
             meter_probe_handle.dev_handle = NULL;
         }
+        callback = meter_probe_handle.callback;
         osMutexRelease(meter_probe_handle.mutex);
     }
 
@@ -339,16 +353,13 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
     if (!dev_handle->hid_class0 && !dev_handle->hid_class1) {
         log_d("FT260_CONTROL_DETACH");
 
-        ft260_device_event_callback_t callback = NULL;
-        if (meter_probe_handle.dev_handle == dev_handle) {
-            osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
-            callback = meter_probe_handle.callback;
-            osMutexRelease(meter_probe_handle.mutex);
-        }
+        if (callback) {
+            /* Inject a button release event just in case */
+            if (dev_handle->button_pressed) {
+                callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount());
+            }
 
-        /* Inject a release event just in case */
-        if (dev_handle->button_pressed && callback) {
-            callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount());
+            callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount());
         }
 
         vPortFree(dev_handle);

@@ -13,7 +13,9 @@ typedef enum {
 } ft260_device_type_t;
 
 typedef enum {
-    FT260_EVENT_INTERRUPT = 0,
+    FT260_EVENT_ATTACH = 0,
+    FT260_EVENT_DETACH,
+    FT260_EVENT_INTERRUPT,
     FT260_EVENT_BUTTON_DOWN,
     FT260_EVENT_BUTTON_UP
 } ft260_device_event_t;

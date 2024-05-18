@@ -8,8 +8,6 @@ typedef struct i2c_handle_t i2c_handle_t;
 
 bool usb_host_init();
 
-bool usb_hub_init();
-
 bool usb_msc_is_mounted();
 bool usb_serial_is_attached();
 bool usb_meter_probe_is_attached();

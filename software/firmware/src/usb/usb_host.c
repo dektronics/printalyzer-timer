@@ -1,6 +1,8 @@
 #include "usb_host.h"
 
 #include <cmsis_os.h>
+#include <FreeRTOS.h>
+#include <timers.h>
 #include <ff.h>
 
 #include "stm32f4xx.h"
@@ -16,6 +18,11 @@
 #define LOG_TAG "usb_host"
 #include <elog.h>
 
+#define SOF_WATCHDOG_PERIOD          pdMS_TO_TICKS(10)
+#define SOF_WATCHDOG_ATTACH_TIMEOUT  pdMS_TO_TICKS(2000)
+#define SOF_WATCHDOG_RUNNING_TIMEOUT pdMS_TO_TICKS(500)
+#define SOF_WATCHDOG_REATTACH_DELAY  pdMS_TO_TICKS(20)
+
 extern SMBUS_HandleTypeDef hsmbus2;
 
 extern void Error_Handler(void);
@@ -28,6 +35,22 @@ static const osMutexAttr_t usb_attach_mutex_attributes = {
     .name = "usb_attach_mutex"
 };
 
+volatile bool internal_hub_attached = false;
+volatile uint32_t sof_timer = 0;
+
+static TimerHandle_t sof_watchdog_timer = NULL;
+
+typedef enum {
+    SOF_WATCHDOG_INIT = 0,
+    SOF_WATCHDOG_ATTACH,
+    SOF_WATCHDOG_RUNNING,
+    SOF_WATCHDOG_TIMEOUT
+} sof_watchdog_state_t;
+
+sof_watchdog_state_t sof_watchdog_state = SOF_WATCHDOG_INIT;
+uint32_t sof_watchdog_ticks = 0;
+uint32_t sof_watchdog_last_value = 0;
+
 typedef enum {
     HID_DEVICE_UNKNOWN = 0,
     HID_DEVICE_KEYBOARD,
@@ -36,10 +59,14 @@ typedef enum {
     HID_DEVICE_FT260_METER_PROBE
 } hid_device_type_t;
 
+static bool usb_hub_init();
+
 static HAL_StatusTypeDef smbus_master_block_write(
     SMBUS_HandleTypeDef *hsmbus,
     uint8_t dev_address, uint8_t mem_address,
     const uint8_t *data, uint8_t len);
+
+static void sof_watchdog_timer_callback(TimerHandle_t xTimer);
 
 static hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class);
 
@@ -94,6 +121,15 @@ bool usb_host_init()
         return false;
     }
 
+    /* Create the timer used to act as a watchdog on the SOF event */
+    sof_watchdog_timer = xTimerCreate(
+        "sof_watchdog", SOF_WATCHDOG_PERIOD, pdTRUE, (void *)0,
+        sof_watchdog_timer_callback);
+    if (!sof_watchdog_timer) {
+        log_e("Unable to create SOF watchdog timer");
+        return false;
+    }
+
     /* Initialize class drivers */
     if (!usbh_hid_keyboard_init()) {
         return false;
@@ -113,6 +149,14 @@ bool usb_host_init()
      * is actually returned. It isn't, so not handling it.
      */
     usbh_initialize(0, USB_OTG_HS_PERIPH_BASE);
+
+    log_i("USB stack initialized");
+
+    if (!usb_hub_init()) {
+        log_e("Unable to initialize USB hub");
+        return false;
+    }
+
     return true;
 }
 
@@ -167,11 +211,21 @@ bool usb_hub_init()
         return false;
     }
 
+    /* Start the SOF watchdog timer */
+    sof_watchdog_state = SOF_WATCHDOG_ATTACH;
+    sof_watchdog_ticks = osKernelGetTickCount();
+    if (xTimerStart(sof_watchdog_timer, portMAX_DELAY) != pdPASS) {
+        log_w("Unable to start SOF watchdog timer");
+        return false;
+    }
+
     /* Finish configuration and trigger USB_ATTACH */
     log_d("Triggering USB attach");
     static const uint8_t USB2422_STCD = 0x01;
     ret = smbus_master_block_write(&hsmbus2, USB2422_ADDRESS, 0xFF, &USB2422_STCD, 1);
     if (ret != HAL_OK) {
+        sof_watchdog_state = SOF_WATCHDOG_INIT;
+        xTimerStop(sof_watchdog_timer, portMAX_DELAY);
         return false;
     }
 
@@ -226,6 +280,67 @@ HAL_StatusTypeDef smbus_master_block_write(
     }
 
     return HAL_OK;
+}
+
+void usb_hc_sof(struct usbh_bus *bus)
+{
+    sof_timer++;
+}
+
+void sof_watchdog_timer_callback(TimerHandle_t xTimer)
+{
+    uint32_t ticks = osKernelGetTickCount();
+    sof_watchdog_state_t next_state = sof_watchdog_state;
+
+    if (sof_watchdog_state == SOF_WATCHDOG_ATTACH) {
+        if (internal_hub_attached) {
+            next_state = SOF_WATCHDOG_RUNNING;
+        } else if (ticks - sof_watchdog_ticks > SOF_WATCHDOG_ATTACH_TIMEOUT) {
+            log_w("USB internal hub attach timeout");
+            next_state = SOF_WATCHDOG_TIMEOUT;
+        }
+    } else if (sof_watchdog_state == SOF_WATCHDOG_RUNNING) {
+        if (sof_timer != sof_watchdog_last_value) {
+            sof_watchdog_ticks = ticks;
+        } else if (ticks - sof_watchdog_ticks > SOF_WATCHDOG_RUNNING_TIMEOUT) {
+            log_w("USB SOF timeout");
+            next_state = SOF_WATCHDOG_TIMEOUT;
+        }
+    } else if (sof_watchdog_state == SOF_WATCHDOG_TIMEOUT) {
+        if (!internal_hub_attached && ticks - sof_watchdog_ticks > SOF_WATCHDOG_REATTACH_DELAY) {
+            log_i("Triggering USB hub reattach");
+            next_state = SOF_WATCHDOG_ATTACH;
+        }
+    }
+
+    if (next_state != sof_watchdog_state) {
+        if (next_state == SOF_WATCHDOG_ATTACH) {
+            /* Indicate a return of VBUS_DETECT to cause the internal hub to reattach */
+            HAL_GPIO_WritePin(USB_DRIVE_VBUS_GPIO_Port, USB_DRIVE_VBUS_Pin, GPIO_PIN_SET);
+        } else if (next_state == SOF_WATCHDOG_TIMEOUT) {
+            /* Indicate a loss of VBUS_DETECT to cause the internal hub to detach */
+            HAL_GPIO_WritePin(USB_DRIVE_VBUS_GPIO_Port, USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
+        }
+        sof_watchdog_state = next_state;
+        sof_watchdog_ticks = ticks;
+    }
+    sof_watchdog_last_value = sof_timer;
+}
+
+void usbh_hub_run(struct usbh_hub *hub)
+{
+    if (!hub->is_roothub && hub->parent->parent->is_roothub) {
+        log_d("Internal hub attached");
+        internal_hub_attached = true;
+    }
+}
+
+void usbh_hub_stop(struct usbh_hub *hub)
+{
+    if (!hub->is_roothub && hub->parent->parent->is_roothub) {
+        log_d("Internal hub detached");
+        internal_hub_attached = false;
+    }
 }
 
 bool usb_msc_is_mounted()

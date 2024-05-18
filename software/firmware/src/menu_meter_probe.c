@@ -1063,6 +1063,11 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             gain = sensor_reading.reading[0].gain;
             sample_time = sensor_reading.sample_time;
             sample_count = sensor_reading.sample_count;
+        } else {
+            if (!meter_probe_is_started()) {
+                sprintf(buf, "\n\n**** Detached ****");
+                display_static_list("Meter Probe Diagnostics", buf);
+            }
         }
 
         if (keypad_wait_for_event(&keypad_event, 100) == HAL_OK) {

@@ -26,12 +26,22 @@
  */
 #define FIFO_ALS_ENTRY_SIZE 7
 
+typedef enum {
+    METER_PROBE_STATE_NONE = 0,
+    METER_PROBE_STATE_INIT,
+    METER_PROBE_STATE_STARTED,
+    METER_PROBE_STATE_RUNNING,
+    METER_PROBE_STATE_DETACHED
+} meter_probe_state_t;
+
 /**
  * Meter probe control event types.
  */
 typedef enum {
     METER_PROBE_CONTROL_STOP = 0,
     METER_PROBE_CONTROL_START,
+    METER_PROBE_CONTROL_ATTACH,
+    METER_PROBE_CONTROL_DETACH,
     METER_PROBE_CONTROL_SENSOR_ENABLE,
     METER_PROBE_CONTROL_SENSOR_DISABLE,
     METER_PROBE_CONTROL_SENSOR_SET_GAIN,
@@ -44,7 +54,8 @@ typedef enum {
 } meter_probe_control_event_type_t;
 
 typedef enum {
-    METER_PROBE_START_NORMAL = 0,
+    METER_PROBE_START_NONE = 0,
+    METER_PROBE_START_NORMAL,
     METER_PROBE_START_FAST_MODE,
     METER_PROBE_START_SINGLE_SHOT
 } sensor_control_start_mode_t;
@@ -91,6 +102,7 @@ typedef struct {
  * Configuration state for the TSL2585 light sensor
  */
 typedef struct {
+    sensor_control_start_mode_t start_mode;
     bool running;
     bool single_shot;
     bool fast_mode;
@@ -124,8 +136,7 @@ typedef struct {
 static ft260_device_t *device_handle = NULL;
 static i2c_handle_t *hi2c = NULL;
 
-static bool meter_probe_initialized = false;
-static bool meter_probe_started = false;
+static meter_probe_state_t meter_probe_state = METER_PROBE_STATE_NONE;
 
 static bool meter_probe_has_sensor_settings = false;
 static meter_probe_settings_handle_t probe_settings_handle = {0};
@@ -164,9 +175,15 @@ static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
     0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, 0
 };
 
+/* Meter probe interface functions only called by internally handled events */
+static osStatus_t meter_probe_attach();
+static osStatus_t meter_probe_detach();
+
 /* Meter probe control implementation functions */
 static osStatus_t meter_probe_control_start();
 static osStatus_t meter_probe_control_stop();
+static osStatus_t meter_probe_control_attach();
+static osStatus_t meter_probe_control_detach();
 static osStatus_t meter_probe_sensor_enable_impl(sensor_control_start_mode_t start_mode);
 static osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_mode);
 static osStatus_t meter_probe_control_sensor_disable();
@@ -225,7 +242,7 @@ void task_meter_probe_run(void *argument)
     /* Set the meter probe event callback */
     usbh_ft260_set_device_callback(device_handle, usb_meter_probe_event_callback);
 
-    meter_probe_initialized = true;
+    meter_probe_state = METER_PROBE_STATE_INIT;
 
     /* Release the startup semaphore */
     if (osSemaphoreRelease(task_start_semaphore) != osOK) {
@@ -243,6 +260,12 @@ void task_meter_probe_run(void *argument)
                 break;
             case METER_PROBE_CONTROL_START:
                 ret = meter_probe_control_start();
+                break;
+            case METER_PROBE_CONTROL_ATTACH:
+                ret = meter_probe_control_attach();
+                break;
+            case METER_PROBE_CONTROL_DETACH:
+                ret = meter_probe_control_detach();
                 break;
             case METER_PROBE_CONTROL_SENSOR_ENABLE:
                 ret = meter_probe_control_sensor_enable(control_event.start_mode);
@@ -276,7 +299,9 @@ void task_meter_probe_run(void *argument)
             }
 
             /* Handle all external commands by propagating their completion */
-            if (control_event.event_type != METER_PROBE_CONTROL_INTERRUPT) {
+            if (control_event.event_type != METER_PROBE_CONTROL_INTERRUPT
+                && control_event.event_type != METER_PROBE_CONTROL_ATTACH
+                && control_event.event_type != METER_PROBE_CONTROL_DETACH) {
                 if (control_event.result) {
                     *(control_event.result) = ret;
                 }
@@ -294,6 +319,14 @@ void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t
     if (device_handle != device) { return; }
 
     switch (event_type) {
+    case FT260_EVENT_ATTACH:
+        log_d("Meter probe attached");
+        meter_probe_attach();
+        break;
+    case FT260_EVENT_DETACH:
+        log_d("Meter probe detached");
+        meter_probe_detach();
+        break;
     case FT260_EVENT_INTERRUPT:
         meter_probe_int_handler(ticks);
         break;
@@ -310,12 +343,12 @@ void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t
 
 bool meter_probe_is_started()
 {
-    return meter_probe_started;
+    return meter_probe_state == METER_PROBE_STATE_STARTED || meter_probe_state == METER_PROBE_STATE_RUNNING;
 }
 
 osStatus_t meter_probe_start()
 {
-    if (!meter_probe_initialized || meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state != METER_PROBE_STATE_INIT) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -399,10 +432,10 @@ osStatus_t meter_probe_control_start()
             log_d("UV calibration value: %d", sensor_state.uv_calibration);
         }
 
-        meter_probe_started = true;
+        meter_probe_state = METER_PROBE_STATE_STARTED;
     } while (0);
 
-    if (!meter_probe_started) {
+    if (meter_probe_state != METER_PROBE_STATE_STARTED) {
         log_w("Meter probe initialization failed");
         meter_probe_control_stop();
     }
@@ -412,7 +445,7 @@ osStatus_t meter_probe_control_start()
 
 osStatus_t meter_probe_stop()
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_INIT) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -429,7 +462,7 @@ osStatus_t meter_probe_control_stop()
     log_d("meter_probe_control_stop");
 
     /* Reset state variables */
-    meter_probe_started = false;
+    meter_probe_state = METER_PROBE_STATE_INIT;
 
     /* Clear the settings */
     memset(&probe_settings_handle, 0, sizeof(meter_probe_settings_handle_t));
@@ -440,10 +473,85 @@ osStatus_t meter_probe_control_stop()
     return osOK;
 }
 
+osStatus_t meter_probe_attach()
+{
+    if (meter_probe_state != METER_PROBE_STATE_DETACHED) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_ATTACH,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    /* This command does not block on being handled by the task */
+    return result;
+}
+
+osStatus_t meter_probe_control_attach()
+{
+    osStatus_t result = osOK;
+    log_d("meter_probe_control_attach");
+
+    /* Double-check that we're still in the detached state */
+    if (meter_probe_state != METER_PROBE_STATE_DETACHED) { return osOK; }
+
+    /* Re-start the meter probe */
+    result = meter_probe_control_start();
+    if (result != osOK) {
+        return result;
+    }
+
+    /* Re-enable the sensor if it was previously enabled */
+    if (sensor_state.start_mode != METER_PROBE_START_NONE) {
+        result = meter_probe_control_sensor_enable(sensor_state.start_mode);
+    }
+
+    return result;
+}
+
+osStatus_t meter_probe_detach()
+{
+    if (meter_probe_state != METER_PROBE_STATE_STARTED && meter_probe_state != METER_PROBE_STATE_RUNNING) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_DETACH,
+        .result = &result
+    };
+    osMessageQueuePut(meter_probe_control_queue, &control_event, 0, portMAX_DELAY);
+    /* This command does not block on being handled by the task */
+    return result;
+}
+
+osStatus_t meter_probe_control_detach()
+{
+    log_d("meter_probe_control_detach");
+
+    /* Set to the detached state */
+    meter_probe_state = METER_PROBE_STATE_DETACHED;
+
+    /* Clear the settings */
+    memset(&probe_settings_handle, 0, sizeof(meter_probe_settings_handle_t));
+    memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
+    meter_probe_has_sensor_settings = false;
+
+    /* Selectively clear the state, marking a lot of fields as pending */
+    sensor_state.running = false;
+    sensor_state.gain_pending = true;
+    sensor_state.integration_pending = true;
+    sensor_state.mod_calibration_pending = true;
+    sensor_state.agc_pending = true;
+    sensor_state.sai_active = false;
+    sensor_state.agc_disabled_reset_gain = false;
+    sensor_state.discard_next_reading = false;
+
+    return osOK;
+}
+
 osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info)
 {
     if (!info) { return osErrorParameter; }
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     memset(info, 0, sizeof(meter_probe_device_info_t));
 
@@ -455,14 +563,14 @@ osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info)
 
 bool meter_probe_has_settings()
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return false; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
     return meter_probe_has_sensor_settings;
 }
 
 osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
 {
     if (!settings) { return osErrorParameter; }
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     memset(settings, 0, sizeof(meter_probe_settings_t));
 
@@ -478,7 +586,7 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings)
 osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
 {
     if (!settings) { return osErrorParameter; }
-    if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || sensor_state.running) { return osErrorResource; }
 
     if (settings->type != probe_settings_handle.id.probe_type) {
         log_w("Invalid settings device type");
@@ -545,7 +653,7 @@ osStatus_t meter_probe_sensor_enable_single_shot()
 
 osStatus_t meter_probe_sensor_enable_impl(sensor_control_start_mode_t start_mode)
 {
-    if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || sensor_state.running) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -568,17 +676,20 @@ osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_m
     case METER_PROBE_START_FAST_MODE:
         fast_mode = true;
         single_shot = false;
+        sensor_state.start_mode = METER_PROBE_START_FAST_MODE;
         log_d("meter_probe_control_sensor_enable: fast_mode");
         break;
     case METER_PROBE_START_SINGLE_SHOT:
         fast_mode = false;
         single_shot = true;
+        sensor_state.start_mode = METER_PROBE_START_SINGLE_SHOT;
         log_d("meter_probe_control_sensor_enable: single_shot");
         break;
     case METER_PROBE_START_NORMAL:
     default:
         fast_mode = false;
         single_shot = false;
+        sensor_state.start_mode = METER_PROBE_START_NORMAL;
         log_d("meter_probe_control_sensor_enable: continuous");
         break;
     }
@@ -860,7 +971,7 @@ HAL_StatusTypeDef sensor_osc_calibration()
 
 osStatus_t meter_probe_sensor_disable()
 {
-    if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || !sensor_state.running) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -890,6 +1001,7 @@ osStatus_t meter_probe_control_sensor_disable()
         }
 
         sensor_state.running = false;
+        sensor_state.start_mode = METER_PROBE_START_NONE;
     } while (0);
 
     return hal_to_os_status(ret);
@@ -897,7 +1009,7 @@ osStatus_t meter_probe_control_sensor_disable()
 
 osStatus_t meter_probe_sensor_set_gain(tsl2585_gain_t gain)
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -951,7 +1063,7 @@ osStatus_t meter_probe_control_sensor_set_gain(const sensor_control_gain_params_
 
 osStatus_t meter_probe_sensor_set_integration(uint16_t sample_time, uint16_t sample_count)
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -996,7 +1108,7 @@ osStatus_t meter_probe_control_sensor_integration(const sensor_control_integrati
 
 osStatus_t meter_probe_sensor_set_mod_calibration(uint8_t value)
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -1034,7 +1146,7 @@ osStatus_t meter_probe_control_sensor_set_mod_calibration(const sensor_control_m
 
 osStatus_t meter_probe_sensor_enable_agc(uint16_t sample_count)
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -1076,7 +1188,7 @@ osStatus_t meter_probe_control_sensor_enable_agc(const sensor_control_agc_params
 
 osStatus_t meter_probe_sensor_disable_agc()
 {
-    if (!meter_probe_initialized || !meter_probe_started) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -1117,7 +1229,7 @@ osStatus_t meter_probe_control_sensor_disable_agc()
 
 osStatus_t meter_probe_sensor_trigger_next_reading()
 {
-    if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || !sensor_state.running) { return osErrorResource; }
 
     if (!sensor_state.single_shot) {
         log_e("Not in single-shot mode");
@@ -1165,7 +1277,7 @@ osStatus_t meter_probe_sensor_clear_last_reading()
 
 osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout)
 {
-    if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || !sensor_state.running) { return osErrorResource; }
 
     if (!reading) {
         return osErrorParameter;
@@ -1284,7 +1396,7 @@ float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading)
 
 void meter_probe_int_handler(uint32_t ticks)
 {
-    if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) { return; }
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || !sensor_state.running) { return; }
 
     meter_probe_control_event_t control_event = {
         .event_type = METER_PROBE_CONTROL_INTERRUPT,
@@ -1307,7 +1419,7 @@ osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_params_t
     log_d("meter_probe_control_interrupt");
 #endif
 
-    if (!meter_probe_initialized || !meter_probe_started || !sensor_state.running) {
+    if (meter_probe_state < METER_PROBE_STATE_STARTED || !sensor_state.running) {
         log_d("Unexpected meter probe interrupt");
     }
 
