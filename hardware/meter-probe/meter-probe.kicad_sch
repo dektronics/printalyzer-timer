@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Meter Probe")
-		(date "2024-04-16")
-		(rev "E")
+		(date "2024-05-21")
+		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -4326,6 +4326,12 @@
 		(uuid "1e706ae3-6267-4baa-920a-2d2c4f219e9b")
 	)
 	(junction
+		(at 20.32 115.57)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "206808c7-193e-40d5-8131-b7def79b0b80")
+	)
+	(junction
 		(at 151.13 61.595)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4707,7 +4713,7 @@
 	)
 	(wire
 		(pts
-			(xy 51.435 115.57) (xy 20.955 115.57)
+			(xy 51.435 115.57) (xy 20.32 115.57)
 		)
 		(stroke
 			(width 0)
@@ -4737,7 +4743,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.955 115.57) (xy 20.955 108.585)
+			(xy 20.32 115.57) (xy 20.32 108.585)
 		)
 		(stroke
 			(width 0)
@@ -4997,7 +5003,7 @@
 	)
 	(wire
 		(pts
-			(xy 51.435 110.49) (xy 33.655 110.49)
+			(xy 51.435 110.49) (xy 34.29 110.49)
 		)
 		(stroke
 			(width 0)
@@ -5027,7 +5033,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.955 101.6) (xy 20.955 103.505)
+			(xy 20.32 101.6) (xy 20.32 103.505)
 		)
 		(stroke
 			(width 0)
@@ -5087,7 +5093,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.655 101.6) (xy 33.655 103.505)
+			(xy 34.29 101.6) (xy 34.29 103.505)
 		)
 		(stroke
 			(width 0)
@@ -5567,6 +5573,16 @@
 	)
 	(wire
 		(pts
+			(xy 20.32 121.92) (xy 20.32 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "83e89f76-3eae-4e80-af99-fbe4ede57eea")
+	)
+	(wire
+		(pts
 			(xy 92.075 125.73) (xy 92.075 130.81)
 		)
 		(stroke
@@ -5877,7 +5893,7 @@
 	)
 	(wire
 		(pts
-			(xy 27.305 101.6) (xy 20.955 101.6)
+			(xy 27.305 101.6) (xy 20.32 101.6)
 		)
 		(stroke
 			(width 0)
@@ -5897,7 +5913,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.655 110.49) (xy 33.655 108.585)
+			(xy 34.29 110.49) (xy 34.29 108.585)
 		)
 		(stroke
 			(width 0)
@@ -6057,6 +6073,16 @@
 	)
 	(wire
 		(pts
+			(xy 20.32 116.84) (xy 20.32 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d51415d8-10b7-4863-a0b3-4bea6b2dbc01")
+	)
+	(wire
+		(pts
 			(xy 27.305 113.03) (xy 27.305 108.585)
 		)
 		(stroke
@@ -6127,7 +6153,7 @@
 	)
 	(wire
 		(pts
-			(xy 33.655 101.6) (xy 27.305 101.6)
+			(xy 34.29 101.6) (xy 27.305 101.6)
 		)
 		(stroke
 			(width 0)
@@ -7127,7 +7153,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 33.655 106.045 0)
+		(at 34.29 106.045 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7135,7 +7161,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005f8ef38b")
 		(property "Reference" "R9"
-			(at 34.925 105.41 0)
+			(at 35.56 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7144,7 +7170,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 34.925 107.315 0)
+			(at 35.56 107.315 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7153,7 +7179,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7162,7 +7188,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.vishay.com/docs/20035/dcrcwe3.pdf"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7171,7 +7197,7 @@
 			)
 		)
 		(property "Description" "RES SMD 10K OHM 5% 1/10W 0603"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7180,7 +7206,7 @@
 			)
 		)
 		(property "Manufacturer" "Vishay Dale"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7189,7 +7215,7 @@
 			)
 		)
 		(property "Manufacturer PN" "CRCW060310K0JNEA"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7198,7 +7224,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7207,7 +7233,7 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
-			(at 33.655 106.045 0)
+			(at 34.29 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10283,7 +10309,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 20.955 106.045 0)
+		(at 20.32 106.045 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10291,7 +10317,7 @@
 		(dnp no)
 		(uuid "68e23d94-9dad-4659-8733-779bb0dc4133")
 		(property "Reference" "R7"
-			(at 22.225 105.41 0)
+			(at 21.59 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10299,8 +10325,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10K"
-			(at 22.225 107.315 0)
+		(property "Value" "4.7K"
+			(at 21.59 107.315 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10309,7 +10335,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 20.955 106.045 0)
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10317,8 +10343,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.vishay.com/docs/20035/dcrcwe3.pdf"
-			(at 20.955 106.045 0)
+		(property "Datasheet" "https://www.yageo.com/upload/media/product/products/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf"
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10326,8 +10352,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RES SMD 10K OHM 5% 1/10W 0603"
-			(at 20.955 106.045 0)
+		(property "Description" "RES SMD 4.7K OHM 5% 1/10W 0603"
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10335,8 +10361,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Vishay Dale"
-			(at 20.955 106.045 0)
+		(property "Manufacturer" "YAGEO"
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10344,8 +10370,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CRCW060310K0JNEA"
-			(at 20.955 106.045 0)
+		(property "Manufacturer PN" "RC0603JR-074K7L"
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10354,7 +10380,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 20.955 106.045 0)
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10362,8 +10388,8 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "541-10KGCT-ND"
-			(at 20.955 106.045 0)
+		(property "Supplier PN" "311-4.7KGRCT-ND"
+			(at 20.32 106.045 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11411,6 +11437,111 @@
 			(project "meter-probe"
 				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
 					(reference "#PWR030")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 20.32 119.38 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8b9988a8-f604-432b-b6a4-01ec54574b7f")
+		(property "Reference" "C18"
+			(at 22.225 118.745 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7uF"
+			(at 22.225 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10A475KA8NQNC_Spec.pdf"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 4.7UF 25V X5R 0603"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10A475KA8NQNC"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "LCSC"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "C69335"
+			(at 20.32 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bc5d4699-00be-4961-887c-01aa9f809bcc")
+		)
+		(pin "2"
+			(uuid "2baf36ab-8e70-40e4-a649-4ff79ba2dfbc")
+		)
+		(instances
+			(project "meter-probe"
+				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
+					(reference "C18")
 					(unit 1)
 				)
 			)
@@ -13963,7 +14094,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0.1uF"
+		(property "Value" "10uF"
 			(at 85.09 60.325 0)
 			(effects
 				(font
@@ -13972,7 +14103,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 84.1502 62.865 0)
 			(effects
 				(font
@@ -13981,7 +14112,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/5545/CL21A106KAYNNNE%20Spec.pdf"
 			(at 83.185 59.055 0)
 			(effects
 				(font
@@ -13990,7 +14121,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
+		(property "Description" "CAP CER 10UF 25V X5R 0805"
 			(at 83.185 59.055 0)
 			(effects
 				(font
@@ -14008,7 +14139,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10B104KA8NNNC"
+		(property "Manufacturer PN" "CL21A106KAYNNNE"
 			(at 83.185 59.055 0)
 			(effects
 				(font
@@ -14026,7 +14157,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1006-1-ND"
+		(property "Supplier PN" "1276-2891-1-ND"
 			(at 83.185 59.055 0)
 			(effects
 				(font
@@ -14786,6 +14917,71 @@
 			(project "meter-probe"
 				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
 					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 20.32 123.19 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e4855fad-ee10-4056-b4fa-0fb8320008bb")
+		(property "Reference" "#PWR045"
+			(at 20.32 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 20.32 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 20.32 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 20.32 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 20.32 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e8555667-75cc-46c5-8321-93f44504468c")
+		)
+		(instances
+			(project "meter-probe"
+				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
+					(reference "#PWR045")
 					(unit 1)
 				)
 			)
@@ -15706,7 +15902,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7uF"
+		(property "Value" "0.1uF"
 			(at 75.565 60.325 0)
 			(effects
 				(font
@@ -15724,7 +15920,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10A475KA8NQNC_Spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 73.66 59.055 0)
 			(effects
 				(font
@@ -15733,7 +15929,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 4.7UF 25V X5R 0603"
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
 			(at 73.66 59.055 0)
 			(effects
 				(font
@@ -15751,7 +15947,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10A475KA8NQNC"
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
 			(at 73.66 59.055 0)
 			(effects
 				(font
@@ -15760,7 +15956,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "LCSC"
+		(property "Supplier" "Digi-Key"
 			(at 73.66 59.055 0)
 			(effects
 				(font
@@ -15769,7 +15965,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "C69335"
+		(property "Supplier PN" "1276-1006-1-ND"
 			(at 73.66 59.055 0)
 			(effects
 				(font
