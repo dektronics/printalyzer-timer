@@ -10751,6 +10751,111 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Small")
+		(at 83.185 59.055 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7c338375-2f0a-4a52-9447-488dac5e95cd")
+		(property "Reference" "C7"
+			(at 85.09 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7uF"
+			(at 85.09 60.325 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10A475KA8NQNC_Spec.pdf"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 4.7UF 25V X5R 0603"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10A475KA8NQNC"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "LCSC"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "C69335"
+			(at 83.185 59.055 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fd0c4de3-35c1-480a-a596-2f70006d4413")
+		)
+		(pin "2"
+			(uuid "dddfbd55-8106-4db3-94b9-cf1d3f8e3067")
+		)
+		(instances
+			(project "meter-probe"
+				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
+					(reference "C7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R_Small")
 		(at 95.885 94.615 0)
 		(unit 1)
@@ -13853,117 +13958,6 @@
 			(project "meter-probe"
 				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
 					(reference "C11")
-					(unit 1)
-				)
-			)
-			(project "main-board"
-				(path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
-					(reference "C?")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Small")
-		(at 83.185 59.055 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "d6257723-12de-4446-a420-edff3c4f4fce")
-		(property "Reference" "C7"
-			(at 85.09 58.42 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10uF"
-			(at 85.09 60.325 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 84.1502 62.865 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/5545/CL21A106KAYNNNE%20Spec.pdf"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "CAP CER 10UF 25V X5R 0805"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "CL21A106KAYNNNE"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "1276-2891-1-ND"
-			(at 83.185 59.055 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b189a05c-e05a-4cca-8fcd-b4d50d84d59c")
-		)
-		(pin "2"
-			(uuid "acf3f71a-b9f3-417e-af5f-1f442d6efbb6")
-		)
-		(instances
-			(project "meter-probe"
-				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-					(reference "C7")
 					(unit 1)
 				)
 			)
