@@ -151,6 +151,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
     uint8_t index = 0U;
     bool found = true;
     uint32_t desc_len = 0;
+    const char *string = NULL;
     const uint8_t *desc = NULL;
 
     type = HI_BYTE(type_index);
@@ -186,12 +187,39 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
                 desc = (uint8_t *)g_usbd_core[busid].descriptors->msosv1_descriptor->string;
                 desc_len = g_usbd_core[busid].descriptors->msosv1_descriptor->string[0];
             } else {
-                desc = g_usbd_core[busid].descriptors->string_descriptor_callback(g_usbd_core[busid].speed, index);
-                if (desc == NULL) {
+                string = g_usbd_core[busid].descriptors->string_descriptor_callback(g_usbd_core[busid].speed, index);
+                if (string == NULL) {
                     found = false;
                     break;
                 }
-                desc_len = desc[0];
+
+                if (index == USB_STRING_LANGID_INDEX) {
+                    (*data)[0] = 4;
+                    (*data)[1] = USB_DESCRIPTOR_TYPE_STRING;
+                    (*data)[2] = string[0];
+                    (*data)[3] = string[1];
+
+                    *len = 4;
+                    return true;
+                }
+
+                uint16_t str_size = strlen(string);
+                uint16_t total_size = 2 * str_size + 2;
+                if (total_size > CONFIG_USBDEV_REQUEST_BUFFER_LEN) {
+                    USB_LOG_ERR("string size overflow\r\n");
+                    return false;
+                }
+
+                (*data)[0] = total_size;
+                (*data)[1] = USB_DESCRIPTOR_TYPE_STRING;
+
+                for (uint16_t i = 0; i < str_size; i++) {
+                    (*data)[2 * i + 2] = string[i];
+                    (*data)[2 * i + 3] = 0x00;
+                }
+
+                *len = total_size;
+                return true;
             }
             break;
         case USB_DESCRIPTOR_TYPE_DEVICE_QUALIFIER:
@@ -236,7 +264,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
         /* nothing found */
         USB_LOG_ERR("descriptor <type:%x,index:%x> not found!\r\n", type, index);
     } else {
-        *data = desc;
+        *data = (uint8_t *)desc;
         //memcpy(*data, desc, desc_len);
         *len = desc_len;
     }
@@ -273,7 +301,7 @@ static bool usbd_get_descriptor(uint8_t busid, uint16_t type_index, uint8_t **da
             return false;
         }
 
-        *data = g_usbd_core[busid].bos_desc->string;
+        *data = (uint8_t *)g_usbd_core[busid].bos_desc->string;
         //memcpy(*data, (uint8_t *)g_usbd_core[busid].bos_desc->string, g_usbd_core[busid].bos_desc->string_len);
         *len = g_usbd_core[busid].bos_desc->string_len;
         return true;

@@ -54,7 +54,7 @@
 //#define CONFIG_USB_DWC2_DMA_ENABLE
 
 #ifndef CONFIG_USB_DWC2_RXALL_FIFO_SIZE
-#define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (320)
+#define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (1024 / 4)
 #endif
 
 #ifndef CONFIG_USB_DWC2_TX0_FIFO_SIZE
@@ -95,11 +95,11 @@
 
 #define USBD_BASE (g_usbdev_bus[0].reg_base)
 
-#define USB_OTG_GLB      ((USB_OTG_GlobalTypeDef *)(USBD_BASE))
-#define USB_OTG_DEV      ((USB_OTG_DeviceTypeDef *)(USBD_BASE + USB_OTG_DEVICE_BASE))
+#define USB_OTG_GLB      ((DWC2_GlobalTypeDef *)(USBD_BASE))
+#define USB_OTG_DEV      ((DWC2_DeviceTypeDef *)(USBD_BASE + USB_OTG_DEVICE_BASE))
 #define USB_OTG_PCGCCTL  *(__IO uint32_t *)((uint32_t)USBD_BASE + USB_OTG_PCGCCTL_BASE)
-#define USB_OTG_INEP(i)  ((USB_OTG_INEndpointTypeDef *)(USBD_BASE + USB_OTG_IN_ENDPOINT_BASE + ((i)*USB_OTG_EP_REG_SIZE)))
-#define USB_OTG_OUTEP(i) ((USB_OTG_OUTEndpointTypeDef *)(USBD_BASE + USB_OTG_OUT_ENDPOINT_BASE + ((i)*USB_OTG_EP_REG_SIZE)))
+#define USB_OTG_INEP(i)  ((DWC2_INEndpointTypeDef *)(USBD_BASE + USB_OTG_IN_ENDPOINT_BASE + ((i)*USB_OTG_EP_REG_SIZE)))
+#define USB_OTG_OUTEP(i) ((DWC2_OUTEndpointTypeDef *)(USBD_BASE + USB_OTG_OUT_ENDPOINT_BASE + ((i)*USB_OTG_EP_REG_SIZE)))
 #define USB_OTG_FIFO(i)  *(__IO uint32_t *)(USBD_BASE + USB_OTG_FIFO_BASE + ((i)*USB_OTG_FIFO_SIZE))
 
 extern uint32_t SystemCoreClock;
@@ -264,8 +264,7 @@ static void dwc2_set_turnaroundtime(uint32_t hclk, uint8_t speed)
 static void dwc2_set_txfifo(uint8_t fifo, uint16_t size)
 {
     uint8_t i;
-    uint32_t Tx_Offset;
-    uint32_t Tx_Size;
+    uint32_t tx_offset;
 
     /*  TXn min size = 16 words. (n  : Transmit FIFO index)
       When a TxFIFO is not used, the Configuration should be as follows:
@@ -277,24 +276,21 @@ static void dwc2_set_txfifo(uint8_t fifo, uint16_t size)
          of the FIFO.Ex: use EP1 and EP2 as IN instead of EP1 and EP3 as IN ones.
      When DMA is used 3n * FIFO locations should be reserved for internal DMA registers */
 
-    Tx_Offset = USB_OTG_GLB->GRXFSIZ;
+    tx_offset = USB_OTG_GLB->GRXFSIZ;
 
     if (fifo == 0U) {
-        USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ = ((uint32_t)size << 16) | Tx_Offset;
-        Tx_Size = USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ;
+        USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ = ((uint32_t)size << 16) | tx_offset;
     } else {
-        Tx_Offset += (USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ) >> 16;
+        tx_offset += (USB_OTG_GLB->DIEPTXF0_HNPTXFSIZ) >> 16;
         for (i = 0U; i < (fifo - 1U); i++) {
-            Tx_Offset += (USB_OTG_GLB->DIEPTXF[i] >> 16);
+            tx_offset += (USB_OTG_GLB->DIEPTXF[i] >> 16);
         }
 
         /* Multiply Tx_Size by 2 to get higher performance */
-        USB_OTG_GLB->DIEPTXF[fifo - 1U] = ((uint32_t)size << 16) | Tx_Offset;
-
-        Tx_Size = USB_OTG_GLB->DIEPTXF[fifo - 1U];
+        USB_OTG_GLB->DIEPTXF[fifo - 1U] = ((uint32_t)size << 16) | tx_offset;
     }
 
-    USB_LOG_INFO("fifo-%02d size:%04d %08x\n", fifo, size, Tx_Size);
+    USB_LOG_INFO("fifo%d size:%04x, offset:%04x\r\n", fifo, size, tx_offset);
 }
 
 static uint8_t dwc2_get_devspeed(void)
@@ -627,6 +623,13 @@ int usb_dc_init(uint8_t busid)
 
     if (fifo_num > (USB_OTG_GLB->GHWCFG3 >> 16)) {
         USB_LOG_ERR("Your fifo config is overflow, please check\r\n");
+        while (1) {
+        }
+    }
+
+    /* xxx32 chips do not follow (USB_OTG_GLB->GHWCFG3 >> 16) if hsphy_type is zero, they use 1.25KB(320 DWORD) */
+    if ((hsphy_type == 0) && (fifo_num > 320)) {
+        USB_LOG_ERR("Your fifo config is larger than 320 , please check\r\n");
         while (1) {
         }
     }

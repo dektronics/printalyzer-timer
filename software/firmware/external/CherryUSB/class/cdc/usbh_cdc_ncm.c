@@ -23,14 +23,6 @@
 
 #define CONFIG_USBHOST_CDC_NCM_ETH_MAX_SEGSZE 1514U
 
-/* eth rx size must be a multiple of 512 or 64 */
-#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE
-#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE (2048)
-#endif
-#ifndef CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE
-#define CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE (2048)
-#endif
-
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_rx_buffer[CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_tx_buffer[CONFIG_USBHOST_CDC_NCM_ETH_MAX_TX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_cdc_ncm_inttx_buffer[16];
@@ -258,7 +250,7 @@ void usbh_cdc_ncm_rx_thread(void *argument)
     int ret;
     err_t err;
     struct pbuf *p;
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
     pbuf_type type = PBUF_ROM;
 #else
     pbuf_type type = PBUF_POOL;
@@ -284,7 +276,7 @@ find_class:
 
     g_cdc_ncm_rx_length = 0;
     while (1) {
-        usbh_bulk_urb_fill(&g_cdc_ncm_class.bulkin_urb, g_cdc_ncm_class.hport, g_cdc_ncm_class.bulkin, &g_cdc_ncm_rx_buffer[g_cdc_ncm_rx_length], CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
+        usbh_bulk_urb_fill(&g_cdc_ncm_class.bulkin_urb, g_cdc_ncm_class.hport, g_cdc_ncm_class.bulkin, &g_cdc_ncm_rx_buffer[g_cdc_ncm_rx_length], (CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE > (16 * 1024)) ? (16 * 1024) : CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
         ret = usbh_submit_urb(&g_cdc_ncm_class.bulkin_urb);
         if (ret < 0) {
             goto find_class;
@@ -321,7 +313,7 @@ find_class:
 
                     p = pbuf_alloc(PBUF_RAW, ndp16_datagram->wDatagramLength, type);
                     if (p != NULL) {
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
                         p->payload = (uint8_t *)&g_cdc_ncm_rx_buffer[ndp16_datagram->wDatagramIndex];
 #else
                         memcpy(p->payload, (uint8_t *)&g_cdc_ncm_rx_buffer[ndp16_datagram->wDatagramIndex], ndp16_datagram->wDatagramLength);

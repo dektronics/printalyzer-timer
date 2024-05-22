@@ -12,13 +12,6 @@
 
 #define DEV_FORMAT "/dev/rtl8152"
 
-#ifndef CONFIG_USBHOST_RTL8152_ETH_MAX_RX_SIZE
-#define CONFIG_USBHOST_RTL8152_ETH_MAX_RX_SIZE (16*1024)
-#endif
-#ifndef CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE
-#define CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE (2048)
-#endif
-
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rtl8152_rx_buffer[CONFIG_USBHOST_RTL8152_ETH_MAX_RX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rtl8152_tx_buffer[CONFIG_USBHOST_RTL8152_ETH_MAX_TX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rtl8152_inttx_buffer[2];
@@ -2133,7 +2126,7 @@ void usbh_rtl8152_rx_thread(void *argument)
     uint16_t len;
     uint16_t data_offset;
     struct pbuf *p;
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
     pbuf_type type = PBUF_ROM;
 #else
     pbuf_type type = PBUF_POOL;
@@ -2190,7 +2183,7 @@ find_class:
 
                 p = pbuf_alloc(PBUF_RAW, len, type);
                 if (p != NULL) {
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
                     p->payload = (uint8_t *)&g_rtl8152_rx_buffer[data_offset + sizeof(struct rx_desc)];
 #else
                     memcpy(p->payload, (uint8_t *)&g_rtl8152_rx_buffer[data_offset + sizeof(struct rx_desc)], len);

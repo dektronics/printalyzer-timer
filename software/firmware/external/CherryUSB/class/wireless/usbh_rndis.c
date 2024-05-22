@@ -18,14 +18,6 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_buf[4096];
 #define CONFIG_USBHOST_RNDIS_ETH_MAX_FRAME_SIZE 1514
 #define CONFIG_USBHOST_RNDIS_ETH_MSG_SIZE       (CONFIG_USBHOST_RNDIS_ETH_MAX_FRAME_SIZE + 44)
 
-/* eth rx size must be a multiple of 512 or 64 */
-#ifndef CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE
-#define CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE (2048)
-#endif
-#ifndef CONFIG_USBHOST_RNDIS_ETH_MAX_TX_SIZE
-#define CONFIG_USBHOST_RNDIS_ETH_MAX_TX_SIZE (2048)
-#endif
-
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_rx_buffer[CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE];
 static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_tx_buffer[CONFIG_USBHOST_RNDIS_ETH_MAX_TX_SIZE];
 // static USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_rndis_inttx_buffer[16];
@@ -439,7 +431,7 @@ void usbh_rndis_rx_thread(void *argument)
     struct pbuf *p;
     rndis_data_packet_t *pmsg;
     rndis_data_packet_t temp;
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
     pbuf_type type = PBUF_ROM;
 #else
     pbuf_type type = PBUF_POOL;
@@ -465,7 +457,7 @@ find_class:
 
     g_rndis_rx_length = 0;
     while (1) {
-        usbh_bulk_urb_fill(&g_rndis_class.bulkin_urb, g_rndis_class.hport, g_rndis_class.bulkin, g_rndis_rx_buffer, CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
+        usbh_bulk_urb_fill(&g_rndis_class.bulkin_urb, g_rndis_class.hport, g_rndis_class.bulkin, g_rndis_rx_buffer, (CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE > (16 * 1024)) ? (16 * 1024) : CONFIG_USBHOST_RNDIS_ETH_MAX_RX_SIZE, USB_OSAL_WAITING_FOREVER, NULL, NULL);
         ret = usbh_submit_urb(&g_rndis_class.bulkin_urb);
         if (ret < 0) {
             goto find_class;
@@ -492,7 +484,7 @@ find_class:
                     p = pbuf_alloc(PBUF_RAW, pmsg->DataLength, type);
                     if (p != NULL) {
                         void *src = (void *)(g_rndis_rx_buffer + pmg_offset + sizeof(rndis_generic_msg_t) + pmsg->DataOffset);
-#ifdef LWIP_TCPIP_CORE_LOCKING_INPUT
+#if LWIP_TCPIP_CORE_LOCKING_INPUT
                         p->payload = src;
 #else
                         memcpy(p->payload, src, pmsg->DataLength);

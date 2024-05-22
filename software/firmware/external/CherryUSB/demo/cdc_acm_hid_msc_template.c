@@ -237,12 +237,6 @@ USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t write_buffer[2048];
 
 volatile bool ep_tx_busy_flag = false;
 
-#ifdef CONFIG_USB_HS
-#define CDC_MAX_MPS 512
-#else
-#define CDC_MAX_MPS 64
-#endif
-
 static void usbd_event_handler(uint8_t busid, uint8_t event)
 {
     switch (event) {
@@ -283,7 +277,7 @@ void usbd_cdc_acm_bulk_in(uint8_t busid, uint8_t ep, uint32_t nbytes)
 {
     USB_LOG_RAW("actual in len:%d\r\n", nbytes);
 
-    if ((nbytes % CDC_MAX_MPS) == 0 && nbytes) {
+    if ((nbytes % usbd_get_ep_mps(busid, ep)) == 0 && nbytes) {
         /* send zlp */
         usbd_ep_start_write(busid, CDC_IN_EP, NULL, 0);
     } else {

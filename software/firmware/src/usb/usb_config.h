@@ -8,8 +8,8 @@
 
 #include <FreeRTOS.h>
 
-#define CHERRYUSB_VERSION     0x010200
-#define CHERRYUSB_VERSION_STR "v1.2.0"
+#define CHERRYUSB_VERSION     0x010300
+#define CHERRYUSB_VERSION_STR "v1.3.0"
 
 /* ================ USB common Configuration ================ */
 
@@ -84,8 +84,9 @@ extern void elog_raw(const char *format, ...);
 #define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
 
+/* rndis transfer buffer size, must be a multiple of (1536 + 44)*/
 #ifndef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
-#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1536
+#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1580
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_VENDOR_ID
@@ -100,7 +101,6 @@ extern void elog_raw(const char *format, ...);
 
 /* ================ USB HOST Stack Configuration ================== */
 
-#define CONFIG_USBHOST_MAX_BUS              1
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          2
 #define CONFIG_USBHOST_MAX_EHPORTS          4
@@ -126,10 +126,14 @@ extern void elog_raw(const char *format, ...);
 /* #define CONFIG_USBHOST_GET_STRING_DESC */
 
 /* #define CONFIG_USBHOST_MSOS_ENABLE */
+#ifndef CONFIG_USBHOST_MSOS_VENDOR_CODE
 #define CONFIG_USBHOST_MSOS_VENDOR_CODE 0x00
+#endif
 
 /* Ep0 max transfer buffer */
+#ifndef CONFIG_USBHOST_REQUEST_BUFFER_LEN
 #define CONFIG_USBHOST_REQUEST_BUFFER_LEN 512
+#endif
 
 #ifndef CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT
 #define CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT 500
@@ -141,15 +145,29 @@ extern void elog_raw(const char *format, ...);
 
 /* ================ USB Device Port Configuration ================*/
 
+#ifndef CONFIG_USBDEV_MAX_BUS
+#define CONFIG_USBDEV_MAX_BUS 1 // for now, bus num must be 1 except hpm ip
+#endif
+
 #ifndef CONFIG_USBDEV_EP_NUM
 #define CONFIG_USBDEV_EP_NUM 8
 #endif
 
 /* ================ USB Host Port Configuration ==================*/
+#ifndef CONFIG_USBHOST_MAX_BUS
+#define CONFIG_USBHOST_MAX_BUS 1
+#endif
 
 #define CONFIG_USBHOST_PIPE_NUM 16
+/* ---------------- DWC2 Configuration ---------------- */
+/* largest non-periodic USB packet used / 4 */
 #define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (512 / 4)
+/* largest periodic USB packet used / 4 */
 #define CONFIG_USB_DWC2_PTX_FIFO_SIZE (1024 / 4)
+/*
+ * (largest USB packet used / 4) + 1 for status information + 1 transfer complete +
+ * 1 location each for Bulk/Control endpoint for handling NAK/NYET scenario
+ */
 #define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
 
 #endif
