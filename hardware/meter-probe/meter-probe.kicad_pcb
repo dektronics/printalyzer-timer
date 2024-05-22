@@ -9,7 +9,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Meter Probe")
-		(date "2024-05-21")
+		(date "2024-05-22")
 		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
@@ -12999,6 +12999,7 @@
 		(path "/675e7a41-226f-46f4-b3ba-a954e27ddf69")
 		(sheetname "Root")
 		(sheetfile "meter-probe.kicad_sch")
+		(solder_paste_margin -0.025)
 		(attr smd)
 		(fp_line
 			(start -0.71 -1.16)

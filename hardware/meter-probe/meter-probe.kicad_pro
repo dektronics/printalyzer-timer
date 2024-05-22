@@ -643,7 +643,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "meter-probe.net",
-      "plot": "",
+      "plot": "gerber/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "meter-probe.step",
