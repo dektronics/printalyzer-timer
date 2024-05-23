@@ -16,6 +16,7 @@
 #define HUB_DEBOUNCE_STEP      25
 #define HUB_DEBOUNCE_STABLE    100
 #define DELAY_TIME_AFTER_RESET 200
+#define DELAY_TIME_AFTER_OC    500 /* (DK) */
 
 #define EXTHUB_FIRST_INDEX 2
 
@@ -492,6 +493,42 @@ static void usbh_hub_events(struct usbh_hub *hub)
         }
 
         portchange = port_status.wPortChange;
+
+        /*
+         * (DK)
+         * Handle the case where a device may be shut down, without
+         * actually being disconnected. This is most commonly caused
+         * by EMI issues on devices attached to downstream hubs.
+         */
+        if (portchange & HUB_PORT_STATUS_C_ENABLE) {
+            if (portchange & HUB_PORT_STATUS_C_CONNECTION) {
+                /* Ignore the port error if the device has vanished */
+            } else if (portstatus & HUB_PORT_STATUS_ENABLE) {
+                USB_LOG_WRN("Illegal enable change on Bus %u, Hub %u, Port %u\r\n", hub->bus->busid, hub->index, port + 1);
+            } else {
+                USB_LOG_ERR("Re-enabling due to port error on Hub %u, Port %u\r\n", hub->index, port + 1);
+                portchange |= HUB_PORT_STATUS_C_CONNECTION;
+            }
+        }
+
+        /*
+         * (DK)
+         * Handle over-current events on ports. If these are not handled,
+         * then the affected ports may become unusable without a device
+         * restart.
+         */
+        if (portchange & HUB_PORT_STATUS_C_OVERCURRENT) {
+            USB_LOG_ERR("Overcurrent on Hub %u, Port %u\r\n", hub->index, port + 1);
+
+            usb_osal_msleep(DELAY_TIME_AFTER_OC);
+
+            ret = usbh_hub_set_feature(hub, port + 1, HUB_PORT_FEATURE_POWER);
+            if (ret < 0) {
+                USB_LOG_ERR("Failed to power on port %u,errorcode:%d\r\n", port, ret);
+            }
+
+            continue;
+        }
 
         /* Second, if port changes, debounces first */
         if (portchange & HUB_PORT_STATUS_C_CONNECTION) {
