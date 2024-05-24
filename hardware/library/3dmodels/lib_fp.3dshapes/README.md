@@ -323,6 +323,13 @@ this directory's `.gitignore` file.
 * Rotation: X = -90 deg
 * Offset: X = 1.27 mm
 
+### LED\_LTL-10223W
+* Status: Included
+* Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:LED_D4.75mm_LTL-10223W`
+* Rotation: Z = 90 deg
+* Offset: X = 1.27 mm
+
 ### AVX-00-9175-003-001-906
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.kyocera-avx.com/products/connectors/wire-to-board/standard-26-28-awg-00-9175/>
