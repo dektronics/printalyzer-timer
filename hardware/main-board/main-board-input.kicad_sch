@@ -11894,6 +11894,7 @@
 	(symbol
 		(lib_id "Project:ESDA6V1L")
 		(at 193.04 43.815 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11906,7 +11907,7 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Value" "ESDA6V1L"
@@ -11915,11 +11916,11 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 			)
 		)
 		(property "Footprint" "lib_fp:SOT23-3L"
-			(at 198.755 45.085 0)
+			(at 187.325 45.085 0)
 			(effects
 				(font
 					(size 1.27 1.27)
