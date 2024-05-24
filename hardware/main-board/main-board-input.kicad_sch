@@ -9705,7 +9705,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9714,7 +9714,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9723,7 +9723,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9732,7 +9732,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9741,7 +9741,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9759,7 +9759,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 26.67 40.64 0)
 			(effects
 				(font
@@ -9808,7 +9808,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9817,7 +9817,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9826,7 +9826,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9835,7 +9835,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9844,7 +9844,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9862,7 +9862,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9911,7 +9911,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -9920,7 +9920,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -9929,7 +9929,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -9938,7 +9938,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -9947,7 +9947,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -9965,7 +9965,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 71.12 68.58 0)
 			(effects
 				(font
@@ -10014,7 +10014,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10023,7 +10023,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10032,7 +10032,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10041,7 +10041,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10050,7 +10050,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10068,7 +10068,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10377,7 +10377,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10386,7 +10386,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10395,7 +10395,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10404,7 +10404,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10413,7 +10413,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10431,7 +10431,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 92.71 68.58 0)
 			(effects
 				(font
@@ -10545,7 +10545,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10554,7 +10554,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10563,7 +10563,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10572,7 +10572,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10581,7 +10581,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10599,7 +10599,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 92.71 40.64 0)
 			(effects
 				(font
@@ -10713,7 +10713,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10722,7 +10722,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10731,7 +10731,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10740,7 +10740,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10749,7 +10749,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10767,7 +10767,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -10946,7 +10946,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -10955,7 +10955,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -10964,7 +10964,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -10973,7 +10973,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -10982,7 +10982,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -11000,7 +11000,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 116.84 68.58 0)
 			(effects
 				(font
@@ -11179,7 +11179,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11188,7 +11188,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11197,7 +11197,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11206,7 +11206,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11215,7 +11215,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11233,7 +11233,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 139.7 40.64 0)
 			(effects
 				(font
@@ -11347,7 +11347,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11356,7 +11356,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11365,7 +11365,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11374,7 +11374,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11383,7 +11383,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11401,7 +11401,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 139.7 68.58 0)
 			(effects
 				(font
@@ -11515,7 +11515,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11524,7 +11524,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11533,7 +11533,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11542,7 +11542,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11551,7 +11551,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11569,7 +11569,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11813,7 +11813,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:LED_D3.0mm_XLUR11D_ELM-2-120"
+		(property "Footprint" "lib_fp:LED_D4.75mm_LTL-10223W"
 			(at 48.26 50.8 0)
 			(effects
 				(font
@@ -11822,7 +11822,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.sunledusa.com/products/spec/XLUR11D.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/850/LTL-10223W.pdf"
 			(at 48.26 50.8 0)
 			(effects
 				(font
@@ -11831,7 +11831,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "LED RED DIFFUSED T-1 T/H"
+		(property "Description" "LED RED DIFFUSED T/H"
 			(at 48.26 50.8 0)
 			(effects
 				(font
@@ -11840,7 +11840,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "SunLED"
+		(property "Manufacturer" "Lite-On Inc."
 			(at 48.26 50.8 0)
 			(effects
 				(font
@@ -11849,7 +11849,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "XLUR11D"
+		(property "Manufacturer PN" "LTL-10223W"
 			(at 48.26 50.8 0)
 			(effects
 				(font
@@ -11867,7 +11867,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1497-1030-ND"
+		(property "Supplier PN" "160-1087-ND"
 			(at 48.26 50.8 0)
 			(effects
 				(font

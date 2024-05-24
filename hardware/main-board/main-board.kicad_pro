@@ -90,7 +90,7 @@
         }
       ],
       "drc_exclusions": [
-        "courtyards_overlap|76978999|111681999|6ddab7ac-8690-471e-b82e-576cb8df2f0b|bbcde485-72cf-4fec-9aa3-1d920557ee42",
+        "courtyards_overlap|74104001|111050001|6ddab7ac-8690-471e-b82e-576cb8df2f0b|bbcde485-72cf-4fec-9aa3-1d920557ee42",
         "footprint_type_mismatch|138000000|128910000|85184e6a-4531-411d-9260-25605d6a22d3|00000000-0000-0000-0000-000000000000",
         "footprint_type_mismatch|167500000|128910000|0bbb3efa-630b-4edf-a9fa-5675a05c89aa|00000000-0000-0000-0000-000000000000",
         "lib_footprint_mismatch|189000000|37000000|657b9d5a-7235-4bfe-922f-441aa7cad22b|00000000-0000-0000-0000-000000000000",
@@ -768,7 +768,7 @@
           "group_by": false,
           "label": "Datasheet",
           "name": "Datasheet",
-          "show": false
+          "show": true
         },
         {
           "group_by": true,
@@ -810,25 +810,25 @@
           "group_by": false,
           "label": "Supplier",
           "name": "Supplier",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
           "label": "Supplier PN",
           "name": "Supplier PN",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
           "label": "User Label",
           "name": "User Label",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
           "label": "User Lable",
           "name": "User Lable",
-          "show": false
+          "show": true
         },
         {
           "group_by": false,
