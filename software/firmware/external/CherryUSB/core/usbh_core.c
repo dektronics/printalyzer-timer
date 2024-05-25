@@ -380,7 +380,7 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get device descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
-    usb_osal_msleep(2); /*(DK)*/
+    //usb_osal_msleep(2); /*(DK)*/
 
     parse_device_descriptor(hport, (struct usb_device_descriptor *)ep0_request_buffer[hport->bus->busid], 8);
 
@@ -448,7 +448,6 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get full device descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
-    usb_osal_msleep(2); /*(DK)*/
 
     parse_device_descriptor(hport, (struct usb_device_descriptor *)ep0_request_buffer[hport->bus->busid], USB_SIZEOF_DEVICE_DESC);
     USB_LOG_INFO("New device found,idVendor:%04x,idProduct:%04x,bcdDevice:%04x\r\n",
@@ -473,7 +472,6 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get config descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
-    usb_osal_msleep(2); /*(DK)*/
 
     parse_config_descriptor(hport, (struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid], USB_SIZEOF_CONFIG_DESC);
 
@@ -497,7 +495,6 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to get full config descriptor,errorcode:%d\r\n", ret);
         goto errout;
     }
-    usb_osal_msleep(2); /*(DK)*/
 
     ret = parse_config_descriptor(hport, (struct usb_configuration_descriptor *)ep0_request_buffer[hport->bus->busid], wTotalLength);
     if (ret < 0) {
@@ -559,7 +556,6 @@ int usbh_enumerate(struct usbh_hubport *hport)
         USB_LOG_ERR("Failed to set configuration,errorcode:%d\r\n", ret);
         goto errout;
     }
-    usb_osal_msleep(2); /*(DK)*/
 
 #ifdef CONFIG_USBHOST_MSOS_ENABLE
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
@@ -699,18 +695,38 @@ int usbh_control_transfer(struct usbh_hubport *hport, struct usb_setup_packet *s
 {
     struct usbh_urb *urb;
     int ret;
+    int count = 0;
 
     urb = &hport->ep0_urb;
 
-    usb_osal_mutex_take(hport->mutex);
+    /* (DK)
+     * Implement retry for control transfers, if they end in a
+     * USB_OTG_HCINT_TXERR that is reported as a USB_ERR_IO.
+     * This is to match the behavior of a first-party DWC2
+     * USB stack, except that stack implements the retry
+     * count as specific to a channel and checks it within
+     * the ISR. This is a simpler solution, but is good enough
+     * to avoid many awkward hard-coded delays during the
+     * device enumeration process.
+     */
+    do {
+        usb_osal_mutex_take(hport->mutex);
 
-    usbh_control_urb_fill(urb, hport, setup, buffer, setup->wLength, CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT, NULL, NULL);
-    ret = usbh_submit_urb(urb);
-    if (ret == 0) {
-        ret = urb->actual_length;
+        usbh_control_urb_fill(urb, hport, setup, buffer, setup->wLength, CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT, NULL, NULL);
+        ret = usbh_submit_urb(urb);
+        if (ret == 0) {
+            ret = urb->actual_length;
+        }
+
+        usb_osal_mutex_give(hport->mutex);
+
+        count++;
+    } while (ret == -USB_ERR_IO && count <= 2);
+
+    if (count > 1) {
+        USB_LOG_INFO("Control transfer attempted %d times\r\n", count);
     }
 
-    usb_osal_mutex_give(hport->mutex);
     return ret;
 }
 
