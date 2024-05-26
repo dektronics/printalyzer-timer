@@ -1067,6 +1067,31 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             if (!meter_probe_is_started()) {
                 sprintf(buf, "\n\n**** Detached ****");
                 display_static_list("Meter Probe Diagnostics", buf);
+                if (meter_probe_is_attached()) {
+                    bool probe_restarted = false;
+                    do {
+                        if (meter_probe_start() != osOK) { break; }
+                        if (meter_probe_get_device_info(&info) != osOK) { break; }
+                        if (meter_probe_sensor_set_gain(gain) != osOK) { break; }
+                        if (meter_probe_sensor_set_integration(sample_time, sample_count) != osOK) { break; }
+                        if (meter_probe_sensor_set_mod_calibration(fast_mode ? 0xFF : 1) != osOK) { break; }
+                        if (agc_enabled) {
+                            if (meter_probe_sensor_enable_agc(sample_count) != osOK) { break; }
+                        }
+                        if (fast_mode) {
+                            if (meter_probe_sensor_enable_fast_mode() != osOK) { break; }
+                        } else if (single_shot) {
+                            if (meter_probe_sensor_enable_single_shot() != osOK) { break; }
+                        } else {
+                            if (meter_probe_sensor_enable() != osOK) { break; }
+                        }
+                        probe_restarted = true;
+                    } while (0);
+                    if (!probe_restarted) {
+                        log_w("Unable to restart meter probe");
+                        meter_probe_stop();
+                    }
+                }
             }
         }
 

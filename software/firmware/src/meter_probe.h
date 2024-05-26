@@ -85,6 +85,11 @@ typedef struct {
 void task_meter_probe_run(void *argument);
 
 /**
+ * Gets whether the meter probe is attached
+ */
+bool meter_probe_is_attached();
+
+/**
  * Gets whether the meter probe has been started
  */
 bool meter_probe_is_started();

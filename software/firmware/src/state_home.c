@@ -50,6 +50,7 @@ typedef struct {
     state_t base;
     uint32_t updated_tone_element;
     uint8_t highlight_element;
+    bool enable_meter_probe;
     bool display_dirty;
 } state_home_t;
 
@@ -83,8 +84,7 @@ static bool state_home_process_printing(state_home_t *state, state_controller_t 
 static bool state_home_process_densitometer(state_home_t *state, state_controller_t *controller);
 static bool state_home_process_calibration(state_home_t *state, state_controller_t *controller);
 static void state_home_select_paper_profile(state_controller_t *controller);
-static void state_home_start_meter_probe();
-static void state_home_stop_meter_probe();
+static void state_home_check_meter_probe(state_home_t *state);
 static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
@@ -195,6 +195,8 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     exposure_mode_t mode = exposure_get_mode(exposure_state);
 
+    state_home_check_meter_probe(state);
+
     if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
         return state_home_process_printing(state, controller);
     } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
@@ -257,14 +259,14 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
                 if (mode != EXPOSURE_MODE_PRINTING_COLOR) {
-                    state_home_start_meter_probe();
+                    state->enable_meter_probe = true;
                 }
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state_home_stop_meter_probe();
+                state->enable_meter_probe = false;
             }
         } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
             if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
@@ -423,13 +425,13 @@ bool state_home_process_densitometer(state_home_t *state, state_controller_t *co
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
-                state_home_start_meter_probe();
+                state->enable_meter_probe = true;
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state_home_stop_meter_probe();
+                state->enable_meter_probe = false;
             }
         } else if (keypad_action.action_id == ACTION_MENU) {
             state_controller_set_next_state(controller, STATE_MENU, 0);
@@ -481,13 +483,13 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
-                state_home_start_meter_probe();
+                state->enable_meter_probe = true;
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state_home_stop_meter_probe();
+                state->enable_meter_probe = false;
             }
         } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
             exposure_adj_increase(exposure_state);
@@ -607,26 +609,29 @@ void state_home_select_paper_profile(state_controller_t *controller)
     vPortFree(profile_list);
 }
 
-void state_home_start_meter_probe()
+void state_home_check_meter_probe(state_home_t *state)
 {
     /* Start with an integration time of 100ms */
     static uint16_t sample_time = 719;
     static uint16_t sample_count = 99;
 
-    if (meter_probe_start() == osOK) {
-        meter_probe_sensor_enable_osc_calibration();
-        meter_probe_sensor_set_gain(TSL2585_GAIN_256X);
-        meter_probe_sensor_set_integration(sample_time, sample_count);
-        meter_probe_sensor_set_mod_calibration(1);
-        meter_probe_sensor_enable_agc(sample_count);
-        meter_probe_sensor_enable();
+    if (state->enable_meter_probe) {
+        if (meter_probe_is_attached() && !meter_probe_is_started()) {
+            if (meter_probe_start() == osOK) {
+                meter_probe_sensor_enable_osc_calibration();
+                meter_probe_sensor_set_gain(TSL2585_GAIN_256X);
+                meter_probe_sensor_set_integration(sample_time, sample_count);
+                meter_probe_sensor_set_mod_calibration(1);
+                meter_probe_sensor_enable_agc(sample_count);
+                meter_probe_sensor_enable();
+            }
+        }
+    } else {
+        if (meter_probe_is_started()) {
+            meter_probe_sensor_disable();
+            meter_probe_stop();
+        }
     }
-}
-
-void state_home_stop_meter_probe()
-{
-    meter_probe_sensor_disable();
-    meter_probe_stop();
 }
 
 uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller)
@@ -714,6 +719,8 @@ void state_home_reading_error_beep()
 
 void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
+    state_home_t *state = (state_home_t *)state_base;
+
     if (next_state != STATE_HOME_CHANGE_TIME_INCREMENT
         && next_state != STATE_HOME_ADJUST_FINE
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
@@ -724,7 +731,8 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller_set_enlarger_focus(controller, false);
             state_controller_stop_focus_timeout(controller);
-            state_home_stop_meter_probe();
+            state->enable_meter_probe = false;
+            state_home_check_meter_probe(state);
         }
     }
 }

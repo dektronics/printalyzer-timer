@@ -29,9 +29,9 @@
 typedef enum {
     METER_PROBE_STATE_NONE = 0,
     METER_PROBE_STATE_INIT,
+    METER_PROBE_STATE_ATTACHED,
     METER_PROBE_STATE_STARTED,
-    METER_PROBE_STATE_RUNNING,
-    METER_PROBE_STATE_DETACHED
+    METER_PROBE_STATE_RUNNING
 } meter_probe_state_t;
 
 /**
@@ -341,6 +341,11 @@ void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t
     }
 }
 
+bool meter_probe_is_attached()
+{
+    return meter_probe_state >= METER_PROBE_STATE_ATTACHED;
+}
+
 bool meter_probe_is_started()
 {
     return meter_probe_state == METER_PROBE_STATE_STARTED || meter_probe_state == METER_PROBE_STATE_RUNNING;
@@ -348,7 +353,7 @@ bool meter_probe_is_started()
 
 osStatus_t meter_probe_start()
 {
-    if (meter_probe_state != METER_PROBE_STATE_INIT) { return osErrorResource; }
+    if (meter_probe_state != METER_PROBE_STATE_ATTACHED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -445,7 +450,7 @@ osStatus_t meter_probe_control_start()
 
 osStatus_t meter_probe_stop()
 {
-    if (meter_probe_state < METER_PROBE_STATE_INIT) { return osErrorResource; }
+    if (meter_probe_state < METER_PROBE_STATE_ATTACHED) { return osErrorResource; }
 
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
@@ -462,7 +467,11 @@ osStatus_t meter_probe_control_stop()
     log_d("meter_probe_control_stop");
 
     /* Reset state variables */
-    meter_probe_state = METER_PROBE_STATE_INIT;
+    if (meter_probe_state > METER_PROBE_STATE_ATTACHED) {
+        meter_probe_state = METER_PROBE_STATE_ATTACHED;
+    } else {
+        meter_probe_state = METER_PROBE_STATE_INIT;
+    }
 
     /* Clear the settings */
     memset(&probe_settings_handle, 0, sizeof(meter_probe_settings_handle_t));
@@ -475,8 +484,6 @@ osStatus_t meter_probe_control_stop()
 
 osStatus_t meter_probe_attach()
 {
-    if (meter_probe_state != METER_PROBE_STATE_DETACHED) { return osErrorResource; }
-
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
         .event_type = METER_PROBE_CONTROL_ATTACH,
@@ -492,18 +499,25 @@ osStatus_t meter_probe_control_attach()
     osStatus_t result = osOK;
     log_d("meter_probe_control_attach");
 
-    /* Double-check that we're still in the detached state */
-    if (meter_probe_state != METER_PROBE_STATE_DETACHED) { return osOK; }
+    if (meter_probe_state == METER_PROBE_STATE_INIT) {
+        meter_probe_state = METER_PROBE_STATE_ATTACHED;
+        result = osOK;
+    } else if (meter_probe_state == METER_PROBE_STATE_STARTED || meter_probe_state == METER_PROBE_STATE_RUNNING) {
+        /* Not an expected case, so handle it like a glitch that should stop the meter probe */
+        log_w("Meter probe attach while running");
 
-    /* Re-start the meter probe */
-    result = meter_probe_control_start();
-    if (result != osOK) {
-        return result;
-    }
+        /* Try to disable the sensor, but ignore any errors */
+        if (meter_probe_state == METER_PROBE_STATE_RUNNING) {
+            meter_probe_control_sensor_disable();
+        }
 
-    /* Re-enable the sensor if it was previously enabled */
-    if (sensor_state.start_mode != METER_PROBE_START_NONE) {
-        result = meter_probe_control_sensor_enable(sensor_state.start_mode);
+        /* Set the meter probe to the stopped state */
+        result = meter_probe_control_stop();
+
+        meter_probe_state = METER_PROBE_STATE_ATTACHED;
+    } else {
+        /* Should not get here */
+        result = osErrorResource;
     }
 
     return result;
@@ -511,8 +525,6 @@ osStatus_t meter_probe_control_attach()
 
 osStatus_t meter_probe_detach()
 {
-    if (meter_probe_state != METER_PROBE_STATE_STARTED && meter_probe_state != METER_PROBE_STATE_RUNNING) { return osErrorResource; }
-
     osStatus_t result = osOK;
     meter_probe_control_event_t control_event = {
         .event_type = METER_PROBE_CONTROL_DETACH,
@@ -525,27 +537,20 @@ osStatus_t meter_probe_detach()
 
 osStatus_t meter_probe_control_detach()
 {
+    osStatus_t result = osOK;
     log_d("meter_probe_control_detach");
 
-    /* Set to the detached state */
-    meter_probe_state = METER_PROBE_STATE_DETACHED;
+    if (meter_probe_state == METER_PROBE_STATE_STARTED || meter_probe_state == METER_PROBE_STATE_RUNNING) {
+        /* The meter probe went away, so clear out the existing state and return to init */
+        result = meter_probe_control_stop();
+        meter_probe_state = METER_PROBE_STATE_INIT;
+    } else if (meter_probe_state == METER_PROBE_STATE_ATTACHED) {
+        meter_probe_state = METER_PROBE_STATE_INIT;
+    }
 
-    /* Clear the settings */
-    memset(&probe_settings_handle, 0, sizeof(meter_probe_settings_handle_t));
-    memset(&sensor_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
-    meter_probe_has_sensor_settings = false;
+    /* A detach in any other state is not relevant */
 
-    /* Selectively clear the state, marking a lot of fields as pending */
-    sensor_state.running = false;
-    sensor_state.gain_pending = true;
-    sensor_state.integration_pending = true;
-    sensor_state.mod_calibration_pending = true;
-    sensor_state.agc_pending = true;
-    sensor_state.sai_active = false;
-    sensor_state.agc_disabled_reset_gain = false;
-    sensor_state.discard_next_reading = false;
-
-    return osOK;
+    return result;
 }
 
 osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info)
@@ -890,6 +895,7 @@ osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_m
         sensor_state.single_shot = single_shot;
         sensor_state.fast_mode = fast_mode;
         sensor_state.running = true;
+        meter_probe_state = METER_PROBE_STATE_RUNNING;
     } while (0);
 
     return hal_to_os_status(ret);
@@ -1002,6 +1008,7 @@ osStatus_t meter_probe_control_sensor_disable()
 
         sensor_state.running = false;
         sensor_state.start_mode = METER_PROBE_START_NONE;
+        meter_probe_state = METER_PROBE_STATE_STARTED;
     } while (0);
 
     return hal_to_os_status(ret);
