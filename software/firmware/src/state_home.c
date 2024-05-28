@@ -22,6 +22,8 @@
 #include "settings.h"
 #include "util.h"
 
+#define LIVE_TONE_TIMEOUT pdMS_TO_TICKS(2000)
+
 typedef enum {
     ACTION_NONE = 0,
     ACTION_TIMER,
@@ -49,9 +51,12 @@ typedef enum {
 typedef struct {
     state_t base;
     uint32_t updated_tone_element;
+    uint32_t live_tone_element;
+    uint32_t live_tone_ticks;
     uint8_t highlight_element;
     bool enable_meter_probe;
     bool display_dirty;
+    bool tone_dirty;
 } state_home_t;
 
 typedef struct {
@@ -86,6 +91,7 @@ static bool state_home_process_calibration(state_home_t *state, state_controller
 static void state_home_select_paper_profile(state_controller_t *controller);
 static void state_home_check_meter_probe(state_home_t *state);
 static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
+static uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_reading_warning_beep();
 static void state_home_reading_error_beep();
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
@@ -96,8 +102,11 @@ static state_home_t state_home_data = {
         .state_exit = state_home_exit
     },
     .updated_tone_element = 0,
+    .live_tone_element = 0,
+    .live_tone_ticks = 0,
     .highlight_element = 0,
-    .display_dirty = true
+    .display_dirty = true,
+    .tone_dirty = true
 };
 
 static bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller);
@@ -162,8 +171,11 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
     const bool has_color_mode = enlarger_config_has_rgb(enlarger);
 
     state->updated_tone_element = 0;
+    state->live_tone_element = 0;
+    state->live_tone_ticks = 0;
     state->highlight_element = 0;
     state->display_dirty = true;
+    state->tone_dirty = true;
 
     /* Configure keypad actions */
     keypad_action_clear();
@@ -214,6 +226,24 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     exposure_mode_t mode = exposure_get_mode(exposure_state);
 
+    if (mode == EXPOSURE_MODE_PRINTING_BW
+        && state_controller_is_enlarger_focus(controller)
+        && meter_probe_is_started()
+        && exposure_get_tone_graph(exposure_state) > 0) {
+        uint32_t live_tone = state_home_take_live_reading(state, controller);
+        if (live_tone > 0) {
+            state->live_tone_element = live_tone;
+            state->live_tone_ticks = osKernelGetTickCount();
+            state->tone_dirty = true;
+        }
+    }
+
+    if (osKernelGetTickCount() - state->live_tone_ticks > LIVE_TONE_TIMEOUT) {
+        state->live_tone_element = 0;
+        state->live_tone_ticks = 0;
+        state->tone_dirty = true;
+    }
+
     /* Draw current exposure state */
     if (state->display_dirty) {
         display_main_printing_elements_t main_elements;
@@ -227,20 +257,35 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
             if ((tone_graph | state->updated_tone_element) == tone_graph) {
                 osDelay(100);
                 tone_graph ^= state->updated_tone_element;
-                display_redraw_tone_graph(tone_graph);
+                display_redraw_tone_graph(tone_graph, 0);
                 osDelay(100);
                 tone_graph ^= state->updated_tone_element;
-                display_redraw_tone_graph(tone_graph);
+                display_redraw_tone_graph(tone_graph, 0);
             }
 
             state->updated_tone_element = 0;
+            if (main_elements.tone_graph && state->live_tone_element) {
+                display_redraw_tone_graph(tone_graph, state->live_tone_element);
+            }
         } else {
             convert_exposure_to_display_printing(&main_elements, exposure_state, enlarger);
             update_display_highlight_element(&main_elements, state->highlight_element);
+            if (main_elements.tone_graph && state->live_tone_element) {
+                main_elements.tone_graph_overlay = state->live_tone_element;
+            }
             display_draw_main_elements_printing(&main_elements);
         }
 
         state->display_dirty = false;
+        state->tone_dirty = false;
+    } else if (state->tone_dirty) {
+        uint32_t overlay_marks = 0;
+        uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
+        if (tone_graph && state->live_tone_element) {
+            overlay_marks = state->live_tone_element;
+        }
+        display_redraw_tone_graph(tone_graph, overlay_marks);
+        state->tone_dirty = false;
     }
 
     /* Handle the next keypad action */
@@ -267,6 +312,9 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
                 state->enable_meter_probe = false;
+                state->live_tone_element = 0;
+                state->live_tone_ticks = 0;
+                state->tone_dirty = true;
             }
         } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
             if (mode == EXPOSURE_MODE_PRINTING_COLOR) {
@@ -679,6 +727,22 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     return updated_tone_element;
 }
 
+uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *controller)
+{
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    meter_probe_result_t result = METER_READING_OK;
+    float lux = 0;
+    uint32_t live_tone_element = 0;
+
+    result = meter_probe_try_measure(&lux);
+
+    if (result == METER_READING_OK) {
+        live_tone_element = exposure_get_meter_reading_tone(exposure_state, lux);
+    }
+
+    return live_tone_element;
+}
+
 void state_home_reading_warning_beep()
 {
     buzzer_volume_t current_volume = buzzer_get_volume();
@@ -732,6 +796,9 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
             state_controller_set_enlarger_focus(controller, false);
             state_controller_stop_focus_timeout(controller);
             state->enable_meter_probe = false;
+            state->live_tone_element = 0;
+            state->live_tone_ticks = 0;
+            state->tone_dirty = true;
             state_home_check_meter_probe(state);
         }
     }

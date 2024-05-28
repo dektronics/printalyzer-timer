@@ -22,6 +22,7 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
 
     if (mode == EXPOSURE_MODE_PRINTING_BW) {
         elements->tone_graph = exposure_get_tone_graph(exposure);
+        elements->tone_graph_overlay = 0;
 
         int paper_index = exposure_get_active_paper_profile_index(exposure);
         if (paper_index >= 0) {
@@ -31,6 +32,7 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
         }
     } else {
         elements->tone_graph = 0;
+        elements->tone_graph_overlay = 0;
         elements->paper_profile_num = 0;
     }
 

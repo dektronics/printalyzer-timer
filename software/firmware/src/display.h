@@ -57,6 +57,7 @@ typedef enum __display_main_printing_time_icon_t {
 
 typedef struct __display_main_printing_elements_t {
     uint32_t tone_graph;
+    uint32_t tone_graph_overlay;
     uint8_t paper_profile_num;
     uint8_t burn_dodge_count;
     display_exposure_timer_t time_elements;
@@ -147,7 +148,7 @@ void display_draw_exposure_timer(const display_exposure_timer_t *elements, const
  *
  * Note: This will not clear any existing display contents.
  */
-void display_redraw_tone_graph(uint32_t tone_graph);
+void display_redraw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks);
 
 /**
  * Draw the complete set of burn/dodge display elements.

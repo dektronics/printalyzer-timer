@@ -1348,6 +1348,47 @@ meter_probe_result_t meter_probe_measure(float *lux)
     return result;
 }
 
+meter_probe_result_t meter_probe_try_measure(float *lux)
+{
+    meter_probe_result_t result = METER_READING_OK;
+    osStatus_t ret = osOK;
+    meter_probe_sensor_reading_t reading;
+    float reading_lux = NAN;
+
+    if (!lux) {
+        return METER_READING_FAIL;
+    }
+
+    do {
+        ret = meter_probe_sensor_get_next_reading(&reading, 0);
+        if (ret != osOK) {
+            result = METER_READING_FAIL;
+            break;
+        }
+
+        if (reading.reading[0].status != METER_SENSOR_RESULT_VALID) {
+            result = METER_READING_FAIL;
+            break;
+        }
+
+        reading_lux = meter_probe_lux_result(&reading);
+        if (!isnormal(reading_lux)) {
+            result = METER_READING_FAIL;
+        } else if (reading_lux < 0.0001F) {
+            result = METER_READING_LOW;
+        } else {
+            result = METER_READING_OK;
+        }
+    } while (0);
+
+    if (result == METER_READING_OK) {
+        *lux = reading_lux;
+    } else {
+        *lux = NAN;
+    }
+    return result;
+}
+
 float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!sensor_reading) { return NAN; }

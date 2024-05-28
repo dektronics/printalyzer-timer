@@ -370,6 +370,14 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
     }
 }
 
+uint32_t exposure_get_meter_reading_tone(const exposure_state_t *state, float lux)
+{
+    if (!state) { return 0; }
+    if (state->lux_reading_count == 0) { return 0; }
+    if (state->tone_graph == 0) { return 0; }
+    return exposure_calculate_tone_graph_element_impl(lux, state->tone_graph_marks, state->adjusted_time);
+}
+
 void exposure_clear_meter_readings(exposure_state_t *state)
 {
     if (!state) { return; }

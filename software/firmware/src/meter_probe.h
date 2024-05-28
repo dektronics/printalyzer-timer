@@ -293,6 +293,15 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *rea
 meter_probe_result_t meter_probe_measure(float *lux);
 
 /**
+ * High level function to get a quick light reading in lux.
+ *
+ * This returns a similar result to `meter_probe_measure`
+ * except that it only returns data from the most recent
+ * sensor cycle and does not block.
+ */
+meter_probe_result_t meter_probe_try_measure(float *lux);
+
+/**
  * Get the result in a gain and integration time adjusted format.
  *
  * This is the number that should be used for all calculations based on

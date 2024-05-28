@@ -29,7 +29,7 @@ static uint8_t display_brightness = 0x0F;
 
 static void display_set_freq(uint8_t value);
 
-static void display_draw_tone_graph(uint32_t tone_graph);
+static void display_draw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks);
 static void display_draw_paper_profile_num(uint8_t num);
 static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_bw_elements(const display_main_printing_bw_t *bw_elements);
@@ -214,7 +214,7 @@ void display_draw_logo()
     osMutexRelease(display_mutex);
 }
 
-void display_redraw_tone_graph(uint32_t tone_graph)
+void display_redraw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -224,7 +224,7 @@ void display_redraw_tone_graph(uint32_t tone_graph)
     u8g2_SetDrawColor(&u8g2, 1);
 
     /* Redraw the tone graph */
-    display_draw_tone_graph(tone_graph);
+    display_draw_tone_graph(tone_graph, overlay_marks);
 
     /* Update just the modified display area */
     u8g2_UpdateDisplayArea(&u8g2, 0, 0, u8g2_GetDisplayWidth(&u8g2) / 8, 1);
@@ -232,7 +232,7 @@ void display_redraw_tone_graph(uint32_t tone_graph)
     osMutexRelease(display_mutex);
 }
 
-void display_draw_tone_graph(uint32_t tone_graph)
+void display_draw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks)
 {
     /*
      * The tone graph is passed as a 17-bit value with the following layout:
@@ -247,25 +247,68 @@ void display_draw_tone_graph(uint32_t tone_graph)
      */
 
     if (tone_graph & 0x00000001UL) {
-        u8g2_DrawPixel(&u8g2, 1, 2);
-        u8g2_DrawLine(&u8g2, 2, 1, 2, 3);
-        u8g2_DrawBox(&u8g2, 3, 0, 4, 5);
+        if (overlay_marks & 0x00000001UL) {
+            u8g2_DrawLine(&u8g2, 2, 0, 6, 0);
+            u8g2_DrawLine(&u8g2, 1, 1, 2, 1);
+            u8g2_DrawLine(&u8g2, 0, 2, 1, 2);
+            u8g2_DrawLine(&u8g2, 1, 3, 2, 3);
+            u8g2_DrawLine(&u8g2, 2, 4, 6, 4);
+            u8g2_DrawLine(&u8g2, 6, 1, 6, 3);
+        } else {
+            u8g2_DrawPixel(&u8g2, 0, 2);
+            u8g2_DrawLine(&u8g2, 1, 1, 1, 3);
+            u8g2_DrawBox(&u8g2, 2, 0, 5, 5);
+        }
+    } else if (overlay_marks & 0x00000001UL) {
+        u8g2_DrawPixel(&u8g2, 2, 2);
+        u8g2_DrawBox(&u8g2, 3, 1, 3, 3);
     }
 
     uint32_t mask = 0x00000002UL;
     uint16_t x_offset = 9;
     do {
         if (tone_graph & mask) {
-            u8g2_DrawBox(&u8g2, x_offset, 0, 14, 5);
+            if (overlay_marks & mask) {
+                u8g2_DrawFrame(&u8g2, x_offset, 0, 14, 5);
+                u8g2_DrawLine(&u8g2, x_offset + 1, 1, x_offset + 1, 3);
+                u8g2_DrawLine(&u8g2, x_offset + 2, 1, x_offset + 2, 3);
+                u8g2_DrawLine(&u8g2, x_offset + 12, 1, x_offset + 12, 3);
+                u8g2_DrawLine(&u8g2, x_offset + 11, 1, x_offset + 11, 3);
+                u8g2_DrawPixel(&u8g2, x_offset + 3, 1);
+                u8g2_DrawPixel(&u8g2, x_offset + 3, 3);
+                u8g2_DrawPixel(&u8g2, x_offset + 10, 1);
+                u8g2_DrawPixel(&u8g2, x_offset + 10, 3);
+            } else {
+                u8g2_DrawBox(&u8g2, x_offset, 0, 14, 5);
+            }
+        } else if (overlay_marks & mask) {
+            u8g2_DrawLine(&u8g2, x_offset + 4, 1, x_offset + 9, 1);
+            u8g2_DrawLine(&u8g2, x_offset + 3, 2, x_offset + 10, 2);
+            u8g2_DrawLine(&u8g2, x_offset + 4, 3, x_offset + 9, 3);
         }
         x_offset += 16;
         mask = mask << 1UL;
     } while (mask != 0x00010000UL);
 
     if (tone_graph & 0x00010000UL) {
-        u8g2_DrawBox(&u8g2, 249, 0, 4, 5);
-        u8g2_DrawLine(&u8g2, 253, 1, 253, 3);
-        u8g2_DrawPixel(&u8g2, 254, 2);
+        if (overlay_marks & 0x00010000UL) {
+            u8g2_DrawLine(&u8g2, 249, 0, 253, 0);
+
+            u8g2_DrawLine(&u8g2, 253, 1, 254, 1);
+            u8g2_DrawLine(&u8g2, 254, 2, 255, 2);
+            u8g2_DrawLine(&u8g2, 253, 3, 254, 3);
+
+            u8g2_DrawLine(&u8g2, 249, 4, 253, 4);
+            u8g2_DrawLine(&u8g2, 249, 1, 249, 3);
+
+        } else {
+            u8g2_DrawBox(&u8g2, 249, 0, 5, 5);
+            u8g2_DrawLine(&u8g2, 254, 1, 254, 3);
+            u8g2_DrawPixel(&u8g2, 255, 2);
+        }
+    } else if (overlay_marks & 0x00010000UL) {
+        u8g2_DrawPixel(&u8g2, 253, 2);
+        u8g2_DrawBox(&u8g2, 250, 1, 3, 3);
     }
 }
 
@@ -830,7 +873,7 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
 
-    display_draw_tone_graph(elements->tone_graph);
+    display_draw_tone_graph(elements->tone_graph, elements->tone_graph_overlay);
     display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
@@ -968,7 +1011,7 @@ void display_draw_exposure_adj(int value, uint32_t tone_graph)
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
 
-    display_draw_tone_graph(tone_graph);
+    display_draw_tone_graph(tone_graph, 0);
 
     asset_info_t asset;
     display_asset_get(&asset, ASSET_EXPOSURE_ADJ_ICON_48);
@@ -1009,7 +1052,7 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t t
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
 
-    display_draw_tone_graph(tone_graph);
+    display_draw_tone_graph(tone_graph, 0);
 
     asset_info_t asset;
     display_asset_get(&asset, ASSET_TIMER_ADJ_ICON_48);
@@ -1399,7 +1442,7 @@ void display_draw_edit_adjustment_elements(const display_edit_adjustment_element
     u8g2_uint_t y = 11;
 
     // Draw the tone graph
-    display_draw_tone_graph(elements->tone_graph);
+    display_draw_tone_graph(elements->tone_graph, 0);
 
     // Draw adjustment icon
     if (elements->time_too_short) {
