@@ -407,6 +407,13 @@ this directory's `.gitignore` file.
 * Rotation: X = -180 deg, Z = 90 deg
 * Offset: X = 7.5 mm, Y = -5.0 mm, Z = 12.6 mm
 
+### Schaffner\_RN116-x-02
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schaffner.com/fileadmin/user_upload/pim/products/Schaffner_cad_data_RN_series.zip>
+* Footprint: `lib_fp:Choke_Schaffner_RN116-02-mm`
+* Rotation: X = -180 deg, Z = 90 deg
+* Offset: X = 10.05 mm, Y = -6.25 mm, Z = 13.2 mm
+
 ### Kemet\_R46KI3100JHM1M
 * Status: Included (No terms listed with download)
 * Source: Manufacturer via link on Digi-Key <https://www.digikey.com/en/models/13176410>
