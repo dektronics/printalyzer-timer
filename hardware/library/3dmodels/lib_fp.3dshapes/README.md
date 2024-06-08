@@ -441,3 +441,11 @@ this directory's `.gitignore` file.
 * Note: Original model edited to trim lead length
 * Footprint: `lib_fp:C_Disc_D8.0mm_W5.0mm_P7.50mm_Vishay_VY2`
 * Offset: X = 3.75 mm, Y = -0.45 mm, Z = 8.00 mm
+
+### Wurth\_890324023028xx
+* Status: Included
+* Source: Custom made by combining features of manufacturer STEP and IGES models
+  * STEP Model <https://www.we-online.com/components/products/download/Download_STP_890324023028xx%20%28rev1%29.stp>
+  * IGES Model <https://www.we-online.com/components/products/download/890324023028%20%28rev1%29.igs>
+* Footprint: `lib_fp:C_Rect_L13.0mm_W8.0mm_P10.00mm_Wurth_WCAP-FTX2`
+* Offset: X = 5.0 mm
