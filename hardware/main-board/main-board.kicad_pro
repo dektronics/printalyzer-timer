@@ -91,6 +91,7 @@
       ],
       "drc_exclusions": [
         "courtyards_overlap|74104001|111050001|6ddab7ac-8690-471e-b82e-576cb8df2f0b|bbcde485-72cf-4fec-9aa3-1d920557ee42",
+        "footprint_type_mismatch|111000000|47500000|7ba5a47f-abc1-43d8-b7f0-a7ce02c58dc1|00000000-0000-0000-0000-000000000000",
         "footprint_type_mismatch|138000000|128910000|85184e6a-4531-411d-9260-25605d6a22d3|00000000-0000-0000-0000-000000000000",
         "footprint_type_mismatch|167500000|128910000|0bbb3efa-630b-4edf-a9fa-5675a05c89aa|00000000-0000-0000-0000-000000000000",
         "lib_footprint_mismatch|189000000|37000000|657b9d5a-7235-4bfe-922f-441aa7cad22b|00000000-0000-0000-0000-000000000000",
@@ -122,6 +123,7 @@
         "footprint_type_mismatch": "error",
         "hole_clearance": "error",
         "hole_near_hole": "error",
+        "holes_co_located": "warning",
         "invalid_outline": "error",
         "isolated_copper": "warning",
         "item_on_disabled_layer": "error",
@@ -301,10 +303,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      "pin_not_driven|1238250|514350|07d48c74-ba6c-4be2-9c17-d7be5b3de4bb|00000000-0000-0000-0000-000000000000|/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff|/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff|",
-      "pin_not_driven|1238250|641350|a9bd43fc-9a99-4059-97dc-68abcbbb7f10|00000000-0000-0000-0000-000000000000|/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff|/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff|"
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
@@ -659,7 +658,15 @@
       "/Power Supply and Control/5V_BOOT": "rgb(72, 72, 72)",
       "/Power Supply and Control/5V_FB": "rgb(255, 224, 128)",
       "/Power Supply and Control/5V_PHASE": "rgb(128, 216, 168)",
-      "/Power Supply and Control/5V_VIN": "rgb(128, 216, 248)"
+      "/Power Supply and Control/5V_VIN": "rgb(128, 216, 248)",
+      "/Power Supply and Control/BST1": "rgb(128, 216, 168)",
+      "/Power Supply and Control/FB1": "rgb(255, 224, 128)",
+      "/Power Supply and Control/FB2": "rgb(255, 224, 128)",
+      "/Power Supply and Control/SW1": "rgb(72, 72, 72)",
+      "/Power Supply and Control/SW2": "rgb(128, 216, 248)",
+      "/Power Supply and Control/VIN": "rgb(128, 216, 248)",
+      "Net-(U4-EN1)": "rgb(72, 72, 72)",
+      "Net-(U4-EN2)": "rgb(128, 216, 168)"
     },
     "netclass_assignments": null,
     "netclass_patterns": [
@@ -741,6 +748,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
+    "bom_export_filename": "",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
