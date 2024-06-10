@@ -449,3 +449,14 @@ this directory's `.gitignore` file.
   * IGES Model <https://www.we-online.com/components/products/download/890324023028%20%28rev1%29.igs>
 * Footprint: `lib_fp:C_Rect_L13.0mm_W8.0mm_P10.00mm_Wurth_WCAP-FTX2`
 * Offset: X = 5.0 mm
+
+### TI\_PWP0016C
+* Status: Included
+* Source: Vendor product page (Digi-Key)
+* Footprint: `lib_fp:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.46x2.31mm_ThermalVias`
+
+### TDK\_VLS6045EX
+* Status: Included
+* Source: Digi-Key / SnapMagic <https://www.digikey.com/en/models/5286701>
+* Footprint: `Inductor_SMD:L_TDK_VLS6045EX_VLS6045AF`
+* Rotation: X = -90 deg
