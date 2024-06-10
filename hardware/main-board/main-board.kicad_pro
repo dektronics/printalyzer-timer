@@ -651,6 +651,7 @@
       "version": 3
     },
     "net_colors": {
+      "+12V": "rgb(221, 133, 0)",
       "/Power Supply and Control/3V3_BOOT": "rgb(72, 72, 72)",
       "/Power Supply and Control/3V3_FB": "rgb(255, 224, 128)",
       "/Power Supply and Control/3V3_PHASE": "rgb(128, 216, 168)",
@@ -662,6 +663,8 @@
       "/Power Supply and Control/BST1": "rgb(128, 216, 168)",
       "/Power Supply and Control/FB1": "rgb(255, 224, 128)",
       "/Power Supply and Control/FB2": "rgb(255, 224, 128)",
+      "/Power Supply and Control/GND_IN": "rgb(184, 152, 208)",
+      "/Power Supply and Control/PWR_IN": "rgb(255, 128, 128)",
       "/Power Supply and Control/SW1": "rgb(72, 72, 72)",
       "/Power Supply and Control/SW2": "rgb(128, 216, 248)",
       "/Power Supply and Control/VIN": "rgb(128, 216, 248)",
