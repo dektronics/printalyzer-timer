@@ -460,3 +460,9 @@ this directory's `.gitignore` file.
 * Source: Digi-Key / SnapMagic <https://www.digikey.com/en/models/5286701>
 * Footprint: `Inductor_SMD:L_TDK_VLS6045EX_VLS6045AF`
 * Rotation: X = -90 deg
+
+### Panasonic\_CP\_Elec\_D
+* Status: Included
+* Source: Digi-Key / Manufacturer <https://www.digikey.com/en/models/11656944>
+* Footprint: `lib_fp:CP_Elec_6.3x6.1`
+* Rotation: X = -90 deg, Z = 180 deg
