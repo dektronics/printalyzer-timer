@@ -3686,6 +3686,12 @@
 		(uuid "018eb439-db17-4733-9c75-74d06d64085a")
 	)
 	(junction
+		(at 222.25 109.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0cdeaf59-535e-43b8-b1c5-9f8df42fcd88")
+	)
+	(junction
 		(at 193.04 154.305)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3696,6 +3702,18 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "20274df2-df9f-4e70-9459-aa67bcf70840")
+	)
+	(junction
+		(at 222.25 64.135)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "350739d6-a1bd-4d33-9201-2e7d1453c03c")
+	)
+	(junction
+		(at 222.25 89.535)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "35700b6f-7a99-44c4-a9f3-cd161105960b")
 	)
 	(junction
 		(at 31.115 92.71)
@@ -3722,16 +3740,10 @@
 		(uuid "670aa2a8-dc87-4fa4-9bcd-9ba4fdc1360e")
 	)
 	(junction
-		(at 228.6 73.025)
+		(at 222.25 125.73)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "6806dad0-dc9c-4c86-9fc8-c924be7f7551")
-	)
-	(junction
-		(at 228.6 109.22)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "68897230-a4b0-4c9b-9706-b5d60cc280f9")
+		(uuid "68fab68d-0952-448a-b83f-d4b35889cfe3")
 	)
 	(junction
 		(at 244.475 89.535)
@@ -3762,6 +3774,18 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "75c47500-edd2-4c20-b6a7-2cfdef276ab2")
+	)
+	(junction
+		(at 222.25 100.33)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "7e3f52ba-d654-4059-8df8-856efbaf08a2")
+	)
+	(junction
+		(at 222.25 73.025)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "82548619-cd3c-4a88-b335-07e06c882fca")
 	)
 	(junction
 		(at 236.855 89.535)
@@ -3901,6 +3925,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 100.33) (xy 222.25 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0556f821-077f-4996-94c6-1f8e11a27d6a")
+	)
+	(wire
+		(pts
 			(xy 175.895 64.135) (xy 175.895 65.405)
 		)
 		(stroke
@@ -4011,13 +4045,13 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 73.025) (xy 228.6 73.025)
+			(xy 218.44 64.135) (xy 222.25 64.135)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "182e0d4f-5a32-43ef-a71c-b0cd1e19b2a8")
+		(uuid "1940361c-882a-42ea-a37a-da099b715fb7")
 	)
 	(wire
 		(pts
@@ -4031,7 +4065,7 @@
 	)
 	(wire
 		(pts
-			(xy 222.25 125.73) (xy 217.805 125.73)
+			(xy 213.36 125.73) (xy 208.915 125.73)
 		)
 		(stroke
 			(width 0)
@@ -4048,16 +4082,6 @@
 			(type default)
 		)
 		(uuid "1a6ca4bb-9c6b-4ca9-b221-f441be208fbd")
-	)
-	(wire
-		(pts
-			(xy 212.725 73.025) (xy 222.25 73.025)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1af0b728-faa5-4dc4-a1c2-faabe781e464")
 	)
 	(wire
 		(pts
@@ -4078,6 +4102,16 @@
 			(type default)
 		)
 		(uuid "1cf8a95e-48ae-4b49-bd58-c98591f59f77")
+	)
+	(wire
+		(pts
+			(xy 222.25 64.135) (xy 222.25 73.025)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1d29e01f-f8f3-434b-834e-4a13342a8c89")
 	)
 	(wire
 		(pts
@@ -4161,7 +4195,7 @@
 	)
 	(wire
 		(pts
-			(xy 191.135 100.33) (xy 212.725 100.33)
+			(xy 191.135 100.33) (xy 213.36 100.33)
 		)
 		(stroke
 			(width 0)
@@ -4178,16 +4212,6 @@
 			(type default)
 		)
 		(uuid "30563d71-4ef5-4a6c-b8bf-c55c283567cd")
-	)
-	(wire
-		(pts
-			(xy 212.725 100.33) (xy 212.725 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "308a2f6e-308a-4a25-ac20-6dd1c773a8b6")
 	)
 	(wire
 		(pts
@@ -4231,6 +4255,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 109.22) (xy 222.25 118.745)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "38460c26-511d-45fc-a792-6dbfd0b24100")
+	)
+	(wire
+		(pts
 			(xy 196.215 114.3) (xy 229.235 114.3)
 		)
 		(stroke
@@ -4251,13 +4285,23 @@
 	)
 	(wire
 		(pts
-			(xy 212.725 64.135) (xy 212.725 73.025)
+			(xy 218.44 100.33) (xy 222.25 100.33)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "3cb5c013-a4eb-4b48-b04d-7e5feb94666d")
+		(uuid "3ccf7c83-d2d6-451d-a73d-81271ae7b8c7")
+	)
+	(wire
+		(pts
+			(xy 222.25 87.63) (xy 222.25 89.535)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e50038f-26d0-4b2f-896f-5c9d30ebca01")
 	)
 	(wire
 		(pts
@@ -4291,7 +4335,7 @@
 	)
 	(wire
 		(pts
-			(xy 191.135 64.135) (xy 212.725 64.135)
+			(xy 191.135 64.135) (xy 213.36 64.135)
 		)
 		(stroke
 			(width 0)
@@ -4348,6 +4392,16 @@
 			(type default)
 		)
 		(uuid "4e0ec89d-545c-4934-b5c0-000c12280ae9")
+	)
+	(wire
+		(pts
+			(xy 222.25 125.73) (xy 236.855 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4e9e17f3-75c3-4a55-88d4-6323607475c5")
 	)
 	(wire
 		(pts
@@ -4421,7 +4475,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.805 89.535) (xy 217.805 90.805)
+			(xy 208.915 89.535) (xy 208.915 90.805)
 		)
 		(stroke
 			(width 0)
@@ -4511,7 +4565,17 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 89.535) (xy 236.855 89.535)
+			(xy 222.25 109.22) (xy 229.235 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6486ae8f-d05f-4a19-af46-ff513b619039")
+	)
+	(wire
+		(pts
+			(xy 218.44 89.535) (xy 222.25 89.535)
 		)
 		(stroke
 			(width 0)
@@ -4591,6 +4655,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 89.535) (xy 236.855 89.535)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "734cd5d3-e2b6-444c-b106-15535eff9a9d")
+	)
+	(wire
+		(pts
 			(xy 22.86 27.305) (xy 33.02 27.305)
 		)
 		(stroke
@@ -4621,6 +4695,16 @@
 	)
 	(wire
 		(pts
+			(xy 229.235 73.025) (xy 222.25 73.025)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7becc48b-607e-4e8f-a23d-6373015fffd7")
+	)
+	(wire
+		(pts
 			(xy 236.855 125.73) (xy 236.855 124.46)
 		)
 		(stroke
@@ -4631,7 +4715,7 @@
 	)
 	(wire
 		(pts
-			(xy 222.25 89.535) (xy 217.805 89.535)
+			(xy 213.36 89.535) (xy 208.915 89.535)
 		)
 		(stroke
 			(width 0)
@@ -4721,7 +4805,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.805 125.73) (xy 217.805 127)
+			(xy 208.915 125.73) (xy 208.915 127)
 		)
 		(stroke
 			(width 0)
@@ -4741,7 +4825,7 @@
 	)
 	(wire
 		(pts
-			(xy 227.33 125.73) (xy 236.855 125.73)
+			(xy 218.44 125.73) (xy 222.25 125.73)
 		)
 		(stroke
 			(width 0)
@@ -4851,6 +4935,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 73.025) (xy 222.25 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a0753189-dc5e-4efb-b147-7c798f5cd9a5")
+	)
+	(wire
+		(pts
 			(xy 196.215 116.84) (xy 229.235 116.84)
 		)
 		(stroke
@@ -4921,16 +5015,6 @@
 	)
 	(wire
 		(pts
-			(xy 212.725 109.22) (xy 222.25 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b7b59aab-4dcb-45e4-b6b0-b9f2eef51c34")
-	)
-	(wire
-		(pts
 			(xy 70.485 74.295) (xy 60.96 74.295)
 		)
 		(stroke
@@ -4968,6 +5052,16 @@
 			(type default)
 		)
 		(uuid "bd13a251-e217-4e47-91c2-8dc7c87bc63c")
+	)
+	(wire
+		(pts
+			(xy 222.25 123.825) (xy 222.25 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bd9e98cf-8ed3-4a8c-96ae-86ec3d32e89e")
 	)
 	(wire
 		(pts
@@ -5018,26 +5112,6 @@
 			(type default)
 		)
 		(uuid "c64dbbdd-275b-4815-902e-67ea422ed5bb")
-	)
-	(wire
-		(pts
-			(xy 228.6 109.22) (xy 229.235 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c8435401-9212-4345-a930-c500b9bbccfb")
-	)
-	(wire
-		(pts
-			(xy 228.6 73.025) (xy 229.235 73.025)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c89cf20e-d804-4fbe-90ff-fb5f183d6c96")
 	)
 	(wire
 		(pts
@@ -5148,16 +5222,6 @@
 			(type default)
 		)
 		(uuid "ddc4790c-fd1a-45b6-9133-5c289da48ce8")
-	)
-	(wire
-		(pts
-			(xy 227.33 109.22) (xy 228.6 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "df4b8e49-084b-470b-936b-63486069fc77")
 	)
 	(wire
 		(pts
@@ -6663,7 +6727,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 217.805 90.805 0)
+		(at 208.915 90.805 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6671,7 +6735,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fa5b43a")
 		(property "Reference" "#PWR0118"
-			(at 217.805 97.155 0)
+			(at 208.915 97.155 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6680,7 +6744,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 217.805 94.615 0)
+			(at 208.915 94.615 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6688,7 +6752,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 217.805 90.805 0)
+			(at 208.915 90.805 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6697,7 +6761,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 217.805 90.805 0)
+			(at 208.915 90.805 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6706,7 +6770,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 217.805 90.805 0)
+			(at 208.915 90.805 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6793,7 +6857,7 @@
 	)
 	(symbol
 		(lib_id "Device:FerriteBead_Small")
-		(at 224.79 125.73 90)
+		(at 215.9 125.73 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6801,7 +6865,7 @@
 		(dnp no)
 		(uuid "0d246f10-b42b-480e-9713-5711d4db9474")
 		(property "Reference" "FB7"
-			(at 224.79 122.555 90)
+			(at 215.9 122.555 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6809,7 +6873,7 @@
 			)
 		)
 		(property "Value" "220 Ohm"
-			(at 224.79 128.27 90)
+			(at 215.9 128.27 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6817,7 +6881,7 @@
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 224.79 127.508 90)
+			(at 215.9 127.508 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6826,7 +6890,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6835,7 +6899,7 @@
 			)
 		)
 		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6844,7 +6908,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata Electronics"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6853,7 +6917,7 @@
 			)
 		)
 		(property "Manufacturer PN" "BLM18KG221BH1D"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6862,7 +6926,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6871,7 +6935,7 @@
 			)
 		)
 		(property "Supplier PN" "490-14029-1-ND"
-			(at 224.79 125.73 0)
+			(at 215.9 125.73 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7107,6 +7171,111 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Small")
+		(at 222.25 121.285 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "203c3473-b443-4820-8e28-180fbc098eee")
+		(property "Reference" "C32"
+			(at 224.155 120.015 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.01uF"
+			(at 224.155 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10B103KB8NNNC_Spec.pdf"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 10000PF 50V X7R 0603"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10B103KB8NNNC"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "1276-1009-1-ND"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "93e51d86-1de1-43b5-9af1-6c92e6389ac2")
+		)
+		(pin "2"
+			(uuid "c3ab7f4f-158f-4159-ac66-0cb5308967d0")
+		)
+		(instances
+			(project "main-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
+					(reference "C32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 208.28 163.195 0)
 		(unit 1)
@@ -7166,6 +7335,111 @@
 			(project "main-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
 					(reference "#PWR0130")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 222.25 85.09 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2598cd72-5f97-43cb-9dda-7eb2309217e3")
+		(property "Reference" "C31"
+			(at 224.155 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0.01uF"
+			(at 224.155 85.725 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10B103KB8NNNC_Spec.pdf"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 10000PF 50V X7R 0603"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10B103KB8NNNC"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "1276-1009-1-ND"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f25d3a58-3122-4955-9fa9-ff519ae3c76b")
+		)
+		(pin "2"
+			(uuid "362c6bc4-597d-4ee0-8bda-6fc65adc9f1a")
+		)
+		(instances
+			(project "main-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
+					(reference "C31")
 					(unit 1)
 				)
 			)
@@ -7922,7 +8196,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 217.805 127 0)
+		(at 208.915 127 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7930,7 +8204,7 @@
 		(dnp no)
 		(uuid "409d82a7-4bf8-4548-b06b-1576d058787a")
 		(property "Reference" "#PWR0123"
-			(at 217.805 133.35 0)
+			(at 208.915 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7939,7 +8213,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 217.805 130.81 0)
+			(at 208.915 130.81 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7947,7 +8221,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 217.805 127 0)
+			(at 208.915 127 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7956,7 +8230,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 217.805 127 0)
+			(at 208.915 127 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7965,7 +8239,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 217.805 127 0)
+			(at 208.915 127 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9121,7 +9395,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 228.6 73.025 0)
+		(at 222.25 64.135 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9130,7 +9404,7 @@
 		(fields_autoplaced yes)
 		(uuid "6bffb934-8e3e-4003-aa76-37ae22e90d6c")
 		(property "Reference" "#FLG08"
-			(at 228.6 71.12 0)
+			(at 224.155 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9139,7 +9413,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 228.6 68.58 0)
+			(at 226.695 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9148,7 +9422,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9157,7 +9431,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9166,7 +9440,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9175,7 +9449,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9184,7 +9458,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9193,7 +9467,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9202,7 +9476,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 228.6 73.025 0)
+			(at 222.25 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10278,7 +10552,7 @@
 	)
 	(symbol
 		(lib_id "Device:FerriteBead_Small")
-		(at 224.79 109.22 90)
+		(at 215.9 100.33 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10286,7 +10560,7 @@
 		(dnp no)
 		(uuid "af661ecc-f8ac-4cd1-bf2e-4fdd241680a7")
 		(property "Reference" "FB6"
-			(at 224.79 106.045 90)
+			(at 215.9 97.155 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10294,7 +10568,7 @@
 			)
 		)
 		(property "Value" "220 Ohm"
-			(at 224.79 111.76 90)
+			(at 215.9 102.87 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10302,7 +10576,7 @@
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 224.79 110.998 90)
+			(at 215.9 102.108 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10311,7 +10585,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10320,7 +10594,7 @@
 			)
 		)
 		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10329,7 +10603,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata Electronics"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10338,7 +10612,7 @@
 			)
 		)
 		(property "Manufacturer PN" "BLM18KG221BH1D"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10347,7 +10621,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10356,7 +10630,7 @@
 			)
 		)
 		(property "Supplier PN" "490-14029-1-ND"
-			(at 224.79 109.22 0)
+			(at 215.9 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10446,7 +10720,7 @@
 	)
 	(symbol
 		(lib_id "Device:FerriteBead_Small")
-		(at 224.79 73.025 90)
+		(at 215.9 64.135 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10454,7 +10728,7 @@
 		(dnp no)
 		(uuid "b3e24b0b-9ce9-4d6c-bbdd-64f6caab9d31")
 		(property "Reference" "FB4"
-			(at 224.79 69.85 90)
+			(at 215.9 60.96 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10462,7 +10736,7 @@
 			)
 		)
 		(property "Value" "220 Ohm"
-			(at 224.79 75.565 90)
+			(at 215.9 66.675 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10470,7 +10744,7 @@
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 224.79 74.803 90)
+			(at 215.9 65.913 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10479,7 +10753,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10488,7 +10762,7 @@
 			)
 		)
 		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10497,7 +10771,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata Electronics"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10506,7 +10780,7 @@
 			)
 		)
 		(property "Manufacturer PN" "BLM18KG221BH1D"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10515,7 +10789,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10524,7 +10798,7 @@
 			)
 		)
 		(property "Supplier PN" "490-14029-1-ND"
-			(at 224.79 73.025 0)
+			(at 215.9 64.135 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11596,7 +11870,7 @@
 	)
 	(symbol
 		(lib_id "Device:FerriteBead_Small")
-		(at 224.79 89.535 90)
+		(at 215.9 89.535 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11604,7 +11878,7 @@
 		(dnp no)
 		(uuid "e5a9346a-54c7-457b-84c4-8d3934dd02ce")
 		(property "Reference" "FB5"
-			(at 224.79 86.36 90)
+			(at 215.9 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11612,7 +11886,7 @@
 			)
 		)
 		(property "Value" "220 Ohm"
-			(at 224.79 92.075 90)
+			(at 215.9 92.075 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11620,7 +11894,7 @@
 			)
 		)
 		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 224.79 91.313 90)
+			(at 215.9 91.313 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11629,7 +11903,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11638,7 +11912,7 @@
 			)
 		)
 		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11647,7 +11921,7 @@
 			)
 		)
 		(property "Manufacturer" "Murata Electronics"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11656,7 +11930,7 @@
 			)
 		)
 		(property "Manufacturer PN" "BLM18KG221BH1D"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11665,7 +11939,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11674,7 +11948,7 @@
 			)
 		)
 		(property "Supplier PN" "490-14029-1-ND"
-			(at 224.79 89.535 0)
+			(at 215.9 89.535 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11829,7 +12103,7 @@
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
-		(at 228.6 109.22 0)
+		(at 222.25 100.33 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11838,7 +12112,7 @@
 		(fields_autoplaced yes)
 		(uuid "f55cc19b-75a5-471c-a148-6fb455965334")
 		(property "Reference" "#FLG010"
-			(at 228.6 107.315 0)
+			(at 224.155 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11847,7 +12121,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 228.6 104.775 0)
+			(at 226.695 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11856,7 +12130,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11865,7 +12139,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11874,7 +12148,7 @@
 			)
 		)
 		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11883,7 +12157,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11892,7 +12166,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11901,7 +12175,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11910,7 +12184,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 228.6 109.22 0)
+			(at 222.25 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
