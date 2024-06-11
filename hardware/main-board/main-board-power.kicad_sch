@@ -4335,7 +4335,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/609/CL10B104KB8NNNC_Spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 104.14 85.725 0)
 			(effects
 				(font
@@ -4344,7 +4344,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 0.1UF 50V X7R 0603"
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
 			(at 104.14 85.725 0)
 			(effects
 				(font
@@ -4362,7 +4362,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10B104KB8NNNC"
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
 			(at 104.14 85.725 0)
 			(effects
 				(font
@@ -4380,7 +4380,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1000-1-ND"
+		(property "Supplier PN" "1276-1006-1-ND"
 			(at 104.14 85.725 0)
 			(effects
 				(font
@@ -5647,7 +5647,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/3644/CL10B105KA8NNNC_spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 104.14 107.315 0)
 			(effects
 				(font
@@ -5656,7 +5656,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 1UF 25V X5R 0603"
+		(property "Description" "CAP CER 1UF 25V X7R 0603"
 			(at 104.14 107.315 0)
 			(effects
 				(font
@@ -6432,7 +6432,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/609/CL10B104KB8NNNC_Spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 52.07 74.295 0)
 			(effects
 				(font
@@ -6441,7 +6441,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 0.1UF 50V X7R 0603"
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
 			(at 52.07 74.295 0)
 			(effects
 				(font
@@ -6459,7 +6459,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10B104KB8NNNC"
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
 			(at 52.07 74.295 0)
 			(effects
 				(font
@@ -6477,7 +6477,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1000-1-ND"
+		(property "Supplier PN" "1276-1006-1-ND"
 			(at 52.07 74.295 0)
 			(effects
 				(font
@@ -8303,7 +8303,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/609/CL10B104KB8NNNC_Spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 110.49 74.295 0)
 			(effects
 				(font
@@ -8312,7 +8312,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 0.1UF 50V X7R 0603"
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
 			(at 110.49 74.295 0)
 			(effects
 				(font
@@ -8330,7 +8330,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10B104KB8NNNC"
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
 			(at 110.49 74.295 0)
 			(effects
 				(font
@@ -8348,7 +8348,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1000-1-ND"
+		(property "Supplier PN" "1276-1006-1-ND"
 			(at 110.49 74.295 0)
 			(effects
 				(font
@@ -9183,7 +9183,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/609/CL10B104KB8NNNC_Spec.pdf"
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
 			(at 58.42 85.725 0)
 			(effects
 				(font
@@ -9192,7 +9192,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 0.1UF 50V X7R 0603"
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
 			(at 58.42 85.725 0)
 			(effects
 				(font
@@ -9210,7 +9210,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL10B104KB8NNNC"
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
 			(at 58.42 85.725 0)
 			(effects
 				(font
@@ -9228,7 +9228,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1000-1-ND"
+		(property "Supplier PN" "1276-1006-1-ND"
 			(at 58.42 85.725 0)
 			(effects
 				(font

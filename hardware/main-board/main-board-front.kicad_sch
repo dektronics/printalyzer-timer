@@ -46,7 +46,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" " ~"
+			(property "Datasheet" "~"
 				(at 3.81 -1.27 0)
 				(effects
 					(font
@@ -6563,7 +6563,7 @@
 				(hide yes)
 			)
 		)
-		(property "User Lable" "USB Port 1"
+		(property "User Label" "USB Port 1"
 			(at 242.57 78.105 0)
 			(effects
 				(font
