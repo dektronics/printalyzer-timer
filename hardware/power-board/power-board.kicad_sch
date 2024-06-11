@@ -4855,6 +4855,12 @@
 		(uuid "0802e51f-d3de-450c-b817-70c4558fa8b3")
 	)
 	(junction
+		(at 219.71 98.425)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0a7810ec-36bd-441d-8cf8-b8a2c471876b")
+	)
+	(junction
 		(at 130.81 161.925)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4895,6 +4901,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "2bdcffa3-f891-4963-be06-75da18a9b5aa")
+	)
+	(junction
+		(at 231.14 98.425)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "44eb64c5-0cc0-4468-85ec-aa8d1f19cda2")
 	)
 	(junction
 		(at 207.645 69.85)
@@ -4939,7 +4951,7 @@
 		(uuid "9694643f-066a-499f-ad6c-57bdb11970c8")
 	)
 	(junction
-		(at 64.135 108.585)
+		(at 64.77 108.585)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "abde3b77-dcba-447b-8e9e-80588f6f8541")
@@ -4951,7 +4963,7 @@
 		(uuid "bd1f2d43-6a2d-4284-a8b4-a81951e922d7")
 	)
 	(junction
-		(at 64.135 116.205)
+		(at 64.77 116.205)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cd5705ab-f7ab-4afa-9ac8-1c9f9ad7abda")
@@ -5032,6 +5044,16 @@
 	)
 	(wire
 		(pts
+			(xy 227.965 98.425) (xy 231.14 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0af43813-be6f-44c1-ba15-88ce9fee10f1")
+	)
+	(wire
+		(pts
 			(xy 52.705 142.24) (xy 54.61 142.24)
 		)
 		(stroke
@@ -5049,6 +5071,16 @@
 			(type default)
 		)
 		(uuid "0dc5b65d-cac0-4a76-b8e9-b45f1a43ac67")
+	)
+	(wire
+		(pts
+			(xy 231.14 98.425) (xy 231.14 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0f625d0d-be38-4097-a5b3-5d991641f397")
 	)
 	(wire
 		(pts
@@ -5102,6 +5134,16 @@
 	)
 	(wire
 		(pts
+			(xy 219.71 98.425) (xy 219.71 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "16252527-00ea-4be6-b957-881b0bc55c60")
+	)
+	(wire
+		(pts
 			(xy 89.535 116.205) (xy 89.535 118.745)
 		)
 		(stroke
@@ -5122,7 +5164,7 @@
 	)
 	(wire
 		(pts
-			(xy 53.975 116.205) (xy 64.135 116.205)
+			(xy 53.975 116.205) (xy 64.77 116.205)
 		)
 		(stroke
 			(width 0)
@@ -5412,7 +5454,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.135 108.585) (xy 64.135 109.855)
+			(xy 64.77 108.585) (xy 64.77 109.855)
 		)
 		(stroke
 			(width 0)
@@ -5482,7 +5524,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.135 116.205) (xy 74.93 116.205)
+			(xy 64.77 116.205) (xy 74.93 116.205)
 		)
 		(stroke
 			(width 0)
@@ -5509,6 +5551,16 @@
 			(type default)
 		)
 		(uuid "60444c32-8315-460c-9a17-c2d7b929cb47")
+	)
+	(wire
+		(pts
+			(xy 219.71 98.425) (xy 222.885 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "615cc5b2-d6bc-44d0-a8b7-fed15075726f")
 	)
 	(wire
 		(pts
@@ -5722,7 +5774,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.135 114.935) (xy 64.135 116.205)
+			(xy 64.77 114.935) (xy 64.77 116.205)
 		)
 		(stroke
 			(width 0)
@@ -5822,6 +5874,16 @@
 	)
 	(wire
 		(pts
+			(xy 231.14 91.44) (xy 231.14 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9552b750-e685-4406-9047-3c89410b943a")
+	)
+	(wire
+		(pts
 			(xy 26.035 109.855) (xy 27.94 109.855)
 		)
 		(stroke
@@ -5862,7 +5924,7 @@
 	)
 	(wire
 		(pts
-			(xy 53.975 108.585) (xy 64.135 108.585)
+			(xy 53.975 108.585) (xy 64.77 108.585)
 		)
 		(stroke
 			(width 0)
@@ -6022,6 +6084,16 @@
 	)
 	(wire
 		(pts
+			(xy 219.71 91.44) (xy 222.885 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c3e6deb3-a2f8-4cfc-aff7-caa382bc8496")
+	)
+	(wire
+		(pts
 			(xy 62.23 79.375) (xy 62.23 83.82)
 		)
 		(stroke
@@ -6112,6 +6184,16 @@
 	)
 	(wire
 		(pts
+			(xy 219.71 101.6) (xy 219.71 98.425)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d827da8a-ee3a-471e-9377-df3c751afbf8")
+	)
+	(wire
+		(pts
 			(xy 23.495 69.85) (xy 17.145 69.85)
 		)
 		(stroke
@@ -6119,6 +6201,16 @@
 			(type default)
 		)
 		(uuid "d8ae938a-4a78-4838-88a5-71d95752174d")
+	)
+	(wire
+		(pts
+			(xy 227.965 91.44) (xy 231.14 91.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "da0ad0ac-e943-455c-afc5-4a11aa7ab466")
 	)
 	(wire
 		(pts
@@ -6132,7 +6224,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.135 108.585) (xy 74.93 108.585)
+			(xy 64.77 108.585) (xy 74.93 108.585)
 		)
 		(stroke
 			(width 0)
@@ -6363,8 +6455,8 @@
 		(uuid b9248389-ccee-458c-81dd-ec3ae7a74214)
 	)
 	(rectangle
-		(start 233.68 84.455)
-		(end 264.795 106.68)
+		(start 214.63 84.455)
+		(end 264.795 108.585)
 		(stroke
 			(width 0)
 			(type dash)
@@ -6398,7 +6490,7 @@
 	)
 	(text "Enclosure Mounting"
 		(exclude_from_sim no)
-		(at 234.95 87.63 0)
+		(at 215.9 87.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7315,6 +7407,107 @@
 		)
 	)
 	(symbol
+		(lib_id "power:Earth")
+		(at 231.14 101.6 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "0cb17fbc-8f64-459f-91d1-92c465b9fac0")
+		(property "Reference" "#PWR03"
+			(at 231.14 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "Earth"
+			(at 231.14 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"Earth\""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" ""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 231.14 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9e30404f-5650-4471-be99-9e2faa19870a")
+		)
+		(instances
+			(project "power-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+					(reference "#PWR03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Switch:SW_SPST")
 		(at 41.91 45.72 0)
 		(unit 1)
@@ -7822,15 +8015,15 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 53.975 112.395 0)
+		(at 64.77 112.395 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "1ce492a8-4036-4016-a70e-649f6f1136eb")
-		(property "Reference" "C2"
-			(at 55.88 111.125 0)
+		(property "Reference" "C3"
+			(at 66.675 111.125 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7839,7 +8032,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 55.88 113.665 0)
+			(at 66.675 113.665 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7848,7 +8041,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7857,7 +8050,7 @@
 			)
 		)
 		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/41/CL31B106KBHNNNE_Spec.pdf"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7866,7 +8059,7 @@
 			)
 		)
 		(property "Description" "CAP CER 10UF 50V X7R 1206"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7875,7 +8068,7 @@
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7884,7 +8077,7 @@
 			)
 		)
 		(property "Manufacturer PN" "CL31B106KBHNNNE"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7893,7 +8086,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7902,7 +8095,7 @@
 			)
 		)
 		(property "Supplier PN" "1276-6767-1-ND"
-			(at 53.975 112.395 0)
+			(at 64.77 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7919,7 +8112,7 @@
 		(instances
 			(project "power-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-					(reference "C2")
+					(reference "C3")
 					(unit 1)
 				)
 			)
@@ -8523,15 +8716,15 @@
 	)
 	(symbol
 		(lib_id "Device:C_Polarized_Small")
-		(at 74.93 112.395 0)
+		(at 53.975 112.395 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "40f2bb1f-b42b-42a9-9dd0-179412181324")
-		(property "Reference" "C4"
-			(at 76.835 111.125 0)
+		(property "Reference" "C2"
+			(at 55.88 111.125 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8540,7 +8733,7 @@
 			)
 		)
 		(property "Value" "100uF"
-			(at 76.835 113.665 0)
+			(at 55.88 113.665 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8549,7 +8742,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:CP_Elec_8x10"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8558,7 +8751,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.nichicon.co.jp/english/series_items/catalog_pdf/e-uwt.pdf"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8567,7 +8760,7 @@
 			)
 		)
 		(property "Description" "CAP ALUM 100UF 20% 50V SMD"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8576,7 +8769,7 @@
 			)
 		)
 		(property "Manufacturer" "Nichicon"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8585,7 +8778,7 @@
 			)
 		)
 		(property "Manufacturer PN" "UWT1H101MNL1GS"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8594,7 +8787,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8603,7 +8796,7 @@
 			)
 		)
 		(property "Supplier PN" "493-2226-1-ND"
-			(at 74.93 112.395 0)
+			(at 53.975 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8620,7 +8813,7 @@
 		(instances
 			(project "power-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-					(reference "C4")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -9729,6 +9922,110 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Small")
+		(at 225.425 98.425 90)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7bc29055-7528-4f81-b04a-0a8d987fbc57")
+		(property "Reference" "C6"
+			(at 225.425 95.885 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "0.1uF"
+			(at 225.425 100.965 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 0.1UF 25V X7R 0603"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10B104KA8NNNC"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "1276-1006-1-ND"
+			(at 225.425 98.425 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9a4d9743-2a79-4658-8693-3dff493bd6c2")
+		)
+		(pin "2"
+			(uuid "a1ec67fe-2ef1-438b-a610-8167dcd295d5")
+		)
+		(instances
+			(project "power-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+					(reference "C6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Project:XLR5_Ground")
 		(at 104.775 153.035 0)
 		(unit 1)
@@ -9950,15 +10247,15 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 64.135 112.395 0)
+		(at 74.93 112.395 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "7e66844d-ac68-467a-94b8-b4d125e81a55")
-		(property "Reference" "C3"
-			(at 66.04 111.125 0)
+		(property "Reference" "C4"
+			(at 76.835 111.125 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9967,7 +10264,7 @@
 			)
 		)
 		(property "Value" "10uF"
-			(at 66.04 113.665 0)
+			(at 76.835 113.665 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9976,7 +10273,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9985,7 +10282,7 @@
 			)
 		)
 		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/41/CL31B106KBHNNNE_Spec.pdf"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9994,7 +10291,7 @@
 			)
 		)
 		(property "Description" "CAP CER 10UF 50V X7R 1206"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10003,7 +10300,7 @@
 			)
 		)
 		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10012,7 +10309,7 @@
 			)
 		)
 		(property "Manufacturer PN" "CL31B106KBHNNNE"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10021,7 +10318,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10030,7 +10327,7 @@
 			)
 		)
 		(property "Supplier PN" "1276-6767-1-ND"
-			(at 64.135 112.395 0)
+			(at 74.93 112.395 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10047,7 +10344,7 @@
 		(instances
 			(project "power-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
-					(reference "C3")
+					(reference "C4")
 					(unit 1)
 				)
 			)
@@ -10922,6 +11219,109 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 225.425 91.44 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ac1f734f-1af6-4165-b3ce-f403b223febb")
+		(property "Reference" "R5"
+			(at 225.425 89.535 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "120R"
+			(at 225.425 93.345 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.vishay.com/docs/20035/dcrcwe3.pdf"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "RES SMD 120 OHM 1% 1/8W 0805"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CRCW0805120RFKEA"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "541-120CCT-ND"
+			(at 225.425 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a3aa3cb1-daa0-4393-ac2a-c8fca0507d9e")
+		)
+		(pin "2"
+			(uuid "47fb9a2c-fa5b-4df3-8078-e5c1dde8fb5f")
+		)
+		(instances
+			(project "power-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+					(reference "R5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 130.81 161.925 90)
 		(unit 1)
@@ -11771,7 +12171,6 @@
 				(font
 					(size 1.27 1.27)
 				)
-				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -11801,6 +12200,42 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer" ""
+			(at 237.49 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 237.49 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" ""
+			(at 237.49 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 237.49 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "587aca10-232d-43da-a646-af38d3721f1b")
 		)
@@ -11808,6 +12243,71 @@
 			(project "power-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
 					(reference "#PWR026")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 219.71 101.6 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ecea5ae1-4951-46c2-96d7-40dd9a150708")
+		(property "Reference" "#PWR09"
+			(at 219.71 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 219.71 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 219.71 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 219.71 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 219.71 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "94af5716-b639-4418-b503-746b9a3cea36")
+		)
+		(instances
+			(project "power-board"
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
