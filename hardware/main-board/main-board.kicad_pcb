@@ -20657,7 +20657,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor")
 		(property "Reference" "C18"
-			(at 3.775 0.055 90)
+			(at -2.25 0 90)
 			(layer "F.SilkS")
 			(uuid "c4b9c42c-28d9-40ec-9fb9-d60e732295f3")
 			(effects
@@ -20665,6 +20665,7 @@
 					(size 1 1)
 					(thickness 0.15)
 				)
+				(justify left)
 			)
 		)
 		(property "Value" "10uF"
@@ -25105,7 +25106,7 @@
 		(at 78.5 60.97 -90)
 		(descr "SOT23-3L, from ST ESD device datasheet")
 		(tags "SOT TO_SOT_SMD")
-		(property "Reference" "D19"
+		(property "Reference" "D14"
 			(at 0 -2.75 90)
 			(layer "F.SilkS")
 			(uuid "c793db9f-bb04-4cf6-b6f4-c525814fa516")
