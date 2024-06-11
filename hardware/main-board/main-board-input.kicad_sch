@@ -5191,6 +5191,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 63.5 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7f523802-d595-4fde-b770-ec3830065b3e")
 		)
@@ -5372,6 +5381,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 26.67 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6a9296ba-24a9-431a-a83e-33c4728443a6")
 		)
@@ -5476,6 +5494,15 @@
 			)
 		)
 		(property "Supplier PN" "979-6425.1101"
+			(at 48.26 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 48.26 26.67 0)
 			(effects
 				(font
@@ -5596,6 +5623,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 71.12 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5620b98f-7d1c-4a15-97ba-4be79058bcb5")
 		)
@@ -5700,6 +5736,15 @@
 			)
 		)
 		(property "Supplier PN" "979-6425.0101"
+			(at 92.71 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 92.71 54.61 0)
 			(effects
 				(font
@@ -5820,6 +5865,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 92.71 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a4e56eac-236c-4ac4-bde6-ae089797bc61")
 		)
@@ -5924,6 +5978,15 @@
 			)
 		)
 		(property "Supplier PN" "979-6425.0101"
+			(at 71.12 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 71.12 54.61 0)
 			(effects
 				(font
@@ -6044,6 +6107,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 116.84 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a2b051ef-c089-4f39-87f9-0bd9df4245f1")
 		)
@@ -6148,6 +6220,15 @@
 			)
 		)
 		(property "Supplier PN" "979-6425.0101"
+			(at 116.84 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 116.84 54.61 0)
 			(effects
 				(font
@@ -6268,6 +6349,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 139.7 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "25d05dc0-f15f-49d0-a4dd-7792c45a8aa0")
 		)
@@ -6380,6 +6470,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 139.7 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "785146a3-b1f5-4ed8-8349-f9aef920fed4")
 		)
@@ -6475,6 +6574,15 @@
 			)
 		)
 		(property "Supplier PN" "497-11923-1-ND"
+			(at 120.65 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 120.65 116.84 0)
 			(effects
 				(font
@@ -6717,6 +6825,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 127 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fdd50f25-6e10-4dbc-b308-10bc1db04d18")
 		)
@@ -6879,6 +6996,15 @@
 			)
 		)
 		(property "Supplier PN" "541-4.30KHCT-ND"
+			(at 105.41 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 105.41 109.22 0)
 			(effects
 				(font
@@ -7129,6 +7255,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 217.17 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "A"
 			(uuid "0a09575e-31da-4991-ab18-bca2563e0bd7")
 		)
@@ -7243,6 +7378,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 175.26 26.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7ff69204-02e0-4837-a647-7d6575ef1fec")
 		)
@@ -7340,6 +7484,15 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
+			(at 170.18 31.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 170.18 31.75 0)
 			(effects
 				(font
@@ -7510,6 +7663,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1009-1-ND"
+			(at 165.1 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 165.1 36.83 0)
 			(effects
 				(font
@@ -7753,6 +7915,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 175.26 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f64e9072-e823-4d2d-acc2-b1cad36ffffc")
 		)
@@ -7858,6 +8029,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 170.18 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9d8606ef-1b77-4b20-b2c7-1be08c0897b1")
 		)
@@ -7955,6 +8135,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1009-1-ND"
+			(at 165.1 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 165.1 59.69 0)
 			(effects
 				(font
@@ -8253,6 +8442,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1006-1-ND"
+			(at 69.85 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 69.85 88.9 0)
 			(effects
 				(font
@@ -8561,6 +8759,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 40.64 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e232b624-0212-49d3-b7ab-081910c6ea50")
 		)
@@ -8658,6 +8865,15 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
+			(at 46.99 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 46.99 88.9 0)
 			(effects
 				(font
@@ -9430,6 +9646,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 175.26 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6ea522f8-0e44-4c99-b926-50d48a0ae0d2")
 		)
@@ -9592,6 +9817,15 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
+			(at 34.29 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 34.29 88.9 0)
 			(effects
 				(font
@@ -9768,6 +10002,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 26.67 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fbd3a6a6-c3df-4a8f-9240-9d344d3580ac")
 		)
@@ -9863,6 +10106,15 @@
 			)
 		)
 		(property "Supplier PN" "160-1087-ND"
+			(at 48.26 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 48.26 40.64 0)
 			(effects
 				(font
@@ -9974,6 +10226,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 71.12 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "de47b992-7305-4234-8749-f0446e2bf4f9")
 		)
@@ -10069,6 +10330,15 @@
 			)
 		)
 		(property "Supplier PN" "160-1087-ND"
+			(at 71.12 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 71.12 40.64 0)
 			(effects
 				(font
@@ -10440,6 +10710,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 92.71 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c4f0d61d-4fd2-4834-b48d-2cd7fa707512")
 		)
@@ -10608,6 +10887,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 92.71 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3354e103-7cc5-420b-bebc-6238561daa7e")
 		)
@@ -10768,6 +11056,15 @@
 			)
 		)
 		(property "Supplier PN" "160-1087-ND"
+			(at 116.84 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 116.84 40.64 0)
 			(effects
 				(font
@@ -11009,6 +11306,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 116.84 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ca543611-8022-4c58-b28c-f3c7e9bd46c4")
 		)
@@ -11242,6 +11548,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 139.7 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b09a0549-49de-4096-aa31-dd95dab0ec77")
 		)
@@ -11410,6 +11725,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 139.7 68.58 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c4c532db-104b-46d1-b7dd-6a9cfe84e839")
 		)
@@ -11570,6 +11894,15 @@
 			)
 		)
 		(property "Supplier PN" "160-1087-ND"
+			(at 26.67 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 26.67 50.8 0)
 			(effects
 				(font
@@ -11876,6 +12209,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 48.26 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b0d8f733-c05a-4620-9adb-cc64fda711c8")
 		)
@@ -11975,6 +12317,15 @@
 			)
 		)
 		(property "Supplier PN" "497-2930-1-ND"
+			(at 193.04 43.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 193.04 43.815 0)
 			(effects
 				(font

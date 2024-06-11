@@ -6060,6 +6060,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 184.15 154.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7299460c-a81f-4d1e-90d7-1c139b5a0268")
 		)
@@ -6168,6 +6177,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 181.61 145.415 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4d5d6e82-d02e-44ab-9403-292b06b86192")
 		)
@@ -6265,6 +6283,15 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
+			(at 193.04 149.225 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 193.04 149.225 0)
 			(effects
 				(font
@@ -6510,6 +6537,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 191.135 78.105 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7bab4fb5-1b80-4069-9878-407373653cc9")
 		)
@@ -6634,6 +6670,15 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+		(property "User Lable" ""
+			(at 236.855 78.105 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "1"
@@ -6872,7 +6917,7 @@
 				)
 			)
 		)
-		(property "Value" "220 Ohm"
+		(property "Value" "330 Ohm"
 			(at 215.9 128.27 90)
 			(effects
 				(font
@@ -6889,7 +6934,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
+		(property "Datasheet" "https://www.murata.com/products/productdata/8796738650142/ENFA0003.pdf"
 			(at 215.9 125.73 0)
 			(effects
 				(font
@@ -6898,7 +6943,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
+		(property "Description" "FERRITE BEAD 330 OHM 0603 1LN"
 			(at 215.9 125.73 0)
 			(effects
 				(font
@@ -6916,7 +6961,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "BLM18KG221BH1D"
+		(property "Manufacturer PN" "BLM18KG331SN1D"
 			(at 215.9 125.73 0)
 			(effects
 				(font
@@ -6934,7 +6979,16 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "490-14029-1-ND"
+		(property "Supplier PN" "490-5256-1-ND"
+			(at 215.9 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 215.9 125.73 0)
 			(effects
 				(font
@@ -7048,6 +7102,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 251.46 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a517f3fa-3d98-4f5c-bb4b-0acb25d0bf31")
 		)
@@ -7144,6 +7207,15 @@
 			)
 		)
 		(property "Supplier PN" "497-2930-1-ND"
+			(at 215.265 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 215.265 161.29 0)
 			(effects
 				(font
@@ -7252,6 +7324,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1009-1-ND"
+			(at 222.25 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 222.25 121.285 0)
 			(effects
 				(font
@@ -7422,6 +7503,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1009-1-ND"
+			(at 222.25 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 222.25 85.09 0)
 			(effects
 				(font
@@ -7657,6 +7747,15 @@
 			)
 		)
 		(property "Supplier PN" "USB2422T/MJCT-ND"
+			(at 97.155 64.135 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 97.155 64.135 0)
 			(effects
 				(font
@@ -7969,6 +8068,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 31.115 88.265 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "43b40e58-bbc0-40ff-a333-88234eebeb88")
 		)
@@ -8074,6 +8182,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 43.18 31.115 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8bf2e0a6-3177-4993-92e9-a19029684268")
 		)
@@ -8171,6 +8288,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1006-1-ND"
+			(at 217.17 34.925 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 217.17 34.925 0)
 			(effects
 				(font
@@ -8349,6 +8475,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 205.74 154.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a0c4ae83-d396-47bf-a46b-51e48c02f708")
 		)
@@ -8446,6 +8581,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1006-1-ND"
+			(at 46.99 80.645 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 46.99 80.645 0)
 			(effects
 				(font
@@ -8559,6 +8703,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 41.91 52.705 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "083d2127-8ba9-49dd-a4f6-007ad17b12f7")
 		)
@@ -8656,6 +8809,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1184-1-ND"
+			(at 193.04 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 193.04 158.75 0)
 			(effects
 				(font
@@ -8769,6 +8931,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 22.86 31.115 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "06437848-46ad-4e29-8658-397925252e84")
 		)
@@ -8874,6 +9045,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 251.46 128.905 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "697975cc-c1c0-4c4e-ba24-6bcd3f9c7d19")
 		)
@@ -8971,6 +9151,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-1006-1-ND"
+			(at 251.46 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 251.46 92.71 0)
 			(effects
 				(font
@@ -9149,6 +9338,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 227.33 34.925 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "abb25e28-3030-4990-ba70-d44fc791d5b0")
 		)
@@ -9244,6 +9442,15 @@
 			)
 		)
 		(property "Supplier PN" "AP2156MPGDICT-ND"
+			(at 194.945 33.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 194.945 33.655 0)
 			(effects
 				(font
@@ -9370,6 +9577,15 @@
 			)
 		)
 		(property "Supplier PN" "1276-6454-1-ND"
+			(at 156.21 32.385 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 156.21 32.385 0)
 			(effects
 				(font
@@ -9819,6 +10035,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 165.735 32.385 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "634703f9-25cd-4c28-9d7e-6ca4d68c2f50")
 		)
@@ -10047,6 +10272,15 @@
 			)
 		)
 		(property "Supplier PN" "497-5235-1-ND"
+			(at 191.135 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 191.135 114.3 0)
 			(effects
 				(font
@@ -10432,6 +10666,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 49.53 65.405 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0d79b8c3-e924-4956-a32c-824ed1e25cda")
 		)
@@ -10567,7 +10810,7 @@
 				)
 			)
 		)
-		(property "Value" "220 Ohm"
+		(property "Value" "330 Ohm"
 			(at 215.9 102.87 90)
 			(effects
 				(font
@@ -10584,7 +10827,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
+		(property "Datasheet" "https://www.murata.com/products/productdata/8796738650142/ENFA0003.pdf"
 			(at 215.9 100.33 0)
 			(effects
 				(font
@@ -10593,7 +10836,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
+		(property "Description" "FERRITE BEAD 330 OHM 0603 1LN"
 			(at 215.9 100.33 0)
 			(effects
 				(font
@@ -10611,7 +10854,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "BLM18KG221BH1D"
+		(property "Manufacturer PN" "BLM18KG331SN1D"
 			(at 215.9 100.33 0)
 			(effects
 				(font
@@ -10629,7 +10872,16 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "490-14029-1-ND"
+		(property "Supplier PN" "490-5256-1-ND"
+			(at 215.9 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 215.9 100.33 0)
 			(effects
 				(font
@@ -10735,7 +10987,7 @@
 				)
 			)
 		)
-		(property "Value" "220 Ohm"
+		(property "Value" "330 Ohm"
 			(at 215.9 66.675 90)
 			(effects
 				(font
@@ -10752,7 +11004,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
+		(property "Datasheet" "https://www.murata.com/products/productdata/8796738650142/ENFA0003.pdf"
 			(at 215.9 64.135 0)
 			(effects
 				(font
@@ -10761,7 +11013,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
+		(property "Description" "FERRITE BEAD 330 OHM 0603 1LN"
 			(at 215.9 64.135 0)
 			(effects
 				(font
@@ -10779,7 +11031,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "BLM18KG221BH1D"
+		(property "Manufacturer PN" "BLM18KG331SN1D"
 			(at 215.9 64.135 0)
 			(effects
 				(font
@@ -10797,7 +11049,16 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "490-14029-1-ND"
+		(property "Supplier PN" "490-5256-1-ND"
+			(at 215.9 64.135 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 215.9 64.135 0)
 			(effects
 				(font
@@ -10903,6 +11164,15 @@
 			)
 		)
 		(property "Supplier PN" "541-10KGCT-ND"
+			(at 38.735 88.265 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 38.735 88.265 0)
 			(effects
 				(font
@@ -11081,6 +11351,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 33.02 31.115 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5a891440-ac55-4394-a1e8-a93502413919")
 		)
@@ -11193,6 +11472,15 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+		(property "User Lable" ""
+			(at 236.855 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
 		)
 		(pin "1"
@@ -11375,6 +11663,15 @@
 			)
 		)
 		(property "Supplier PN" "37K9941"
+			(at 248.285 154.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 248.285 154.305 0)
 			(effects
 				(font
@@ -11618,6 +11915,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 251.46 89.535 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7b621dac-d339-4f3f-9a7e-3749cc4b7ff2")
 		)
@@ -11788,6 +12094,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 57.15 80.645 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "27f6dcad-2a29-4874-90f5-96c4253dce92")
 		)
@@ -11885,7 +12200,7 @@
 				)
 			)
 		)
-		(property "Value" "220 Ohm"
+		(property "Value" "330 Ohm"
 			(at 215.9 92.075 90)
 			(effects
 				(font
@@ -11902,7 +12217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.murata.com/en-us/products/productdata/8798137286686/QNFA9129.pdf"
+		(property "Datasheet" "https://www.murata.com/products/productdata/8796738650142/ENFA0003.pdf"
 			(at 215.9 89.535 0)
 			(effects
 				(font
@@ -11911,7 +12226,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "FERRITE BEAD 220 OHM 0603 1.5A 1LN"
+		(property "Description" "FERRITE BEAD 330 OHM 0603 1LN"
 			(at 215.9 89.535 0)
 			(effects
 				(font
@@ -11929,7 +12244,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "BLM18KG221BH1D"
+		(property "Manufacturer PN" "BLM18KG331SN1D"
 			(at 215.9 89.535 0)
 			(effects
 				(font
@@ -11947,7 +12262,16 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "490-14029-1-ND"
+		(property "Supplier PN" "490-5256-1-ND"
+			(at 215.9 89.535 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 215.9 89.535 0)
 			(effects
 				(font
@@ -12294,6 +12618,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 175.895 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b41855c6-4e90-486d-942b-5e66af8cf78f")
 		)
@@ -12399,6 +12732,15 @@
 				(hide yes)
 			)
 		)
+		(property "User Lable" ""
+			(at 41.91 60.325 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2f3d9938-7a16-4760-b11a-936eaac8a8fc")
 		)
@@ -12496,6 +12838,15 @@
 			)
 		)
 		(property "Supplier PN" "10-EEE-FN1A121URCT-ND"
+			(at 175.895 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "User Lable" ""
 			(at 175.895 104.14 0)
 			(effects
 				(font
