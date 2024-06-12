@@ -9,8 +9,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Main Board")
-		(date "2024-04-16")
-		(rev "D")
+		(date "2024-06-12")
+		(rev "E")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -407,19 +407,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c3b14aec-053e-4b37-9249-e749cd172c86")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fb6071e")
 		(sheetname "Root")
@@ -673,19 +660,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "2295887a-bf33-43ff-b03e-8f92615afc82")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "f996840d-3e86-4495-bc4c-fa2ad82665b7")
 			(effects
 				(font
 					(size 1 1)
@@ -953,19 +927,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b04011d2-6d41-4f78-8a34-8027c7249a8c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f981ec3")
 		(sheetname "Root")
@@ -1219,19 +1180,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9693a5df-843e-4989-98c7-e0e03870e7e0")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "8c4962f4-430e-4898-aa1b-08e2b206cd01")
 			(effects
 				(font
 					(size 1 1)
@@ -1499,19 +1447,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "94160999-2062-4e18-bb5c-7545bee96b8c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f980d6f")
 		(sheetname "Root")
@@ -1765,19 +1700,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "662d6351-966e-445e-82d0-75e6d329a505")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "258bf1b3-d916-47b2-849d-7fb1d4799ea7")
 			(effects
 				(font
 					(size 1 1)
@@ -2045,19 +1967,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "91b17b56-58ba-495a-bb6b-66fdc1e992ab")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f9656f7")
 		(sheetname "Root")
@@ -2311,19 +2220,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "04aa0d8c-a658-44d9-9eaf-47913b4ad92f")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4fd11d5a-26f9-4b43-acf5-f0fdf2a5b2cf")
 			(effects
 				(font
 					(size 1 1)
@@ -2591,19 +2487,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1ed7d228-d663-4f00-82b2-9b5985739802")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fb60729")
 		(sheetname "Root")
@@ -2864,19 +2747,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "16abcc1e-f6ab-4907-b6fd-6e996b00403a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fb60734")
 		(sheetname "Root")
@@ -3130,19 +3000,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "00000c8a-9d71-49f2-baf9-6fcbcb62b4ba")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "96759c54-0b82-4b58-a7cd-242aa0989918")
 			(effects
 				(font
 					(size 1 1)
@@ -3411,19 +3268,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c3db390f-cd2e-43a1-bd85-d20bb60c5ff6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f9506a3")
 		(sheetname "Root")
@@ -3678,19 +3522,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "61d70038-0bf7-4e76-a357-50cdb0d5905b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d554bb9d-5c0a-4978-932c-b26a06239ed1")
 			(effects
 				(font
 					(size 1 1)
@@ -3958,19 +3789,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "61f533fe-f0ef-432e-abfb-9302bb25989f")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa699b6")
 		(sheetname "Root")
@@ -4231,19 +4049,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "56b8cb11-857e-411f-9805-e822eaf9d192")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa04193")
 		(sheetname "User Input")
@@ -4497,19 +4302,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "692aa835-ce16-489b-ad69-29cd3a41bde2")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "3f08a7d2-da55-464e-bf57-8616b7903b97")
 			(effects
 				(font
 					(size 1 1)
@@ -4778,19 +4570,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "34f0d973-6155-48ec-b835-d493069a678e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa75075")
 		(sheetname "User Input")
@@ -5052,19 +4831,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "328c7d2f-8fd7-4bce-af52-e75076c07eca")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa989d0")
 		(sheetname "User Input")
@@ -5318,19 +5084,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "f55813e9-1346-4257-ae8d-0f26602fdec6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2d603602-6b37-4e80-a457-bd9bd7a1d7f8")
 			(effects
 				(font
 					(size 1 1)
@@ -5640,19 +5393,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cf8e00f4-b94c-4a55-ae1c-0eac958b089a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "75852acb-2c22-48a0-8955-bda7cbba4aaf")
 			(effects
 				(font
 					(size 1 1)
@@ -5977,19 +5717,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5dfdfae7-56e7-46e8-98e1-822e6042fddd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7b7ea")
 		(sheetname "Root")
@@ -6244,19 +5971,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d636868d-4d46-47ea-8878-368ec21028ca")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7ae3bba7-3c98-4884-9ffc-1aff715bf389")
 			(effects
 				(font
 					(size 1 1)
@@ -6525,19 +6239,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9f1aa4c6-fb36-48a9-be75-75dfb81534a5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "MountingHole*Pad*")
 		(path "/00000000-0000-0000-0000-00005fa7e086")
 		(sheetname "Root")
@@ -6792,19 +6493,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "66e4f56e-f2ab-46ed-a03c-2d3eede372b9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "33ad93ea-24ed-4b3f-8074-c1c7bc3b9c66")
 			(effects
 				(font
 					(size 1 1)
@@ -7071,19 +6759,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "43069e4b-fc9c-4a9f-bea6-e7c6304b418f")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1801d6dd-d700-4e6e-924f-664926aac0e1")
 			(effects
 				(font
 					(size 1 1)
@@ -7527,19 +7202,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "49ef57c0-7ea6-49de-a0e7-1287da8011c6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f9b3310")
 		(sheetname "Root")
@@ -7800,19 +7462,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d1c7fb6a-5013-4516-b951-493f1fdb4dcf")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa91e20")
 		(sheetname "Root")
@@ -8066,19 +7715,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "094be9bd-92ce-4c04-b685-d710ecf823b0")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "f412d057-462f-4718-9487-d75068923db5")
 			(effects
 				(font
 					(size 1 1)
@@ -8347,19 +7983,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "af73affa-f0af-4c39-a20a-dedf8e1e3bb2")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa5c0b3")
 		(sheetname "User Input")
@@ -8613,19 +8236,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "fdf4c2a7-2af6-4c8a-bd49-d4e263559653")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0c0a24ae-310b-48a7-ae75-accdbc8b23c8")
 			(effects
 				(font
 					(size 1 1)
@@ -8893,19 +8503,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2366e0e5-2b0c-4880-99ed-cd6e1a9af345")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fb9f45e")
 		(sheetname "User Input")
@@ -9159,19 +8756,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "86208031-e153-438f-8628-1b4f3d96a585")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b82a1b29-989d-4f97-8a02-97526c6f8aca")
 			(effects
 				(font
 					(size 1 1)
@@ -9439,19 +9023,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "55349e74-6779-4abe-8ece-ec4fe82b849d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa0d816")
 		(sheetname "User Input")
@@ -9712,19 +9283,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2719e810-f1b1-4277-9ec7-1d1b38f8c3a2")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/00000000-0000-0000-0000-00005f9c76eb")
 		(sheetname "Front External Connections")
@@ -9978,19 +9536,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c3141ed3-dd90-4606-822a-2edd97b546ca")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d74f6e3e-a732-42c5-819d-bf00c630c705")
 			(effects
 				(font
 					(size 1 1)
@@ -10259,19 +9804,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "caa4e0aa-9f55-43a9-b089-b0d8b09eff15")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa5c2cc")
 		(sheetname "User Input")
@@ -10526,19 +10058,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c4e32b9d-198e-4b74-97d9-a56f9f40e2bf")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "8fbdaf01-47ef-4a19-84e5-e217d5290855")
 			(effects
 				(font
 					(size 1 1)
@@ -10807,19 +10326,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7e842ed0-7cbd-4f03-b1e1-d5e51052620a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fa989c6")
 		(sheetname "User Input")
@@ -11073,19 +10579,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a63a762a-5a7e-425a-80b8-79c8691c57ce")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "b963318c-2357-4a2e-97ab-67c91d3fca5b")
 			(effects
 				(font
 					(size 1 1)
@@ -11562,19 +11055,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "773b36a2-d1aa-4976-9c68-d2ec439fd56c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "SOIC*3.9x4.9mm*P1.27mm*")
 		(path "/b52f2013-8bab-40a1-8910-4e01c79cfa7c")
 		(sheetname "Root")
@@ -11932,19 +11412,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3039db94-7796-489c-a362-363bd1134e13")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6826014b-cda6-437c-a15c-6d43a1eac97a")
 			(effects
 				(font
 					(size 1 1)
@@ -12516,19 +11983,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e31e19db-3073-478a-ab5b-5016019da152")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/00000000-0000-0000-0000-00005fa5b3d0")
 		(sheetname "Front External Connections")
@@ -12873,19 +12327,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5d35711c-587c-4199-bed2-bb4d4dc5d3f0")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Crystal*")
 		(path "/00000000-0000-0000-0000-00005f94f8e6")
 		(sheetname "Root")
@@ -13174,19 +12615,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "96f80ffa-3c46-4836-af81-25394ab95df7")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fb6073f")
 		(sheetname "Root")
@@ -13440,19 +12868,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "def92e26-fb4f-4e0f-b615-1733b5c90427")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "bd2f2fff-4205-48d7-9bcd-14aa55024530")
 			(effects
 				(font
 					(size 1 1)
@@ -13767,19 +13182,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a8666dee-6519-4488-b4b9-e08f2bbe8c26")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "01424191-f009-417b-90bc-e515baed3045")
 			(effects
 				(font
 					(size 1 1)
@@ -14365,19 +13767,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9f976521-9423-49d6-8b16-e179a6cf0994")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005fb6070d")
 		(sheetname "Root")
 		(sheetfile "main-board.kicad_sch")
@@ -14602,19 +13991,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "0e8de9f7-1a4b-4ac1-811e-d13425363ae1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "13f730be-d8c8-4d37-8f7c-22002282aad6")
 			(effects
 				(font
 					(size 1 1)
@@ -14882,19 +14258,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7b3d92de-395d-422b-a023-9e57d07a9370")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005f951860")
 		(sheetname "Root")
@@ -15148,19 +14511,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "1294a77f-c867-46e9-b165-73f77c1a89f4")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2e1efae6-c66e-44a7-b624-660520ce6183")
 			(effects
 				(font
 					(size 1 1)
@@ -17659,19 +17009,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e6d94969-623d-4832-82d7-264d6fed1183")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/4f1d548e-4cb8-4f3d-a961-053b5af379eb")
 		(sheetname "Front External Connections")
@@ -17925,19 +17262,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "57ff0d2a-29a5-4eef-9d97-24f99a2036aa")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "455ba637-75fb-495c-9cf3-18986f104fa4")
 			(effects
 				(font
 					(size 1 1)
@@ -18265,19 +17589,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "54a3452c-3041-4a2d-8fa0-205088a633a2")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4940c086-c818-4c2a-86f9-ac95bd2b6bd2")
 			(effects
 				(font
 					(size 1 1)
@@ -19574,19 +18885,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "52482740-2972-446a-b4b7-7af9cf01075c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/a68f953d-b90f-4f6f-a01a-1794c8aa9f1f")
 		(sheetname "Front External Connections")
@@ -19938,19 +19236,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "8060a445-a6e0-442a-8d81-8fe94b51ec34")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/fc22bb43-f969-4e7e-be1b-433a65328351")
 		(sheetname "Power Supply and Control")
@@ -20204,19 +19489,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "fd3ca1ba-8467-4d53-83b7-b3998498db1c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "41360437-17c9-4797-ab74-998fe6d5aca6")
 			(effects
 				(font
 					(size 1 1)
@@ -20491,19 +19763,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6605984b-dac2-4dc6-8850-4cd49327a68d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/b484e14a-57c0-4b07-b562-c1c3b45329ea")
 		(sheetname "Power Supply and Control")
@@ -20763,19 +20022,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "9106ef99-d084-471c-9836-74447f471b95")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "abe992b2-47ca-40e7-aa35-913beee33e02")
 			(effects
 				(font
 					(size 1 1)
@@ -21048,19 +20294,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4681ece7-aca5-417f-9245-2f3936c0a8ff")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Pin* Test*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/bcb93b86-2d16-46af-bf19-4f8b02738e78")
 		(sheetname "Power Supply and Control")
@@ -21216,19 +20449,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6261b19c-7e1f-47c7-b524-7961412b16c8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "395cd342-6ece-43ea-9a7d-ef5ae13dfcdc")
 			(effects
 				(font
 					(size 1 1)
@@ -21734,19 +20954,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a45a0662-8e82-4716-ad1f-78b651a18f6c")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/9e528575-d810-4b18-936d-214577307307")
 		(sheetname "Power Supply and Control")
@@ -22000,19 +21207,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cdc4a862-efc4-4023-a9be-dccb89029103")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "39780f8a-9f54-4a5f-88de-c7e72896cc2d")
 			(effects
 				(font
 					(size 1 1)
@@ -22287,19 +21481,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "fe0eea0c-4198-4a97-90cb-88d307582fd5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/0b7ceef7-a59f-4fa3-ab13-5a4e83b29362")
 		(sheetname "Power Supply and Control")
@@ -22555,19 +21736,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "84e40907-3869-4058-8c14-e7936eb177a5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5e0ee914-ab3a-4a2d-8f94-f6ec15e98b3a")
 			(effects
 				(font
 					(size 1 1)
@@ -22836,19 +22004,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e804b06e-d3a3-43e6-b323-e04c232f9868")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Fiducial*")
 		(path "/152568d8-e8f2-4024-8973-cd6caef0cb1d")
 		(sheetname "Root")
@@ -23004,19 +22159,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "25916603-4f23-478b-a4a7-d7edb9bc8701")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0e98e0c5-fd00-4ad8-88d1-8056da0c5d86")
 			(effects
 				(font
 					(size 1 1)
@@ -23285,19 +22427,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e01ee688-b061-4595-b9c3-17ebc987f64b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/0f710ca6-e09a-4a44-a9bf-c351bcdc1a6a")
 		(sheetname "Front External Connections")
@@ -23551,19 +22680,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6e43b2a6-61bd-4385-ab83-ef77cfe1fecf")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "cfa3471a-55ed-43fc-826e-1149037c7ec2")
 			(effects
 				(font
 					(size 1 1)
@@ -23838,19 +22954,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0dd854b4-4ec6-4154-9d0f-f619d23e5af8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/d7263242-4649-412b-ba16-43cf67de9a72")
 		(sheetname "Power Supply and Control")
@@ -24106,19 +23209,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "79e19752-e4d6-4390-a8b0-d53e77d10078")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "a90da340-3674-4976-82f6-0864a29b74ea")
 			(effects
 				(font
 					(size 1 1)
@@ -24393,19 +23483,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d1932f48-b488-463b-abeb-9164a80bc1ec")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/4a435db3-0be2-4fc0-8495-299a5d43a96e")
 		(sheetname "Power Supply and Control")
@@ -24660,19 +23737,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "269174d6-cff6-4ea8-a61e-09fa23fced22")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6125dc6b-e803-446d-abd3-66acbe12b774")
 			(effects
 				(font
 					(size 1 1)
@@ -24941,19 +24005,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "1a413a46-da96-4084-9b64-702bb070413f")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/e5a9346a-54c7-457b-84c4-8d3934dd02ce")
 		(sheetname "Front External Connections")
@@ -25207,19 +24258,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "968ee902-e71a-4ce7-b16a-0c10a6b05006")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "651618ac-6947-4ee6-9a5d-d89d6e6402c6")
 			(effects
 				(font
 					(size 1 1)
@@ -25535,19 +24573,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6a06db7b-e373-408b-801a-d35c23af6e4b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "17770328-1d78-4668-baeb-366557537e4f")
 			(effects
 				(font
 					(size 1 1)
@@ -26171,19 +25196,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "3b143bae-250c-4246-a9ee-0f8e1b921761")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/363b2a46-d7f6-41b0-953f-c88827632557")
 		(sheetname "Front External Connections")
@@ -26450,19 +25462,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "912bd44a-c002-44d6-9652-969157f16edc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "33eedae6-e523-4ca7-94a7-85fc74dc98b5")
 			(effects
 				(font
 					(size 1 1)
@@ -26899,19 +25898,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a5b43ed7-77ee-4de9-a8f7-65b732d5be47")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4e048db7-de7b-44d5-bf5f-33af560b9b94")
 			(effects
 				(font
 					(size 1 1)
@@ -28084,19 +27070,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "77b75fca-042c-4143-84d6-6f6f358d83fe")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "CP_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/f629e82e-015e-4181-8bad-65690dfc1578")
 		(sheetname "Front External Connections")
@@ -28586,19 +27559,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "363b4de3-d90d-41cd-aa6f-ed15a8508a53")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7b287e1d-494e-41c0-a1a4-8af7d492f6b7")
 			(effects
 				(font
 					(size 1 1)
@@ -29105,19 +28065,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "3f4e37b0-1c23-4221-84a9-19dd727a9acd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Choke_* *Coil* Inductor_* L_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/58964731-00a8-49c1-86ef-34663724e1ee")
 		(sheetname "Power Supply and Control")
@@ -29366,19 +28313,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0866dab2-27e8-4904-9d0f-02a4a3380577")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Pin* Test*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/99e4b4c6-415a-43e8-b013-c5b80a50c76e")
 		(sheetname "Power Supply and Control")
@@ -29541,19 +28475,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "b359a00f-93d4-4db0-99d1-ac909cae04c5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6b1fe7d8-3e38-48b0-abc9-4d24c13d3cc2")
 			(effects
 				(font
 					(size 1 1)
@@ -29820,19 +28741,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e2465c1f-72a4-4286-a444-32b0fedf090e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "6e1104e2-782d-41cb-89a2-a3e008917c50")
 			(effects
 				(font
 					(size 1 1)
@@ -30456,19 +29364,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4ec8591b-2fa0-4593-a095-fa39c7a307eb")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/328db6e2-5524-4558-99d0-fec0ed5ddcda")
 		(sheetname "Power Supply and Control")
@@ -30730,19 +29625,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "611bf9a7-f266-4bc9-912c-1fa02b28d2a8")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Fiducial*")
 		(path "/e9d727e0-f4e2-462d-a4af-e691f359e90f")
 		(sheetname "Root")
@@ -30898,19 +29780,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "3742e7c6-2bcf-4be7-9d12-6c144a954eaf")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "951ef54d-4a5e-4213-a779-f65ac478620f")
 			(effects
 				(font
 					(size 1 1)
@@ -31184,19 +30053,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6ba36bcc-8324-4074-a542-ec9b00f81595")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "17edeb99-b91f-40bc-b072-89137e8f38a8")
 			(effects
 				(font
 					(size 1 1)
@@ -32034,19 +30890,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "00a61c41-9b51-4692-b6c1-a5ff2eafdc4a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/4a64ac0d-74dc-4824-8401-92833ddebbf7")
 		(sheetname "Front External Connections")
@@ -32314,19 +31157,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c5ef66e2-8f10-45f9-973c-b577b3ebbdac")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Choke_* *Coil* Inductor_* L_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/674e086b-04b8-42da-b9cd-d845ec81734a")
 		(sheetname "Power Supply and Control")
@@ -32569,19 +31399,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a8901073-19eb-411e-ab12-4c468e9bbab9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "d9dbe1f7-b462-4036-9afe-77ac8e29536e")
 			(effects
 				(font
 					(size 1 1)
@@ -32856,19 +31673,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "dfa5af2c-f3b1-4260-9015-5a6dd7f071fc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/6ceed1f7-0707-44c6-a6ba-a13e5b273eaa")
 		(sheetname "Power Supply and Control")
@@ -33128,19 +31932,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "265173cd-15c2-4fdc-99b5-c82ce02a1d62")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "f07391a2-759e-4e3f-a1cc-b923b2230033")
 			(effects
 				(font
 					(size 1 1)
@@ -33414,19 +32205,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "4ea399c3-622a-4790-b2e0-38d69cd28b97")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/dbb15028-9a27-401d-a4ad-8719b71f7262")
 		(sheetname "Power Supply and Control")
@@ -33681,19 +32459,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "1dcfeb6a-0685-4500-b67e-7d7295966045")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "58e60ce1-36c1-4ae9-8bcd-948cb50ffcfb")
 			(effects
 				(font
 					(size 1 1)
@@ -33966,19 +32731,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "5e2d9ae9-e1a8-45a9-a76a-6e7326fbb326")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/2598cd72-5f97-43cb-9dda-7eb2309217e3")
 		(sheetname "Front External Connections")
@@ -34240,19 +32992,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "fb11d906-fc96-4e6b-a76e-32964b9568e1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/5101a509-08ef-4213-b72a-fc0bd41589a0")
 		(sheetname "Front External Connections")
@@ -34507,19 +33246,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "d70a1112-6036-4cec-a722-db7b523d9d53")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0fc4c99e-5d86-4fa6-ba02-d7d40788b78b")
 			(effects
 				(font
 					(size 1 1)
@@ -35070,19 +33796,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "14f1fc29-15e4-436b-9ecc-65a78a2fc1a5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/a0159dd3-f07f-48cf-8b4a-d6d314bf053c")
 		(sheetname "Power Supply and Control")
@@ -35336,19 +34049,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "cc916b0e-ddf3-4ab8-b4c1-cb65263d9477")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9c02fa10-4b6a-44f3-9810-33b4d460f5a7")
 			(effects
 				(font
 					(size 1 1)
@@ -35614,19 +34314,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "6a76c4e6-61df-4131-8250-76e1f31bf4e5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "18a97db7-4d71-4733-a07a-aae1a1e7e752")
 			(effects
 				(font
 					(size 1 1)
@@ -35971,19 +34658,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9eae3ebc-219f-4da4-8b9c-617fa12676d4")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/34d5399a-4d9b-47f7-b7d1-3f26e13e6f86")
 		(sheetname "Power Supply and Control")
@@ -36237,19 +34911,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "686fbc6f-e034-47be-876c-896f7386f194")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9afc4144-d553-469f-9963-29fd67180e84")
 			(effects
 				(font
 					(size 1 1)
@@ -36579,19 +35240,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "2a70fc4a-6c8d-42ea-8e7c-7c2246609ecc")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Choke_* *Coil* Inductor_* L_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/00500b60-7cc5-455b-99cd-6a5a1596a5c6")
 		(sheetname "Power Supply and Control")
@@ -36833,19 +35481,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "2787e5d9-024f-404e-bc6d-f4ee6330b4c5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "25491e8d-0dca-4ee3-9262-d2f0a4d8dfa3")
 			(effects
 				(font
 					(size 1 1)
@@ -37114,19 +35749,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "75491ade-6731-4a76-bc50-e9e8efee9985")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Fiducial*")
 		(path "/36ebdc7c-91be-402b-b6c8-28fbc4e28fd9")
 		(sheetname "Root")
@@ -37288,19 +35910,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c119fdad-1be6-4ac2-98b8-1253d506d0e6")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0cb9b6f7-0a36-447f-8dca-e92ea60955c9")
 			(effects
 				(font
 					(size 1 1)
@@ -37569,19 +36178,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "776a6013-88b8-456d-8516-30c56ac9c18a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/599a5a69-e14a-436d-a31d-ca8d77a3f34e")
 		(sheetname "Front External Connections")
@@ -37836,19 +36432,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "053e6153-d223-48e7-a656-34564108922b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "dd704741-5275-4917-b8be-51f26e241088")
 			(effects
 				(font
 					(size 1 1)
@@ -38123,19 +36706,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "0083259f-d65c-4a1f-ab4a-7f50b7de4dc2")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/fa44fd98-89a2-486f-a63e-ff0c04b69851")
 		(sheetname "Power Supply and Control")
@@ -38397,19 +36967,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "06a81a1d-771d-4795-b891-8a1f04aed735")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/0d246f10-b42b-480e-9713-5711d4db9474")
 		(sheetname "Front External Connections")
@@ -38664,19 +37221,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "e0c49fe3-1474-475f-bcf6-eb0ca499fbbd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "50b082e8-8cf7-41bb-9585-e230aea8f389")
 			(effects
 				(font
 					(size 1 1)
@@ -39095,19 +37639,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "5a5dd2f6-1f24-4c1f-8849-a42fa81c5fcd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "3760b126-7736-4d75-b8fc-1bd4d2e35ac2")
 			(effects
 				(font
 					(size 1 1)
@@ -39717,19 +38248,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "45d89fd5-24f9-4fc5-8e68-e1140f96cada")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/b9a76b4e-fd0a-4b14-91d7-1b4d9464d59e")
 		(sheetname "Front External Connections")
@@ -39983,19 +38501,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "c57313c2-bc10-44c1-89e0-818c6d1efeee")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7ea04562-4d31-4932-9778-20e5d2e3b8ad")
 			(effects
 				(font
 					(size 1 1)
@@ -40407,19 +38912,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "9abd08fd-28b8-469e-8414-6a754e632a9b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "R_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/de85d958-5886-41b4-9644-1a1d356232fc")
 		(sheetname "Front External Connections")
@@ -40679,19 +39171,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "0bb29828-fdfb-4de9-904a-187aa8ae37ec")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "c6fb69c4-0f31-40b1-b868-bd9606258cdb")
 			(effects
 				(font
 					(size 1 1)
@@ -40959,19 +39438,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "ef523978-527a-4bf5-9a8f-e6b31a612b98")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005fa19aff/397f4cce-03ee-450b-aa81-89df0a0bc233")
 		(sheetname "Front External Connections")
@@ -41226,19 +39692,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "58cee6a3-f394-4a8e-a360-6e8159a2bbec")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "99e22000-6f24-4f20-8e93-f0faf652bf29")
 			(effects
 				(font
 					(size 1 1)
@@ -41513,19 +39966,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 -90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "7e46748f-193d-4888-a6ab-c7d886f259a9")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/603bbb96-5326-493f-9cc7-e117f1040f7c")
 		(sheetname "Power Supply and Control")
@@ -41793,19 +40233,6 @@
 				)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 90)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "23421fdf-c19a-46f6-9c9d-219d39ae7792")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
 		(property ki_fp_filters "C_*")
 		(path "/00000000-0000-0000-0000-00005f8b674d/8e4a7198-8a56-4a28-95cc-92433b3a07d6")
 		(sheetname "Power Supply and Control")
@@ -42059,19 +40486,6 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "a89424d2-01c7-4de6-9623-71965aed465b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "706b5817-e6b5-432c-8ffb-d1e9ca7ee24b")
 			(effects
 				(font
 					(size 1 1)
@@ -42350,20 +40764,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "a0ed132b-d298-4c6a-9502-c332002bcd0e")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbdf8d6")
 		(sheetname "User Input")
@@ -42553,20 +40953,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "5d98ef43-4190-4317-83a9-a6e0522f722a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "01e61042-de72-4904-a8f6-a2f00f3c8e31")
 			(effects
 				(font
 					(size 1 1)
@@ -42772,20 +41158,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "db735921-a792-427d-aaae-e2feb8c57270")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbeb435")
 		(sheetname "User Input")
@@ -42975,20 +41347,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "9f50255e-2d08-4aed-aa5b-85cff2ac8111")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "67d24766-fc11-475a-8893-820f937c45bf")
 			(effects
 				(font
 					(size 1 1)
@@ -43194,20 +41552,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "5a35bb57-964f-45b4-80eb-6962f3dd27ca")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc0f9f3")
 		(sheetname "User Input")
@@ -43397,20 +41741,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "0d1e410e-7b99-4eb3-b251-efd5d3163093")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "1587694b-890f-4e01-8c9e-5899d84661d4")
 			(effects
 				(font
 					(size 1 1)
@@ -43616,20 +41946,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "22c810a9-d202-4cdf-b62b-3c591d0093f1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc3373d")
 		(sheetname "User Input")
@@ -43819,20 +42135,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "028b10b5-e0d3-41ff-8016-6b25fec5447b")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "dcde6008-1e6e-4a71-820b-f11fc9b1f060")
 			(effects
 				(font
 					(size 1 1)
@@ -44039,20 +42341,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "40ee45d2-1f9a-4c77-930f-f5640b513376")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "fa06b7e6-de09-4031-bc90-9720477ed544")
 			(effects
 				(font
 					(size 1 1)
@@ -44404,20 +42692,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "453187a7-b99e-4f7f-8a1f-5b88c50cdf0d")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8b9734")
 		(sheetname "User Input")
 		(sheetfile "main-board-input.kicad_sch")
@@ -44761,20 +43035,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "08979a04-2d9d-40e7-ad93-d78a5a981769")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8b9eb7")
 		(sheetname "User Input")
 		(sheetfile "main-board-input.kicad_sch")
@@ -45096,20 +43356,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "196c3545-9d42-4fd3-97a1-4638959cfe73")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "2f1b34b4-e323-4cef-bd92-68a7c305a3cb")
 			(effects
 				(font
 					(size 1 1)
@@ -45447,20 +43693,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "d853ada1-db54-4819-9692-aa26c3b7c4b5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8ba80f")
 		(sheetname "User Input")
 		(sheetfile "main-board-input.kicad_sch")
@@ -45782,20 +44014,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "2b4910f3-a634-430b-bec3-d8bb63eddb26")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "e314392d-f6e3-4ab1-bc4c-5d54401d2839")
 			(effects
 				(font
 					(size 1 1)
@@ -46133,20 +44351,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "5eba8ecc-22bc-4f9f-9e28-e970e919e423")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bb404")
 		(sheetname "User Input")
 		(sheetfile "main-board-input.kicad_sch")
@@ -46468,20 +44672,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "ce2a63f1-35a2-47e3-acd5-db41c20a3e75")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "fb1280ae-4f83-4e78-8b1c-c9d6c1daccda")
 			(effects
 				(font
 					(size 1 1)
@@ -46819,20 +45009,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "51b38e92-ad1f-4bfd-97d0-a3bcf5f8bba5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005f8bbe5f")
 		(sheetname "User Input")
 		(sheetfile "main-board-input.kicad_sch")
@@ -47154,20 +45330,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "d6117e3a-d2f3-49d6-8aab-33dffc7d24df")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "3451b2eb-6de4-4bed-bf83-76acdfbdb6e0")
 			(effects
 				(font
 					(size 1 1)
@@ -47501,20 +45663,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "2fb628e2-9638-4eb3-bad4-357077fa7efd")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "3bf08486-195c-41be-b4aa-636185854954")
 			(effects
 				(font
 					(size 1 1)
@@ -48012,20 +46160,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "9aff0573-a019-4138-bc8e-2dfd4b5f9931")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fbe096e")
 		(sheetname "User Input")
@@ -48223,20 +46357,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "e64e5185-c379-4ae7-a0ab-72d6dbacd3b5")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/00000000-0000-0000-0000-00005fc0b403")
 		(sheetname "User Input")
@@ -48422,20 +46542,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "f4669732-baab-478f-aa42-ee238a7e6345")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 0)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "b839c4c6-aaae-4fc9-9cad-1c6fea088fd3")
 			(effects
 				(font
 					(size 1 1)
@@ -49049,20 +47155,6 @@
 				(justify mirror)
 			)
 		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "f1035a57-045d-44e6-9683-b19b376add4a")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
 		(property ki_fp_filters "LED* LED_SMD:* LED_THT:*")
 		(path "/00000000-0000-0000-0000-00005f8b69b5/e316d82e-f41a-4ecf-9e81-2583f8b3cc9e")
 		(sheetname "User Input")
@@ -49252,20 +47344,6 @@
 			(layer "B.Fab")
 			(hide yes)
 			(uuid "095fc39f-ba02-49c6-8931-42508b1ceab1")
-			(effects
-				(font
-					(size 1 1)
-					(thickness 0.15)
-				)
-				(justify mirror)
-			)
-		)
-		(property "User Lable" ""
-			(at 0 0 180)
-			(unlocked yes)
-			(layer "B.Fab")
-			(hide yes)
-			(uuid "e07364b5-ccf2-4562-b481-c42f795b2aac")
 			(effects
 				(font
 					(size 1 1)
