@@ -5860,7 +5860,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL31A106KAHNNNE_SS.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/41/CL31B106KBHNNNE_Spec.pdf"
 			(at 120.65 35.56 0)
 			(effects
 				(font
@@ -5869,7 +5869,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 10UF 25V X5R 1206"
+		(property "Description" "CAP CER 10UF 50V X7R 1206"
 			(at 120.65 35.56 0)
 			(effects
 				(font
@@ -5887,7 +5887,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL31A106KAHNNNE"
+		(property "Manufacturer PN" "CL31B106KBHNNNE"
 			(at 120.65 35.56 0)
 			(effects
 				(font
@@ -5905,7 +5905,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1075-1-ND"
+		(property "Supplier PN" "1276-6767-1-ND"
 			(at 120.65 35.56 0)
 			(effects
 				(font
@@ -7932,7 +7932,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL31A106KAHNNNE_SS.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/41/CL31B106KBHNNNE_Spec.pdf"
 			(at 120.65 74.295 0)
 			(effects
 				(font
@@ -7941,7 +7941,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 10UF 25V X5R 1206"
+		(property "Description" "CAP CER 10UF 50V X7R 1206"
 			(at 120.65 74.295 0)
 			(effects
 				(font
@@ -7959,7 +7959,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL31A106KAHNNNE"
+		(property "Manufacturer PN" "CL31B106KBHNNNE"
 			(at 120.65 74.295 0)
 			(effects
 				(font
@@ -7977,7 +7977,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1075-1-ND"
+		(property "Supplier PN" "1276-6767-1-ND"
 			(at 120.65 74.295 0)
 			(effects
 				(font
@@ -8819,7 +8819,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL31A106KAHNNNE_SS.pdf"
+		(property "Datasheet" "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/41/CL31B106KBHNNNE_Spec.pdf"
 			(at 41.91 74.295 0)
 			(effects
 				(font
@@ -8828,7 +8828,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 10UF 25V X5R 1206"
+		(property "Description" "CAP CER 10UF 50V X7R 1206"
 			(at 41.91 74.295 0)
 			(effects
 				(font
@@ -8846,7 +8846,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL31A106KAHNNNE"
+		(property "Manufacturer PN" "CL31B106KBHNNNE"
 			(at 41.91 74.295 0)
 			(effects
 				(font
@@ -8864,7 +8864,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-1075-1-ND"
+		(property "Supplier PN" "1276-6767-1-ND"
 			(at 41.91 74.295 0)
 			(effects
 				(font
