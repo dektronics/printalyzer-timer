@@ -34,5 +34,8 @@ pins can be inserted to help hold the boards in correct alignment.
 * `jig-power-board-1`
   * Jig to hold all of the thru-hole components in place for soldering, and to
     make sure all the rear panel connectors are correctly aligned for fastening.
+  * This board is designed to have a thin piece of adhesive foam placed onto
+    each of the component holding standoffs, to help provide compliant pressure
+    and deal with any vertical tolerance issues.
 * `jig-power-board-2`
   * Jig to hold the nuts and washers in place on the bottom side of the board.
