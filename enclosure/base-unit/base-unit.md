@@ -26,9 +26,31 @@ into the "base" part of the main enclosure.
 
 #### Enclosure components
 
-The main enclosure design files within this repository are currently out of
-date. The latest design files are currently maintained externally and will
-be added to this repository at some point in the future.
+The main enclosure is designed for sheet metal fabrication as two components.
+The "base" is the bottom half where the power board is installed, and the
+"cover" is the top half where the main board is installed.
+Basic mechanical design files are provided, but the artwork is not published.
+
+The provided files are as follows:
+* `base-unit.step` - Complete enclosure model
+* `base-flat.dxf` - Flat pattern for the "base"
+* `cover-flat.dxf` - Flat pattern for the "cover"
+* `design-drawings.pdf` - Basic design drawings
+
+Base fabrication notes:
+* Material: Galvanized sheet SGCC, 1.2mm thickness
+* Contains 2 blind threaded standoffs, M3x0.5, 8mm length (PEM BSO-M3-8ZI)
+* Contains 6 self-clinching nuts, M4x0.7 (PEM S-M4-1ZI)
+* All blind standoffs must be inserted before powder coating, so that they are difficult to see from the outside of the finished product.
+* Powder coat exterior surfaces only. Do not powder coat interior surfaces or the fold-up tabs with the self-clinching nuts.
+
+Cover fabrication notes:
+* Material: Galvanized sheet SGCC, 1.2mm thickness
+* Contains 4 blind threaded standoffs, M3x0.5, 10mm length (PEM BSO-M3-10ZI)
+* All blind standoffs must be inserted before powder coating, so they are
+  difficult to see on the finished product.
+* Inside of front edges, where the folds meet, need to be tack welded.
+* Powder coat exterior surfaces only.  Do not powder coat interior surfaces.
 
 #### Mounting hardware
 
