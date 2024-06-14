@@ -93,20 +93,17 @@ a complete device.
 * Footswitch jack retaining ring
   * **Befaco Bananuts Black**
 * Main fuse
+  * **Littelfuse 0217005.MXBP**
   * Cylindrical cartridge fuse, 5x20mm
   * Fast-blow, rated for 5A @ 250V
-* Internal fuse
-  * Cylindrical cartridge fuse, 5x20mm
-  * Slow-blow, rated for 500mA
-* Internal fuse holder cover
-  * **Schurter 0853.0551**
-  * Fuse holder cover, transparent, for 5x20mm fuse
 * Graphic OLED display module
   * **BuyDisplay ER-OLEDM032-1Y**
   * 3.2" diagonal, 256x64 pixels, 4-wire SPI
+  * Choose the version without the pin header
 * 01x08 pin header, 2.54mm pitch
   * **Omron XG8T-1631**
   * Used to connect between the display module and the main PCB
+  * Shorter than a standard pin header
 * Key parallel guide
   * **Marquardt 190.059.023 (Qty. 2)**
   * Used as part of mounting the switches that have double-sized key caps
@@ -143,15 +140,16 @@ a lower price._
 
 * Connecting Blackout switch and Footswitch connector to the "main-board" PCB
   * **JST PHR-2 (Qty. 2)** - JST PH housing receptacle (2-pin)
-  * **JSR ASPHSPH24K152 (Qty. 2)** - JST 6" jumper wire (cut each in half)
+  * **JSR ASPHSPH24K102 (Qty. 2)** - JST PH 4" jumper wire (cut each in half)
 * Connecting "power-board" and "main-board" PCBs for power and relay
   * **JST PHR-4 (Qty. 2)** - JST PH housing receptacle (4-pin)
-  * **JST ASPHSPH24K102 (Qty. 4)** - JST 4" jumper wire
+  * **JST ASPHSPH24K102 (Qty. 4)** - JST PH 4" jumper wire
 * Connecting "power-board" and "main-board" PCBs for DMX connector
-  * **JST A06SR06SR30K102A (Qty. 1)** - JST 4" 6-position reversed jumper wire
+  * **JST A06SR06SR30K102A (Qty. 1)** - JST SR 4" 6-position reversed jumper wire
 * Connecting "power-board" to the power switch
-  * **TE 3-520340-2 (Qty. 2)** - TE 187 Ultra-Fast Flag QC connector
-  * **Molex 0451360201 (Qty. 1/2)** - Mega-Fit 2-position cable assembly (cut in half)
+  * **Molex 46992-0210** - Mini-Fit Jr. Receptacle Housing
+  * **Molex 215340-1122** - Mini-Fit Jr. Pre-Crimped Lead (cut in half)
+  * **TE 3-520125-2 (Qty. 2)** - TE 187 Ultra-Fast Quick Disconnect Receptacle
 
 _If there is not good electrical conductivity between the boards and the enclosure, and between the two halves of the enclosure, then a ground wire with eyelet terminals must be connected between a mounting hole on each board._
 
