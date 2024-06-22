@@ -39,3 +39,5 @@ pins can be inserted to help hold the boards in correct alignment.
     and deal with any vertical tolerance issues.
 * `jig-power-board-2`
   * Jig to hold the nuts and washers in place on the bottom side of the board.
+* `jig-power-board-platform`
+  * Platform to support the power board when it is being worked on.

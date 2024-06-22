@@ -184,3 +184,10 @@ _If there is not good electrical conductivity between the boards and the enclosu
   * The current preferred material for this purpose is Rosco E-Color #106.
 * Thin transparent material to sandwich the rubylith between, for mounting
   and scratch protection.
+* `encoder-spacer`
+  * A spacer to sit on the encoder shaft, to provide a snug fit between the
+    top of the encoder and the interior face of the enclosure.
+  * Can also use an M7 washer stack here, though getting the right height
+    may be difficult.
+  * This model is intended to be 3D printed using a flexible material,
+    such as TPU95.
