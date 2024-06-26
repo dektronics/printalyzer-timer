@@ -71,8 +71,14 @@ HAL_StatusTypeDef led_set_brightness(uint8_t brightness)
 {
     HAL_StatusTypeDef ret;
 
-    uint16_t max_duty_cycle = stp16cpc26_get_max_brightness(&led_handle);
-    uint16_t duty_cycle = led_gamma_value(brightness, max_duty_cycle);
+    const uint16_t max_duty_cycle = stp16cpc26_get_max_brightness(&led_handle);
+    uint16_t duty_cycle;
+
+    if (brightness > 0) {
+        duty_cycle = led_gamma_value(brightness, max_duty_cycle);
+    } else {
+        duty_cycle = max_duty_cycle + 1;
+    }
 
     ret = stp16cpc26_set_brightness(&led_handle, duty_cycle);
     if (ret == HAL_OK) {
