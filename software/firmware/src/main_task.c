@@ -364,6 +364,14 @@ void main_task_exposure_timer_init()
 
 void main_task_keypad_init()
 {
+    /* Make sure the keypad controller is in reset */
+    HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_RESET);
+    osDelay(1);
+
+    /* Bring the keypad controller out of reset */
+    HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_SET);
+    osDelay(1);
+
     keypad_init(&hi2c1, i2c1_mutex);
 }
 

@@ -184,7 +184,7 @@ void gpio_init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, LED_LE_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin, GPIO_PIN_RESET);
@@ -198,9 +198,9 @@ void gpio_init(void)
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(RELAY_ENLG_GPIO_Port, RELAY_ENLG_Pin, GPIO_PIN_RESET);
 
-    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC5 PC6 PC7 */
+    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC6 PC7 */
     GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-                          |GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+                          |GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -208,6 +208,13 @@ void gpio_init(void)
     /* Configure GPIO pins: LED_LE_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
     GPIO_InitStruct.Pin = LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+    /* Configure GPIO pins: KEY_RESET_Pin */
+    GPIO_InitStruct.Pin = KEY_RESET_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
@@ -281,8 +288,7 @@ void gpio_deinit(void)
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_12);
     HAL_GPIO_DeInit(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin
                            |DMX512_RX_EN_Pin);
-    HAL_GPIO_DeInit(GPIOC, LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
-
+    HAL_GPIO_DeInit(GPIOC, LED_LE_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
 
     /* GPIO Ports Clock Disable */
     __HAL_RCC_GPIOC_CLK_DISABLE();

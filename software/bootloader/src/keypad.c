@@ -1,5 +1,6 @@
 #include "keypad.h"
 
+#include <board_config.h>
 #include <stm32f4xx_hal.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -30,6 +31,14 @@ HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c)
     keypad_i2c = hi2c;
 
     do {
+        /* Make sure IC is in reset */
+        HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_RESET);
+        HAL_Delay(1);
+
+        /* Bring IC out of reset */
+        HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_SET);
+        HAL_Delay(1);
+
         /* Initialize the controller */
         if ((ret = tca8418_init(keypad_i2c)) != HAL_OK) {
             break;

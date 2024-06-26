@@ -61,6 +61,8 @@
 #define KEY_INT_Pin              GPIO_PIN_5
 #define KEY_INT_GPIO_Port        GPIOB
 #define KEY_INT_EXTI_IRQn        EXTI9_5_IRQn
+#define KEY_RESET_Pin            GPIO_PIN_5
+#define KEY_RESET_GPIO_Port      GPIOC
 
 /* Pin mapping for the DMX512 UART port */
 #define DMX512_TX_Pin            GPIO_PIN_6
