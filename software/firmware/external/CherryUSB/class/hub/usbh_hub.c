@@ -28,13 +28,6 @@ extern void usbh_hubport_release(struct usbh_hubport *hport);
 
 static const char *speed_table[] = { "error-speed", "low-speed", "full-speed", "high-speed", "wireless-speed", "super-speed", "superplus-speed" };
 
-#ifdef CONFIG_USBHOST_XHCI
-struct usbh_hubport *usbh_get_roothub_port(unsigned int port)
-{
-    return &roothub.child[port - 1];
-}
-#endif
-
 #if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static struct usbh_hub g_hub_class[CONFIG_USBHOST_MAX_EXTHUBS];
 static uint32_t g_devinuse = 0;
@@ -374,8 +367,6 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
     hub->connected = true;
     snprintf(hport->config.intf[intf].devname, CONFIG_USBHOST_DEV_NAMELEN, DEV_FORMAT, hub->index);
 
-    usb_slist_add_tail(&hub->bus->hub_list, &hub->list);
-
     USB_LOG_INFO("Register HUB Class:%s\r\n", hport->config.intf[intf].devname);
 
     hub->int_buffer = g_hub_intbuf[hub->bus->busid][hub->index - 1];
@@ -415,7 +406,6 @@ static int usbh_hub_disconnect(struct usbh_hubport *hport, uint8_t intf)
         if (hport->config.intf[intf].devname[0] != '\0') {
             USB_LOG_INFO("Unregister HUB Class:%s\r\n", hport->config.intf[intf].devname);
             usbh_hub_stop(hub); /* (DK) */
-            usb_slist_remove(&hub->bus->hub_list, &hub->list);
         }
 
         usbh_hub_class_free(hub);
@@ -423,18 +413,6 @@ static int usbh_hub_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 #endif
-
-static void usbh_hubport_enumerate_thread(void *argument)
-{
-    struct usbh_hubport *child = (struct usbh_hubport *)argument;
-
-    if (usbh_enumerate(child) < 0) {
-        /** release child sources */
-        usbh_hubport_release(child);
-        USB_LOG_ERR("Port %u enumerate fail\r\n", child->port);
-    }
-    usb_osal_thread_delete(NULL);
-}
 
 static void usbh_hub_events(struct usbh_hub *hub)
 {
@@ -447,13 +425,16 @@ static void usbh_hub_events(struct usbh_hub *hub)
     uint16_t feat;
     uint8_t speed;
     int ret;
+    size_t flags;
 
     if (!hub->connected) {
         return;
     }
 
+    flags = usb_osal_enter_critical_section();
     portchange_index = hub->int_buffer[0];
     hub->int_buffer[0] &= ~portchange_index;
+    usb_osal_leave_critical_section(flags);
 
     for (uint8_t port = 0; port < hub->hub_desc.bNbrPorts; port++) {
         USB_LOG_DBG("Port change:0x%02x\r\n", portchange_index);
@@ -601,25 +582,9 @@ static void usbh_hub_events(struct usbh_hub *hub)
                         speed = USB_SPEED_HIGH;
                     } else if (portstatus & HUB_PORT_STATUS_LOW_SPEED) {
                         speed = USB_SPEED_LOW;
-                    }
-#ifdef CONFIG_USBHOST_XHCI
-                    else {
-                        extern uint8_t usbh_get_port_speed(struct usbh_hub * hub, const uint8_t port);
-
-                        /* USB3.0 speed cannot get from portstatus, checkout port speed instead */
-                        uint8_t super_speed = usbh_get_port_speed(hub, port + 1);
-                        if (super_speed > USB_SPEED_HIGH) {
-                            /* assert that when using USB 3.0 ports, attached device must also be USB 3.0 speed */
-                            speed = super_speed;
-                        } else {
-                            speed = USB_SPEED_FULL;
-                        }
-                    }
-#else
-                    else {
+                    } else {
                         speed = USB_SPEED_FULL;
                     }
-#endif
 
                     child = &hub->child[port];
                     /** release child sources first */
@@ -635,8 +600,11 @@ static void usbh_hub_events(struct usbh_hub *hub)
 
                     USB_LOG_INFO("New %s device on Bus %u, Hub %u, Port %u connected\r\n", speed_table[speed], hub->bus->busid, hub->index, port + 1);
 
-                    /* create disposable thread to enumerate device on current hport, do not block hub thread */
-                    usb_osal_thread_create("usbh_enum", CONFIG_USBHOST_PSC_STACKSIZE, CONFIG_USBHOST_PSC_PRIO + 1, usbh_hubport_enumerate_thread, (void *)child);
+                    if (usbh_enumerate(child) < 0) {
+                        /** release child sources */
+                        usbh_hubport_release(child);
+                        USB_LOG_ERR("Port %u enumerate fail\r\n", child->port);
+                    }
                 } else {
                     child = &hub->child[port];
                     /** release child sources */
@@ -687,6 +655,17 @@ void usbh_hub_thread_wakeup(struct usbh_hub *hub)
 int usbh_hub_initialize(struct usbh_bus *bus)
 {
     char thread_name[32] = { 0 };
+    struct usbh_hub *hub;
+
+    hub = &bus->hcd.roothub;
+    hub->connected = true;
+    hub->index = 1;
+    hub->is_roothub = true;
+    hub->parent = NULL;
+    hub->hub_addr = 1;
+    hub->hub_desc.bNbrPorts = CONFIG_USBHOST_MAX_RHPORTS;
+    hub->int_buffer = bus->hcd.roothub_intbuf;
+    hub->bus = bus;
 
     bus->hub_mq = usb_osal_mq_create(7);
     if (bus->hub_mq == NULL) {
@@ -705,21 +684,17 @@ int usbh_hub_initialize(struct usbh_bus *bus)
 
 int usbh_hub_deinitialize(struct usbh_bus *bus)
 {
-    usb_slist_t *hub_list;
     struct usbh_hubport *hport;
+    struct usbh_hub *hub;
     size_t flags;
 
     flags = usb_osal_enter_critical_section();
 
-    usb_slist_for_each(hub_list, &bus->hub_list)
-    {
-        struct usbh_hub *hub = usb_slist_entry(hub_list, struct usbh_hub, list);
+    hub = &bus->hcd.roothub;
+    for (uint8_t port = 0; port < hub->hub_desc.bNbrPorts; port++) {
+        hport = &hub->child[port];
 
-        for (uint8_t port = 0; port < hub->hub_desc.bNbrPorts; port++) {
-            hport = &hub->child[port];
-
-            usbh_hubport_release(hport);
-        }
+        usbh_hubport_release(hport);
     }
 
     usb_hc_deinit(bus);

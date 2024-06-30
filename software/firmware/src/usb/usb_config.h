@@ -8,8 +8,8 @@
 
 #include <FreeRTOS.h>
 
-#define CHERRYUSB_VERSION     0x010300
-#define CHERRYUSB_VERSION_STR "v1.3.0"
+#define CHERRYUSB_VERSION     0x010301
+#define CHERRYUSB_VERSION_STR "v1.3.1"
 
 /* ================ USB common Configuration ================ */
 
@@ -36,13 +36,18 @@ extern void elog_raw(const char *format, ...);
 
 /* ================= USB Device Stack Configuration ================ */
 
-#define CONFIG_USBDEV_MAX_BUS 1    // for now, bus num must be 1 except hpm ip
-
-/* Ep0 max transfer buffer, specially for receiving data from ep0 out */
-#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
+/* Ep0 in and out transfer buffer */
+#ifndef CONFIG_USBDEV_REQUEST_BUFFER_LEN
+#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 512
+#endif
 
 /* Setup packet log for debug */
 /* #define CONFIG_USBDEV_SETUP_LOG_PRINT */
+
+/* Send ep0 in data from user buffer instead of copying into ep0 reqdata
+ * Please note that user buffer must be aligned with CONFIG_USB_ALIGN_SIZE
+*/
+/* #define CONFIG_USBDEV_EP0_INDATA_NO_COPY */
 
 /* Check if the input descriptor is correct */
 /* #define CONFIG_USBDEV_DESC_CHECK */
@@ -158,7 +163,9 @@ extern void elog_raw(const char *format, ...);
 #define CONFIG_USBHOST_MAX_BUS 1
 #endif
 
+#ifndef CONFIG_USBHOST_PIPE_NUM
 #define CONFIG_USBHOST_PIPE_NUM 16
+#endif
 /* ---------------- DWC2 Configuration ---------------- */
 /* largest non-periodic USB packet used / 4 */
 #define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (512 / 4)
