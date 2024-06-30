@@ -173,18 +173,20 @@ void usb_osal_timer_stop(struct usb_osal_timer *timer)
 
 size_t usb_osal_enter_critical_section(void)
 {
-    /* (DK) This is probably the correct way to handle critical sections */
+    size_t ret;
+
     if (xPortIsInsideInterrupt()) {
-        return taskENTER_CRITICAL_FROM_ISR();
+        ret = taskENTER_CRITICAL_FROM_ISR();
     } else {
         taskENTER_CRITICAL();
-        return 1;
+        ret = 1;
     }
+
+    return ret;
 }
 
 void usb_osal_leave_critical_section(size_t flag)
 {
-    /* (DK) This is probably the correct way to handle critical sections */
     if (xPortIsInsideInterrupt()) {
         taskEXIT_CRITICAL_FROM_ISR(flag);
     } else {

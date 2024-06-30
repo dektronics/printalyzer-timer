@@ -9,8 +9,8 @@
 #include <FreeRTOS.h>
 #include "logger.h"
 
-#define CHERRYUSB_VERSION     0x010200
-#define CHERRYUSB_VERSION_STR "v1.2.0"
+#define CHERRYUSB_VERSION     0x010301
+#define CHERRYUSB_VERSION_STR "v1.3.1"
 
 /* ================ USB common Configuration ================ */
 
@@ -36,13 +36,18 @@
 
 /* ================= USB Device Stack Configuration ================ */
 
-#define CONFIG_USBDEV_MAX_BUS 1    // for now, bus num must be 1 except hpm ip
-
-/* Ep0 max transfer buffer, specially for receiving data from ep0 out */
-#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 256
+/* Ep0 in and out transfer buffer */
+#ifndef CONFIG_USBDEV_REQUEST_BUFFER_LEN
+#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 512
+#endif
 
 /* Setup packet log for debug */
 /* #define CONFIG_USBDEV_SETUP_LOG_PRINT */
+
+/* Send ep0 in data from user buffer instead of copying into ep0 reqdata
+ * Please note that user buffer must be aligned with CONFIG_USB_ALIGN_SIZE
+*/
+/* #define CONFIG_USBDEV_EP0_INDATA_NO_COPY */
 
 /* Check if the input descriptor is correct */
 /* #define CONFIG_USBDEV_DESC_CHECK */
@@ -84,8 +89,9 @@
 #define CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE 156
 #endif
 
+/* rndis transfer buffer size, must be a multiple of (1536 + 44)*/
 #ifndef CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE
-#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1536
+#define CONFIG_USBDEV_RNDIS_ETH_MAX_FRAME_SIZE 1580
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_VENDOR_ID
@@ -100,7 +106,6 @@
 
 /* ================ USB HOST Stack Configuration ================== */
 
-#define CONFIG_USBHOST_MAX_BUS              1
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          2
 #define CONFIG_USBHOST_MAX_EHPORTS          4
@@ -126,10 +131,14 @@
 /* #define CONFIG_USBHOST_GET_STRING_DESC */
 
 /* #define CONFIG_USBHOST_MSOS_ENABLE */
+#ifndef CONFIG_USBHOST_MSOS_VENDOR_CODE
 #define CONFIG_USBHOST_MSOS_VENDOR_CODE 0x00
+#endif
 
 /* Ep0 max transfer buffer */
+#ifndef CONFIG_USBHOST_REQUEST_BUFFER_LEN
 #define CONFIG_USBHOST_REQUEST_BUFFER_LEN 512
+#endif
 
 #ifndef CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT
 #define CONFIG_USBHOST_CONTROL_TRANSFER_TIMEOUT 500
@@ -141,15 +150,31 @@
 
 /* ================ USB Device Port Configuration ================*/
 
+#ifndef CONFIG_USBDEV_MAX_BUS
+#define CONFIG_USBDEV_MAX_BUS 1 // for now, bus num must be 1 except hpm ip
+#endif
+
 #ifndef CONFIG_USBDEV_EP_NUM
 #define CONFIG_USBDEV_EP_NUM 8
 #endif
 
 /* ================ USB Host Port Configuration ==================*/
+#ifndef CONFIG_USBHOST_MAX_BUS
+#define CONFIG_USBHOST_MAX_BUS 1
+#endif
 
+#ifndef CONFIG_USBHOST_PIPE_NUM
 #define CONFIG_USBHOST_PIPE_NUM 16
+#endif
+/* ---------------- DWC2 Configuration ---------------- */
+/* largest non-periodic USB packet used / 4 */
 #define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (512 / 4)
+/* largest periodic USB packet used / 4 */
 #define CONFIG_USB_DWC2_PTX_FIFO_SIZE (1024 / 4)
+/*
+ * (largest USB packet used / 4) + 1 for status information + 1 transfer complete +
+ * 1 location each for Bulk/Control endpoint for handling NAK/NYET scenario
+ */
 #define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
 
 #endif
