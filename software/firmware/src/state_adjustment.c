@@ -102,7 +102,8 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
     char buf_adj_title1[32];
     char buf_adj_title2[32];
     char buf_base_title2[32];
-    uint32_t tone_graph;
+    uint32_t base_tone_graph;
+    uint32_t adj_tone_graph;
     bool time_too_short = false;
 
     if (state->working_value.numerator == 0) {
@@ -138,10 +139,12 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
     size_t offset = append_exposure_time(buf_base_title2, exposure_get_exposure_time(exposure_state));
     sprintf(buf_base_title2 + offset, " [%s]", contrast_grade_str(exposure_get_contrast_grade(exposure_state)));
 
-    tone_graph = exposure_get_burn_dodge_tone_graph(exposure_state, &(state->working_value));
+    base_tone_graph = exposure_get_tone_graph(exposure_state);
+    adj_tone_graph = exposure_get_burn_dodge_tone_graph(exposure_state, &(state->working_value));
 
     display_edit_adjustment_elements_t elements = {
-        .tone_graph = tone_graph,
+        .base_tone_graph = base_tone_graph,
+        .adj_tone_graph = adj_tone_graph,
         .adj_title1 = buf_adj_title1,
         .adj_title2 = buf_adj_title2,
         .base_title1 = "Base Exposure",

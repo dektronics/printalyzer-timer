@@ -422,11 +422,11 @@ uint32_t exposure_get_burn_dodge_tone_graph(const exposure_state_t *state, const
         float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
         exposure_recalculate_tone_graph_marks_impl(state, burn_dodge->contrast_grade, tone_graph_marks);
         float stops = (float)burn_dodge->numerator / (float)burn_dodge->denominator;
-        float adjusted_time = state->base_time * powf(2.0f, stops);
+        float adjusted_time = state->adjusted_time * powf(2.0f, stops);
         return exposure_calculate_tone_graph_impl(state, tone_graph_marks, adjusted_time);
     } else {
         float stops = (float)burn_dodge->numerator / (float)burn_dodge->denominator;
-        float adjusted_time = state->base_time * powf(2.0f, stops);
+        float adjusted_time = state->adjusted_time * powf(2.0f, stops);
         return exposure_calculate_tone_graph(state, adjusted_time);
     }
 }
