@@ -2834,6 +2834,12 @@
 		(uuid "7ffea61a-5867-499c-b941-23ca6b335237")
 	)
 	(junction
+		(at 40.64 105.41)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b35e522c-97ae-4efe-95c1-10608d19f95d")
+	)
+	(junction
 		(at 34.29 109.22)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3350,6 +3356,16 @@
 			(type default)
 		)
 		(uuid "7569c5e4-8f7a-44e0-a3b2-5c30559ac062")
+	)
+	(wire
+		(pts
+			(xy 29.21 105.41) (xy 40.64 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "794ef8e9-5432-4118-a3b4-142fb821b757")
 	)
 	(wire
 		(pts
@@ -5040,6 +5056,18 @@
 			(justify right)
 		)
 		(uuid "72b364c4-0547-47c8-b986-fcb160f0f8e8")
+	)
+	(hierarchical_label "KEY_~{RES}"
+		(shape input)
+		(at 29.21 105.41 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "80baaf1d-01ee-4b01-a86b-e0f04adf015d")
 	)
 	(hierarchical_label "LED_LE"
 		(shape input)
