@@ -10158,7 +10158,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "120R"
+		(property "Value" "120R(1%)"
 			(at 71.12 158.115 0)
 			(effects
 				(font
@@ -11235,7 +11235,7 @@
 				)
 			)
 		)
-		(property "Value" "120R"
+		(property "Value" "120R(1%)"
 			(at 225.425 93.345 90)
 			(effects
 				(font
