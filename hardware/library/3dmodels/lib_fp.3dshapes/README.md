@@ -466,3 +466,10 @@ this directory's `.gitignore` file.
 * Source: Digi-Key / Manufacturer <https://www.digikey.com/en/models/11656944>
 * Footprint: `lib_fp:CP_Elec_6.3x6.1`
 * Rotation: X = -90 deg, Z = 180 deg
+
+### Harwin\_M20-7810845R
+* Status: Included
+* Source: TraceParts <https://www.traceparts.com/goto?CatalogPath=TRACEPARTS%3ATP10016001005005&Product=90-19042023-042797&SelectionPath=1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C1%7C>
+* Footprint: `lib_fp:Harwin_M20-7810845_2x08_P2.54mm_Vertical_AltNum`
+* Rotation: X = -90 deg, X = 90 deg
+* Offset: Y = 8.89 mm, Z = 0.20 mm
