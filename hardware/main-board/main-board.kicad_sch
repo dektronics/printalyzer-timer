@@ -3920,6 +3920,305 @@
 				)
 			)
 		)
+		(symbol "Project:Module_ER-OLED032-1"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim yes)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "N"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Module_ER-OLED032-1"
+				(at 0.254 -8.382 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.635 0.635 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 -4.826 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Housing"
+				(at 0 -6.096 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "housing enclosure"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Mounting_ER-OLEDM032*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Module_ER-OLED032-1_1_1"
+				(rectangle
+					(start -8.89 3.81)
+					(end 10.16 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -8.255 -3.175)
+					(radius 0.381)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -8.255 3.175)
+					(radius 0.381)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -7.366 2.667)
+					(end 7.747 -2.667)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 -1.905)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 -1.27)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 -0.635)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 0)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 0.635)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 1.27)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 8.89 1.905)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 -3.175)
+					(radius 0.381)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 -1.905)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 -1.27)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 -0.635)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 0)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 0.635)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 1.27)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 1.905)
+					(radius 0.127)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 9.525 3.175)
+					(radius 0.381)
+					(stroke
+						(width 0.127)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(text "1234"
+					(at 0 0 0)
+					(effects
+						(font
+							(size 2.54 2.54)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Project:PAM8904JPR"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -4672,7 +4971,7 @@
 		(uuid "0ba4f274-1de2-4db5-b41a-395ee6340e5a")
 	)
 	(junction
-		(at 237.49 147.32)
+		(at 237.49 160.655)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "0cb9c979-1f92-4248-9660-60cacb6a953f")
@@ -4858,7 +5157,7 @@
 		(uuid "d1549a7a-060d-4b08-a72b-bae5ca5eab06")
 	)
 	(junction
-		(at 237.49 142.24)
+		(at 237.49 155.575)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d42172b5-c394-437f-a05c-0aeeeea9201f")
@@ -4870,7 +5169,7 @@
 		(uuid "e38efece-9b1c-47f7-bb67-496813a12ea8")
 	)
 	(junction
-		(at 237.49 137.16)
+		(at 237.49 150.495)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e4025470-882e-456a-b7ea-093fbdc8bba0")
@@ -5297,7 +5596,7 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 132.08) (xy 237.49 137.16)
+			(xy 237.49 145.415) (xy 237.49 150.495)
 		)
 		(stroke
 			(width 0)
@@ -5377,7 +5676,7 @@
 	)
 	(wire
 		(pts
-			(xy 240.03 142.24) (xy 237.49 142.24)
+			(xy 240.03 155.575) (xy 237.49 155.575)
 		)
 		(stroke
 			(width 0)
@@ -6007,7 +6306,7 @@
 	)
 	(wire
 		(pts
-			(xy 240.03 132.08) (xy 237.49 132.08)
+			(xy 240.03 145.415) (xy 237.49 145.415)
 		)
 		(stroke
 			(width 0)
@@ -6037,7 +6336,7 @@
 	)
 	(wire
 		(pts
-			(xy 240.03 137.16) (xy 237.49 137.16)
+			(xy 240.03 150.495) (xy 237.49 150.495)
 		)
 		(stroke
 			(width 0)
@@ -6067,7 +6366,7 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 147.32) (xy 237.49 149.86)
+			(xy 237.49 160.655) (xy 237.49 163.195)
 		)
 		(stroke
 			(width 0)
@@ -6177,7 +6476,7 @@
 	)
 	(wire
 		(pts
-			(xy 240.03 147.32) (xy 237.49 147.32)
+			(xy 240.03 160.655) (xy 237.49 160.655)
 		)
 		(stroke
 			(width 0)
@@ -6887,7 +7186,7 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 137.16) (xy 237.49 142.24)
+			(xy 237.49 150.495) (xy 237.49 155.575)
 		)
 		(stroke
 			(width 0)
@@ -7087,7 +7386,7 @@
 	)
 	(wire
 		(pts
-			(xy 237.49 142.24) (xy 237.49 147.32)
+			(xy 237.49 155.575) (xy 237.49 160.655)
 		)
 		(stroke
 			(width 0)
@@ -7264,8 +7563,8 @@
 		(uuid 6e06aa51-0e32-48b6-93e6-02766ba0f75b)
 	)
 	(rectangle
-		(start 233.68 125.73)
-		(end 265.43 156.21)
+		(start 233.68 139.065)
+		(end 265.43 169.545)
 		(stroke
 			(width 0)
 			(type dash)
@@ -7301,7 +7600,7 @@
 	)
 	(rectangle
 		(start 209.55 67.31)
-		(end 265.43 123.19)
+		(end 265.43 136.525)
 		(stroke
 			(width 0)
 			(type dash)
@@ -7335,7 +7634,7 @@
 	)
 	(text "Enclosure Mounting"
 		(exclude_from_sim no)
-		(at 234.95 128.905 0)
+		(at 234.95 142.24 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11325,7 +11624,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 242.57 132.08 270)
+		(at 242.57 145.415 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11333,7 +11632,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fa7b7ea")
 		(property "Reference" "H1"
-			(at 246.38 132.08 90)
+			(at 246.38 145.415 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11342,7 +11641,7 @@
 			)
 		)
 		(property "Value" "MountingHole_Pad"
-			(at 246.38 133.223 90)
+			(at 246.38 146.558 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11352,7 +11651,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11361,7 +11660,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11370,7 +11669,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11379,7 +11678,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11388,7 +11687,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11397,7 +11696,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11406,7 +11705,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 242.57 132.08 0)
+			(at 242.57 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11428,7 +11727,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 242.57 137.16 270)
+		(at 242.57 150.495 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11436,7 +11735,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fa7de48")
 		(property "Reference" "H2"
-			(at 246.38 137.16 90)
+			(at 246.38 150.495 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11445,7 +11744,7 @@
 			)
 		)
 		(property "Value" "MountingHole_Pad"
-			(at 246.38 138.303 90)
+			(at 246.38 151.638 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11455,7 +11754,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11464,7 +11763,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11473,7 +11772,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11482,7 +11781,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11491,7 +11790,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11500,7 +11799,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11509,7 +11808,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 242.57 137.16 0)
+			(at 242.57 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11531,7 +11830,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 242.57 142.24 270)
+		(at 242.57 155.575 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11539,7 +11838,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fa7e086")
 		(property "Reference" "H3"
-			(at 246.38 142.24 90)
+			(at 246.38 155.575 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11548,7 +11847,7 @@
 			)
 		)
 		(property "Value" "MountingHole_Pad"
-			(at 246.38 143.383 90)
+			(at 246.38 156.718 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11558,7 +11857,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11567,7 +11866,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11576,7 +11875,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11585,7 +11884,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11594,7 +11893,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11603,7 +11902,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11612,7 +11911,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 242.57 142.24 0)
+			(at 242.57 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11634,7 +11933,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 242.57 147.32 270)
+		(at 242.57 160.655 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11642,7 +11941,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fa7e48d")
 		(property "Reference" "H4"
-			(at 246.38 147.32 90)
+			(at 246.38 160.655 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11651,7 +11950,7 @@
 			)
 		)
 		(property "Value" "MountingHole_Pad"
-			(at 246.38 148.463 90)
+			(at 246.38 161.798 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11661,7 +11960,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11670,7 +11969,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11679,7 +11978,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11688,7 +11987,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11697,7 +11996,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11706,7 +12005,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11715,7 +12014,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 242.57 147.32 0)
+			(at 242.57 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12012,7 +12311,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 237.49 149.86 0)
+		(at 237.49 163.195 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -12020,7 +12319,7 @@
 		(dnp no)
 		(uuid "00000000-0000-0000-0000-00005fab16f8")
 		(property "Reference" "#PWR028"
-			(at 237.49 156.21 0)
+			(at 237.49 169.545 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12029,7 +12328,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 237.49 153.67 0)
+			(at 237.49 167.005 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12037,7 +12336,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 237.49 149.86 0)
+			(at 237.49 163.195 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12046,7 +12345,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 237.49 149.86 0)
+			(at 237.49 163.195 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12055,7 +12354,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 237.49 149.86 0)
+			(at 237.49 163.195 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13381,7 +13680,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:Fiducial")
-		(at 253.365 142.24 0)
+		(at 253.365 155.575 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -13389,7 +13688,7 @@
 		(dnp no)
 		(uuid "152568d8-e8f2-4024-8973-cd6caef0cb1d")
 		(property "Reference" "FID3"
-			(at 255.905 141.605 0)
+			(at 255.905 154.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13398,7 +13697,7 @@
 			)
 		)
 		(property "Value" "Fiducial"
-			(at 255.905 143.51 0)
+			(at 255.905 156.845 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13407,7 +13706,7 @@
 			)
 		)
 		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13416,7 +13715,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13425,7 +13724,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13434,7 +13733,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13443,7 +13742,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13452,7 +13751,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13461,7 +13760,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 253.365 142.24 0)
+			(at 253.365 155.575 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13480,7 +13779,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:Fiducial")
-		(at 253.365 137.16 0)
+		(at 253.365 150.495 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -13488,7 +13787,7 @@
 		(dnp no)
 		(uuid "36ebdc7c-91be-402b-b6c8-28fbc4e28fd9")
 		(property "Reference" "FID2"
-			(at 255.905 136.525 0)
+			(at 255.905 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13497,7 +13796,7 @@
 			)
 		)
 		(property "Value" "Fiducial"
-			(at 255.905 138.43 0)
+			(at 255.905 151.765 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13506,7 +13805,7 @@
 			)
 		)
 		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13515,7 +13814,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13524,7 +13823,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13533,7 +13832,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13542,7 +13841,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13551,7 +13850,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13560,7 +13859,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 253.365 137.16 0)
+			(at 253.365 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13572,6 +13871,103 @@
 			(project "main-board"
 				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
 					(reference "FID2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Project:Module_ER-OLED032-1")
+		(at 250.825 126.365 0)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "38d335a9-192e-4c35-aa9d-5eb3f2bb6209")
+		(property "Reference" "N1"
+			(at 250.825 121.285 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Module_ER-OLED032-1"
+			(at 250.825 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "lib_fp:Mounting_ER-OLEDM032-1"
+			(at 251.46 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.buydisplay.com/download/manual/ER-OLEDM032-1_Series_Datasheet.pdf"
+			(at 250.825 131.191 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Yellow 3.2\" OLED Display Module 256x64 SPI"
+			(at 250.825 132.461 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "EastRising"
+			(at 250.825 126.365 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "ER-OLEDM032-1Y"
+			(at 250.825 126.365 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "BuyDisplay"
+			(at 250.825 126.365 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "ER-OLEDM032-1Y"
+			(at 250.825 126.365 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project ""
+				(path "/31a301d9-d769-4a35-943a-fe3e3609e773"
+					(reference "N1")
 					(unit 1)
 				)
 			)
@@ -14100,8 +14496,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "ER-OLEDM032-1"
-			(at 257.175 103.505 90)
+		(property "Value" "Connector_ER-OLEDM032-1"
+			(at 257.175 108.585 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14109,7 +14505,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "lib_fp:ER-OLEDM032-1"
+		(property "Footprint" "lib_fp:Harwin_M20-7810845_2x08_P2.54mm_Vertical_AltNum"
 			(at 243.84 128.27 0)
 			(effects
 				(font
@@ -14118,7 +14514,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.buydisplay.com/download/manual/ER-OLEDM032-1_Series_Datasheet.pdf"
+		(property "Datasheet" "https://cdn.harwin.com/pdfs/M20-781.pdf"
 			(at 243.84 130.81 0)
 			(effects
 				(font
@@ -14127,7 +14523,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Yellow 3.2\" OLED Display Module 256x64 SPI"
+		(property "Description" "CONN RCPT 16POS 0.1 GOLD SMD"
 			(at 243.84 95.25 0)
 			(effects
 				(font
@@ -14136,7 +14532,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "EastRising"
+		(property "Manufacturer" "Harwin Inc."
 			(at 243.84 95.25 0)
 			(effects
 				(font
@@ -14145,7 +14541,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "ER-OLEDM032-1Y"
+		(property "Manufacturer PN" "M20-7810845R"
 			(at 243.84 95.25 0)
 			(effects
 				(font
@@ -14154,7 +14550,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "BuyDisplay"
+		(property "Supplier" "Digi-Key"
 			(at 243.84 95.25 0)
 			(effects
 				(font
@@ -14163,7 +14559,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "ER-OLEDM032-1Y"
+		(property "Supplier PN" "952-M20-7810845RCT-ND"
 			(at 243.84 95.25 0)
 			(effects
 				(font
@@ -14369,7 +14765,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:Fiducial")
-		(at 253.365 132.08 0)
+		(at 253.365 145.415 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -14377,7 +14773,7 @@
 		(dnp no)
 		(uuid "e9d727e0-f4e2-462d-a4af-e691f359e90f")
 		(property "Reference" "FID1"
-			(at 255.905 131.445 0)
+			(at 255.905 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14386,7 +14782,7 @@
 			)
 		)
 		(property "Value" "Fiducial"
-			(at 255.905 133.35 0)
+			(at 255.905 146.685 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14395,7 +14791,7 @@
 			)
 		)
 		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14404,7 +14800,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14413,7 +14809,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14422,7 +14818,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14431,7 +14827,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14440,7 +14836,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14449,7 +14845,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 253.365 132.08 0)
+			(at 253.365 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
