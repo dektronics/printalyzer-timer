@@ -473,3 +473,13 @@ this directory's `.gitignore` file.
 * Footprint: `lib_fp:Harwin_M20-7810845_2x08_P2.54mm_Vertical_AltNum`
 * Rotation: X = -90 deg, X = 90 deg
 * Offset: Y = 8.89 mm, Z = 0.20 mm
+
+### SunLike\_LED_S1S0
+* Status: Included (Same license as project)
+* Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:lib_fp:SunLike_LED_S1S0`
+
+### Omron\_B3F-1052
+* Status: Included
+* Source: Mouser product page (via Samacsys)
+* Footprint: `lib_fp:SW_TH_Tactile_Omron_B3F-10xx`

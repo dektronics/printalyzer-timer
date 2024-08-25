@@ -38,9 +38,13 @@ PCB layouts.
   * Outputs the +12V DC power supply to run the rest of the system
   * Contains any connectors that need to be on the rear panel, isolating them if they do not involve mains AC power
 
-* Meter Probe (meter-probe)
+* Printalyzer Meter Probe (meter-probe)
   * The circuit board contained within the external light meter probe peripheral
-  * Runs off a +5V DC input from its connecting cable
+  * Connected to the main board and powered via a captive USB cable
+
+* Printalyzer DensiStick (densistick)
+  * The circuit board contained within the external reflection densitometer peripheral
+  * Connected to the main board and powered via a captive USB cable
 
 ### Software
 The "software" directory contains all the source code for the firmware
