@@ -494,3 +494,9 @@ this directory's `.gitignore` file.
 * Status: Included
 * Source: Mouser product page (via Samacsys)
 * Footprint: `lib_fp:SW_TH_Tactile_Omron_B3F-10xx`
+
+### Murata\_DLW21HN900SQ2L
+* Status: Included
+* Source: Vendor via SnapMagic <https://www.murata.com/en-us/products/productdetail?partno=DLW21HN900SQ2%23>
+* Footprint: `lib_fp:L_CommonMode_Murata_DLW21HNxxxSQ2x`
+* Rotation: X = -90 deg
