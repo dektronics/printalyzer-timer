@@ -148,6 +148,13 @@ this directory's `.gitignore` file.
 * Rotation: Y = -180 deg
 * Offset: X = 49.00 mm, Y = 7.38 mm, Z = 3.00 mm
 
+### EastRising\_ER-OLEDM032-1
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.buydisplay.com/yellow-3-2-inch-arduino-raspberry-pi-oled-display-module-256x64-spi>
+* Footprint: `lib_fp:Mounting_ER-OLEDM032-1`
+* Rotation: X = 180 deg
+* Offset: X = -2.9127 mm, Y = 1.2391 mm, Z = 4.00 mm
+
 ### Neutrik\_NC5FBH
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.neutrik.com/en/product/nc5fbh>
