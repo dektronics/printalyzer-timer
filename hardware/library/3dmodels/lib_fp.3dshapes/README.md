@@ -192,6 +192,10 @@ this directory's `.gitignore` file.
 * Footprint: `TestPoint:TestPoint_Keystone_5005-5009_Compact`
 * Rotation: X = -90 deg
 
+### Keystone\_8879
+* Status: Included
+* Source: Vendor via SnapMagic <https://www.keyelco.com/product.cfm/product_id/9716>
+
 ### SM06B-SRSS-TB-LF
 * Status: Included
 * Source: SnapEDA <https://www.snapeda.com/parts/SM06B-SRSS-TB(LF)(SN)/JST%20Sales/view-part/>
