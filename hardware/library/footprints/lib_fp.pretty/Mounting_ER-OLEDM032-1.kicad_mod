@@ -434,7 +434,7 @@
 	)
 	(model "${KICAD6_3DMODEL_DIR}/Connector_PinHeader_2.54mm.3dshapes/PinHeader_2x08_P2.54mm_Vertical.step"
 		(offset
-			(xyz 49 7.38 3)
+			(xyz 49 7.38 3.2)
 		)
 		(scale
 			(xyz 1 1 1)
@@ -445,7 +445,7 @@
 	)
 	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/EastRising_ER-OLEDM032-1.step"
 		(offset
-			(xyz -2.9127 1.2391 4)
+			(xyz -2.9127 1.2391 4.2)
 		)
 		(scale
 			(xyz 1 1 1)
@@ -454,48 +454,48 @@
 			(xyz 180 0 0)
 		)
 	)
-	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Spacer_M2.5_D4.5mm_H3mm.step"
+	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Keystone_8879.step"
 		(offset
-			(xyz -47.5 12.49 0)
+			(xyz -47.5 12.49 -3.6)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz 0 0 0)
+			(xyz -90 0 0)
 		)
 	)
-	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Spacer_M2.5_D4.5mm_H3mm.step"
+	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Keystone_8879.step"
 		(offset
-			(xyz 47.5 12.49 0)
+			(xyz 47.5 12.49 -3.6)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz 0 0 0)
+			(xyz -90 0 0)
 		)
 	)
-	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Spacer_M2.5_D4.5mm_H3mm.step"
+	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Keystone_8879.step"
 		(offset
-			(xyz -47.5 -16.05 0)
+			(xyz -47.5 -16.05 -3.6)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz 0 0 0)
+			(xyz -90 0 0)
 		)
 	)
-	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Spacer_M2.5_D4.5mm_H3mm.step"
+	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Keystone_8879.step"
 		(offset
-			(xyz 47.5 -16.05 0)
+			(xyz 47.5 -16.05 -3.6)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz 0 0 0)
+			(xyz -90 0 0)
 		)
 	)
 )
