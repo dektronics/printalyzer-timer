@@ -443,15 +443,15 @@
 			(xyz 0 -180 0)
 		)
 	)
-	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/ER-OLEDM032-xx.step"
+	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/EastRising_ER-OLEDM032-1.step"
 		(offset
-			(xyz -49.75 -18.71 3)
+			(xyz -2.9127 1.2391 4)
 		)
 		(scale
 			(xyz 1 1 1)
 		)
 		(rotate
-			(xyz 0 0 0)
+			(xyz 180 0 0)
 		)
 	)
 	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Spacer_M2.5_D4.5mm_H3mm.step"
