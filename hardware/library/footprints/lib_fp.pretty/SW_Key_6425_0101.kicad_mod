@@ -3,8 +3,8 @@
 	(generator "pcbnew")
 	(generator_version "8.0")
 	(layer "F.Cu")
-	(descr "SW PUSH SMALL http://www.ckswitches.com/media/1457/ksa_ksl.pdf")
-	(tags "SW PUSH SMALL Tactile C&K")
+	(descr "Marquardt Keyswitch 6425.0101 (https://products.marquardt.com/Customer%20Drawings/64250101_00_K.pdf)")
+	(tags "Marquardt Keyswitch")
 	(property "Reference" "REF**"
 		(at -0.1 -8.5 0)
 		(layer "F.SilkS")
