@@ -5207,6 +5207,10 @@
 		(uuid "224c2901-4c23-40cb-9a32-d157fcb3f813")
 	)
 	(no_connect
+		(at 102.87 86.36)
+		(uuid "38a9f946-eaa8-43bb-b0c3-959ce3fb08df")
+	)
+	(no_connect
 		(at 102.87 96.52)
 		(uuid "3b963f3c-3353-4205-afe9-6cf98e57ef98")
 	)
@@ -5235,6 +5239,10 @@
 		(uuid "83e62aaf-611e-4638-86d7-d6778a8cfd13")
 	)
 	(no_connect
+		(at 67.31 91.44)
+		(uuid "b8d4a89b-a585-4722-848d-f3efb211c7c6")
+	)
+	(no_connect
 		(at 46.99 167.64)
 		(uuid "c5193a34-2e5e-424a-8776-2271b036103f")
 	)
@@ -5245,6 +5253,10 @@
 	(no_connect
 		(at 67.31 73.66)
 		(uuid "dd883911-cc9a-4a6a-a093-d86e997d98cb")
+	)
+	(no_connect
+		(at 67.31 68.58)
+		(uuid "ec37fc90-ecc9-4206-bd03-1b0c8fa4a133")
 	)
 	(no_connect
 		(at 102.87 50.8)
@@ -5273,16 +5285,6 @@
 			(type default)
 		)
 		(uuid "0580150b-b877-4084-a96b-e4ac3067bdfb")
-	)
-	(wire
-		(pts
-			(xy 102.87 86.36) (xy 120.65 86.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0660d0f0-d3b6-4204-bf5a-2364130d077c")
 	)
 	(wire
 		(pts
@@ -5656,16 +5658,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 77.47) (xy 148.59 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "29ea98fa-a700-4bc6-8aa9-7468447dfd10")
-	)
-	(wire
-		(pts
 			(xy 102.87 93.98) (xy 120.65 93.98)
 		)
 		(stroke
@@ -5703,26 +5695,6 @@
 			(type default)
 		)
 		(uuid "30d2ec97-a391-4597-ad05-652e08fe7e77")
-	)
-	(wire
-		(pts
-			(xy 165.1 74.93) (xy 148.59 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3113ee81-d7b2-4ad4-a565-390c2988904a")
-	)
-	(wire
-		(pts
-			(xy 50.8 68.58) (xy 67.31 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "31b7b3cb-5beb-4c1f-8298-ce42daced123")
 	)
 	(wire
 		(pts
@@ -6776,16 +6748,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 69.85) (xy 148.59 69.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a84652db-4b89-4f1f-b687-972eb3490ac5")
-	)
-	(wire
-		(pts
 			(xy 102.87 101.6) (xy 120.65 101.6)
 		)
 		(stroke
@@ -7023,16 +6985,6 @@
 			(type default)
 		)
 		(uuid "c4b8df15-af75-4237-924e-b97092a49e15")
-	)
-	(wire
-		(pts
-			(xy 165.1 72.39) (xy 148.59 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c70aa955-ac38-4d90-a627-15475e378007")
 	)
 	(wire
 		(pts
@@ -7316,16 +7268,6 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 91.44) (xy 67.31 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e5630ac7-a5ba-46f2-8a70-a616254952a6")
-	)
-	(wire
-		(pts
 			(xy 43.18 43.18) (xy 35.56 43.18)
 		)
 		(stroke
@@ -7403,6 +7345,16 @@
 			(type default)
 		)
 		(uuid "f196f2d3-cb40-4a05-88b5-4c7a7cd82dc2")
+	)
+	(wire
+		(pts
+			(xy 148.59 69.85) (xy 165.1 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f2ea9d7c-505d-4973-bfb8-ba370afda358")
 	)
 	(wire
 		(pts
@@ -7808,17 +7760,6 @@
 		)
 		(uuid "19a189b8-7810-4e5c-bc26-9f0d9544bbc2")
 	)
-	(label "LED_SDI"
-		(at 148.59 69.85 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "1af782ef-6e2f-41d2-9922-2cb4765f5773")
-	)
 	(label "RELAY_ENLG"
 		(at 148.59 22.86 0)
 		(fields_autoplaced yes)
@@ -7852,7 +7793,7 @@
 		)
 		(uuid "275d06ed-f4d8-492d-92e6-ec6b306f56b5")
 	)
-	(label "LED_LE"
+	(label "LED_~{RES}"
 		(at 50.8 71.12 0)
 		(fields_autoplaced yes)
 		(effects
@@ -7928,17 +7869,6 @@
 			(justify right bottom)
 		)
 		(uuid "48b4a4da-804a-49e5-a371-4321a302cebd")
-	)
-	(label "LED_~{OE}"
-		(at 148.59 77.47 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "49111b12-49db-456b-8f22-56913c447ed1")
 	)
 	(label "USB_OTG_D-"
 		(at 120.65 119.38 180)
@@ -8182,17 +8112,6 @@
 		)
 		(uuid "7c07c295-b2db-4668-a15e-e504222b9cfc")
 	)
-	(label "LED_~{OE}"
-		(at 120.65 86.36 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "7ca57b77-8117-4b7d-b528-29bf974bc795")
-	)
 	(label "JTDO_SWO"
 		(at 120.65 93.98 180)
 		(fields_autoplaced yes)
@@ -8424,6 +8343,17 @@
 		)
 		(uuid "beaf1e53-6859-4a04-ba7b-dd8e976841e2")
 	)
+	(label "LED_~{RES}"
+		(at 148.59 69.85 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bf58f3c6-eb68-48c8-a0a5-ba220be36846")
+	)
 	(label "FOOTSWITCH"
 		(at 148.59 111.76 0)
 		(fields_autoplaced yes)
@@ -8479,17 +8409,6 @@
 		)
 		(uuid "cd738819-8839-468a-9ff9-b3de3acf86f9")
 	)
-	(label "LED_SDI"
-		(at 50.8 68.58 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "cf95e865-78e4-4fbb-bcbe-551a008e2c11")
-	)
 	(label "FOOTSWITCH"
 		(at 148.59 66.04 0)
 		(fields_autoplaced yes)
@@ -8512,17 +8431,6 @@
 		)
 		(uuid "d270b502-9804-4fa4-aa73-29825d2852a4")
 	)
-	(label "LED_LE"
-		(at 148.59 74.93 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d5747d27-7004-4395-8e24-9cd4be768dd1")
-	)
 	(label "BUZZ_EN2"
 		(at 120.65 45.72 180)
 		(fields_autoplaced yes)
@@ -8544,17 +8452,6 @@
 			(justify left bottom)
 		)
 		(uuid "dc21e232-ec37-481e-a71b-fc5cc064ac42")
-	)
-	(label "LED_CLK"
-		(at 148.59 72.39 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e9dfcd6f-9172-4fb8-ab9b-1d6e26a0d81c")
 	)
 	(label "USB_DRIVE_VBUS"
 		(at 148.59 101.6 0)
@@ -8588,17 +8485,6 @@
 			(justify left bottom)
 		)
 		(uuid "f373dda6-bfdf-4b4e-a496-c17f87e72bf5")
-	)
-	(label "LED_CLK"
-		(at 50.8 91.44 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ff0b08e6-d8f0-4884-9e30-a7863333848f")
 	)
 	(symbol
 		(lib_id "power:+3.3V")
@@ -14175,7 +14061,6 @@
 		)
 		(pin "9"
 			(uuid "49b2d6b2-1294-4f1e-8997-0639ff54d046")
-			(alternate "SPI3_MOSI")
 		)
 		(pin "46"
 			(uuid "e0cf3c3d-6a31-452d-9598-14f25e667a4f")
@@ -14190,7 +14075,6 @@
 		)
 		(pin "51"
 			(uuid "5d8710e2-f7cf-4d0c-9e25-05754a4c263e")
-			(alternate "SPI3_SCK")
 		)
 		(pin "40"
 			(uuid "ae5f7a3c-01e4-4a7c-bad3-07baa694a90f")
@@ -14281,7 +14165,6 @@
 		)
 		(pin "26"
 			(uuid "fb751a1b-4ec6-46a8-ac63-1d2616bbce72")
-			(alternate "TIM3_CH3")
 		)
 		(pin "37"
 			(uuid "73f865e1-3e80-42b4-b10e-b52e9dfd1819")
@@ -15020,46 +14903,6 @@
 			)
 			(uuid "89bb625b-e1ee-4b4e-acac-6aeebf5702c1")
 		)
-		(pin "LED_SDI" input
-			(at 165.1 69.85 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "c5a6c6e1-175f-4a74-bae1-36dc74fa7b6d")
-		)
-		(pin "LED_CLK" input
-			(at 165.1 72.39 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "5ecd2207-c2d5-41c1-901f-62d406d0662f")
-		)
-		(pin "LED_LE" input
-			(at 165.1 74.93 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "710854bc-b4c3-4f31-8ec1-61cc68c482a6")
-		)
-		(pin "LED_~{OE}" input
-			(at 165.1 77.47 180)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-			(uuid "89030425-d26e-4cf2-bcd0-96141c5b8ad3")
-		)
 		(pin "KEY_~{INT}" output
 			(at 165.1 53.34 180)
 			(effects
@@ -15099,6 +14942,16 @@
 				(justify left)
 			)
 			(uuid "905026ce-8e06-4e87-a554-649868d1761d")
+		)
+		(pin "LED_~{RES}" input
+			(at 165.1 69.85 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "47f58d1a-3b49-4c32-89d9-480d0567fc70")
 		)
 		(instances
 			(project "main-board"
