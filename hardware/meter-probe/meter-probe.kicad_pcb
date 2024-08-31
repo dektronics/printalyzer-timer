@@ -949,12 +949,12 @@
 		(layer "F.Cu")
 		(uuid "00000000-0000-0000-0000-00005f913d0f")
 		(at 120 114)
-		(descr "SW PUSH SMALL http://www.ckswitches.com/media/1457/ksa_ksl.pdf")
-		(tags "SW PUSH SMALL Tactile C&K")
+		(descr "Marquardt Keyswitch 6425.0101 (https://products.marquardt.com/Customer%20Drawings/64250101_00_K.pdf)")
+		(tags "Marquardt Keyswitch")
 		(property "Reference" "SW1"
 			(at -8.5 0 0)
 			(layer "F.SilkS")
-			(uuid "7993c464-93ef-4cba-822d-f5f5e9695ccc")
+			(uuid "ad3a4ce5-121b-4066-871a-5ed5825f0f3d")
 			(effects
 				(font
 					(size 1 1)
@@ -966,7 +966,7 @@
 			(at 0 3 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "9620d022-f6d1-40ff-b924-fc4697a6cd44")
+			(uuid "6100fa0c-918f-4439-b82c-c481d912bf77")
 			(effects
 				(font
 					(size 1 1)
@@ -979,7 +979,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "cf4e4096-39e0-4953-9fda-92604df6246a")
+			(uuid "d626e9a0-8cfa-4582-8ad3-9f6d412e39a4")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -992,7 +992,7 @@
 			(unlocked yes)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "f16d9ccd-1129-408e-95b4-422cf8adafae")
+			(uuid "5d6dbaa3-3a1a-4a9b-b0ea-03ad7b93a048")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1004,7 +1004,7 @@
 			(at 120 114 0)
 			(layer "F.Fab")
 			(hide yes)
-			(uuid "ddfc57b6-7fb7-4705-abe6-c84fb50cde1e")
+			(uuid "7d11c7d4-b5d1-4b63-9c1e-f9c00e330f43")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1072,7 +1072,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "29da28f6-79eb-4d9e-b61a-cd567605a328")
+			(uuid "595d0d52-e81e-43c3-927a-9ab322bc791e")
 		)
 		(fp_line
 			(start -6.885 -6.885)
@@ -1082,7 +1082,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "2ae42c0a-ee9c-4da1-8fc2-bb1c7e021c69")
+			(uuid "00059a55-2fb9-4afc-b892-7f30d4aff668")
 		)
 		(fp_line
 			(start 6.885 -6.885)
@@ -1092,7 +1092,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "c81df73f-e83e-4a60-87b2-2eefd66fbd58")
+			(uuid "a70b1e8e-7608-4a3c-86b4-3ecda11ac025")
 		)
 		(fp_line
 			(start 6.885 6.885)
@@ -1102,7 +1102,7 @@
 				(type solid)
 			)
 			(layer "F.SilkS")
-			(uuid "21b2cc7b-61c4-4b53-aaff-6b590348c105")
+			(uuid "fb1e7dd4-e817-4e61-b3ab-7b4d24c51fd8")
 		)
 		(fp_circle
 			(center 0 0)
@@ -1113,7 +1113,7 @@
 			)
 			(fill none)
 			(layer "F.SilkS")
-			(uuid "dfb938ff-1a94-4e63-b5d3-5994cbc047d4")
+			(uuid "40b1558b-ac31-4fe6-bc6f-8e8d247057ed")
 		)
 		(fp_line
 			(start -7.75 -7.75)
@@ -1123,7 +1123,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "3c3f476d-d656-4be6-893c-8edad8b4221f")
+			(uuid "35697a00-57c1-4133-882a-9b09b16dd9fb")
 		)
 		(fp_line
 			(start -7.75 -7.75)
@@ -1133,7 +1133,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "99fd79bf-d849-4c68-b9b9-8a24d8dcdbc5")
+			(uuid "9446c422-2f4e-476b-8e0e-2d340cb3d9c8")
 		)
 		(fp_line
 			(start 7.75 7.75)
@@ -1143,7 +1143,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "5735c704-7970-4dcc-9af6-408a103c1576")
+			(uuid "e0bb660f-1ba9-4c5c-9bb5-95a3c30de02c")
 		)
 		(fp_line
 			(start 7.75 7.75)
@@ -1153,7 +1153,7 @@
 				(type solid)
 			)
 			(layer "F.CrtYd")
-			(uuid "cb836cae-d443-4c4a-bc72-5fa857a92e60")
+			(uuid "b155ba70-a384-42ec-af73-b48262e82561")
 		)
 		(fp_line
 			(start -6.775 -6.775)
@@ -1163,7 +1163,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "f784e8a0-ae74-4894-9ee3-12d7bcc42bf3")
+			(uuid "9146c253-5b59-4581-a36c-2e834d2a6734")
 		)
 		(fp_line
 			(start -6.775 6.775)
@@ -1173,7 +1173,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "bad366e8-9271-492e-ac65-b28b2924ead7")
+			(uuid "7bb98824-e752-4d52-aec1-30912fa65b06")
 		)
 		(fp_line
 			(start 6.775 -6.775)
@@ -1183,7 +1183,7 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "7428beb9-3566-4c61-8a25-dfb83b6b6319")
+			(uuid "e44d715c-d5c7-412e-b42e-c8568fbdd6b6")
 		)
 		(fp_line
 			(start 6.775 6.775)
@@ -1193,12 +1193,12 @@
 				(type solid)
 			)
 			(layer "F.Fab")
-			(uuid "d636b0fc-ae6b-4901-a304-de4f9fd43c3e")
+			(uuid "f0bbcd66-0fa5-4eeb-923c-a4796c7ad46f")
 		)
 		(fp_text user "${REFERENCE}"
 			(at 0 0 0)
 			(layer "F.Fab")
-			(uuid "16067e55-b78e-468b-84ce-1f18f957ada9")
+			(uuid "3430b09b-cba5-47d4-8dfe-d5888ea7050c")
 			(effects
 				(font
 					(size 1 1)
@@ -1211,14 +1211,14 @@
 			(size 1.3 1.3)
 			(drill 1.3)
 			(layers "*.Cu" "*.Mask")
-			(uuid "2a6caa89-442b-4946-816a-bcd4a6aadfe9")
+			(uuid "3ec61947-91fd-4e63-a693-e4dd7a514fdd")
 		)
 		(pad "" np_thru_hole circle
 			(at 5.08 -5.08)
 			(size 1.3 1.3)
 			(drill 1.3)
 			(layers "*.Cu" "*.Mask")
-			(uuid "8ced9e9c-e323-4a0f-bd8c-a88d3994d960")
+			(uuid "8f424420-c122-4d75-bfaa-06393c00cb7b")
 		)
 		(pad "1" thru_hole circle
 			(at 0 0)
@@ -1229,7 +1229,7 @@
 			(net 1 "GND")
 			(pinfunction "1")
 			(pintype "passive")
-			(uuid "30c3141c-426b-43c0-bad8-e87662a19336")
+			(uuid "48690d0e-dbd5-4583-806e-4140b11935af")
 		)
 		(pad "2" thru_hole circle
 			(at 0 -5.08)
@@ -1240,17 +1240,17 @@
 			(net 8 "Net-(D1-K-Pad2)")
 			(pinfunction "2")
 			(pintype "passive")
-			(uuid "8bbd217e-23ce-47b2-a0e5-16b019912680")
+			(uuid "abe2babe-ebfd-4b8c-a76d-d60bf31ef926")
 		)
 		(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Marquardt_6425_0101.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 0 8.3)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 -90)
 			)
 		)
 	)
