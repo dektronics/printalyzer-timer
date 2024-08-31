@@ -91,19 +91,28 @@ this directory's `.gitignore` file.
 * Offset: Y = -7.5 mm
 
 ### Marquardt\_6425\_0101
-* Status: Included (Same license as project)
-* Source: Created for project using Autodesk Fusion 360
+* Status: Included
+* Source: Manufacturer <https://products.marquardt.com/app/portal/products/product/29753;refSeries=28657>
+* Note: Converted from JT to STEP using 3rd party tool
 * Footprint: `lib_fp:SW_Key_6425_0101`
+* Rotation: Z = -90 deg
+* Offset: Z = 8.3 mm
 
 ### Marquardt\_6425\_1101
-* Status: Included (Same license as project)
-* Source: Created for project using Autodesk Fusion 360
+* Status: Included
+* Source: Manufacturer <https://products.marquardt.com/app/portal/products/product/31097;refSeries=28657>
+* Note: Converted from JT to STEP using 3rd party tool
 * Footprint: `lib_fp:SW_Key_6425_1101`
+* Rotation: Z = -90 deg
+* Offset: Z = 8.3 mm
 
 ### Marquardt\_6425\_3111
-* Status: Included (Same license as project)
-* Source: Created for project using Autodesk Fusion 360
+* Status: Included
+* Source: Manufacturer <https://products.marquardt.com/app/portal/products/product/29754;refSeries=28657>
+* Note: Converted from JT to STEP using 3rd party tool
 * Footprint: `lib_fp:SW_Key_6425_0101_LED`
+* Rotation: Z = -90 deg
+* Offset: Z = 8.3 mm
 
 ### Molex\_676432910
 * Status: Not included (Not redistributable)
