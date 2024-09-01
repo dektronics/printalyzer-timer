@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Main Board (User Input)")
-		(date "2024-04-16")
-		(rev "D")
+		(date "2024-09-01")
+		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -4491,7 +4491,18 @@
 		)
 		(uuid "8aef9f97-a9b8-4c19-a860-727b55af8564")
 	)
-	(text "J4 is a connector that goes to\na panel mounted rocker switch"
+	(text "I2C address = 0x34"
+		(exclude_from_sim no)
+		(at 16.51 138.43 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b37abcfd-527f-494e-affc-5deb4a23a0a2")
+	)
+	(text "This is a connector that goes to\na panel mounted rocker switch"
 		(exclude_from_sim no)
 		(at 153.67 96.52 0)
 		(effects
@@ -4501,6 +4512,17 @@
 			(justify left bottom)
 		)
 		(uuid "bb22656c-597d-4ce2-a44f-1613ef3c47da")
+	)
+	(text "I2C address = 0x5B"
+		(exclude_from_sim no)
+		(at 92.075 144.78 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e13820fd-bc57-4362-83f2-c86485e86877")
 	)
 	(label "BTN8"
 		(at 83.82 121.92 180)

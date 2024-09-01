@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Main Board (Power Supply and Control)")
-		(date "2024-04-16")
-		(rev "D")
+		(date "2024-09-01")
+		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -2750,7 +2750,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 161.925) (xy 45.085 161.925)
+			(xy 32.385 160.02) (xy 37.465 160.02)
 		)
 		(stroke
 			(width 0)
@@ -2880,7 +2880,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 154.305) (xy 41.91 152.4)
+			(xy 34.29 152.4) (xy 34.29 150.495)
 		)
 		(stroke
 			(width 0)
@@ -3000,7 +3000,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 164.465) (xy 45.085 164.465)
+			(xy 32.385 162.56) (xy 37.465 162.56)
 		)
 		(stroke
 			(width 0)
@@ -3320,7 +3320,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 159.385) (xy 45.085 159.385)
+			(xy 32.385 157.48) (xy 37.465 157.48)
 		)
 		(stroke
 			(width 0)
@@ -3330,7 +3330,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 167.005) (xy 41.91 168.91)
+			(xy 34.29 165.1) (xy 34.29 167.005)
 		)
 		(stroke
 			(width 0)
@@ -3360,7 +3360,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 156.845) (xy 45.085 156.845)
+			(xy 32.385 154.94) (xy 37.465 154.94)
 		)
 		(stroke
 			(width 0)
@@ -3380,7 +3380,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 167.005) (xy 41.91 167.005)
+			(xy 32.385 165.1) (xy 34.29 165.1)
 		)
 		(stroke
 			(width 0)
@@ -3400,7 +3400,7 @@
 	)
 	(wire
 		(pts
-			(xy 40.005 154.305) (xy 41.91 154.305)
+			(xy 32.385 152.4) (xy 34.29 152.4)
 		)
 		(stroke
 			(width 0)
@@ -3734,7 +3734,7 @@
 	)
 	(rectangle
 		(start 15.875 141.605)
-		(end 70.485 177.165)
+		(end 59.055 179.705)
 		(stroke
 			(width 0)
 			(type dash)
@@ -3755,6 +3755,17 @@
 			(type none)
 		)
 		(uuid f6659c89-be1b-4e7a-9f07-48883835d88d)
+	)
+	(text "This connector goes to the power board,\nwhich is where the RS-485 transceiver\nand the XLR jack are located."
+		(exclude_from_sim no)
+		(at 17.145 175.895 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0b633fd6-5344-41ab-aa6f-9d708d4503a8")
 	)
 	(text "The EN1 circuit enforces a 15-33ms startup delay\nfor the 3.3V rail on cold start\n\nThe EN2 circuit makes sure the 5V rail does not\ncome up until after the 3.3V rail is stable.\n\nPower input components have specifications\nthat may differ from components with similar\nvalues used elsewhere"
 		(exclude_from_sim no)
@@ -3800,7 +3811,7 @@
 		)
 		(uuid "6ea3380d-f2df-4c97-a47e-5df453b2f666")
 	)
-	(text "Power Entry"
+	(text "Power Entry Connector"
 		(exclude_from_sim no)
 		(at 17.145 19.05 0)
 		(effects
@@ -4000,7 +4011,7 @@
 	)
 	(hierarchical_label "DMX512_RX"
 		(shape output)
-		(at 45.085 156.845 0)
+		(at 37.465 154.94 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4012,7 +4023,7 @@
 	)
 	(hierarchical_label "DMX512_TX"
 		(shape input)
-		(at 45.085 164.465 0)
+		(at 37.465 162.56 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4036,7 +4047,7 @@
 	)
 	(hierarchical_label "DMX512_TX_EN"
 		(shape input)
-		(at 45.085 161.925 0)
+		(at 37.465 160.02 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4048,7 +4059,7 @@
 	)
 	(hierarchical_label "DMX512_RX_EN"
 		(shape input)
-		(at 45.085 159.385 0)
+		(at 37.465 157.48 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5866,7 +5877,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 41.91 168.91 0)
+		(at 34.29 167.005 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5874,7 +5885,7 @@
 		(dnp no)
 		(uuid "56ec50b7-0aaf-450a-ac27-674d7273585f")
 		(property "Reference" "#PWR052"
-			(at 41.91 175.26 0)
+			(at 34.29 173.355 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5883,7 +5894,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 41.91 172.72 0)
+			(at 34.29 170.815 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5891,7 +5902,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 41.91 168.91 0)
+			(at 34.29 167.005 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5900,7 +5911,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 41.91 168.91 0)
+			(at 34.29 167.005 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5909,7 +5920,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 41.91 168.91 0)
+			(at 34.29 167.005 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8265,7 +8276,7 @@
 	)
 	(symbol
 		(lib_id "power:+3.3V")
-		(at 41.91 152.4 0)
+		(at 34.29 150.495 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8273,7 +8284,7 @@
 		(dnp no)
 		(uuid "c0056722-4729-4530-bdaf-49cfabe13bf1")
 		(property "Reference" "#PWR051"
-			(at 41.91 156.21 0)
+			(at 34.29 154.305 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8282,7 +8293,7 @@
 			)
 		)
 		(property "Value" "+3.3V"
-			(at 41.91 148.59 0)
+			(at 34.29 146.685 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8290,7 +8301,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 41.91 152.4 0)
+			(at 34.29 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8299,7 +8310,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 41.91 152.4 0)
+			(at 34.29 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8308,7 +8319,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3.3V\""
-			(at 41.91 152.4 0)
+			(at 34.29 150.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9144,7 +9155,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
-		(at 34.925 159.385 0)
+		(at 27.305 157.48 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9153,7 +9164,7 @@
 		(dnp no)
 		(uuid "e32c1ca6-abe5-46a3-9c9a-bbf861397cef")
 		(property "Reference" "J4"
-			(at 32.385 160.02 0)
+			(at 24.765 158.115 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9162,7 +9173,7 @@
 			)
 		)
 		(property "Value" "DMX512"
-			(at 32.385 162.56 0)
+			(at 24.765 160.655 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9171,7 +9182,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_SH_BM06B-SRSS-TB_1x06-1MP_P1.00mm_Vertical"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9180,7 +9191,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.jst-mfg.com/product/pdf/eng/eSH.pdf"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9189,7 +9200,7 @@
 			)
 		)
 		(property "Description" "CONN HEADER SMD 6POS 1MM"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9198,7 +9209,7 @@
 			)
 		)
 		(property "Manufacturer" "JST Sales America Inc."
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9207,7 +9218,7 @@
 			)
 		)
 		(property "Manufacturer PN" "BM06B-SRSS-TB(LF)(SN)"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9216,7 +9227,7 @@
 			)
 		)
 		(property "Supplier" "Digi-Key"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9225,7 +9236,7 @@
 			)
 		)
 		(property "Supplier PN" "455-1792-1-ND"
-			(at 34.925 159.385 0)
+			(at 27.305 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)

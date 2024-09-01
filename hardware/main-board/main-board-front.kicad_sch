@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Main Board (Front External Connections)")
-		(date "2024-04-16")
-		(rev "D")
+		(date "2024-09-01")
+		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -5869,6 +5869,17 @@
 			(justify left bottom)
 		)
 		(uuid "a18b3ae3-2e7a-4a03-8642-a80fd66a6589")
+	)
+	(text "SMBus address = 0x2C"
+		(exclude_from_sim no)
+		(at 15.875 114.3 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "dd3c6162-91f6-4c07-bdb7-cdcfdf6ce9a5")
 	)
 	(label "USB_DN1_VBUS"
 		(at 240.03 28.575 180)
