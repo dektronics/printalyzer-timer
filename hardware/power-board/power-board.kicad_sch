@@ -13082,7 +13082,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal"
+		(property "Footprint" "lib_fp:R_Axial_Vishay_VR37_L9.0mm_D3.2mm_P12.70mm_Horizontal"
 			(at 36.957 76.835 90)
 			(effects
 				(font
