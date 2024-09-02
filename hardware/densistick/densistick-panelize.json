@@ -1,0 +1,56 @@
+// KiKit panelization for the Printalizer DensiStick
+{
+    "layout": {
+        "type": "grid",
+        "rows": 4,
+        "cols": 2,
+        "hspace": "2.5mm",
+        "vspace": "2.5mm",
+        "rotation": "180deg",
+        "alternation": "cols",
+        "renamenet": "Board_{n}-{orig}",
+        "renameref": "{orig}"
+    },
+    "source": {
+        "type": "auto",
+        "tolerance": "5mm"
+    },
+    "tabs": {
+        "type": "annotation"
+    },
+    "cuts": {
+        "type": "mousebites",
+        "drill": "0.5mm",
+        "spacing": "0.7mm"
+    },
+    "framing": {
+        "type": "railstb",
+        "width": "5mm",
+        "space": "2.5mm"
+    },
+    "tooling": {
+        "type": "4hole",
+        "hoffset": "5mm",
+        "voffset": "2.5mm",
+        "size": "2.05mm"
+    },
+    "fiducials": {
+        "type": "3fid",
+        "hoffset": "10mm",
+        "voffset": "2.5mm",
+        "coppersize": "1mm",
+        "opening": "2mm"
+    },
+    "text": {
+        "type": "simple",
+        "text": "{boardTitle} Panel",
+        "anchor": "mt",
+        "voffset": "2.5mm",
+        "hjustify": "center"
+    },
+    "post": {
+        "millradius": "1mm",
+        "origin": "bl",
+        "script": "tools/kikit-post.py"
+    }
+}
