@@ -475,6 +475,151 @@
 				)
 			)
 		)
+		(symbol "Device:D_Zener"
+			(pin_numbers hide)
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "D_Zener"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Zener diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "D_Zener_0_1"
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "D_Zener_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Device:FerriteBead_Small"
 			(pin_numbers hide)
 			(pin_names
@@ -1407,254 +1552,6 @@
 						)
 					)
 					(number "8"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
-		(symbol "Project:ESDA6V1L"
-			(pin_names hide)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at 5.715 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "ESDA6V1L"
-				(at 5.715 0.635 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "lib_fp:SOT23-3L"
-				(at 5.715 -1.27 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://www.st.com/content/ccc/resource/technical/document/datasheet/eb/9f/a7/ac/7b/b6/46/7f/CD00002057.pdf/files/CD00002057.pdf/jcr:content/translations/en.CD00002057.pdf"
-				(at 0 -13.335 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "TVS Diode Array, 5.25V Standoff, 2 Channels, SOT-23-3 package"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "usb esd protection suppression transient"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "SOT?23*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "ESDA6V1L_0_0"
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "A"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "ESDA6V1L_0_1"
-				(rectangle
-					(start -4.445 2.54)
-					(end 4.445 -2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(circle
-					(center 0 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 2.54) (xy -2.54 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.27) (xy 0 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 2.54) (xy 2.54 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -3.302 1.016) (xy -3.302 1.27) (xy -1.905 1.27) (xy -1.778 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 -1.27) (xy 2.54 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 1.27) (xy -1.905 0) (xy -3.175 0) (xy -2.54 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 1.778 1.016) (xy 1.778 1.27) (xy 3.175 1.27) (xy 3.302 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 1.27) (xy 1.905 0) (xy 3.175 0) (xy 2.54 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "ESDA6V1L_1_1"
-				(pin passive line
-					(at -2.54 5.08 270)
-					(length 2.54)
-					(name "K"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 5.08 270)
-					(length 2.54)
-					(name "K"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4320,6 +4217,12 @@
 		(uuid "12e15b73-9ded-44eb-b0d3-06fd1252e7e0")
 	)
 	(junction
+		(at 205.74 32.385)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "19e07663-f9e1-45a0-9d44-e6763f6897be")
+	)
+	(junction
 		(at 49.53 54.61)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4452,12 +4355,6 @@
 		(uuid "aaa18de5-52d6-475e-9492-ad38f9e5d910")
 	)
 	(junction
-		(at 210.185 32.385)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "afe57538-14d6-4d4a-8cd8-b55945b02cff")
-	)
-	(junction
 		(at 95.885 113.03)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4524,10 +4421,6 @@
 	(no_connect
 		(at 86.995 110.49)
 		(uuid "38735b33-9616-4b4f-94ce-5ea42caa34e5")
-	)
-	(no_connect
-		(at 205.105 35.56)
-		(uuid "692808f0-a6b4-4d4e-919e-caa4a49f1899")
 	)
 	(no_connect
 		(at 86.995 105.41)
@@ -4787,7 +4680,7 @@
 	)
 	(wire
 		(pts
-			(xy 199.39 32.385) (xy 210.185 32.385)
+			(xy 199.39 32.385) (xy 205.74 32.385)
 		)
 		(stroke
 			(width 0)
@@ -5147,16 +5040,6 @@
 	)
 	(wire
 		(pts
-			(xy 210.185 32.385) (xy 213.995 32.385)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4b11ac7a-a7da-499d-8965-2ef314249b06")
-	)
-	(wire
-		(pts
 			(xy 102.235 88.265) (xy 102.235 90.17)
 		)
 		(stroke
@@ -5184,16 +5067,6 @@
 			(type default)
 		)
 		(uuid "4d33db09-2ff1-431d-b26f-281c93291dd7")
-	)
-	(wire
-		(pts
-			(xy 210.185 32.385) (xy 210.185 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4d682f88-eff9-4eee-adc7-996f5061ea97")
 	)
 	(wire
 		(pts
@@ -5717,6 +5590,16 @@
 	)
 	(wire
 		(pts
+			(xy 205.74 32.385) (xy 205.74 33.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9db05a45-c7f8-4cdb-81ee-ff5d913255d3")
+	)
+	(wire
+		(pts
 			(xy 102.235 90.17) (xy 102.235 92.075)
 		)
 		(stroke
@@ -5774,16 +5657,6 @@
 			(type default)
 		)
 		(uuid "a6a2ec94-a9fc-43a8-b778-35673c256c51")
-	)
-	(wire
-		(pts
-			(xy 207.645 45.72) (xy 207.645 47.625)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a6af410a-5a82-4fcf-b3bc-6ee0fce655cc")
 	)
 	(wire
 		(pts
@@ -6244,6 +6117,16 @@
 			(type default)
 		)
 		(uuid "ee3e480e-51fc-4995-9520-a10534846981")
+	)
+	(wire
+		(pts
+			(xy 205.74 32.385) (xy 213.995 32.385)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f03ed3c3-9957-48b3-b40e-b454d060b9a9")
 	)
 	(wire
 		(pts
@@ -9042,6 +8925,111 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:D_Zener")
+		(at 205.74 36.83 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "36530425-15e6-4cca-85d5-7491f059f01f")
+		(property "Reference" "D1"
+			(at 207.645 35.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ESD321"
+			(at 207.645 38.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "lib_fp:D_TI_SOD-523_DYA0002A"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.ti.com/lit/ds/slvsen8b/slvsen8b.pdf"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "TVS DIODE 3.6VWM 6.3VC SOD523"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "ESD321DYAR"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "296-ESD321DYARCT-ND"
+			(at 205.74 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "dd09e22d-7873-4fa6-a960-3433f40c3ac9")
+		)
+		(pin "1"
+			(uuid "cd7300f6-bb33-4ad3-b4b0-0bad9ecfcd7c")
+		)
+		(instances
+			(project "meter-probe"
+				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
+					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 151.765 39.37 0)
 		(unit 1)
@@ -10446,116 +10434,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:FerriteBead_Small")
-		(at 64.135 54.61 90)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "71aada22-348e-49ab-99bd-cf9b7a2d4ded")
-		(property "Reference" "FB1"
-			(at 64.135 51.435 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "600R@100MHz"
-			(at 64.135 57.785 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 64.135 52.832 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://product.tdk.com/en/system/files?file=dam/doc/product/emc/emc/beads/catalog/beads_automotive_signal_mmz1608_en.pdf"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "FERRITE BEAD 600 OHM 0603 1LN"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "TDK Corporation"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "MMZ1608R601ATD25"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "445-MMZ1608R601ATD25CT-ND"
-			(at 64.135 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "592d23c5-7080-4fb1-a602-66cd37af90af")
-		)
-		(pin "2"
-			(uuid "03816569-6767-42a6-8d9e-8702891188ca")
-		)
-		(instances
-			(project "meter-probe"
-				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-					(reference "FB1")
-					(unit 1)
-				)
-			)
-			(project "main-board"
-				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
-					(reference "FB1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:+3V3")
 		(at 149.86 116.84 0)
 		(unit 1)
@@ -11440,7 +11318,7 @@
 	)
 	(symbol
 		(lib_id "power:Earth")
-		(at 207.645 47.625 0)
+		(at 205.74 40.64 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -11450,7 +11328,7 @@
 		(fields_autoplaced yes)
 		(uuid "8b5b15f1-fdfd-4214-a735-f579b574489e")
 		(property "Reference" "#PWR030"
-			(at 207.645 53.975 0)
+			(at 205.74 46.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11459,7 +11337,7 @@
 			)
 		)
 		(property "Value" "Earth"
-			(at 207.645 51.435 0)
+			(at 205.74 44.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11467,7 +11345,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11476,7 +11354,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11485,7 +11363,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"Earth\""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11494,7 +11372,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11503,7 +11381,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11512,7 +11390,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11521,7 +11399,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 207.645 47.625 0)
+			(at 205.74 40.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11811,121 +11689,6 @@
 			(project "meter-probe"
 				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
 					(reference "#PWR038")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Project:ESDA6V1L")
-		(at 207.645 40.64 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "93df0c50-e2ab-4eab-b826-6acdfcdf0f96")
-		(property "Reference" "D1"
-			(at 200.025 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "ESDA6V1L"
-			(at 208.915 45.085 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "lib_fp:SOT23-3L"
-			(at 213.36 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.st.com/content/ccc/resource/technical/document/datasheet/eb/9f/a7/ac/7b/b6/46/7f/CD00002057.pdf/files/CD00002057.pdf/jcr:content/translations/en.CD00002057.pdf"
-			(at 207.645 53.975 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "TVS DIODE 5.25VWM SOT23-3"
-			(at 207.645 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "STMicroelectronics"
-			(at 207.645 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "ESDA6V1L"
-			(at 207.645 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 207.645 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "497-2930-1-ND"
-			(at 207.645 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "4fec4eb4-e13a-4365-a3b5-15527d7bb69b")
-		)
-		(pin "1"
-			(uuid "d0610299-d389-427b-a804-f08d483a04e1")
-		)
-		(pin "2"
-			(uuid "4f482906-7b3b-4e43-9306-4f7fbb37b5f2")
-		)
-		(instances
-			(project "meter-probe"
-				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
-					(reference "D1")
-					(unit 1)
-				)
-			)
-			(project "main-board"
-				(path "/31a301d9-d769-4a35-943a-fe3e3609e773/00000000-0000-0000-0000-00005fa19aff"
-					(reference "D?")
 					(unit 1)
 				)
 			)
@@ -12959,6 +12722,109 @@
 			(project "meter-probe"
 				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
 					(reference "TP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:FerriteBead_Small")
+		(at 64.135 54.61 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "bc079bcb-a287-4461-a681-916d022beec5")
+		(property "Reference" "FB1"
+			(at 64.135 51.435 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "600R"
+			(at 64.135 57.785 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+			(at 64.135 56.388 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/742792651.pdf"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "FERRITE BEAD 600 OHM 0603 1LN"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Würth Elektronik"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "742792651"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "732-1593-1-ND"
+			(at 64.135 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "27b30715-24a2-4939-9c40-ebf537193c50")
+		)
+		(pin "1"
+			(uuid "1d6a5da1-ff7b-416f-b5a1-447672b22366")
+		)
+		(instances
+			(project "meter-probe"
+				(path "/1f1005f7-3f58-4453-9bfa-bdc1c0b6f7ed"
+					(reference "FB1")
 					(unit 1)
 				)
 			)

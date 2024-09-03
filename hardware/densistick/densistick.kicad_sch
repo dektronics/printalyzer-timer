@@ -238,163 +238,6 @@
 				)
 			)
 		)
-		(symbol "Device:C_Polarized_Small"
-			(pin_numbers hide)
-			(pin_names
-				(offset 0.254) hide)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "C"
-				(at 0.254 1.778 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Value" "C_Polarized_Small"
-				(at 0.254 -2.032 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Polarized capacitor, small symbol"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "cap capacitor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "CP_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "C_Polarized_Small_0_1"
-				(rectangle
-					(start -1.524 -0.3048)
-					(end 1.524 -0.6858)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(rectangle
-					(start -1.524 0.6858)
-					(end 1.524 0.3048)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 1.524) (xy -0.762 1.524)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.016 1.27) (xy -1.016 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "C_Polarized_Small_1_1"
-				(pin passive line
-					(at 0 2.54 270)
-					(length 1.8542)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -2.54 90)
-					(length 1.8542)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "Device:C_Small"
 			(pin_numbers hide)
 			(pin_names
@@ -514,6 +357,151 @@
 					(at 0 -2.54 90)
 					(length 2.032)
 					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "Device:D_Zener"
+			(pin_numbers hide)
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "D"
+				(at 0 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "D_Zener"
+				(at 0 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Zener diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "diode"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "TO-???* *_Diode_* *SingleDiode* D_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "D_Zener_0_1"
+				(polyline
+					(pts
+						(xy 1.27 0) (xy -1.27 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 -1.27) (xy -1.27 1.27) (xy -0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "D_Zener_1_1"
+				(pin passive line
+					(at -3.81 0 0)
+					(length 2.54)
+					(name "K"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 3.81 0 180)
+					(length 2.54)
+					(name "A"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3325,154 +3313,6 @@
 				)
 			)
 		)
-		(symbol "Project:uClamp3301H"
-			(pin_names hide)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "D"
-				(at -1.27 -2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right)
-				)
-			)
-			(property "Value" "uClamp3301H"
-				(at 0 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" "Diode_SMD:D_SOD-523"
-				(at 0 -5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "https://semtech.my.salesforce.com/sfc/p/#E0000000JelG/a/44000000MDWf/s0KJxyOHQyYOcvBXVBK9X3X8Cxj1gNltZ2vd2k1S0Wo"
-				(at 0 -7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Single-line TVS diode for ESD and CDE protection of 3.3V lines, SOD-523"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "ESD protection suppression transient"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "uClamp3301H_0_0"
-				(pin passive line
-					(at 5.08 0 180)
-					(length 2.54)
-					(name "GND"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "uClamp3301H_0_1"
-				(rectangle
-					(start -2.54 1.27)
-					(end 2.54 -1.27)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 0) (xy -2.54 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.889 0.635) (xy -0.635 0.635) (xy -0.635 -0.635) (xy -0.381 -0.635)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.635 -0.635) (xy 0.635 0.635) (xy -0.635 0) (xy 0.635 -0.635)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "uClamp3301H_1_1"
-				(pin passive line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "IO1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-		)
 		(symbol "Regulator_Linear:MIC5365-3.3YC5"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -5178,12 +5018,6 @@
 		(uuid "771b37ab-276d-4a4f-9628-11a18141a26a")
 	)
 	(junction
-		(at 147.32 128.27)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "89f97ada-16a0-44c0-89f5-a0491521f97e")
-	)
-	(junction
 		(at 176.53 94.615)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5236,6 +5070,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d765f52e-ebba-42ff-977b-ab52e0358a33")
+	)
+	(junction
+		(at 147.32 128.27)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d8b9d4cc-1c2c-4066-a81c-3059a9cb9382")
 	)
 	(junction
 		(at 216.535 27.94)
@@ -5610,6 +5450,16 @@
 			(type default)
 		)
 		(uuid "25462846-9984-4799-8fb3-bf238de8fb40")
+	)
+	(wire
+		(pts
+			(xy 147.32 128.27) (xy 160.02 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "269f7a13-da4f-4433-b7c4-47ac562252c8")
 	)
 	(wire
 		(pts
@@ -6563,16 +6413,6 @@
 	)
 	(wire
 		(pts
-			(xy 147.32 128.27) (xy 160.02 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9c4085fe-716a-4ec0-809a-3432e58fb2d5")
-	)
-	(wire
-		(pts
 			(xy 210.185 29.845) (xy 210.185 27.94)
 		)
 		(stroke
@@ -7080,6 +6920,16 @@
 			(type default)
 		)
 		(uuid "dc8ce0ac-eb06-4575-a8b9-f85a015edd95")
+	)
+	(wire
+		(pts
+			(xy 147.32 128.905) (xy 147.32 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dd99cb5d-9d07-43a1-baab-10b2b3d55ef4")
 	)
 	(wire
 		(pts
@@ -9279,111 +9129,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Project:uClamp3301H")
-		(at 147.32 133.35 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "00000000-0000-0000-0000-000061322092")
-		(property "Reference" "D5"
-			(at 149.3012 132.1816 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "uClamp0501H"
-			(at 149.3012 134.493 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Diode_SMD:D_SOD-523"
-			(at 142.24 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://semtech.my.salesforce.com/sfc/p/#E0000000JelG/a/44000000MCOu/TAxz.g3b9Kc3zALQPNaVYTri83_DHtuxXaYryd8B43M"
-			(at 139.7 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "TVS DIODE 5VWM 12.5VC SOD523"
-			(at 147.32 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Semtech"
-			(at 147.32 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "UCLAMP0501H.TCT"
-			(at 147.32 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 147.32 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "UCLAMP0501HCT-ND"
-			(at 147.32 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "caa7b755-6fbb-4c74-9f66-d52915b5d218")
-		)
-		(pin "1"
-			(uuid "7a747370-e3a7-4f53-b544-baf53034ae58")
-		)
-		(instances
-			(project "densistick"
-				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
-					(reference "D5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 132.08 130.81 0)
 		(unit 1)
@@ -10913,7 +10658,7 @@
 	)
 	(symbol
 		(lib_id "power:Earth")
-		(at 147.32 138.43 0)
+		(at 147.32 136.525 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10923,7 +10668,7 @@
 		(fields_autoplaced yes)
 		(uuid "47bd4258-fa4f-4797-b7e8-616e5f8adfae")
 		(property "Reference" "#PWR050"
-			(at 147.32 144.78 0)
+			(at 147.32 142.875 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10932,7 +10677,7 @@
 			)
 		)
 		(property "Value" "Earth"
-			(at 147.32 142.24 0)
+			(at 147.32 140.335 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10940,7 +10685,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10949,7 +10694,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10958,7 +10703,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"Earth\""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10967,7 +10712,7 @@
 			)
 		)
 		(property "Manufacturer" ""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10976,7 +10721,7 @@
 			)
 		)
 		(property "Manufacturer PN" ""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10985,7 +10730,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10994,7 +10739,7 @@
 			)
 		)
 		(property "Supplier PN" ""
-			(at 147.32 138.43 0)
+			(at 147.32 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11180,112 +10925,6 @@
 			(project "densistick"
 				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
 					(reference "C17")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Polarized_Small")
-		(at 83.185 139.065 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "4a0f18e5-beff-45ce-8d94-328d84b18915")
-		(property "Reference" "C6"
-			(at 86.36 137.2488 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "4.7uF"
-			(at 86.36 139.7888 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Capacitor_Tantalum_SMD:CP_EIA-3216-18_Kemet-A"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://search.kemet.com/download/datasheet/T491A475K025AT"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "CAP TANT 4.7UF 10% 25V 1206"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "KEMET"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "T491A475K025AT"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "399-10128-1-ND"
-			(at 83.185 139.065 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "37cf19ce-dc60-4bf1-97e8-2528fa05cf08")
-		)
-		(pin "1"
-			(uuid "aee62e4e-08f2-429a-a2bb-cf4c3e9d03e8")
-		)
-		(instances
-			(project ""
-				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
-					(reference "C6")
 					(unit 1)
 				)
 			)
@@ -12340,110 +11979,6 @@
 			(project "densistick"
 				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
 					(reference "U5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:FerriteBead_Small")
-		(at 64.135 134.62 90)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "670e809f-fbbf-410c-9e7e-0c12c7728fd3")
-		(property "Reference" "FB1"
-			(at 64.135 131.445 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "600R@100MHz"
-			(at 64.135 137.795 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
-			(at 64.135 132.842 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://product.tdk.com/en/system/files?file=dam/doc/product/emc/emc/beads/catalog/beads_automotive_signal_mmz1608_en.pdf"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "FERRITE BEAD 600 OHM 0603 1LN"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "TDK Corporation"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "MMZ1608R601ATD25"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "445-MMZ1608R601ATD25CT-ND"
-			(at 64.135 134.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "56f626ee-08a4-438c-ade4-27217f352aca")
-		)
-		(pin "2"
-			(uuid "edd18817-9b68-48cf-81e7-218dd6d071dc")
-		)
-		(instances
-			(project "densistick"
-				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
-					(reference "FB1")
 					(unit 1)
 				)
 			)
@@ -15254,6 +14789,109 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:FerriteBead_Small")
+		(at 64.135 134.62 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ad0e9c93-ca1a-4cf0-8108-93445d1f0fc1")
+		(property "Reference" "FB1"
+			(at 64.135 131.445 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "600R"
+			(at 64.135 137.795 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Inductor_SMD:L_0603_1608Metric"
+			(at 64.135 136.398 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.we-online.com/components/products/datasheet/742792651.pdf"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "FERRITE BEAD 600 OHM 0603 1LN"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Würth Elektronik"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "742792651"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "732-1593-1-ND"
+			(at 64.135 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "a44b36eb-d651-4135-a0b5-bbda3355e167")
+		)
+		(pin "1"
+			(uuid "12b54f24-f6b6-4fbf-b8ee-8774a545166b")
+		)
+		(instances
+			(project "densistick"
+				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
+					(reference "FB1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_01x05")
 		(at 20.32 112.395 180)
 		(unit 1)
@@ -16176,6 +15814,111 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:D_Zener")
+		(at 147.32 132.715 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c8f9f9c9-2e2d-4a0a-aad3-4aa9b6ebe8be")
+		(property "Reference" "D5"
+			(at 149.225 131.445 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ESD321"
+			(at 149.225 133.985 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "lib_fp:D_TI_SOD-523_DYA0002A"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.ti.com/lit/ds/slvsen8b/slvsen8b.pdf"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "TVS DIODE 3.6VWM 6.3VC SOD523"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "ESD321DYAR"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "296-ESD321DYARCT-ND"
+			(at 147.32 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "dd58a329-32ee-4d50-9301-23cb0f32074b")
+		)
+		(pin "1"
+			(uuid "c5fe0b97-5116-411e-8f71-c716d59ddc32")
+		)
+		(instances
+			(project ""
+				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
+					(reference "D5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 154.305 61.595 0)
 		(unit 1)
@@ -16365,6 +16108,111 @@
 			(project "densistick"
 				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
 					(reference "#PWR029")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 83.185 139.065 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d6cbccb2-fbe8-4dc4-94e6-0b5796440093")
+		(property "Reference" "C6"
+			(at 85.09 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "4.7uF"
+			(at 85.09 140.335 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL10A475KA8NQNC_Spec.pdf"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "CAP CER 4.7UF 25V X5R 0603"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CL10A475KA8NQNC"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "LCSC"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "C69335"
+			(at 83.185 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5db46f6d-0498-4086-adc4-bd05bd820b3f")
+		)
+		(pin "2"
+			(uuid "b9f4b3fc-b650-4964-a3f4-d008ff973d04")
+		)
+		(instances
+			(project "densistick"
+				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
+					(reference "C6")
 					(unit 1)
 				)
 			)
