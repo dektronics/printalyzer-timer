@@ -104,7 +104,8 @@
 			(copper_finish "ENIG")
 			(dielectric_constraints yes)
 		)
-		(pad_to_mask_clearance 0.05)
+		(pad_to_mask_clearance 0)
+		(pad_to_paste_clearance -0.05)
 		(allow_soldermask_bridges_in_footprints no)
 		(aux_axis_origin 41 79)
 		(grid_origin 41 79)
@@ -2546,7 +2547,7 @@
 		(descr "https://www.ti.com/lit/ml/mpss124a/mpss124a.pdf")
 		(tags "Diode SOD523 TI DYA0002A")
 		(property "Reference" "D5"
-			(at 0 1.3 -90)
+			(at 0 1.3 90)
 			(layer "F.SilkS")
 			(uuid "2f3407d0-e171-4ab6-8d47-8884172e1746")
 			(effects
@@ -2557,7 +2558,7 @@
 			)
 		)
 		(property "Value" "ESD321"
-			(at 0 1 -90)
+			(at 0 1 90)
 			(layer "F.Fab")
 			(uuid "e1782efd-943a-4131-abfc-b2785315b1a1")
 			(effects
@@ -2658,6 +2659,7 @@
 		(path "/c8f9f9c9-2e2d-4a0a-aad3-4aa9b6ebe8be")
 		(sheetname "Root")
 		(sheetfile "densistick.kicad_sch")
+		(solder_paste_margin -0.025)
 		(attr smd)
 		(fp_line
 			(start 0.7 0.55)
@@ -2830,7 +2832,7 @@
 			(uuid "ad025125-14ba-42b4-b4bb-a94c47d746d9")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 -1.3 -90)
+			(at 0 -1.3 90)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "59c479d7-a1c3-4cb2-9593-4621056f6d68")
@@ -5946,6 +5948,7 @@
 		(path "/fa441338-72cf-47b1-bf67-417bd3a2a458")
 		(sheetname "Root")
 		(sheetfile "densistick.kicad_sch")
+		(solder_paste_margin -0.025)
 		(attr smd)
 		(fp_line
 			(start 2.61 2.61)
@@ -24632,45 +24635,6 @@
 		(uuid "f36f1519-975d-40fb-b261-6ae88a47051f")
 	)
 	(zone
-		(net 7)
-		(net_name "Net-(D5-K)")
-		(layer "F.Cu")
-		(uuid "00eec2ba-aacc-4bb8-87fc-cca530c41574")
-		(name "$teardrop_padvia$")
-		(hatch full 0.1)
-		(priority 30000)
-		(attr
-			(teardrop
-				(type padvia)
-			)
-		)
-		(connect_pads yes
-			(clearance 0)
-		)
-		(min_thickness 0.0254)
-		(filled_areas_thickness no)
-		(fill yes
-			(thermal_gap 0.5)
-			(thermal_bridge_width 0.5)
-			(island_removal_mode 1)
-			(island_area_min 10)
-		)
-		(polygon
-			(pts
-				(xy 85.504 69.55) (xy 84.996 69.55) (xy 84.464702 70.924719) (xy 85.25 71.251) (xy 86.035298 70.924719)
-			)
-		)
-		(filled_polygon
-			(layer "F.Cu")
-			(pts
-				(xy 85.504252 69.553427) (xy 85.506892 69.557482) (xy 86.031184 70.914074) (xy 86.03097 70.923026)
-				(xy 86.02476 70.929097) (xy 85.254489 71.249134) (xy 85.245534 71.249143) (xy 85.245511 71.249134)
-				(xy 84.475239 70.929097) (xy 84.468914 70.922758) (xy 84.468815 70.914076) (xy 84.993108 69.557481)
-				(xy 84.999287 69.551001) (xy 85.004021 69.55) (xy 85.495979 69.55)
-			)
-		)
-	)
-	(zone
 		(net 5)
 		(net_name "/RLED1")
 		(layer "F.Cu")
@@ -24740,6 +24704,45 @@
 				(xy 72.011206 71.427511) (xy 72 71.376) (xy 72 70.624) (xy 72.019685 70.556961) (xy 72.072489 70.511206)
 				(xy 72.124 70.5) (xy 73.25 70.5) (xy 73.5 70.25) (xy 73.5 69.624) (xy 73.519685 69.556961) (xy 73.572489 69.511206)
 				(xy 73.624 69.5) (xy 76.376 69.5)
+			)
+		)
+	)
+	(zone
+		(net 7)
+		(net_name "Net-(D5-K)")
+		(layer "F.Cu")
+		(uuid "3731f140-e5e5-4b4a-a492-084cfb68ffdc")
+		(name "$teardrop_padvia$")
+		(hatch full 0.1)
+		(priority 30001)
+		(attr
+			(teardrop
+				(type padvia)
+			)
+		)
+		(connect_pads yes
+			(clearance 0)
+		)
+		(min_thickness 0.0254)
+		(filled_areas_thickness no)
+		(fill yes
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 1)
+			(island_area_min 10)
+		)
+		(polygon
+			(pts
+				(xy 84.996 66.45) (xy 85.504 66.45) (xy 86.035298 65.075281) (xy 85.25 64.749) (xy 84.464702 65.075281)
+			)
+		)
+		(filled_polygon
+			(layer "F.Cu")
+			(pts
+				(xy 85.254484 64.750863) (xy 86.024761 65.070903) (xy 86.031085 65.077241) (xy 86.031184 65.085925)
+				(xy 85.506892 66.442518) (xy 85.500713 66.448999) (xy 85.495979 66.45) (xy 85.004021 66.45) (xy 84.995748 66.446573)
+				(xy 84.993108 66.442518) (xy 84.468815 65.085923) (xy 84.469029 65.076973) (xy 84.475237 65.070903)
+				(xy 85.245511 64.750864) (xy 85.254466 64.750856)
 			)
 		)
 	)
@@ -24820,10 +24823,10 @@
 		(net 7)
 		(net_name "Net-(D5-K)")
 		(layer "F.Cu")
-		(uuid "e880a939-fc5f-4e6a-99e0-d04053df0918")
+		(uuid "d20dc4fd-6277-443a-be42-632731571906")
 		(name "$teardrop_padvia$")
 		(hatch full 0.1)
-		(priority 30001)
+		(priority 30000)
 		(attr
 			(teardrop
 				(type padvia)
@@ -24842,16 +24845,16 @@
 		)
 		(polygon
 			(pts
-				(xy 84.996 66.45) (xy 85.504 66.45) (xy 86.035298 65.075281) (xy 85.25 64.749) (xy 84.464702 65.075281)
+				(xy 85.504 69.55) (xy 84.996 69.55) (xy 84.464702 70.924719) (xy 85.25 71.251) (xy 86.035298 70.924719)
 			)
 		)
 		(filled_polygon
 			(layer "F.Cu")
 			(pts
-				(xy 85.254484 64.750863) (xy 86.024761 65.070903) (xy 86.031085 65.077241) (xy 86.031184 65.085925)
-				(xy 85.506892 66.442518) (xy 85.500713 66.448999) (xy 85.495979 66.45) (xy 85.004021 66.45) (xy 84.995748 66.446573)
-				(xy 84.993108 66.442518) (xy 84.468815 65.085923) (xy 84.469029 65.076973) (xy 84.475237 65.070903)
-				(xy 85.245511 64.750864) (xy 85.254466 64.750856)
+				(xy 85.504252 69.553427) (xy 85.506892 69.557482) (xy 86.031184 70.914074) (xy 86.03097 70.923026)
+				(xy 86.02476 70.929097) (xy 85.254489 71.249134) (xy 85.245534 71.249143) (xy 85.245511 71.249134)
+				(xy 84.475239 70.929097) (xy 84.468914 70.922758) (xy 84.468815 70.914076) (xy 84.993108 69.557481)
+				(xy 84.999287 69.551001) (xy 85.004021 69.55) (xy 85.495979 69.55)
 			)
 		)
 	)
