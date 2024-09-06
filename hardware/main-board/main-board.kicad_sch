@@ -12633,7 +12633,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 236.22 22.86 0)
 			(effects
 				(font
@@ -12651,7 +12651,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 2.2UF 25V X5R 0805"
+		(property "Description" "CAP CER 2.2UF 25V X5R 0603"
 			(at 236.22 22.86 0)
 			(effects
 				(font
@@ -12660,7 +12660,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 236.22 22.86 0)
 			(effects
 				(font
@@ -12669,7 +12669,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL21A225KAFNNNG"
+		(property "Manufacturer PN" "CC0603KRX5R8BB225"
 			(at 236.22 22.86 0)
 			(effects
 				(font
@@ -12687,7 +12687,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-6458-1-ND"
+		(property "Supplier PN" "311-1786-1-ND"
 			(at 236.22 22.86 0)
 			(effects
 				(font
@@ -12948,7 +12948,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
 			(at 256.54 33.02 0)
 			(effects
 				(font
@@ -12957,7 +12957,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
+		(property "Datasheet" "https://www.yageo.com/upload/media/product/app/datasheet/mlcc/upy-gphc_x5r_4v-to-50v.pdf"
 			(at 256.54 33.02 0)
 			(effects
 				(font
@@ -12966,7 +12966,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAP CER 2.2UF 25V X5R 0805"
+		(property "Description" "CAP CER 2.2UF 25V X5R 0603"
 			(at 256.54 33.02 0)
 			(effects
 				(font
@@ -12975,7 +12975,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 256.54 33.02 0)
 			(effects
 				(font
@@ -12984,7 +12984,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "CL21A225KAFNNNG"
+		(property "Manufacturer PN" "CC0603KRX5R8BB225"
 			(at 256.54 33.02 0)
 			(effects
 				(font
@@ -13002,7 +13002,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "1276-6458-1-ND"
+		(property "Supplier PN" "311-1786-1-ND"
 			(at 256.54 33.02 0)
 			(effects
 				(font
