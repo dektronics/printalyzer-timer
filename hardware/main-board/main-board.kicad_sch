@@ -12642,7 +12642,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://media.digikey.com/pdf/Data%20Sheets/Samsung%20PDFs/CL_Series_MLCC_ds.pdf"
+		(property "Datasheet" "https://www.yageo.com/upload/media/product/app/datasheet/mlcc/upy-gphc_x5r_4v-to-50v.pdf"
 			(at 236.22 22.86 0)
 			(effects
 				(font
