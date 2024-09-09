@@ -5,8 +5,8 @@
 	(uuid "0d931642-c618-4faa-b479-0a31176f5a2d")
 	(paper "USLetter")
 	(title_block
-		(title "Printalyzer - Main Board (User Input)")
-		(date "2024-09-01")
+		(title "Printalyzer - Main Board")
+		(date "2024-09-08")
 		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")

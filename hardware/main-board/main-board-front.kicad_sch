@@ -5,8 +5,8 @@
 	(uuid "5351e0bd-1bbc-43fe-ad16-2ac3c4409536")
 	(paper "USLetter")
 	(title_block
-		(title "Printalyzer - Main Board (Front External Connections)")
-		(date "2024-09-01")
+		(title "Printalyzer - Main Board")
+		(date "2024-09-08")
 		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
