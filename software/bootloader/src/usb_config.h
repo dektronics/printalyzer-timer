@@ -105,7 +105,7 @@
 /* ================ USB HOST Stack Configuration ================== */
 
 #define CONFIG_USBHOST_MAX_RHPORTS          1
-#define CONFIG_USBHOST_MAX_EXTHUBS          2
+#define CONFIG_USBHOST_MAX_EXTHUBS          1
 #define CONFIG_USBHOST_MAX_EHPORTS          4
 #define CONFIG_USBHOST_MAX_INTERFACES       8
 #define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 8
