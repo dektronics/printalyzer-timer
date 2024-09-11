@@ -33,6 +33,9 @@ set_target_properties(
 	C_STANDARD_REQUIRED YES
 	C_EXTENSIONS NO
 )
+if (${CMAKE_C_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_C_COMPILER_ID} STREQUAL "Clang")
+	target_compile_options(aliasing PRIVATE -fno-builtin-printf)
+endif()
 list(APPEND test_targets aliasing)
 
 foreach(tgt ${test_targets})

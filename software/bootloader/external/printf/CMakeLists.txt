@@ -7,11 +7,11 @@ project(
 	LANGUAGES C
 	DESCRIPTION "Self-contained C implementation of printf, vprintf, sprintf and related functions"
 	HOMEPAGE_URL https://github.com/eyalroz/printf
-	VERSION 6.0.0
+	VERSION 6.2.0
 )
 
 option(BUILD_TESTS          "Build test programs for the library" OFF)
-option(BUILD_STATIC_LIBRARY "Build the library as static rather than shared" OFF)
+option(BUILD_SHARED_LIBS    "Build the library as a shared (dynamically-linked) object rather than a static one " ON)
 
 # Boolean options which go into config.h
 
@@ -20,6 +20,7 @@ option(SUPPORT_EXPONENTIAL_SPECIFIERS         "Support exponential floating poin
 option(SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS  "Support the I + bit size integer specifiers (%I8, %I16, %I32, %I64) as in Microsoft Visual C++" ON)
 option(SUPPORT_WRITEBACK_SPECIFIER            "Support the length write-back specifier (%n)" ON)
 option(SUPPORT_LONG_LONG                      "Support long long integral types (allows for the ll length modifier and affects %p)" ON)
+option(USE_DOUBLE_INTERNALLY                  "Use the C `double` type - typically 64-bit in size - for internal floating-point arithmetic " ON)
 option(CHECK_FOR_NUL_IN_FORMAT_SPECIFIER      "Be defensive in the undefined-behavior case of a format specifier not ending before the string ends" ON)
 
 set(ALIASING_MODES NONE HARD SOFT)
@@ -38,6 +39,7 @@ foreach(opt
 	SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS
 	SUPPORT_WRITEBACK_SPECIFIER
 	SUPPORT_LONG_LONG
+	USE_DOUBLE_INTERNALLY
 	ALIAS_STANDARD_FUNCTION_NAMES_SOFT
 	ALIAS_STANDARD_FUNCTION_NAMES_HARD
 	CHECK_FOR_NUL_IN_FORMAT_SPECIFIER        
@@ -74,11 +76,8 @@ validate_type_size("intmax_t")
 validate_type_size("size_t")
 validate_type_size("ptrdiff_t")
 
-if (BUILD_STATIC_LIBRARY)
-	add_library(printf STATIC)
-else()
-	add_library(printf SHARED)
-endif()
+# Note we've defined BUILD_SHARED_LIBS, which affects the following
+add_library(printf)
 
 add_library("printf::printf" ALIAS printf)
 
@@ -185,6 +184,12 @@ install(
 
 include(CMakePackageConfigHelpers)
 
+configure_package_config_file(
+	"cmake/printf-config.cmake.in"
+	"${CMAKE_CURRENT_BINARY_DIR}/printf-config.cmake"
+	INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/printf"
+)
+
 write_basic_package_version_file(
 	"printf-config-version.cmake"
 	VERSION ${PROJECT_VERSION}
@@ -192,6 +197,8 @@ write_basic_package_version_file(
 )
 
 install(
-	FILES "${CMAKE_CURRENT_BINARY_DIR}/printf-config-version.cmake"
+	FILES 
+		"${CMAKE_CURRENT_BINARY_DIR}/printf-config-version.cmake"
+		"${CMAKE_CURRENT_BINARY_DIR}/printf-config.cmake"
 	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/printf"
 )

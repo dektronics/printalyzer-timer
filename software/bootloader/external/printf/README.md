@@ -10,14 +10,23 @@
 
 | Table of contents |
 |:------------------|
-|<sub>[Highlights, design goals and the fork](#highlights-design-goals-and-the-fork)<br>[Using the `printf` library in your project](#using-the-printf-library-in-your-project)<br>  - [CMake options and preprocessor definitions](#cmake-options-and-preprocessor-definitions)<br>[Library API](#library-api)<br>  - [Implemented functions](#implemented-functions)<br>  - [Supported Format Specifiers](#supported-format-specifiers)<br>  - [Return Value](#return-value)<br>[Contributing](#contributing)<br>[License](#license) </sub>|
-
+|<sub>[Thinking of forking this repository?](#thinking-of-forking-this-repository-read-this-first)<br>[Highlights, design goals and the mpaland->eyalroz fork](#highlights-design-goals-and-the-mpaland-eyalroz-fork)<br>[Using the `printf` library in your project](#using-the-printf-library-in-your-project)<br>  - [CMake options and preprocessor definitions](#cmake-options-and-preprocessor-definitions)<br>  - [Reducing compiled code size](#reducing-compiled-code-size)<br>[Library API](#library-api)<br>  - [Implemented functions](#implemented-functions)<br>  - [Supported Format Specifiers](#supported-format-specifiers)<br>  - [Return Value](#return-value)<br>[Contributing](#contributing)<br>[License](#license) </sub>|
 
 This is a small but **fully-loaded** implementation of C's formatted printing family of functions. It was originally designed by Marco Paland, with the primary use case being in embedded systems - where these functions are unavailable, or when one needs to avoid the memory footprint of linking against a full-fledged libc. The library can be made even smaller by partially excluding some of the supported format specifiers during compilation. The library stands alone, with **No external dependencies**.
 
 It is a fork of the original [mpaland/printf](https://github.com/mpaland/printf) repository by [Marco Paland](https://github.com/mpaland), with multiple bug fixes and a few more features.
 
-## Highlights, design goals and the fork
+## Thinking of forking this repository? Read this first!
+
+If you've decided you want to work on your own version of this repository - please don't just fork it! 
+
+* If you just want a stable codebase - use one of the [versioned releases](https://github.com/eyalroz/printf/releases).
+* If you want to contribute by adding a feature or supporting a new platform - see [contributing](#contributing) below.
+* If you want to make customizations/changes which are only relevant for your own project - please **rename** your fork (e.g. `myproj-printf` or `printf-for-mypurpose`).
+
+Why? Because we already have a mess of 381 forks (!) as of January 2023. Don't make it any worse please.
+
+## Highlights, design goals and the `mpaland`->`eyalroz` fork
 
 If you use a typical libc's `sprintf()` implementation (or similar function), you are likely to pull in a *lot* of unwanted library definitions and can bloat code size - typically by as much as 20 KiB. Now, there is a boatload of so called 'tiny' `printf()`-family implementations around. So why this one? Or rather, why [mpaland/printf](https://github.com/mpaland/printf), and then why this fork? 
 
@@ -36,7 +45,7 @@ Marco therefore decided to write his own implementation, with the following goal
 
 Marco's repository upheld most of these goals - but did not quite make it all of the way. As of mid-2021, it still had many C-standard-non-compliance bugs; the test suite was quite lacking in coverage; some goals were simply discarded (like avoiding global/local-static constants) etc. The repository had become quite popular, but unfortunately, Marco had been otherwise preoccupied; he had not really touched the code in the two years prior; many bug reports were pending, and so were many pull requests from eary adopters who had fixed some of the bugs they had encountered.
 
-The author of this fork was one of the latercomer bug-reporters-and-PR-authors; and when noticing nothing was moving forward, decided to take up the same goals (sans the discarded ones); and integrate the existing forks and available PRs into a single "consensus fork" which would continue where Marco had left off. Along the way, numerous other issues were observed; the build system was improved; the test suite streamlined and expanded; and other contributors also lent a hand (especially [@mickjc750](https://github.com/mickjc750/)). We are now very close to fully realizing the project goals.
+The author of this fork was one of the lateromer bug-reporters-and-PR-authors; and when noticing nothing was moving forward, decided to take up the same goals (sans the discarded ones); and integrate the existing forks and available PRs into a single "consensus fork" which would continue where Marco had left off. Along the way, numerous other issues were observed; the build system was improved; the test suite streamlined and expanded; and other contributors also lent a hand (especially [@mickjc750](https://github.com/mickjc750/)). We are now very close to fully realizing the project goals.
 
 ## Using the `printf` library in your project
 
@@ -58,6 +67,7 @@ The author of this fork was one of the latercomer bug-reporters-and-PR-authors; 
    )
    FetchContent_MakeAvailable(printf_library)
    ```
+
 **Use not involving CMake:**
 
 4. Copy `printf.c` and `printf.h` into your own project, and compile the source however you see fit. Remember that the library requires compilation with the C99 language standard enabled.
@@ -72,23 +82,23 @@ Whichever way you choose to use the library:
 
 Finally, if you've started using the library in a publicly-available (FOSS or commercial) project, please consider emailing [@eyalroz](https://github.com/eyalroz), or open an [issue](https://github.com/eyalroz/printf/issues/), to announce this.
 
-
 ### CMake options and preprocessor definitions
 
 Options used both in CMake and in the library source code via a preprocessor define:
 
 | Option name                            | Default | Description  |
 |----------------------------------------|---------|--------------|
-| PRINTF_ALIAS_STANDARD_FUNCTION_NAMES   | NO      |  Alias the standard library function names (`printf()`, `sprintf()` etc.) to the library's functions.<br>**Note:** If you build the library with this option turned on, you must also have written<br>`#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES 1`<br>before including the `printf.h` header. |
+| PRINTF_ALIAS_STANDARD_FUNCTION_NAMES   | NONE    |  Alias the standard library function names (`printf()`, `sprintf()` etc.) to the library's functions.<br>The possible values are `NONE`, `SOFT` and `HARD`. With Soft aliasing, the library's object files contain symbols which do not clash with the standard library's: `printf_`, `sprintd_` etc; and a macro in `printf.h` replaces usages of `printf()`, `sprintf()` etc. with the underscored versions. With Hard aliasing, no such macro is used, and the library's object files contain `printf`, `sprintf` etc. - and thus cannot be linked together with a full-fledged standard library.  **Note:** The preprocessort definitions `#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_SOFT` and `#define PRINTF_ALIAS_STANDARD_FUNCTION_NAMES_HARD` should be defined to have the same values when using the library as when having compiled the list. |
 | PRINTF_INTEGER_BUFFER_SIZE             | 32      |  ntoa (integer) conversion buffer size. This must be big enough to hold one converted numeric number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
 | PRINTF_DECIMAL_BUFFER_SIZE             | 32      |  ftoa (float) conversion buffer size. This must be big enough to hold one converted float number _including_ leading zeros, normally 32 is a sufficient value. Created on the stack. |
-| PRINTF_DEFAULT_FLOAT_PRECISION         | 6       |  Define the default floating point precision|
+| PRINTF_DEFAULT_FLOAT_PRECISION         | 6       |  Define the default floating point precision digits |
 | PRINTF_MAX_INTEGRAL_DIGITS_FOR_DECIMAL | 9       |  Maximum number of integral-part digits of a floating-point value for which printing with %f uses decimal (non-exponential) notation |
 | PRINTF_SUPPORT_DECIMAL_SPECIFIERS      | YES     |  Support decimal notation floating-point conversion specifiers (%f, %F) |
 | PRINTF_SUPPORT_EXPONENTIAL_SPECIFIERS  | YES     |  Support exponential floating point format conversion specifiers (%e, %E, %g, %G) |
 | SUPPORT_MSVC_STYLE_INTEGER_SPECIFIERS  | YES     |  Support the 'I' + bit size integer specifiers (%I8, %I16, %I32, %I64) as in Microsoft Visual C++ |
 | PRINTF_SUPPORT_WRITEBACK_SPECIFIER     | YES     |  Support the length write-back specifier (%n) |
 | PRINTF_SUPPORT_LONG_LONG               | YES     |  Support long long integral types (allows for the ll length modifier and affects %p) |
+| PRINTF_USE_DOUBLE_INTERNALLY           | YES     |  Use the `double` for internal floating-point calculations (rather than using the single-precision `float` type |
 
 Within CMake, these options lack the `PRINTF_` prefix.
 
@@ -106,6 +116,18 @@ Source-only options:
 
 Note: The preprocessor definitions are taken into account when compiling `printf.c`, _not_ when using the compiled library by including `printf.h`.
 
+
+### Reducing compiled code size
+
+The library's accompanying `CMakeLists.txt` does not set any special optimization flags. If you'd like to benefit from `libprintf` actually being small - you would need to your `CFLAGS` and `LDFLAGS` environment variables appropriately. For example, with GCC, consider:
+
+* Compiling with `-Os` to make the compiler directly optimize for size.
+* Compiling with `-ffunction-sections -fdata-sections` and linking with `-WL,--gc-sections`, so that each function and piece of data gets a distinct sections, and discarded if it isn't used.
+
+You would also be advised to turn off all CMake options for printf functionality you don't actually need (listed in the [previous subsection](#cmake-options-and-preprocessor-definitions) above); and to consider [stripping](https://unix.stackexchange.com/q/2969/34868) the resulting executable.
+
+
+
 ## Library API
 
 ### Implemented functions
@@ -119,9 +141,9 @@ int snprintf_(char* s, size_t n, const char* format, ...);
 int vsnprintf_(char* s, size_t n, const char* format, va_list arg);
 int vprintf_(const char* format, va_list arg);
 ```
-Note that `printf()` and `vprintf()`  don't actually write anything on their own: In addition to their parameters, you must provide them with a lower-level `putchar_()` function which they can call for actual printing. This is part of this library's independence: It is isolated from dealing with console/serial output, files etc.
+Note that `printf_()` and `vprintf_()`  don't actually write anything on their own: In addition to their parameters, they will be expecting to find a lower-level `putchar_()` function which they can call for actual printing - and you must provide its implementation, for them to link with. This is part of this library's independence: It is isolated from dealing with console/serial output, files etc.
 
-Two additional functions are provided beyond those available in the standard library:
+Two additional functions are provided by the library beyond those available in the standard library:
 ```
 int fctprintf(void (*out)(char c, void* extra_arg), void* extra_arg, const char* format, ...);
 int vfctprintf(void (*out)(char c, void* extra_arg), void* extra_arg, const char* format, va_list arg);
@@ -235,7 +257,7 @@ Notes:
 
 * The `L` modifier, for `long double`, is not currently supported.
 * A `"%zd"` or `"%zi"` takes a signed integer of the same size as `size_t`. 
-* The implementation currently assumes each of `intmax_t`, signed `size_t`, and `ptrdiff_t` has the same size as `long int` or as `long long int`. If this is not the case for your platform, please open an issue.
+* The implementation currently assumes `intmax_t` has the same size as either `long int` or `long long int`. If this is not the case for your platform, please open an issue.
 * The `Ixx` length modifiers are not in the C (nor C++) standard, but are somewhat popular, as it makes it easier to handle integer types of specific size. One must specify the argument size in bits immediately after the `I`. The printing is "integer-promotion-safe", i.e. the fact that an `int8_t` may actually be passed in promoted into a larger `int` will not prevent it from being printed using its original value.
 
 ### Return Value
