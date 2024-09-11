@@ -2,6 +2,7 @@
 
 #include "stm32f4xx_hal.h"
 #include <string.h>
+#include <cmsis_os.h>
 
 static u8g2_display_handle_t display_handle = {0};
 
@@ -57,11 +58,11 @@ uint8_t u8g2_stm32_gpio_and_delay_cb(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int,
          * pin init for DC, RESET, CS.
          * These are all initialized elsewhere.
          */
-        HAL_Delay(1);
+        osDelay(1);
         break;
     case U8X8_MSG_DELAY_MILLI:
         /* Delay for the number of milliseconds passed in through arg_int */
-        HAL_Delay(arg_int);
+        osDelay(arg_int);
         break;
     case U8X8_MSG_GPIO_CS:
         HAL_GPIO_WritePin(display_handle.cs_gpio_port, display_handle.cs_gpio_pin, arg_int ? GPIO_PIN_SET : GPIO_PIN_RESET);
