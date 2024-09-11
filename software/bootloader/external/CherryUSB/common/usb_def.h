@@ -614,7 +614,7 @@ struct usb_webusb_url_descriptor {
     char URL[];
 } __PACKED;
 
-struct usb_webusb_url_ex_descriptor {
+struct usb_webusb_descriptor {
     uint8_t vendor_code;
     const uint8_t *string;
     uint32_t string_len;
@@ -673,7 +673,7 @@ struct usb_desc_header {
     bDeviceProtocol,            /* bDeviceProtocol */                                                      \
     0x40,                       /* bMaxPacketSize */                                                       \
     bNumConfigurations,         /* bNumConfigurations */                                                   \
-    0x00                        /* bReserved */ 
+    0x00                        /* bReserved */
 
 #define USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(wTotalLength, bNumInterfaces, bConfigurationValue, bmAttributes, bMaxPower) \
     0x09,                              /* bLength */                                                       \
