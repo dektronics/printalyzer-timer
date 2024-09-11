@@ -800,6 +800,7 @@ void u8x8_SetupStdio(u8x8_t *u8x8);
 /* u8x8_d_sdl_128x64.c */
 void u8x8_Setup_SDL_128x64(u8x8_t *u8x8);
 void u8x8_Setup_SDL_240x160(u8x8_t *u8x8);
+void u8x8_Setup_SDL_256x128(u8x8_t *u8x8);
 int u8g_sdl_get_key(void);
 
 /*==========================================*/
@@ -835,11 +836,13 @@ uint8_t u8x8_d_null_cb(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr
 uint8_t u8x8_d_ssd1322_nhd_256x64(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 
+
 /*==========================================*/
 /* u8x8_8x8.c */
 
 uint16_t u8x8_upscale_byte(uint8_t x) U8X8_NOINLINE;
 
+void u8x8_get_glyph_data(u8x8_t *u8x8, uint8_t encoding, uint8_t *buf, uint8_t tile_offset) U8X8_NOINLINE;
 
 void u8x8_utf8_init(u8x8_t *u8x8);
 uint16_t u8x8_ascii_next(u8x8_t *u8x8, uint8_t b);
@@ -864,6 +867,7 @@ uint8_t u8x8_GetUTF8Len(u8x8_t *u8x8, const char *s);
 /*==========================================*/
 /* itoa procedures */
 const char *u8x8_u8toa(uint8_t v, uint8_t d);
+const char *u8x8_s8toa(int8_t v, uint8_t d);
 const char *u8x8_u16toa(uint16_t v, uint8_t d);
 const char *u8x8_utoa(uint16_t v);
 

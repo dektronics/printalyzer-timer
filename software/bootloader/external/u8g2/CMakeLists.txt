@@ -35,6 +35,7 @@ add_library(u8g2
     src/u8g2_ll_hvline.c
     src/u8g2_message.c
     src/u8g2_polygon.c
+    src/u8g2_arc.c
     src/u8g2_selection_list.c
     src/u8g2_setup.c
     src/u8log.c

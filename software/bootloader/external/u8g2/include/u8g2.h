@@ -519,6 +519,9 @@ uint8_t *u8g2_m_6_8_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_2_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_15_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_15_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_15_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_4_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_4_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_12_4_f(uint8_t *page_cnt);
@@ -549,6 +552,9 @@ uint8_t *u8g2_m_50_30_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_18_21_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_9_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_9_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_20_9_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_11_6_f(uint8_t *page_cnt);
@@ -567,6 +573,9 @@ uint8_t *u8g2_m_30_15_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_16_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_16_f(uint8_t *page_cnt);
@@ -579,9 +588,6 @@ uint8_t *u8g2_m_20_13_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_30_20_f(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_1(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_2(uint8_t *page_cnt);
-uint8_t *u8g2_m_32_16_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_40_30_f(uint8_t *page_cnt);
@@ -594,12 +600,18 @@ uint8_t *u8g2_m_17_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_17_8_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_17_8_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_17_8_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_9_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_9_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_17_9_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_17_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_20_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_20_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_20_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_42_20_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_42_20_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_42_20_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_12_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_12_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_12_f(uint8_t *page_cnt);
@@ -642,12 +654,18 @@ uint8_t *u8g2_m_4_1_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_1_1_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_4_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_4_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_13_4_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_2_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_2_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_20_2_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_7_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_7_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_32_7_f(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_6_1(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_6_2(uint8_t *page_cnt);
+uint8_t *u8g2_m_32_6_f(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_1(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_2(uint8_t *page_cnt);
 uint8_t *u8g2_m_48_30_f(uint8_t *page_cnt);
@@ -757,6 +775,12 @@ void u8g2_DrawDisc(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad
 void u8g2_DrawEllipse(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t option);
 void u8g2_DrawFilledEllipse(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rx, u8g2_uint_t ry, uint8_t option);
 
+
+/*==========================================*/
+/* u8g2_arc.c */
+void u8g2_DrawArc(u8g2_t *u8g2, u8g2_uint_t x0, u8g2_uint_t y0, u8g2_uint_t rad, uint8_t start, uint8_t end);
+
+
 /*==========================================*/
 /* u8g2_line.c */
 void u8g2_DrawLine(u8g2_t *u8g2, u8g2_uint_t x1, u8g2_uint_t y1, u8g2_uint_t x2, u8g2_uint_t y2);
@@ -834,9 +858,12 @@ void u8g2_SetFontMode(u8g2_t *u8g2, uint8_t is_transparent);
 
 uint8_t u8g2_IsGlyph(u8g2_t *u8g2, uint16_t requested_encoding);
 int8_t u8g2_GetGlyphWidth(u8g2_t *u8g2, uint16_t requested_encoding);
+
 u8g2_uint_t u8g2_DrawGlyph(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding);
 u8g2_uint_t u8g2_DrawGlyphX2(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint16_t encoding);
-int8_t u8g2_GetStrX(u8g2_t *u8g2, const char *s);	/* for u8g compatibility */
+int8_t u8g2_GetStrX(u8g2_t *u8g2, const char *s);	/* for u8g compatibility, WARNING: use u8g2_GetGlyphXOffset() instead! */
+int8_t u8g2_GetXOffsetGlyph(u8g2_t *u8g2, uint16_t encoding);
+int8_t u8g2_GetXOffsetUTF8(u8g2_t *u8g2, const char *utf8);
 
 void u8g2_SetFontDirection(u8g2_t *u8g2, uint8_t dir);
 u8g2_uint_t u8g2_DrawStr(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, const char *str);
@@ -895,6 +922,7 @@ uint8_t u8g2_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const char
 void u8g2_SetupBuffer_SDL_128x64(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 void u8g2_SetupBuffer_SDL_128x64_4(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 void u8g2_SetupBuffer_SDL_128x64_1(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
+void u8g2_SetupBuffer_SDL_256x128(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /*==========================================*/
 /* u8x8_d_tga.c */
@@ -908,6 +936,7 @@ void u8g2_SetupBitmap(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, uint16_t pixel_wid
 /*==========================================*/
 /* u8x8_d_framebuffer.c */
 void u8g2_SetupLinuxFb(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb, const char *fb_device);
+
 
 /*==========================================*/
 /* u8x8_d_utf8.c */
@@ -927,6 +956,7 @@ void u8g2_SetupBuffer_Utf8(u8g2_t *u8g2, const u8g2_cb_t *u8g2_cb);
 
 /* start font list */
 extern const uint8_t u8g2_font_pressstart2p_8f[] U8G2_FONT_SECTION("u8g2_font_pressstart2p_8f");
+
 /* end font list */
 
 /*==========================================*/
