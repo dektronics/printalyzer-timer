@@ -84,7 +84,8 @@ void bootloader_task_run(void *argument)
             prompt_visible = false;
             if (process_firmware_update()) {
                 osDelay(1000);
-                display_static_message("Restarting...\r\n");
+                BL_PRINTF("Restarting...\r\n");
+                display_graphic_restart();
                 osDelay(100);
 
                 /* De-initialize the USB and FatFs components */
@@ -97,23 +98,22 @@ void bootloader_task_run(void *argument)
                 bootloader_start_application();
             } else {
                 osDelay(1000);
-                display_static_message("Firmware update failed");
+                BL_PRINTF("Firmware update failed\r\n");
+                display_graphic_failure();
                 while(1);
             }
         } else {
             if (prompt_visible) {
                 if (keypad_poll() == KEYPAD_CANCEL) {
                     /* Start the application firmware */
-                    display_static_message("Restarting...\r\n");
+                    BL_PRINTF("Restarting...\r\n");
+                    display_graphic_restart();
                     osDelay(1000);
                     display_clear();
                     bootloader_start_application();
                 }
             } else {
-                display_static_message(
-                    "Insert a USB storage device to\n"
-                    "install updated Printalyzer\n"
-                    "firmware.");
+                display_graphic_insert_thumbdrive();
                 prompt_visible = true;
             }
         }
@@ -122,7 +122,7 @@ void bootloader_task_run(void *argument)
 
 bool process_firmware_update()
 {
-    display_static_message("Checking for firmware...");
+    display_graphic_checking_thumbdrive();
 
     FRESULT res;
     FIL fp;
@@ -144,11 +144,7 @@ bool process_firmware_update()
         /* Check for flash write protection */
         if (bootloader_get_protection_status() & BL_PROTECTION_WRP) {
             BL_PRINTF("Flash write protection enabled\r\n");
-            display_static_message(
-                "Flash is write protected,\n"
-                "cannot update firmware.\n"
-                "Press Start button to disable\n"
-                "write protection and restart.");
+            display_graphic_unlock_prompt();
 
             key_count = 0;
             for (int i = 0; i < 200; i++) {
@@ -159,13 +155,11 @@ bool process_firmware_update()
                     key_count = 0;
                 }
                 if (key_count > 2) {
-                    display_static_message(
-                        "Disabling write protection\n"
-                        "and restarting...");
+                    BL_PRINTF("Disabling write protection and restarting...\r\n");
+                    display_graphic_restart();
                     if (bootloader_config_protection(BL_PROTECTION_NONE) != BL_OK) {
-                        display_static_message(
-                            "Unable to disable\n"
-                            "write protection!");
+                        BL_PRINTF("Unable to disable write protection!\r\n");
+                        display_graphic_failure();
                     }
                     while(1) { }
                 }
@@ -239,27 +233,12 @@ bool process_firmware_update()
         }
         BL_PRINTF("Firmware checksum is okay.\r\n");
 
-        if (image_descriptor.magic_word == APP_DESCRIPTOR_MAGIC_WORD) {
-            char msg_buf[256];
-            BL_SPRINTF(msg_buf,
-                "Firmware found:\n"
-                "\n"
-                "%s\n"
-                "%s (%s)\n"
-                "\n"
-                "Press Start button to proceed\n"
-                "with the update.",
-                image_descriptor.project_name,
-                image_descriptor.version,
-                image_descriptor.build_describe);
-            display_static_message(msg_buf);
-        } else {
-            display_static_message(
-                "Firmware found.\n"
-                "\n"
-                "Press Start button to proceed\n"
-                "with the update.");
+        if (image_descriptor.magic_word != APP_DESCRIPTOR_MAGIC_WORD) {
+            BL_PRINTF("Bad magic\r\n");
+            break;
         }
+
+        display_graphic_update_prompt();
 
         key_count = 0;
         do {
@@ -270,7 +249,7 @@ bool process_firmware_update()
                 key_count = 0;
             }
             if (key_count > 2) {
-                display_static_message("Starting firmware update...");
+                display_graphic_update_progress();
                 osDelay(1000);
                 break;
             }
@@ -285,16 +264,19 @@ bool process_firmware_update()
         bootloader_init();
 
         /* Erase existing flash contents */
-        display_static_message("Erasing flash...");
+        BL_PRINTF("Erasing flash...\r\n");
+        display_graphic_update_progress_increment(5);
+
         if (bootloader_erase() != BL_OK) {
             BL_PRINTF("Error erasing flash\r\n");
-            display_static_message("Unable to erase flash!");
+            display_graphic_update_progress_failure();
             break;
         }
         BL_PRINTF("Flash erased\r\n");
 
         /* Start programming */
-        display_static_message("Programming firmware...");
+        BL_PRINTF("Programming firmware...\r\n");
+        display_graphic_update_progress_increment(10);
         counter = 0;
         bootloader_flash_begin();
         do {
@@ -309,21 +291,29 @@ bool process_firmware_update()
                     break;
                 }
             }
+            if ((counter % 1024) == 0) {
+                uint8_t value = 10 + ((150 * counter) / APP_SIZE);
+                if (value < 10) { value = 10; }
+                else if (value > 160) { value = 160; }
+                display_graphic_update_progress_increment(value);
+            }
         } while (res == FR_OK && bytes_read > 0);
 
         bootloader_flash_end();
 
         if (status != BL_OK || res != FR_OK) {
-            display_static_message("Programming error!");
+            BL_PRINTF("Programming error!\r\n");
+            display_graphic_update_progress_failure();
             break;
         }
 
-        BL_PRINTF("Firmware programmed\r\n");
+        //BL_PRINTF("Firmware programmed\r\n");
+        display_graphic_update_progress_increment(150);
 
         f_rewind(&fp);
 
         /* Verify flash content */
-        display_static_message("Verifying firmware...");
+        BL_PRINTF("Verifying firmware...\r\n");
 
         flash_ptr = (uint32_t*)APP_ADDRESS;
         counter = 0;
@@ -342,27 +332,34 @@ bool process_firmware_update()
                 status = BL_CHKS_ERROR;
                 break;
             }
+            if ((counter % 1024) == 0) {
+                uint8_t value = 160 + ((50 * counter) / APP_SIZE);
+                if (value < 160) { value = 160; }
+                else if (value > 210) { value = 210; }
+                display_graphic_update_progress_increment(value);
+            }
         } while (res == FR_OK && bytes_read > 0);
 
         if (status != BL_OK || res != FR_OK) {
-            display_static_message("Verification error!");
+            BL_PRINTF("Verification error!\r\n");
+            display_graphic_update_progress_failure();
             break;
         }
         BL_PRINTF("Firmware verified\r\n");
 
-        display_static_message("Verification complete");
+        BL_PRINTF("Verification complete\r\n");
+        display_graphic_update_progress_increment(210);
+        display_graphic_update_progress_success();
         osDelay(1000);
 
 #if(USE_WRITE_PROTECTION)
         /* Enable flash write protection */
-        display_static_message(
-            "Enabling write protection\n"
-            "and restarting...");
-        delay_with_usb(1000);
+        BL_PRINTF("Enabling write protection and restarting...\r\n");
+        display_graphic_restart();
+        osDelay(1000);
         if (bootloader_config_protection(BL_PROTECTION_WRP) != BL_OK) {
-            display_static_message(
-                "Unable to enable\n"
-                "write protection!");
+            BL_PRINTF("Unable to enable write protection!\r\n");
+            display_graphic_failure();
             while(1) { }
         }
 #endif

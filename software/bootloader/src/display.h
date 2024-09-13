@@ -12,6 +12,15 @@ void display_clear();
 void display_enable(bool enabled);
 void display_draw_test_pattern();
 
-void display_static_message(const char *message);
+void display_graphic_insert_thumbdrive();
+void display_graphic_checking_thumbdrive();
+void display_graphic_update_prompt();
+void display_graphic_unlock_prompt();
+void display_graphic_update_progress();
+void display_graphic_update_progress_increment(uint8_t value);
+void display_graphic_update_progress_success();
+void display_graphic_update_progress_failure();
+void display_graphic_restart();
+void display_graphic_failure();
 
 #endif /* DISPLAY_H */
