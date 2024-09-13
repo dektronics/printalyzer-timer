@@ -14,11 +14,11 @@
 #define CONFIG_USB_PRINTF(...) BL_PRINTF(__VA_ARGS__)
 
 #ifndef CONFIG_USB_DBG_LEVEL
-#define CONFIG_USB_DBG_LEVEL USB_DBG_INFO
+#define CONFIG_USB_DBG_LEVEL USB_DBG_WARNING
 #endif
 
 /* Enable print with color */
-#define CONFIG_USB_PRINTF_COLOR_ENABLE
+/* #define CONFIG_USB_PRINTF_COLOR_ENABLE */
 
 /* data align size when use dma */
 #ifndef CONFIG_USB_ALIGN_SIZE
@@ -106,7 +106,7 @@
 
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          1
-#define CONFIG_USBHOST_MAX_EHPORTS          4
+#define CONFIG_USBHOST_MAX_EHPORTS          2
 #define CONFIG_USBHOST_MAX_INTERFACES       8
 #define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 8
 #define CONFIG_USBHOST_MAX_ENDPOINTS        4

@@ -128,7 +128,7 @@ target_include_directories(cherryusb PRIVATE
     ${PROJECT_INCLUDE_DIRECTORIES}
     ${EXTERNAL_DIR}/printf/src/printf
 )
-target_link_libraries(cherryusb PRIVATE freertos)
+target_link_libraries(cherryusb PRIVATE freertos printf)
 set(CHERRYUSB_LDFLAGS
     -Wl,--undefined=msc_class_info
     -Wl,--undefined=hub_class_info

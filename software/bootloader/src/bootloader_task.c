@@ -18,7 +18,7 @@
 #include "board_config.h"
 #include "app_descriptor.h"
 
-#define FW_FILENAME "printalyzer-fw.bin"
+#define FW_FILENAME "DPD500FW.BIN"
 
 extern SPI_HandleTypeDef hspi1;
 extern CRC_HandleTypeDef hcrc;
