@@ -19,7 +19,6 @@
 #include "stm32f4xx_hal.h"
 #include "board_config.h"
 
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 
 /**
  * Initializes the Global MSP.
@@ -200,30 +199,6 @@ void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
         GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
         GPIO_InitStruct.Alternate = GPIO_AF5_SPI1;
         HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    } else if (hspi->Instance == SPI3) {
-        /* Peripheral clock enable */
-        __HAL_RCC_SPI3_CLK_ENABLE();
-        __HAL_RCC_GPIOC_CLK_ENABLE();
-
-        /*
-         * SPI3 GPIO Configuration
-         * PC1     ------> SPI3_MOSI
-         * PC10     ------> SPI3_SCK
-         */
-        GPIO_InitStruct.Pin = LED_SDI_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF5_SPI3;
-        HAL_GPIO_Init(LED_SDI_GPIO_Port, &GPIO_InitStruct);
-
-        GPIO_InitStruct.Pin = LED_CLK_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF6_SPI3;
-        HAL_GPIO_Init(LED_CLK_GPIO_Port, &GPIO_InitStruct);
     }
 }
 
@@ -244,150 +219,6 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
          * PA7     ------> SPI1_MOSI
          */
         HAL_GPIO_DeInit(GPIOA, DISP_SCK_Pin|DISP_MOSI_Pin);
-
-    } else if (hspi->Instance == SPI3) {
-        /* Peripheral clock disable */
-        __HAL_RCC_SPI3_CLK_DISABLE();
-
-        /*
-         * SPI3 GPIO Configuration
-         * PC1     ------> SPI3_MOSI
-         * PC10     ------> SPI3_SCK
-         */
-        HAL_GPIO_DeInit(GPIOC, LED_SDI_Pin|LED_CLK_Pin);
-    }
-}
-
-/**
- * TIM_Encoder MSP Initialization
- * @param htim_encoder: TIM_Encoder handle pointer
- * @retval None
- */
-void HAL_TIM_Encoder_MspInit(TIM_HandleTypeDef* htim_encoder)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    if (htim_encoder->Instance == TIM1) {
-        /* Peripheral clock enable */
-        __HAL_RCC_TIM1_CLK_ENABLE();
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-
-        /*
-         * TIM1 GPIO Configuration
-         * PA8     ------> TIM1_CH1
-         * PA9     ------> TIM1_CH2
-         */
-        GPIO_InitStruct.Pin = ENC_CH1_Pin|ENC_CH2_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF1_TIM1;
-        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-        /* TIM1 interrupt Init */
-        HAL_NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 5, 0);
-        HAL_NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
-        HAL_NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 15, 0);
-        HAL_NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
-        HAL_NVIC_SetPriority(TIM1_CC_IRQn, 5, 0);
-        HAL_NVIC_EnableIRQ(TIM1_CC_IRQn);
-    }
-}
-
-/**
- * TIM_PWM MSP Initialization
- * @param htim_pwm: TIM_PWM handle pointer
- * @retval None
- */
-void HAL_TIM_PWM_MspInit(TIM_HandleTypeDef* htim_pwm)
-{
-    if (htim_pwm->Instance == TIM3) {
-        /* Peripheral clock enable */
-        __HAL_RCC_TIM3_CLK_ENABLE();
-
-    } else if (htim_pwm->Instance == TIM9) {
-        /* Peripheral clock enable */
-        __HAL_RCC_TIM9_CLK_ENABLE();
-    }
-}
-
-void HAL_TIM_MspPostInit(TIM_HandleTypeDef* htim)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    if (htim->Instance == TIM3) {
-        __HAL_RCC_GPIOB_CLK_ENABLE();
-
-        /*
-         * TIM3 GPIO Configuration
-         * PB0     ------> TIM3_CH3
-         */
-        GPIO_InitStruct.Pin = LED_OE_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-        HAL_GPIO_Init(LED_OE_GPIO_Port, &GPIO_InitStruct);
-
-    } else if (htim->Instance == TIM9) {
-        __HAL_RCC_GPIOA_CLK_ENABLE();
-
-        /*
-         * TIM9 GPIO Configuration
-         * PA2     ------> TIM9_CH1
-         */
-        GPIO_InitStruct.Pin = BUZZ_DIN_Pin;
-        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-        GPIO_InitStruct.Pull = GPIO_NOPULL;
-        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-        GPIO_InitStruct.Alternate = GPIO_AF3_TIM9;
-        HAL_GPIO_Init(BUZZ_DIN_GPIO_Port, &GPIO_InitStruct);
-    }
-}
-
-/**
- * TIM_Encoder MSP De-Initialization
- * @param htim_encoder: TIM_Encoder handle pointer
- * @retval None
- */
-void HAL_TIM_Encoder_MspDeInit(TIM_HandleTypeDef* htim_encoder)
-{
-    if (htim_encoder->Instance == TIM1) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM1_CLK_DISABLE();
-
-        /*
-         * TIM1 GPIO Configuration
-         * PA8     ------> TIM1_CH1
-         * PA9     ------> TIM1_CH2
-         */
-        HAL_GPIO_DeInit(GPIOA, ENC_CH1_Pin|ENC_CH2_Pin);
-
-        /* TIM1 interrupt DeInit */
-
-        /**
-        * Uncomment the line below to disable the "TIM1_UP_TIM10_IRQn" interrupt
-        * Be aware, disabling shared interrupt may affect other IPs
-        */
-        HAL_NVIC_DisableIRQ(TIM1_UP_TIM10_IRQn);
-        HAL_NVIC_DisableIRQ(TIM1_TRG_COM_TIM11_IRQn);
-        HAL_NVIC_DisableIRQ(TIM1_CC_IRQn);
-    }
-}
-
-/**
- * TIM_PWM MSP De-Initialization
- * @param htim_pwm: TIM_PWM handle pointer
- * @retval None
- */
-void HAL_TIM_PWM_MspDeInit(TIM_HandleTypeDef* htim_pwm)
-{
-    if (htim_pwm->Instance == TIM3) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM3_CLK_DISABLE();
-
-    } else if (htim_pwm->Instance == TIM9) {
-        /* Peripheral clock disable */
-        __HAL_RCC_TIM9_CLK_DISABLE();
     }
 }
 

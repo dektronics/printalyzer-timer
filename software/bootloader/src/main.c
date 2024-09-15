@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <ff.h>
 
 #include <cmsis_os.h>
 
@@ -12,10 +11,8 @@
 #include "board_config.h"
 #include "usb_host.h"
 #include "keypad.h"
-#include "display.h"
 #include "bootloader.h"
 #include "bootloader_task.h"
-#include "app_descriptor.h"
 
 /* Uncomment for testing */
 /* #define FORCE_BOOTLOADER */
@@ -26,11 +23,6 @@ I2C_HandleTypeDef hi2c1;
 SMBUS_HandleTypeDef hsmbus2;
 
 SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
-
-TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim3;
-TIM_HandleTypeDef htim9;
 
 CRC_HandleTypeDef hcrc;
 
@@ -46,12 +38,7 @@ static void i2c1_init(void);
 static void i2c2_smbus_init(void);
 static void i2c_deinit(void);
 static void spi1_init(void);
-static void spi3_init(void);
 static void spi_deinit(void);
-static void tim1_init(void);
-static void tim3_init(void);
-static void tim9_init(void);
-static void tim_deinit(void);
 static void crc_init(void);
 static void crc_deinit(void);
 
@@ -184,63 +171,62 @@ void gpio_init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, LED_LE_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, LED_RESET_Pin | DISP_RESET_Pin | KEY_RESET_Pin | RELAY_SFLT_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOA, DISP_CS_Pin | DISP_DC_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOB, USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
-
-    /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(DMX512_RX_EN_GPIO_Port, DMX512_RX_EN_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, USB_HUB_RESET_Pin | USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(RELAY_ENLG_GPIO_Port, RELAY_ENLG_Pin, GPIO_PIN_RESET);
 
-    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC3 PC6 PC7 */
-    GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-                          |GPIO_PIN_3|GPIO_PIN_6|GPIO_PIN_7;
+    /* Configure unused GPIO pins: PC13 PC14 PC15 PC0 PC1 PC3 PC6 PC7 PC8 PC10 */
+    GPIO_InitStruct.Pin = GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0
+                          | GPIO_PIN_1 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7
+                          | GPIO_PIN_8 | GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: LED_LE_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
-    GPIO_InitStruct.Pin = LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin;
+    /* Configure GPIO pins: LED_RESET_Pin DISP_RESET_Pin RELAY_SFLT_Pin */
+    GPIO_InitStruct.Pin = LED_RESET_Pin | DISP_RESET_Pin | RELAY_SFLT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: KEY_RESET_Pin */
+    /* Configure unused GPIO pins: PA0 PA1 PA2 PA3 PA8 PA9 PA11 PA12 */
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3
+                          | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_11 | GPIO_PIN_12;
+    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* Configure GPIO pins: DISP_CS_Pin DISP_DC_Pin */
+    GPIO_InitStruct.Pin = DISP_CS_Pin | DISP_DC_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    /* Configure GPIO pin: KEY_RESET_Pin */
     GPIO_InitStruct.Pin = KEY_RESET_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+    HAL_GPIO_Init(KEY_RESET_GPIO_Port, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: BUZZ_EN1_Pin BUZZ_EN2_Pin DISP_CS_Pin DISP_DC_Pin DMX512_RX_EN_Pin */
-    GPIO_InitStruct.Pin = BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin
-                          |DMX512_RX_EN_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* Configure GPIO pins: PA3 PA12 */
-    GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* Configure GPIO pins: PB1 PB2 PB4 PB9 */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9;
+    /* Configure unused GPIO pins: PB0 PB1 PB2 PB4 PB9 */
+    GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_4
+                          | GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
     /* Configure GPIO pins: USB_HUB_RESET_Pin USB_DRIVE_VBUS_Pin */
-    GPIO_InitStruct.Pin = USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin;
+    GPIO_InitStruct.Pin = USB_HUB_RESET_Pin | USB_DRIVE_VBUS_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -269,7 +255,7 @@ void gpio_init(void)
 
     /* Not currently enabling any GPIO interrupts in the bootloader */
     /* EXTI interrupt init*/
-    /* HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0); */
+    /* HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0); */
     /* HAL_NVIC_EnableIRQ(EXTI9_5_IRQn); */
 }
 
@@ -283,12 +269,15 @@ void gpio_deinit(void)
     HAL_GPIO_DeInit(KEY_INT_GPIO_Port, KEY_INT_Pin);
     HAL_GPIO_DeInit(RELAY_ENLG_GPIO_Port, RELAY_ENLG_Pin);
     HAL_GPIO_DeInit(USB_HUB_CLK_GPIO_Port, USB_HUB_CLK_Pin);
-    HAL_GPIO_DeInit(GPIOB, USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin);
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9);
-    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_12);
-    HAL_GPIO_DeInit(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin
-                           |DMX512_RX_EN_Pin);
-    HAL_GPIO_DeInit(GPIOC, LED_LE_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
+    HAL_GPIO_DeInit(GPIOB, USB_HUB_RESET_Pin | USB_DRIVE_VBUS_Pin);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_4 | GPIO_PIN_9);
+    HAL_GPIO_DeInit(KEY_RESET_GPIO_Port, KEY_RESET_Pin);
+    HAL_GPIO_DeInit(GPIOA, DISP_CS_Pin | DISP_DC_Pin);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_8 |
+                           GPIO_PIN_9 | GPIO_PIN_11 | GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOC, LED_RESET_Pin | DISP_RESET_Pin | RELAY_SFLT_Pin);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15 | GPIO_PIN_0 |
+                           GPIO_PIN_1 | GPIO_PIN_3 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_10);
 
     /* GPIO Ports Clock Disable */
     __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -365,137 +354,9 @@ void spi1_init(void)
     }
 }
 
-void spi3_init(void)
-{
-    /*
-     * SPI3 is used for the LED driver
-     */
-    hspi3.Instance = SPI3;
-    hspi3.Init.Mode = SPI_MODE_MASTER;
-    hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-    hspi3.Init.NSS = SPI_NSS_SOFT;
-    hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-    hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi3.Init.CRCPolynomial = 10;
-    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
-        Error_Handler();
-    }
-}
-
 void spi_deinit(void)
 {
-    HAL_SPI_DeInit(&hspi3);
     HAL_SPI_DeInit(&hspi1);
-}
-
-void tim1_init(void)
-{
-    /*
-     * TIM1 is used for the rotary encoder
-     */
-    TIM_Encoder_InitTypeDef sConfig = {0};
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-    htim1.Instance = TIM1;
-    htim1.Init.Prescaler = 0;
-    htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim1.Init.Period = 65535;
-    htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim1.Init.RepetitionCounter = 0;
-    htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
-    sConfig.IC1Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC1Filter = 0x0F;
-    sConfig.IC2Polarity = TIM_ICPOLARITY_RISING;
-    sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
-    sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
-    sConfig.IC2Filter = 0x0F;
-    if (HAL_TIM_Encoder_Init(&htim1, &sConfig) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK) {
-        Error_Handler();
-    }
-}
-
-void tim3_init(void)
-{
-    /*
-     * TIM3 is used to control LED brightness
-     */
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef sConfigOC = {0};
-
-    htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 8;
-    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 999;
-    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 500;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK) {
-        Error_Handler();
-    }
-
-    HAL_TIM_MspPostInit(&htim3);
-}
-
-void tim9_init(void)
-{
-    /*
-     * TIM9 is used to control the piezo buzzer frequency
-     */
-    TIM_OC_InitTypeDef sConfigOC = {0};
-
-    htim9.Instance = TIM9;
-    htim9.Init.Prescaler = 119;
-    htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim9.Init.Period = 999;
-    htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_PWM_Init(&htim9) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 500;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim9, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
-        Error_Handler();
-    }
-
-    HAL_TIM_MspPostInit(&htim9);
-}
-
-void tim_deinit(void)
-{
-    HAL_TIM_PWM_DeInit(&htim9);
-    HAL_TIM_PWM_DeInit(&htim3);
-    HAL_TIM_Encoder_DeInit(&htim1);
 }
 
 void crc_init(void)
@@ -559,10 +420,6 @@ int main(void)
     i2c1_init();
     i2c2_smbus_init();
     spi1_init();
-    spi3_init();
-    tim1_init();
-    tim3_init();
-    tim9_init();
     crc_init();
 
     /* Print startup log messages */
@@ -627,14 +484,12 @@ void start_bootloader()
     /* Start the FreeRTOS scheduler */
     osKernelStart();
 
-    while (1) {
-    }
+    while (1) { }
 }
 
 void deinit_peripherals()
 {
     crc_deinit();
-    tim_deinit();
     spi_deinit();
     i2c_deinit();
     gpio_deinit();

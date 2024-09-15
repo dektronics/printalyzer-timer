@@ -36,14 +36,8 @@
 #define DISP_RESET_GPIO_Port     GPIOC
 
 /* Pin mapping for LED driver */
-#define LED_OE_Pin               GPIO_PIN_0
-#define LED_OE_GPIO_Port         GPIOB
-#define LED_CLK_Pin              GPIO_PIN_10
-#define LED_CLK_GPIO_Port        GPIOC
-#define LED_LE_Pin               GPIO_PIN_2
-#define LED_LE_GPIO_Port         GPIOC
-#define LED_SDI_Pin              GPIO_PIN_1
-#define LED_SDI_GPIO_Port        GPIOC
+#define LED_RESET_Pin            GPIO_PIN_2
+#define LED_RESET_GPIO_Port      GPIOC
 
 /* Pin mapping for relay driver */
 #define RELAY_SFLT_Pin           GPIO_PIN_11
