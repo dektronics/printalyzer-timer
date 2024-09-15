@@ -18,6 +18,7 @@ typedef enum {
     ASSET_QUESTION,
     ASSET_RESTART,
     ASSET_PADLOCK,
+    ASSET_BAD_FILE,
     ASSET_MAX
 } asset_name_t;
 

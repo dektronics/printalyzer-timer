@@ -30,8 +30,17 @@ const osThreadAttr_t bootloader_task_attributes = {
     .priority = (osPriority_t)osPriorityNormal,
 };
 
+typedef enum {
+    UPDATE_SUCCESS = 0,
+    UPDATE_FILE_NOT_FOUND,
+    UPDATE_FILE_READ_ERROR,
+    UPDATE_FILE_BAD,
+    UPDATE_FLASH_ERROR,
+    UPDATE_FAILED
+} update_result_t;
+
 static void bootloader_task_run(void *argument);
-static bool process_firmware_update();
+static update_result_t process_firmware_update();
 static void bootloader_start_application();
 extern void deinit_peripherals();
 
@@ -81,8 +90,10 @@ void bootloader_task_run(void *argument)
     while (1) {
         osDelay(10);
         if (usb_msc_is_mounted()) {
+            update_result_t update_result;
             prompt_visible = false;
-            if (process_firmware_update()) {
+            update_result = process_firmware_update();
+            if (update_result == UPDATE_SUCCESS) {
                 osDelay(1000);
                 BL_PRINTF("Restarting...\r\n");
                 display_graphic_restart();
@@ -99,7 +110,23 @@ void bootloader_task_run(void *argument)
             } else {
                 osDelay(1000);
                 BL_PRINTF("Firmware update failed\r\n");
-                display_graphic_failure();
+                switch (update_result) {
+                case UPDATE_FILE_NOT_FOUND:
+                    display_graphic_file_missing();
+                    break;
+                case UPDATE_FILE_READ_ERROR:
+                    display_graphic_file_read_error();
+                    break;
+                case UPDATE_FILE_BAD:
+                    display_graphic_file_bad();
+                    break;
+                case UPDATE_FLASH_ERROR:
+                case UPDATE_FAILED:
+                default:
+                    display_graphic_failure();
+                    break;
+                }
+
                 while(1);
             }
         } else {
@@ -120,7 +147,7 @@ void bootloader_task_run(void *argument)
     }
 }
 
-bool process_firmware_update()
+update_result_t process_firmware_update()
 {
     display_graphic_checking_thumbdrive();
 
@@ -138,7 +165,7 @@ bool process_firmware_update()
     uint32_t counter;
     int key_count = 0;
     bootloader_status_t status = BL_OK;
-    bool success = false;
+    update_result_t result = UPDATE_FAILED;
 
     do {
         /* Check for flash write protection */
@@ -171,6 +198,7 @@ bool process_firmware_update()
         res = f_open(&fp, FW_FILENAME, FA_READ);
         if (res != FR_OK) {
             BL_PRINTF("Unable to open firmware file: %d\r\n", res);
+            result = UPDATE_FILE_NOT_FOUND;
             break;
         }
         file_open = true;
@@ -178,6 +206,7 @@ bool process_firmware_update()
         /* Check size of the firmware file */
         if (bootloader_check_size(f_size(&fp)) != BL_OK) {
             BL_PRINTF("Firmware size is invalid: %lu\r\n", f_size(&fp));
+            result = UPDATE_FILE_BAD;
             break;
         }
         BL_PRINTF("Firmware size is okay.\r\n");
@@ -192,6 +221,7 @@ bool process_firmware_update()
                 /* This check should never fail, but safer to do it anyways */
                 if ((bytes_read % 4) != 0) {
                     BL_PRINTF("Bytes read are not word aligned\r\n");
+                    result = UPDATE_FILE_READ_ERROR;
                     break;
                 }
 
@@ -216,11 +246,13 @@ bool process_firmware_update()
         res = f_lseek(&fp, f_tell(&fp) - (sizeof(app_descriptor_t) - 4));
         if (res != FR_OK) {
             BL_PRINTF("Unable to seek to read the firmware file descriptor: %d\r\n", res);
+            result = UPDATE_FILE_READ_ERROR;
             break;
         }
         res = f_read(&fp, &image_descriptor, sizeof(app_descriptor_t), &bytes_read);
         if (res != FR_OK || bytes_read != sizeof(app_descriptor_t)) {
             BL_PRINTF("Unable to read the firmware file descriptor: %d\r\n", res);
+            result = UPDATE_FILE_READ_ERROR;
             break;
         }
 
@@ -229,12 +261,14 @@ bool process_firmware_update()
         if (calculated_crc != image_descriptor.crc32) {
             BL_PRINTF("Firmware checksum mismatch: %08lX != %08lX\r\n",
                 image_descriptor.crc32, calculated_crc);
+            result = UPDATE_FILE_BAD;
             break;
         }
         BL_PRINTF("Firmware checksum is okay.\r\n");
 
         if (image_descriptor.magic_word != APP_DESCRIPTOR_MAGIC_WORD) {
             BL_PRINTF("Bad magic\r\n");
+            result = UPDATE_FILE_BAD;
             break;
         }
 
@@ -257,6 +291,7 @@ bool process_firmware_update()
 
         /* Make sure the USB storage device is still there */
         if (!usb_msc_is_mounted()) {
+            result = UPDATE_FILE_READ_ERROR;
             break;
         }
 
@@ -270,6 +305,7 @@ bool process_firmware_update()
         if (bootloader_erase() != BL_OK) {
             BL_PRINTF("Error erasing flash\r\n");
             display_graphic_update_progress_failure();
+            result = UPDATE_FLASH_ERROR;
             break;
         }
         BL_PRINTF("Flash erased\r\n");
@@ -288,6 +324,7 @@ bool process_firmware_update()
                     counter++;
                 } else {
                     BL_PRINTF("Programming error at byte %lu\r\n", (counter * 4));
+                    result = UPDATE_FLASH_ERROR;
                     break;
                 }
             }
@@ -304,6 +341,11 @@ bool process_firmware_update()
         if (status != BL_OK || res != FR_OK) {
             BL_PRINTF("Programming error!\r\n");
             display_graphic_update_progress_failure();
+            if (res != FR_OK) {
+                result = UPDATE_FILE_READ_ERROR;
+            } else {
+                result = UPDATE_FLASH_ERROR;
+            }
             break;
         }
 
@@ -343,6 +385,11 @@ bool process_firmware_update()
         if (status != BL_OK || res != FR_OK) {
             BL_PRINTF("Verification error!\r\n");
             display_graphic_update_progress_failure();
+            if (res != FR_OK) {
+                result = UPDATE_FILE_READ_ERROR;
+            } else {
+                result = UPDATE_FLASH_ERROR;
+            }
             break;
         }
         BL_PRINTF("Firmware verified\r\n");
@@ -364,7 +411,7 @@ bool process_firmware_update()
         }
 #endif
 
-        success = true;
+        result = UPDATE_SUCCESS;
 
     } while (0);
 
@@ -372,7 +419,7 @@ bool process_firmware_update()
         f_close(&fp);
     }
 
-    return success;
+    return result;
 }
 
 void bootloader_start_application()

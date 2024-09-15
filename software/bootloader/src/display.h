@@ -14,6 +14,9 @@ void display_draw_test_pattern();
 
 void display_graphic_insert_thumbdrive();
 void display_graphic_checking_thumbdrive();
+void display_graphic_file_missing();
+void display_graphic_file_read_error();
+void display_graphic_file_bad();
 void display_graphic_update_prompt();
 void display_graphic_unlock_prompt();
 void display_graphic_update_progress();

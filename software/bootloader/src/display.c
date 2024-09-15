@@ -102,6 +102,82 @@ void display_graphic_checking_thumbdrive()
     u8g2_SendBuffer(&u8g2);
 }
 
+void display_graphic_file_missing()
+{
+    asset_info_t asset;
+
+    u8g2_ClearBuffer(&u8g2);
+
+    display_asset_get(&asset, ASSET_THUMBDRIVE);
+    u8g2_DrawXBM(&u8g2, 20, 6, asset.width, asset.height, asset.bits);
+
+    display_asset_get(&asset, ASSET_BAD_FILE);
+    u8g2_DrawXBM(&u8g2, 180, 10, asset.width, asset.height, asset.bits);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, 180, 46, 11, 11);
+    u8g2_DrawBox(&u8g2, 192, 19, 19, 7);
+    u8g2_DrawBox(&u8g2, 192, 29, 25, 16);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    u8g2_DrawBox(&u8g2, 183, 43, 5, 11);
+    u8g2_DrawBox(&u8g2, 188, 49, 6, 5);
+
+    display_asset_get(&asset, ASSET_QUESTION);
+    u8g2_DrawXBM(&u8g2, 197, 16, asset.width, asset.height, asset.bits);
+
+    u8g2_SendBuffer(&u8g2);
+}
+
+void display_graphic_file_read_error()
+{
+    asset_info_t asset;
+
+    u8g2_ClearBuffer(&u8g2);
+
+    display_asset_get(&asset, ASSET_THUMBDRIVE);
+    u8g2_DrawXBM(&u8g2, 20, 6, asset.width, asset.height, asset.bits);
+
+    display_asset_get(&asset, ASSET_BAD_FILE);
+    u8g2_DrawXBM(&u8g2, 180, 10, asset.width, asset.height, asset.bits);
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawBox(&u8g2, 180, 46, 11, 11);
+    u8g2_DrawBox(&u8g2, 192, 19, 19, 7);
+    u8g2_DrawBox(&u8g2, 192, 29, 25, 16);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    u8g2_DrawBox(&u8g2, 183, 43, 5, 11);
+    u8g2_DrawBox(&u8g2, 188, 49, 6, 5);
+
+    u8g2_DrawVLine(&u8g2, 203, 22, 14);
+    u8g2_DrawVLine(&u8g2, 204, 21, 16);
+    u8g2_DrawVLine(&u8g2, 205, 21, 16);
+    u8g2_DrawVLine(&u8g2, 206, 22, 14);
+
+    u8g2_DrawVLine(&u8g2, 203, 40, 2);
+    u8g2_DrawVLine(&u8g2, 204, 39, 4);
+    u8g2_DrawVLine(&u8g2, 205, 39, 4);
+    u8g2_DrawVLine(&u8g2, 206, 40, 2);
+
+    u8g2_SendBuffer(&u8g2);
+}
+
+void display_graphic_file_bad()
+{
+    asset_info_t asset;
+
+    u8g2_ClearBuffer(&u8g2);
+
+    display_asset_get(&asset, ASSET_THUMBDRIVE);
+    u8g2_DrawXBM(&u8g2, 20, 6, asset.width, asset.height, asset.bits);
+
+    display_asset_get(&asset, ASSET_BAD_FILE);
+    u8g2_DrawXBM(&u8g2, 180, 10, asset.width, asset.height, asset.bits);
+
+    u8g2_SendBuffer(&u8g2);
+}
+
 void display_graphic_update_prompt()
 {
     asset_info_t asset;
@@ -295,15 +371,15 @@ void display_graphic_failure()
 
     u8g2_SetDrawColor(&u8g2, 1);
 
-    u8g2_DrawLine(&u8g2, 126, 22, 126, 35);
-    u8g2_DrawLine(&u8g2, 127, 21, 127, 36);
-    u8g2_DrawLine(&u8g2, 128, 21, 128, 36);
-    u8g2_DrawLine(&u8g2, 129, 22, 129, 35);
+    u8g2_DrawVLine(&u8g2, 126, 22, 14);
+    u8g2_DrawVLine(&u8g2, 127, 21, 16);
+    u8g2_DrawVLine(&u8g2, 128, 21, 16);
+    u8g2_DrawVLine(&u8g2, 129, 22, 14);
 
-    u8g2_DrawLine(&u8g2, 126, 40, 126, 41);
-    u8g2_DrawLine(&u8g2, 127, 39, 127, 42);
-    u8g2_DrawLine(&u8g2, 128, 39, 128, 42);
-    u8g2_DrawLine(&u8g2, 129, 40, 129, 41);
+    u8g2_DrawVLine(&u8g2, 126, 40, 2);
+    u8g2_DrawVLine(&u8g2, 127, 39, 4);
+    u8g2_DrawVLine(&u8g2, 128, 39, 4);
+    u8g2_DrawVLine(&u8g2, 129, 40, 2);
 
     u8g2_SendBuffer(&u8g2);
 }
