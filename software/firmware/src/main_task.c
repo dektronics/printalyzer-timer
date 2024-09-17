@@ -49,6 +49,8 @@ static void main_task_relay_init();
 static void main_task_exposure_timer_init();
 static void main_task_keypad_init();
 static void main_task_enable_interrupts();
+static void main_task_disable_interrupts();
+extern void deinit_peripherals();
 
 typedef struct {
     const osThreadFunc_t task_func;
@@ -394,7 +396,47 @@ void main_task_enable_interrupts()
     HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
+void main_task_disable_interrupts()
+{
+    HAL_NVIC_DisableIRQ(EXTI1_IRQn);
+    HAL_NVIC_DisableIRQ(EXTI2_IRQn);
+    HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
+}
+
 void main_task_notify_countdown_timer()
 {
     exposure_timer_notify();
+}
+
+void main_task_shutdown()
+{
+    log_d("Shutting down components...");
+
+    /* Shutdown the USB host stack */
+    usb_host_deinit();
+
+    /* Disable GPIO interrupts */
+    main_task_disable_interrupts();
+
+    /* Turn off panel LEDs */
+    led_set_brightness(0);
+
+    /* Put the keypad controller into the reset state */
+    HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_RESET);
+
+    /* Wait for things to settle */
+    osDelay(200);
+
+    log_d("Stopping scheduler...");
+
+    /* Suspend the FreeRTOS scheduler */
+    vTaskSuspendAll();
+
+    log_d("Deinitializing and restarting...");
+
+    /* Deinitialize the peripherals */
+    deinit_peripherals();
+
+    /* Trigger a restart */
+    NVIC_SystemReset();
 }

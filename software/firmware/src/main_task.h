@@ -20,4 +20,9 @@ bool main_task_is_running();
 
 void main_task_notify_countdown_timer();
 
+/**
+ * Shutdown the system hardware in preparation for a restart
+ */
+void main_task_shutdown();
+
 #endif /* MAIN_TASK_H */

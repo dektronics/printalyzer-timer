@@ -3,8 +3,11 @@
 
 #include <stddef.h>
 #include <stdbool.h>
+#include <ff.h>
 
 #include "main_menu.h"
+
+typedef bool (*file_picker_filter_func_t)(const FILINFO *fno);
 
 /**
  * Show a file picker, returning the selected file as an altname path
@@ -17,7 +20,7 @@
  * @retval MENU_CANCEL If no file was selected
  * @retval MENU_TIMEOUT If the picker had a timeout
  */
-menu_result_t file_picker_show(const char *title, char *filepath, size_t len);
+menu_result_t file_picker_show(const char *title, char *filepath, size_t len, file_picker_filter_func_t filter_func);
 
 /**
  * Find the full long filename corresponding to an altname path.

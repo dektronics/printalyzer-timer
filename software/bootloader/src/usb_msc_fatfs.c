@@ -17,6 +17,7 @@ _Static_assert(CONFIG_USBHOST_MAX_MSC_CLASS == FF_VOLUMES, "CherryUSB and FATFS 
 
 typedef struct {
     struct usbh_msc *msc_class;
+    char dev_serial[21];
     char usbh_path[4]; /* USBH logical drive path */
     char label[12];
     bool linked;
@@ -52,6 +53,7 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
     int ret;
     FRESULT fres;
     const uint8_t devno = msc_class->sdchar - 'a';
+    char string_buffer[128];
 
     if (devno > CONFIG_USBHOST_MAX_MSC_CLASS) {
         BL_PRINTF("Invalid device letter '%c'\r\n", msc_class->sdchar);
@@ -67,11 +69,23 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
 
     /* Initialize handle state */
     handle->msc_class = msc_class;
+    handle->dev_serial[0] = 0;
     handle->label[0] = 0;
     handle->linked = false;
     handle->mounted = false;
     handle->ready = false;
     memset(&handle->usbh_fatfs, 0, sizeof(FATFS));
+
+    /* Get the device serial number */
+    memset(string_buffer, 0, 128);
+    ret = usbh_get_string_desc(msc_class->hport, USB_STRING_SERIAL_INDEX, (uint8_t *)string_buffer);
+    if (ret < 0) {
+        BL_PRINTF("Unable to get device serial number: %d\r\n", ret);
+        return;
+    }
+    strncpy(handle->dev_serial, string_buffer, 21);
+    handle->dev_serial[20] = '\0';
+    BL_PRINTF("Drive serial: \"%s\"\r\n", handle->dev_serial);
 
     /* Link the driver callbacks */
     ret = FATFS_LinkDriver(&fatfs_usbh_msc_driver, handle->usbh_path, devno);
@@ -178,6 +192,19 @@ const char *usbh_msc_drive_label(uint8_t num)
             BL_PRINTF("Pathnum mismatch: dev=%d, path=\"%s\"\r\n", num, msc_handles[num].usbh_path);
         }
         return msc_handles[num].label;
+    } else {
+        return NULL;
+    }
+}
+
+const char *usbh_msc_drive_serial(uint8_t num)
+{
+    if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
+        uint8_t pathnum = msc_handles[num].usbh_path[0] - '0';
+        if (num != pathnum) {
+            BL_PRINTF("Pathnum mismatch: dev=%d, path=\"%s\"\r\n", num, msc_handles[num].usbh_path);
+        }
+        return msc_handles[num].dev_serial;
     } else {
         return NULL;
     }

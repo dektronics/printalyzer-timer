@@ -41,7 +41,6 @@ static void mpu_config();
 
 static void usart1_uart_init(void);
 static void usart6_uart_init(void);
-
 static void gpio_init(void);
 static void dma_init(void);
 static void i2c1_init(void);
@@ -55,6 +54,15 @@ static void tim8_init(void);
 static void tim9_init(void);
 static void tim10_init(void);
 static void crc_init(void);
+
+static void usart_deinit(void);
+static void gpio_deinit(void);
+static void dma_deinit(void);
+static void i2c_deinit(void);
+static void spi_deinit(void);
+static void tim_deinit(void);
+static void crc_deinit(void);
+void deinit_peripherals();
 
 static void logger_init(void);
 
@@ -581,6 +589,76 @@ void crc_init(void)
     if (HAL_CRC_Init(&hcrc) != HAL_OK) {
         Error_Handler();
     }
+}
+
+void usart_deinit(void)
+{
+    HAL_UART_DeInit(&huart6);
+    HAL_UART_DeInit(&huart1);
+}
+
+void gpio_deinit(void)
+{
+    HAL_GPIO_DeInit(KEY_INT_GPIO_Port, KEY_INT_Pin);
+    HAL_GPIO_DeInit(RELAY_ENLG_GPIO_Port, RELAY_ENLG_Pin);
+    HAL_GPIO_DeInit(USB_HUB_CLK_GPIO_Port, USB_HUB_CLK_Pin);
+    HAL_GPIO_DeInit(GPIOB, USB_HUB_RESET_Pin|USB_DRIVE_VBUS_Pin);
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9);
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_12);
+    HAL_GPIO_DeInit(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin|DMX512_RX_EN_Pin);
+    HAL_GPIO_DeInit(GPIOC, KEY_RESET_Pin);
+    HAL_GPIO_DeInit(GPIOC, LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
+    HAL_GPIO_DeInit(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_3);
+
+    __HAL_RCC_GPIOC_CLK_DISABLE();
+    __HAL_RCC_GPIOH_CLK_DISABLE();
+    __HAL_RCC_GPIOA_CLK_DISABLE();
+    __HAL_RCC_GPIOB_CLK_DISABLE();
+    __HAL_RCC_GPIOD_CLK_DISABLE();
+}
+
+void dma_deinit(void)
+{
+    HAL_NVIC_DisableIRQ(DMA2_Stream6_IRQn);
+    __HAL_RCC_DMA2_CLK_DISABLE();
+}
+
+void i2c_deinit(void)
+{
+    HAL_SMBUS_DeInit(&hsmbus2);
+    HAL_I2C_DeInit(&hi2c1);
+}
+
+void spi_deinit(void)
+{
+    HAL_SPI_DeInit(&hspi3);
+    HAL_SPI_DeInit(&hspi1);
+}
+
+void tim_deinit(void)
+{
+    HAL_TIM_Base_DeInit(&htim10);
+    HAL_TIM_PWM_DeInit(&htim9);
+    HAL_TIM_PWM_DeInit(&htim8);
+    HAL_TIM_OC_DeInit(&htim4);
+    HAL_TIM_PWM_DeInit(&htim3);
+    HAL_TIM_Encoder_DeInit(&htim1);
+}
+
+void crc_deinit(void)
+{
+    HAL_CRC_DeInit(&hcrc);
+}
+
+void deinit_peripherals()
+{
+    crc_deinit();
+    tim_deinit();
+    spi_deinit();
+    i2c_deinit();
+    dma_deinit();
+    gpio_deinit();
+    usart_deinit();
 }
 
 void logger_init(void)

@@ -18,17 +18,18 @@
 /* #define FORCE_BOOTLOADER */
 
 UART_HandleTypeDef huart1;
-
 I2C_HandleTypeDef hi2c1;
 SMBUS_HandleTypeDef hsmbus2;
-
 SPI_HandleTypeDef hspi1;
-
 CRC_HandleTypeDef hcrc;
+
+static uint32_t startup_bkp1r = 0;
 
 static void system_clock_config(void);
 static void peripheral_common_clock_config(void);
 static void mpu_config();
+
+static void read_startup_flags(void);
 
 static void usart1_uart_init(void);
 static void usart_deinit(void);
@@ -44,8 +45,9 @@ static void crc_deinit(void);
 
 static void startup_messages();
 static uint8_t check_startup_action();
-static void start_bootloader();
+static void start_bootloader(bootloader_trigger_t trigger);
 void deinit_peripherals();
+void save_startup_flags();
 bool start_application();
 
 void Error_Handler(void);
@@ -134,6 +136,16 @@ void mpu_config(void)
     HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
     HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
+void read_startup_flags(void)
+{
+    __HAL_RCC_PWR_CLK_ENABLE();
+    HAL_PWR_EnableBkUpAccess();
+    startup_bkp1r = RTC->BKP1R;
+    RTC->BKP1R = 0;
+    HAL_PWR_DisableBkUpAccess();
+    __HAL_RCC_PWR_CLK_DISABLE();
 }
 
 void usart1_uart_init(void)
@@ -379,6 +391,11 @@ uint8_t check_startup_action()
 #else
     uint8_t button_counter = 0;
 
+    if ((startup_bkp1r & 0xFF000000UL) == 0xBB000000UL) {
+        BL_PRINTF("Bootloader requested by main application\r\n");
+        return 0xBB;
+    }
+
     while (keypad_poll() & KEYPAD_MENU && button_counter < 90) {
         if (button_counter == 5) {
             BL_PRINTF("Release button to enter Bootloader.\r\n");
@@ -414,6 +431,9 @@ int main(void)
     /* Initialize the MPU */
     mpu_config();
 
+    /* Read startup flags */
+    read_startup_flags();
+
     /* Initialize all configured peripherals */
     usart1_uart_init();
     gpio_init();
@@ -433,10 +453,12 @@ int main(void)
     /* Check the keypad to determine the startup action */
     uint8_t action = check_startup_action();
     if (action == 1) {
-        start_bootloader();
+        start_bootloader(TRIGGER_USER_BUTTON);
+    } else if (action == 0xBB) {
+        start_bootloader(TRIGGER_FIRMWARE);
     } else {
         if (!start_application()) {
-            start_bootloader();
+            start_bootloader(TRIGGER_CHECKSUM_FAIL);
         }
     }
 
@@ -471,15 +493,29 @@ void startup_messages()
     BL_PRINTF("\r\n");
 }
 
-void start_bootloader()
+void start_bootloader(bootloader_trigger_t trigger)
 {
     BL_PRINTF("Start Bootloader\r\n");
+
+    switch (trigger) {
+    case TRIGGER_USER_BUTTON:
+        BL_PRINTF("Trigger: User Button\r\n");
+        break;
+    case TRIGGER_FIRMWARE:
+        BL_PRINTF("Trigger: Firmware\r\n");
+        break;
+    case TRIGGER_CHECKSUM_FAIL:
+        BL_PRINTF("Trigger: Checksum Fail\r\n");
+        break;
+    default:
+        break;
+    }
 
     /* Initialize the FreeRTOS scheduler */
     osKernelInitialize();
 
     /* Create the main bootloader task */
-    bootloader_task_init();
+    bootloader_task_init(trigger);
 
     /* Start the FreeRTOS scheduler */
     osKernelStart();
@@ -494,6 +530,20 @@ void deinit_peripherals()
     i2c_deinit();
     gpio_deinit();
     usart_deinit();
+}
+
+void save_startup_flags()
+{
+    /*
+     * Save startup data into the RTC backup registers, since some restart
+     * conditions can cause it to get cleared before the application code
+     * can read it.
+     */
+    __HAL_RCC_PWR_CLK_ENABLE();
+    HAL_PWR_EnableBkUpAccess();
+    RTC->BKP0R = (RCC->CSR & 0xFF000000UL); /* Reset flags */
+    HAL_PWR_DisableBkUpAccess();
+    __HAL_RCC_PWR_CLK_DISABLE();
 }
 
 bool start_application()
@@ -512,6 +562,9 @@ bool start_application()
 
         /* De-initialize all the peripherals */
         deinit_peripherals();
+
+        /* Save startup flags so the application can read them */
+        save_startup_flags();
 
         /* Start the application */
         bootloader_jump_to_application();

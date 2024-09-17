@@ -238,7 +238,7 @@ menu_result_t meter_probe_sensor_calibration_import()
 
     imported_settings.type = info.probe_id.probe_type;
 
-    option = file_picker_show("Select Calibration File", path_buf, sizeof(path_buf));
+    option = file_picker_show("Select Calibration File", path_buf, sizeof(path_buf), NULL);
     if (option == MENU_TIMEOUT) {
         return MENU_TIMEOUT;
     } else if (option != MENU_OK) {

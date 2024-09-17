@@ -17,9 +17,19 @@
 #include "bootloader.h"
 #include "board_config.h"
 #include "app_descriptor.h"
+#include "m24m01.h"
 
-#define FW_FILENAME "DPD500FW.BIN"
+#define FW_FILENAME "0:/DPD500FW.BIN"
 
+/* EEPROM properties for the bootloader block */
+#define PAGE_BOOTLOADER                  0x1FE00UL
+#define BOOTLOADER_COMMAND               0   /* 1B (uint8_t) */
+#define BOOTLOADER_FW_DEVICE             1   /* 21B (char[21]) */
+#define BOOTLOADER_FW_CHECKSUM           22  /* 4B (uint32_t) */
+#define BOOTLOADER_FW_FILE               256 /* char[256] */
+#define EEPROM_PAGE_SIZE                 0x00100UL
+
+extern I2C_HandleTypeDef hi2c1;
 extern SPI_HandleTypeDef hspi1;
 extern CRC_HandleTypeDef hcrc;
 
@@ -39,8 +49,21 @@ typedef enum {
     UPDATE_FAILED
 } update_result_t;
 
+typedef struct {
+    uint8_t command;
+    char dev_serial[21];
+    uint32_t checksum;
+    char file_path[256];
+} bootloader_block_t;
+
 static void bootloader_task_run(void *argument);
-static update_result_t process_firmware_update();
+static void bootloader_loop_user_button();
+static void bootloader_loop_firmware_trigger();
+static void bootloader_loop_checksum_fail();
+static bool read_bootloader_block(bootloader_block_t *block);
+static update_result_t process_firmware_update(const char *file_path, uint32_t file_checksum);
+static void bootloader_update_complete();
+static void bootloader_update_failed(update_result_t update_result);
 static void bootloader_start_application();
 extern void deinit_peripherals();
 
@@ -48,15 +71,16 @@ extern void deinit_peripherals();
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #endif
 
-osStatus_t bootloader_task_init(void)
+osStatus_t bootloader_task_init(bootloader_trigger_t trigger)
 {
-    bootloader_task_handle = osThreadNew(bootloader_task_run, NULL, &bootloader_task_attributes);
+    const uint32_t param = (uint32_t)trigger;
+    bootloader_task_handle = osThreadNew(bootloader_task_run, (void *)param, &bootloader_task_attributes);
     return osOK;
 }
 
 void bootloader_task_run(void *argument)
 {
-    UNUSED(argument);
+    const bootloader_trigger_t trigger = (bootloader_trigger_t)((uint32_t)argument);
 
     /* Initialize the display */
     const u8g2_display_handle_t display_handle = {
@@ -86,58 +110,46 @@ void bootloader_task_run(void *argument)
     }
 
     /* Main loop */
+    if (trigger == TRIGGER_USER_BUTTON) {
+        bootloader_loop_user_button();
+    } else if (trigger == TRIGGER_FIRMWARE) {
+        bootloader_loop_firmware_trigger();
+    } else if (trigger == TRIGGER_CHECKSUM_FAIL) {
+        bootloader_loop_checksum_fail();
+    }
+
+    bootloader_update_complete();
+}
+
+void bootloader_loop_user_button()
+{
+    /*
+     * Bootloader process when started by the recovery button:
+     * - Wait for a USB device to be attached
+     * - Check for a file with a known name
+     * - Try to install this file
+     */
+
     bool prompt_visible = false;
     while (1) {
         osDelay(10);
         if (usb_msc_is_mounted()) {
             update_result_t update_result;
             prompt_visible = false;
-            update_result = process_firmware_update();
+
+            update_result = process_firmware_update(FW_FILENAME, 0);
+
             if (update_result == UPDATE_SUCCESS) {
-                osDelay(1000);
-                BL_PRINTF("Restarting...\r\n");
-                display_graphic_restart();
-                osDelay(100);
-
-                /* De-initialize the USB and FatFs components */
-                usb_msc_unmount();
-                usb_host_deinit();
-
-                /* Start the application firmware */
-                osDelay(1000);
-                display_clear();
-                bootloader_start_application();
+                return;
             } else {
-                osDelay(1000);
-                BL_PRINTF("Firmware update failed\r\n");
-                switch (update_result) {
-                case UPDATE_FILE_NOT_FOUND:
-                    display_graphic_file_missing();
-                    break;
-                case UPDATE_FILE_READ_ERROR:
-                    display_graphic_file_read_error();
-                    break;
-                case UPDATE_FILE_BAD:
-                    display_graphic_file_bad();
-                    break;
-                case UPDATE_FLASH_ERROR:
-                case UPDATE_FAILED:
-                default:
-                    display_graphic_failure();
-                    break;
-                }
-
+                bootloader_update_failed(update_result);
                 while(1);
             }
+
         } else {
             if (prompt_visible) {
                 if (keypad_poll() == KEYPAD_CANCEL) {
-                    /* Start the application firmware */
-                    BL_PRINTF("Restarting...\r\n");
-                    display_graphic_restart();
-                    osDelay(1000);
-                    display_clear();
-                    bootloader_start_application();
+                    return;
                 }
             } else {
                 display_graphic_insert_thumbdrive();
@@ -145,9 +157,158 @@ void bootloader_task_run(void *argument)
             }
         }
     }
+
 }
 
-update_result_t process_firmware_update()
+void bootloader_loop_firmware_trigger()
+{
+    /*
+     * Bootloader process when started by the firmware update menu:
+     * - Check the EEPROM for the bootloader block
+     * - Poll attached USB devices for the file described in this block
+     * - Try to install that file
+     */
+
+    bootloader_block_t block;
+    uint32_t start_time;
+    int dev_num = -1;
+    char full_path[260];
+    update_result_t update_result;
+
+    /* Read the bootloader block */
+    if (!read_bootloader_block(&block)) {
+        return;
+    }
+
+    /* Check for the expected command code */
+    if (block.command != 0xBB) {
+        return;
+    }
+
+    display_graphic_checking_thumbdrive();
+
+    /* Wait 10s for the expected thumbdrive to be inserted */
+    start_time = osKernelGetTickCount();
+    do {
+        osDelay(100);
+        dev_num = usb_msc_find_device(block.dev_serial);
+        if (dev_num >= 0) { break; }
+    } while(start_time + 10000 > osKernelGetTickCount());
+
+    /* Device was not found */
+    if (dev_num < 0) {
+        bootloader_update_failed(UPDATE_FILE_NOT_FOUND);
+        while(1);
+    }
+
+    /* Construct the full file path */
+    sprintf_(full_path, "%d:/%s", dev_num, block.file_path);
+
+    update_result = process_firmware_update(full_path, block.checksum);
+    if (update_result != UPDATE_SUCCESS) {
+        bootloader_update_failed(update_result);
+        while(1);
+    }
+}
+
+void bootloader_loop_checksum_fail()
+{
+    /*
+     * Bootloader process when started by a firmware checksum failure:
+     * - Check EEPROM for the bootloader block
+     * - If block exists, look for the mentioned file
+     * - If mentioned file cannot be found, fall back to the known-name file
+     * - If block doesn't exist, look for the known-name file
+     */
+
+    bootloader_block_t block;
+    uint32_t start_time;
+    int dev_num = -1;
+    char full_path[260];
+    update_result_t update_result;
+
+    /* Check for the bootloader block */
+    if (read_bootloader_block(&block) && block.command == 0xBB) {
+
+        display_graphic_checking_thumbdrive();
+
+        /* Wait 10s for the expected thumbdrive to be inserted */
+        start_time = osKernelGetTickCount();
+        do {
+            osDelay(100);
+            dev_num = usb_msc_find_device(block.dev_serial);
+            if (dev_num >= 0) { break; }
+        } while(start_time + 10000 < osKernelGetTickCount());
+
+        if (dev_num >= 0) {
+            /* Construct the full file path */
+            sprintf_(full_path, "%d:/%s", dev_num, block.file_path);
+
+            update_result = process_firmware_update(full_path, block.checksum);
+            if (update_result != UPDATE_SUCCESS) {
+                bootloader_update_failed(update_result);
+                osDelay(1000);
+            }
+        }
+    }
+
+    /* If we got here, act as if the button was held on startup */
+    bootloader_loop_user_button();
+}
+
+static uint32_t copy_to_u32(const uint8_t *buf)
+{
+    return (uint32_t)buf[0] << 24
+        | (uint32_t)buf[1] << 16
+        | (uint32_t)buf[2] << 8
+        | (uint32_t)buf[3];
+}
+
+bool read_bootloader_block(bootloader_block_t *block)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[EEPROM_PAGE_SIZE];
+
+    if (!block) { return false; }
+
+    memset(block, 0, sizeof(bootloader_block_t));
+
+    /* Read the first page, which contains commands and metadata */
+    ret = m24m01_read_buffer(&hi2c1, PAGE_BOOTLOADER, data, sizeof(data));
+    if (ret != HAL_OK) {
+        BL_PRINTF("Unable to read bootloader block: %d\r\n", ret);
+        return false;
+    }
+
+    /* If a command byte isn't populated, skip the rest of this */
+    if (data[BOOTLOADER_COMMAND] == 0 || data[BOOTLOADER_COMMAND] == 0xFF) {
+        return false;
+    }
+
+    block->command = data[BOOTLOADER_COMMAND];
+
+    strncpy(block->dev_serial, (char *)(data + BOOTLOADER_FW_DEVICE), 21);
+    block->dev_serial[20] = '\0';
+
+    block->checksum = copy_to_u32(data + BOOTLOADER_FW_CHECKSUM);
+
+    ret = m24m01_read_buffer(&hi2c1, PAGE_BOOTLOADER + BOOTLOADER_FW_FILE, data, sizeof(data));
+    if (ret != HAL_OK) {
+        BL_PRINTF("Unable to read bootloader block: %d\r\n", ret);
+        return false;
+    }
+
+    strncpy(block->file_path, (char *)data, EEPROM_PAGE_SIZE);
+    data[EEPROM_PAGE_SIZE - 1] = '\0';
+
+    if (block->command != 0 && block->command != 0xFF) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+update_result_t process_firmware_update(const char *file_path, uint32_t file_checksum)
 {
     display_graphic_checking_thumbdrive();
 
@@ -191,11 +352,11 @@ update_result_t process_firmware_update()
                     while(1) { }
                 }
             }
-            return false;
+            return UPDATE_FAILED;
         }
 
         /* Open firmware file, if it exists */
-        res = f_open(&fp, FW_FILENAME, FA_READ);
+        res = f_open(&fp, file_path, FA_READ);
         if (res != FR_OK) {
             BL_PRINTF("Unable to open firmware file: %d\r\n", res);
             result = UPDATE_FILE_NOT_FOUND;
@@ -272,28 +433,37 @@ update_result_t process_firmware_update()
             break;
         }
 
-        display_graphic_update_prompt();
-
-        key_count = 0;
-        do {
-            osDelay(50);
-            if (keypad_poll() == KEYPAD_START) {
-                key_count++;
-            } else {
-                key_count = 0;
-            }
-            if (key_count > 2) {
-                display_graphic_update_progress();
-                osDelay(1000);
-                break;
-            }
-        } while (1);
-
-        /* Make sure the USB storage device is still there */
-        if (!usb_msc_is_mounted()) {
-            result = UPDATE_FILE_READ_ERROR;
+        if (file_checksum > 0 && file_checksum != image_descriptor.crc32) {
+            BL_PRINTF("Firmware checksum unexpected: %08lX != %08lX\r\n",
+            image_descriptor.crc32, file_checksum);
+            result = UPDATE_FILE_BAD;
             break;
         }
+
+        /* Only prompt if loading the fallback file */
+        if (file_checksum == 0) {
+            display_graphic_update_prompt();
+
+            key_count = 0;
+            do {
+                keypad_key_t key;
+                osDelay(50);
+                key = keypad_poll();
+                if (key == KEYPAD_START) {
+                    key_count++;
+                } else if (key == KEYPAD_CANCEL) {
+                    f_close(&fp);
+                    return UPDATE_FAILED;
+                } else {
+                    key_count = 0;
+                }
+                if (key_count > 2) {
+                    break;
+                }
+            } while (1);
+        }
+        display_graphic_update_progress();
+        osDelay(500);
 
         /* Initialize bootloader and prepare for flash programming */
         bootloader_init();
@@ -420,6 +590,44 @@ update_result_t process_firmware_update()
     }
 
     return result;
+}
+
+void bootloader_update_complete()
+{
+    osDelay(1000);
+    BL_PRINTF("Restarting...\r\n");
+    display_graphic_restart();
+    osDelay(100);
+
+    /* De-initialize the USB and FatFs components */
+    usb_msc_unmount();
+
+    /* Start the application firmware */
+    osDelay(1000);
+    display_clear();
+    bootloader_start_application();
+}
+
+void bootloader_update_failed(update_result_t update_result)
+{
+    osDelay(1000);
+    BL_PRINTF("Firmware update failed\r\n");
+    switch (update_result) {
+    case UPDATE_FILE_NOT_FOUND:
+        display_graphic_file_missing();
+        break;
+    case UPDATE_FILE_READ_ERROR:
+        display_graphic_file_read_error();
+        break;
+    case UPDATE_FILE_BAD:
+        display_graphic_file_bad();
+        break;
+    case UPDATE_FLASH_ERROR:
+    case UPDATE_FAILED:
+    default:
+        display_graphic_failure();
+        break;
+    }
 }
 
 void bootloader_start_application()

@@ -24,6 +24,7 @@
 #include "menu_import_export.h"
 #include "menu_meter_probe.h"
 #include "menu_diagnostics.h"
+#include "menu_firmware.h"
 
 static menu_result_t menu_about();
 
@@ -45,6 +46,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "Import / Export\n"
                 "Meter Probe\n"
                 "Diagnostics\n"
+                "Update Firmware\n"
                 "About");
 
         if (option == 1) {
@@ -64,6 +66,8 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 8) {
             menu_result = menu_diagnostics();
         } else if (option == 9) {
+            menu_result = menu_firmware();
+        } else if (option == 10) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
@@ -143,8 +147,8 @@ menu_result_t menu_about()
 
     sprintf(buf,
         "Enlarging Timer & Exposure Meter\n"
-        "\n"
-        "%s (%s)\n"
+        "%s\n"
+        "%s\n"
         "%s\n",
         app_descriptor->version,
         app_descriptor->build_describe,

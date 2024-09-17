@@ -181,6 +181,18 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define STEP_WEDGE_STEP_DENSITY_0        48 /* up to 51 steps supported */
 
 /**
+ * Bootloader page (512B)
+ * Reserved page at the end of the settings memory used to pass instructions
+ * to the bootloader when resetting the device.
+ */
+#define PAGE_BOOTLOADER                  0x1FE00UL
+#define BOOTLOADER_COMMAND               0   /* 1B (uint8_t) */
+#define BOOTLOADER_FW_DEVICE             1   /* 21B (char[21]) */
+#define BOOTLOADER_FW_CHECKSUM           22  /* 4B (uint32_t) */
+/* Rest of the first page is unused */
+#define BOOTLOADER_FW_FILE               256 /* char[256] */
+
+/**
  * Size of a memory page.
  */
 #define PAGE_SIZE                        0x00100UL
@@ -209,6 +221,9 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
 static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
 static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data);
 static void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data);
+
+static bool settings_cleanup_bootloader_firmware();
+
 static bool read_u32(uint32_t address, uint32_t *val);
 static bool write_u32(uint32_t address, uint32_t val);
 static bool write_f32(uint32_t address, float val) __attribute__ ((unused));
@@ -228,6 +243,9 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
     osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     do {
         log_i("Settings init");
+
+        /* Cleanup the bootloader instruction page */
+        settings_cleanup_bootloader_firmware();
 
         /* Read and validate the header page */
         ret = settings_read_header(&valid);
@@ -1293,6 +1311,80 @@ void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
     for (size_t i = 0; i < wedge->step_count; i++) {
         copy_from_f32(data + STEP_WEDGE_STEP_DENSITY_0 + (4 * i), wedge->step_density[i]);
     }
+}
+
+bool settings_set_bootloader_firmware(const char *dev_serial, uint32_t checksum, const char *file_path)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[PAGE_SIZE];
+
+    memset(data, 0x00, PAGE_SIZE);
+    data[BOOTLOADER_COMMAND] = 0xBB;
+
+    strncpy((char *)(data + BOOTLOADER_FW_DEVICE), dev_serial, 21);
+    data[BOOTLOADER_FW_DEVICE + 20] = '\0';
+
+    copy_from_u32(data + BOOTLOADER_FW_CHECKSUM, checksum);
+
+    ret = m24m01_write_page(eeprom_i2c, PAGE_BOOTLOADER, data, PAGE_SIZE);
+    if (ret != HAL_OK) {
+        log_e("Unable to write first bootloader page: %d", ret);
+        return false;
+    }
+
+    memset(data, 0x00, PAGE_SIZE);
+    strncpy((char *)data, file_path, PAGE_SIZE);
+    data[PAGE_SIZE - 1] = '\0';
+
+    ret = m24m01_write_page(eeprom_i2c, PAGE_BOOTLOADER + BOOTLOADER_FW_FILE, data, PAGE_SIZE);
+    if (ret != HAL_OK) {
+        log_e("Unable to write second bootloader page: %d", ret);
+        return false;
+    }
+
+    return true;
+}
+
+bool settings_cleanup_bootloader_firmware()
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+    uint8_t data[PAGE_SIZE];
+    bool erase_page = false;
+
+    do {
+        /* Read the first 16 bytes of the bootloader page into a buffer */
+        ret = m24m01_read_buffer(eeprom_i2c, PAGE_BOOTLOADER, data, 16);
+        if (ret != HAL_OK) {
+            log_e("Unable to read bootloader prefix: %d", ret);
+            break;
+        }
+
+        /* If anything in this section was set, then mark it all to be erased */
+        for (uint8_t i = 0; i < 16; i++) {
+            if (data[i] != 0xFF) {
+                erase_page = true;
+                break;
+            }
+        }
+
+        if (erase_page) {
+            log_i("Clearing bootloader settings pages");
+            memset(data, 0xFF, PAGE_SIZE);
+            ret = m24m01_write_page(eeprom_i2c, PAGE_BOOTLOADER, data, PAGE_SIZE);
+            if (ret != HAL_OK) {
+                log_e("Unable to clear first bootloader page: %d", ret);
+                break;
+            }
+
+            ret = m24m01_write_page(eeprom_i2c, PAGE_BOOTLOADER + PAGE_SIZE, data, PAGE_SIZE);
+            if (ret != HAL_OK) {
+                log_e("Unable to clear second bootloader page: %d", ret);
+                break;
+            }
+        }
+    } while (0);
+
+    return (ret == HAL_OK);
 }
 
 bool read_u32(uint32_t address, uint32_t *val)

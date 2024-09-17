@@ -109,6 +109,22 @@ void usb_hc_low_level_init(struct usbh_bus *bus)
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
 }
 
+void usb_hc_low_level_deinit(struct usbh_bus *bus)
+{
+    /* Peripheral clock disable */
+    __HAL_RCC_USB_OTG_HS_CLK_DISABLE();
+
+    /**
+     * USB_OTG_HS GPIO Configuration
+     * PB14     ------> USB_OTG_HS_DM
+     * PB15     ------> USB_OTG_HS_DP
+     */
+    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14|GPIO_PIN_15);
+
+    /* Peripheral interrupt deinit */
+    HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
+}
+
 bool usb_host_init()
 {
     /* Make sure the USB2422 hub is in reset, and the VBUS signal is low */
@@ -158,6 +174,24 @@ bool usb_host_init()
     }
 
     return true;
+}
+
+void usb_host_deinit()
+{
+    /* Put the USB2422 into reset */
+    HAL_GPIO_WritePin(USB_HUB_RESET_GPIO_Port, USB_HUB_RESET_Pin, GPIO_PIN_RESET);
+
+    /* Wait for the stack to notice everything detached */
+    osDelay(200);
+
+    /* Disable the VBUS pin */
+    HAL_GPIO_WritePin(USB_DRIVE_VBUS_GPIO_Port, USB_DRIVE_VBUS_Pin, GPIO_PIN_RESET);
+    osDelay(2);
+
+    /* Shutdown the USB stack */
+    usb_hc_low_level_deinit(0); /* Temporary workaround */
+    //FIXME Re-enable once this is known to work cleanly
+    //usbh_deinitialize(0);
 }
 
 bool usb_hub_init()
@@ -349,6 +383,15 @@ bool usb_msc_is_mounted()
         if (usbh_msc_is_mounted(i)) { return true; }
     }
     return false;
+}
+
+bool usb_msc_get_serial(uint8_t num, char *buf, size_t len)
+{
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_msc_drive_serial(num, buf, len);
+    osMutexRelease(usb_attach_mutex);
+    return result;
 }
 
 void usbh_msc_run(struct usbh_msc *msc_class)

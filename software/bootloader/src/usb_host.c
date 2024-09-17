@@ -249,16 +249,42 @@ void usbh_msc_stop(struct usbh_msc *msc_class)
 
 bool usb_msc_is_mounted()
 {
-    bool result;
+    bool result = false;
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    result = usbh_msc_is_mounted(0);
+    for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
+        if (usbh_msc_is_mounted(i)) {
+            result = true;
+            break;
+        }
+    }
     osMutexRelease(usb_attach_mutex);
     return result;
+}
+
+int usb_msc_find_device(const char *dev_serial)
+{
+    int num = -1;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
+        if (usbh_msc_is_mounted(i)) {
+            const char *msc_serial = usbh_msc_drive_serial(i);
+            if (strcmp(msc_serial, dev_serial) == 0) {
+                num = i;
+                break;
+            }
+        }
+    }
+    osMutexRelease(usb_attach_mutex);
+    return num;
 }
 
 void usb_msc_unmount()
 {
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
-    usbh_msc_unmount(0);
+    for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
+        if (usbh_msc_is_mounted(i)) {
+            usbh_msc_unmount(i);
+        }
+    }
     osMutexRelease(usb_attach_mutex);
 }

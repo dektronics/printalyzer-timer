@@ -159,11 +159,37 @@ const char *usbh_msc_drive_label(uint8_t num)
     if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
         uint8_t pathnum = msc_handles[num].usbh_path[0] - '0';
         if (num != pathnum) {
-            log_d("-->Pathnum mismatch: dev=%d, path=\"%s\"", num, msc_handles[num].usbh_path);
+            log_d("Pathnum mismatch: dev=%d, path=\"%s\"", num, msc_handles[num].usbh_path);
         }
         return msc_handles[num].label;
     } else {
         return NULL;
+    }
+}
+
+bool usbh_msc_drive_serial(uint8_t num, char *buf, size_t len)
+{
+    int ret;
+    uint8_t string_buffer[128];
+
+    if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
+        uint8_t pathnum = msc_handles[num].usbh_path[0] - '0';
+        if (num != pathnum) {
+            log_d("Pathnum mismatch: dev=%d, path=\"%s\"", num, msc_handles[num].usbh_path);
+        }
+
+        memset(string_buffer, 0, 128);
+        ret = usbh_get_string_desc(msc_handles[num].msc_class->hport, USB_STRING_SERIAL_INDEX, string_buffer);
+        if (ret < 0) {
+            log_e("Unable to get device serial number: %d", ret);
+            return false;
+        }
+
+        strncpy(buf, (char *)string_buffer, MIN(len, sizeof(string_buffer)));
+
+        return true;
+    } else {
+        return false;
     }
 }
 

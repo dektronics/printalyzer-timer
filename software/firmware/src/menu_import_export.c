@@ -110,7 +110,7 @@ menu_result_t menu_import_config(state_controller_t *controller)
         }
     }
 
-    option = file_picker_show("Select Configuration File", path_buf, sizeof(path_buf));
+    option = file_picker_show("Select Configuration File", path_buf, sizeof(path_buf), NULL);
     if (option == MENU_TIMEOUT) {
         return MENU_TIMEOUT;
     } else if (option != MENU_OK) {

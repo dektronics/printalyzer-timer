@@ -257,4 +257,15 @@ bool settings_get_step_wedge(step_wedge_t **wedge);
  */
 bool settings_set_step_wedge(const step_wedge_t *wedge);
 
+/**
+ * Set the firmware file to install on next boot.
+ *
+ * @param dev_serial USB serial number of the device containing the file
+ * @param checksum  Checksum of the selected file
+ * @param file_path Path to the selected file
+ *
+ * @return True if the fields were successfully saved
+ */
+bool settings_set_bootloader_firmware(const char *dev_serial, uint32_t checksum, const char *file_path);
+
 #endif /* SETTINGS_H */

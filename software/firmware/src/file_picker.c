@@ -28,7 +28,7 @@ typedef struct {
 
 static uint8_t mounted_drive_count();
 static menu_result_t drive_selection_impl(const char *title, uint8_t *num);
-static menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection);
+static menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection, file_picker_filter_func_t filter_func);
 static void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno);
 static int file_entry_sort(const void *a, const void *b);
 
@@ -36,7 +36,7 @@ static UT_icd file_picker_entry_icd = {
     sizeof(file_picker_entry_t), NULL, NULL, NULL
 };
 
-menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
+menu_result_t file_picker_show(const char *title, char *filepath, size_t len, file_picker_filter_func_t filter_func)
 {
     menu_result_t result;
     file_picker_selection_t selection;
@@ -66,7 +66,7 @@ menu_result_t file_picker_show(const char *title, char *filepath, size_t len)
             }
         }
 
-        result = file_picker_impl(title, path_buf, option_list[option_index], &selection);
+        result = file_picker_impl(title, path_buf, option_list[option_index], &selection, filter_func);
         if (result == MENU_OK) {
             name_len = strlen(selection.altname);
             if (path_len + name_len + 1 > sizeof(path_buf) - 1 || option_index > sizeof(option_list) - 1) {
@@ -192,7 +192,7 @@ menu_result_t drive_selection_impl(const char *title, uint8_t *num)
     return menu_result;
 }
 
-menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection)
+menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection, file_picker_filter_func_t filter_func)
 {
     menu_result_t menu_result = MENU_CANCEL;
     FRESULT res;
@@ -218,6 +218,9 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
             res = f_readdir(&dir, &fno);
             if (res != FR_OK || fno.fname[0] == 0) break;
             if (fno.fattrib & AM_HID) { continue; }
+            if (filter_func) {
+                if (!filter_func(&fno)) { continue; }
+            }
             build_file_list_entry(&file_entry, &fno);
             utarray_push_back(file_entry_list, &file_entry);
             if (utarray_has_oom(file_entry_list)) {
@@ -296,7 +299,11 @@ void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno)
 
     memset(entry, 0, sizeof(file_picker_entry_t));
     entry->fattrib = fno->fattrib;
-    strncpy(entry->altname, fno->altname, 13);
+    if (fno->altname[0] == '\0') {
+        strncpy(entry->altname, fno->fname, 13);
+    } else {
+        strncpy(entry->altname, fno->altname, 13);
+    }
 
     name_len = strlen(fno->fname);
     if (name_len > max_name_len) {
