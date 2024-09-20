@@ -318,6 +318,8 @@ void main_task_display_init()
 
 void main_task_led_init()
 {
+    //FIXME Replace with updated LED Driver code
+#if 0
     const stp16cpc26_handle_t led_handle = {
         .hspi = &hspi3,
         .le_gpio_port = LED_LE_GPIO_Port,
@@ -333,6 +335,7 @@ void main_task_led_init()
     } else {
         led_set_brightness(settings_get_led_brightness());
     }
+#endif
 }
 
 void main_task_buzzer_init()

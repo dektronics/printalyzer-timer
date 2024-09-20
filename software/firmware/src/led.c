@@ -17,6 +17,7 @@ static uint8_t led_brightness = 0;
 
 HAL_StatusTypeDef led_init(const stp16cpc26_handle_t *handle)
 {
+#if 0
     log_d("led_init");
 
     if (!handle) {
@@ -30,18 +31,21 @@ HAL_StatusTypeDef led_init(const stp16cpc26_handle_t *handle)
     led_brightness = 0;
     stp16cpc26_set_leds(&led_handle, 0);
     stp16cpc26_set_brightness(&led_handle, 0);
-
+#endif
     return HAL_OK;
 }
 
 HAL_StatusTypeDef led_set_state(uint16_t state)
 {
+#if 0
     HAL_StatusTypeDef ret;
     ret = stp16cpc26_set_leds(&led_handle, state);
     if (ret == HAL_OK) {
         led_state = state;
     }
     return ret;
+#endif
+    return HAL_OK;
 }
 
 uint16_t led_get_state()
@@ -60,15 +64,19 @@ HAL_StatusTypeDef led_set_on(led_t led)
 
 HAL_StatusTypeDef led_set_off(led_t led)
 {
+#if 0
     uint16_t updated_state = led_state & ~((uint16_t)led);
     if (updated_state == led_state) {
         return HAL_OK;
     }
     return led_set_state(updated_state);
+#endif
+    return HAL_OK;
 }
 
 HAL_StatusTypeDef led_set_brightness(uint8_t brightness)
 {
+#if 0
     HAL_StatusTypeDef ret;
 
     const uint16_t max_duty_cycle = stp16cpc26_get_max_brightness(&led_handle);
@@ -85,6 +93,8 @@ HAL_StatusTypeDef led_set_brightness(uint8_t brightness)
         led_brightness = brightness;
     }
     return ret;
+#endif
+    return HAL_OK;
 }
 
 uint8_t led_get_brightness()

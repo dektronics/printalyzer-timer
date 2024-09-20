@@ -13,7 +13,6 @@
 #include "board_config.h"
 #include "main_task.h"
 #include "gpio_task.h"
-#include "meter_probe.h"
 #include "dmx.h"
 
 CRC_HandleTypeDef hcrc;
@@ -26,10 +25,8 @@ I2C_HandleTypeDef hi2c1;
 SMBUS_HandleTypeDef hsmbus2;
 
 SPI_HandleTypeDef hspi1;
-SPI_HandleTypeDef hspi3;
 
 TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim9;
@@ -46,9 +43,7 @@ static void dma_init(void);
 static void i2c1_init(void);
 static void i2c2_smbus_init(void);
 static void spi1_init(void);
-static void spi3_init(void);
 static void tim1_init(void);
-static void tim3_init(void);
 static void tim4_init(void);
 static void tim8_init(void);
 static void tim9_init(void);
@@ -202,7 +197,7 @@ void gpio_init(void)
     __HAL_RCC_GPIOD_CLK_ENABLE();
 
     /* Configure GPIO pin Output Level */
-    HAL_GPIO_WritePin(GPIOC, LED_LE_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOC, LED_RESET_Pin|DISP_RESET_Pin|KEY_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin, GPIO_PIN_RESET);
 
     /* Configure GPIO pin Output Level */
     HAL_GPIO_WritePin(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin, GPIO_PIN_RESET);
@@ -218,24 +213,18 @@ void gpio_init(void)
 
     /* Configure unused GPIO pins : PC13 PC14 PC15 PC0 PC3 PC5 */
     GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-                          |GPIO_PIN_3;
+                          |GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_10;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: LED_LE_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
-    GPIO_InitStruct.Pin = LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin;
+    /* Configure GPIO pins: LED_RESET_Pin DISP_RESET_Pin DMX512_TX_EN_Pin RELAY_SFLT_Pin */
+    GPIO_InitStruct.Pin = LED_RESET_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: KEY_RESET_Pin */
-    GPIO_InitStruct.Pin = KEY_RESET_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-    HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* Configure GPIO pins: BUZZ_EN1_Pin BUZZ_EN2_Pin DISP_CS_Pin DISP_DC_Pin DMX512_RX_EN_Pin */
     GPIO_InitStruct.Pin = BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin
@@ -251,8 +240,15 @@ void gpio_init(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* Configure GPIO pins: PB1 PB2 PB4 PB9 */
-    GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9;
+    /* Configure GPIO pins: KEY_RESET_Pin */
+    GPIO_InitStruct.Pin = KEY_RESET_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(KEY_RESET_GPIO_Port, &GPIO_InitStruct);
+
+    /* Configure GPIO pins: PB0 PB1 PB2 PB4 PB9 */
+    GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -358,28 +354,6 @@ void spi1_init(void)
     }
 }
 
-void spi3_init(void)
-{
-    /*
-     * SPI3 is used for the LED driver
-     */
-    hspi3.Instance = SPI3;
-    hspi3.Init.Mode = SPI_MODE_MASTER;
-    hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-    hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-    hspi3.Init.CLKPolarity = SPI_POLARITY_HIGH;
-    hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-    hspi3.Init.NSS = SPI_NSS_SOFT;
-    hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
-    hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-    hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-    hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-    hspi3.Init.CRCPolynomial = 10;
-    if (HAL_SPI_Init(&hspi3) != HAL_OK) {
-        Error_Handler();
-    }
-}
-
 void tim1_init(void)
 {
     /*
@@ -414,41 +388,6 @@ void tim1_init(void)
     if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK) {
         Error_Handler();
     }
-}
-
-void tim3_init(void)
-{
-    /*
-     * TIM3 is used to control LED brightness
-     */
-    TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef sConfigOC = {0};
-
-    htim3.Instance = TIM3;
-    htim3.Init.Prescaler = 8;
-    htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-    htim3.Init.Period = 999;
-    htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-    if (HAL_TIM_PWM_Init(&htim3) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-    if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK) {
-        Error_Handler();
-    }
-
-    sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    sConfigOC.Pulse = 500;
-    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-    if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK) {
-        Error_Handler();
-    }
-
-    HAL_TIM_MspPostInit(&htim3);
 }
 
 void tim4_init(void)
@@ -607,7 +546,7 @@ void gpio_deinit(void)
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3|GPIO_PIN_12);
     HAL_GPIO_DeInit(GPIOA, BUZZ_EN1_Pin|BUZZ_EN2_Pin|DISP_CS_Pin|DISP_DC_Pin|DMX512_RX_EN_Pin);
     HAL_GPIO_DeInit(GPIOC, KEY_RESET_Pin);
-    HAL_GPIO_DeInit(GPIOC, LED_LE_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
+    HAL_GPIO_DeInit(GPIOC, LED_RESET_Pin|DISP_RESET_Pin|DMX512_TX_EN_Pin|RELAY_SFLT_Pin);
     HAL_GPIO_DeInit(GPIOC, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_3);
 
     __HAL_RCC_GPIOC_CLK_DISABLE();
@@ -631,7 +570,6 @@ void i2c_deinit(void)
 
 void spi_deinit(void)
 {
-    HAL_SPI_DeInit(&hspi3);
     HAL_SPI_DeInit(&hspi1);
 }
 
@@ -641,7 +579,6 @@ void tim_deinit(void)
     HAL_TIM_PWM_DeInit(&htim9);
     HAL_TIM_PWM_DeInit(&htim8);
     HAL_TIM_OC_DeInit(&htim4);
-    HAL_TIM_PWM_DeInit(&htim3);
     HAL_TIM_Encoder_DeInit(&htim1);
 }
 
@@ -706,9 +643,7 @@ int main(void)
     i2c1_init();
     i2c2_smbus_init();
     spi1_init();
-    spi3_init();
     tim1_init();
-    tim3_init();
     tim4_init();
     tim8_init();
     tim9_init();

@@ -1511,14 +1511,11 @@ static void HCD_HC_IN_IRQHandler(HCD_HandleTypeDef *hhcd, uint8_t chnum)
       if ((hhcd->hc[chnum].ep_type == EP_TYPE_CTRL) ||
           (hhcd->hc[chnum].ep_type == EP_TYPE_BULK))
       {
-        if (hhcd->hc[chnum].no_reactivate_on_nak == 0) /* (DK) */
-        {
-          /* re-activate the channel */
-          tmpreg = USBx_HC(chnum)->HCCHAR;
-          tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
-          tmpreg |= USB_OTG_HCCHAR_CHENA;
-          USBx_HC(chnum)->HCCHAR = tmpreg;
-        }
+        /* re-activate the channel */
+        tmpreg = USBx_HC(chnum)->HCCHAR;
+        tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+        tmpreg |= USB_OTG_HCCHAR_CHENA;
+        USBx_HC(chnum)->HCCHAR = tmpreg;
       }
     }
     else if (hhcd->hc[chnum].state == HC_BBLERR)
@@ -1723,6 +1720,12 @@ static void HCD_HC_OUT_IRQHandler(HCD_HandleTypeDef *hhcd, uint8_t chnum)
       else
       {
         hhcd->hc[chnum].urb_state = URB_NOTREADY;
+
+        /* Re-activate the channel  */
+        tmpreg = USBx_HC(chnum)->HCCHAR;
+        tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
+        tmpreg |= USB_OTG_HCCHAR_CHENA;
+        USBx_HC(chnum)->HCCHAR = tmpreg;
       }
     }
     __HAL_HCD_CLEAR_HC_INT(chnum, USB_OTG_HCINT_TXERR);
