@@ -136,17 +136,17 @@ menu_result_t diagnostics_keypad()
 
 menu_result_t diagnostics_led()
 {
-    uint16_t current_state = led_get_state();
-    uint8_t current_brightness = led_get_brightness();
+    const uint16_t current_state = LED_ILLUM_ALL;
+    const uint8_t current_brightness = settings_get_led_brightness();
     char buf[256];
 
-    // Start with all LEDs off
-    led_set_state(0);
+    /* Start with all LEDs off */
+    led_set_value(LED_ILLUM_ALL, 0);
 
     bool illum_on = false;
     int led_index = 0;
     uint8_t led_brightness = current_brightness;
-    bool led_brightness_changed = false;
+    bool setting_changed = false;
 
     for (;;) {
         sprintf(buf,
@@ -162,43 +162,44 @@ menu_result_t diagnostics_led()
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
                 illum_on = !illum_on;
-                led_index = 0;
+                setting_changed = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                illum_on = false;
                 if (led_index <= 0) {
                     led_index = 24;
                 } else {
                     led_index--;
                 }
+                setting_changed = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (led_index >= 12) {
                     led_index = 0;
                 } else {
                     led_index++;
                 }
+                setting_changed = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if ((255 - led_brightness) >= 10) {
                     led_brightness += 10;
                 } else {
                     led_brightness = 255;
                 }
-                led_brightness_changed = true;
+                setting_changed = true;
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
                 if (led_brightness >= 10) {
                     led_brightness -= 10;
                 } else {
                     led_brightness = 0;
                 }
-                led_brightness_changed = true;
+                setting_changed = true;
             } else if (keypad_event.key == KEYPAD_ENCODER_CCW && keypad_event.pressed) {
                 if (led_brightness > 0) {
                     led_brightness--;
-                    led_brightness_changed = true;
+                    setting_changed = true;
                 }
             } else if (keypad_event.key == KEYPAD_ENCODER_CW && keypad_event.pressed) {
                 if (led_brightness < 255) {
                     led_brightness++;
-                    led_brightness_changed = true;
+                    setting_changed = true;
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
@@ -207,65 +208,59 @@ menu_result_t diagnostics_led()
                 break;
             }
 
-            if (illum_on) {
-                led_set_on(LED_ILLUM_ALL);
-            } else {
-                led_set_off(LED_ILLUM_ALL);
-            }
-
-            switch (led_index) {
-            case 1:
-                led_set_state(LED_START_UPPER);
-                break;
-            case 2:
-                led_set_state(LED_START_LOWER);
-                break;
-            case 3:
-                led_set_state(LED_FOCUS_UPPER);
-                break;
-            case 4:
-                led_set_state(LED_FOCUS_LOWER);
-                break;
-            case 5:
-                led_set_state(LED_DEC_CONTRAST);
-                break;
-            case 6:
-                led_set_state(LED_DEC_EXPOSURE);
-                break;
-            case 7:
-                led_set_state(LED_INC_CONTRAST);
-                break;
-            case 8:
-                led_set_state(LED_INC_EXPOSURE);
-                break;
-            case 9:
-                led_set_state(LED_ADD_ADJUSTMENT);
-                break;
-            case 10:
-                led_set_state(LED_TEST_STRIP);
-                break;
-            case 11:
-                led_set_state(LED_CANCEL);
-                break;
-            case 12:
-                led_set_state(LED_MENU);
-                break;
-            default:
-                if (!illum_on) {
-                    led_set_state(0);
+            if (setting_changed) {
+                led_t led_value;
+                switch (led_index) {
+                case 1:
+                    led_value = LED_START_UPPER;
+                    break;
+                case 2:
+                    led_value = LED_START_LOWER;
+                    break;
+                case 3:
+                    led_value = LED_FOCUS_UPPER;
+                    break;
+                case 4:
+                    led_value = LED_FOCUS_LOWER;
+                    break;
+                case 5:
+                    led_value = LED_DEC_CONTRAST;
+                    break;
+                case 6:
+                    led_value = LED_DEC_EXPOSURE;
+                    break;
+                case 7:
+                    led_value = LED_INC_CONTRAST;
+                    break;
+                case 8:
+                    led_value = LED_INC_EXPOSURE;
+                    break;
+                case 9:
+                    led_value = LED_ADD_ADJUSTMENT;
+                    break;
+                case 10:
+                    led_value = LED_TEST_STRIP;
+                    break;
+                case 11:
+                    led_value = LED_CANCEL;
+                    break;
+                case 12:
+                    led_value = LED_MENU;
+                    break;
+                default:
+                    led_value = LED_ILLUM_ALL;
+                    break;
                 }
-                break;
-            }
 
-            if (led_brightness_changed) {
-                led_set_brightness(led_brightness);
-                led_brightness_changed = false;
+                led_set_value(LED_ILLUM_ALL, 0);
+                led_set_value(led_value, illum_on ? led_brightness : 0);
+                setting_changed = false;
             }
         }
     }
 
-    led_set_state(current_state);
-    led_set_brightness(current_brightness);
+    led_set_value(current_state, current_brightness);
+
     return MENU_OK;
 }
 

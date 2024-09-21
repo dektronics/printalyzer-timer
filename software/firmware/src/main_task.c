@@ -318,24 +318,16 @@ void main_task_display_init()
 
 void main_task_led_init()
 {
-    //FIXME Replace with updated LED Driver code
-#if 0
-    const stp16cpc26_handle_t led_handle = {
-        .hspi = &hspi3,
-        .le_gpio_port = LED_LE_GPIO_Port,
-        .le_gpio_pin = LED_LE_Pin,
-        .oe_tim = &htim3,
-        .oe_tim_channel = TIM_CHANNEL_3,
-    };
+    /* Bring the LED controller out of reset */
+    HAL_GPIO_WritePin(LED_RESET_GPIO_Port, LED_RESET_Pin, GPIO_PIN_SET);
+    osDelay(5);
 
-    led_init(&led_handle);
-    led_set_state(LED_ILLUM_ALL);
+    led_init(&hi2c1, i2c1_mutex);
     if (illum_controller_is_blackout()) {
-        led_set_brightness(0);
+        led_set_value(LED_ILLUM_ALL, 0);
     } else {
-        led_set_brightness(settings_get_led_brightness());
+        led_set_value(LED_ILLUM_ALL, settings_get_led_brightness());
     }
-#endif
 }
 
 void main_task_buzzer_init()
@@ -422,7 +414,7 @@ void main_task_shutdown()
     main_task_disable_interrupts();
 
     /* Turn off panel LEDs */
-    led_set_brightness(0);
+    led_set_value(LED_ILLUM_ALL, 0);
 
     /* Put the keypad controller into the reset state */
     HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_RESET);

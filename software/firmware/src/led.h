@@ -1,8 +1,8 @@
 #ifndef LEDS_H
 #define LEDS_H
 
-#include "stm32f4xx_hal.h"
-#include "stp16cpc26.h"
+#include <stm32f4xx_hal.h>
+#include <cmsis_os.h>
 
 typedef enum {
     LED_START_LOWER = 0x0100,
@@ -26,15 +26,8 @@ typedef enum {
     LED_ILLUM_ALL = LED_ILLUM_CONTROL | LED_ILLUM_ADJUST | LED_ILLUM_COMMANDS,
 } led_t;
 
-HAL_StatusTypeDef led_init(const stp16cpc26_handle_t *handle);
+HAL_StatusTypeDef led_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 
-HAL_StatusTypeDef led_set_state(uint16_t state);
-uint16_t led_get_state();
-
-HAL_StatusTypeDef led_set_on(led_t led);
-HAL_StatusTypeDef led_set_off(led_t led);
-
-HAL_StatusTypeDef led_set_brightness(uint8_t brightness);
-uint8_t led_get_brightness();
+HAL_StatusTypeDef led_set_value(led_t led, uint8_t value);
 
 #endif /* LEDS_H */

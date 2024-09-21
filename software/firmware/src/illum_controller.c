@@ -231,9 +231,9 @@ void illum_controller_keypad_blackout_callback(bool enabled, void *user_data)
         }
 
         if (enabled) {
-            led_set_brightness(0);
+            led_set_value(LED_ILLUM_ALL, 0);
         } else {
-            led_set_brightness(settings_get_led_brightness());
+            led_set_value(LED_ILLUM_ALL, settings_get_led_brightness());
         }
     }
 

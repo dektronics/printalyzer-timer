@@ -451,7 +451,7 @@ static void screen_brightness_adjust_callback(uint8_t value, void *user_data)
 
 static void panel_brightness_adjust_callback(uint8_t value, void *user_data)
 {
-    led_set_brightness(value);
+    led_set_value(LED_ILLUM_ALL, value);
 }
 
 menu_result_t menu_settings_display_brightness()
@@ -488,7 +488,7 @@ menu_result_t menu_settings_display_brightness()
             } else {
                 led_setting = value_sel;
             }
-            led_set_brightness(led_setting);
+            led_set_value(LED_ILLUM_ALL, led_setting);
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
             break;
@@ -515,7 +515,7 @@ menu_result_t menu_settings_display_brightness()
     }
 
     display_set_brightness(settings_get_display_brightness());
-    led_set_brightness(settings_get_led_brightness());
+    led_set_value(LED_ILLUM_ALL, settings_get_led_brightness());
 
     return menu_result;
 }

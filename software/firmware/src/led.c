@@ -7,129 +7,77 @@
 #define LOG_TAG "led"
 #include <elog.h>
 
-#include "stp16cpc26.h"
+#include "aw9523.h"
 
-static uint16_t led_gamma_value(uint8_t input, uint16_t max_brightness);
+/* Handle to I2C peripheral used by the keypad controller */
+static I2C_HandleTypeDef *led_i2c = NULL;
+static osMutexId_t led_i2c_mutex = NULL;
 
-static stp16cpc26_handle_t led_handle = {0};
-static uint16_t led_state = 0;
-static uint8_t led_brightness = 0;
+static bool led_initialized = false;
+static uint8_t led_state[12];
 
-HAL_StatusTypeDef led_init(const stp16cpc26_handle_t *handle)
+static const uint16_t led_map[] = {
+    LED_START_LOWER, LED_FOCUS_LOWER, LED_INC_EXPOSURE, LED_DEC_EXPOSURE,
+    LED_INC_CONTRAST, LED_DEC_CONTRAST,
+    LED_TEST_STRIP, LED_ADD_ADJUSTMENT, LED_CANCEL, LED_MENU,
+    LED_START_UPPER, LED_FOCUS_UPPER
+};
+
+HAL_StatusTypeDef led_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
 {
-#if 0
+    HAL_StatusTypeDef ret = HAL_OK;
+
     log_d("led_init");
 
-    if (!handle) {
-        log_e("LED handle not initialized");
+    if (!hi2c || !i2c_mutex) {
         return HAL_ERROR;
     }
 
-    memcpy(&led_handle, handle, sizeof(stp16cpc26_handle_t));
-
-    led_state = 0;
-    led_brightness = 0;
-    stp16cpc26_set_leds(&led_handle, 0);
-    stp16cpc26_set_brightness(&led_handle, 0);
-#endif
-    return HAL_OK;
-}
-
-HAL_StatusTypeDef led_set_state(uint16_t state)
-{
-#if 0
-    HAL_StatusTypeDef ret;
-    ret = stp16cpc26_set_leds(&led_handle, state);
-    if (ret == HAL_OK) {
-        led_state = state;
+    if (led_initialized) {
+        return HAL_ERROR;
     }
+
+    led_i2c = hi2c;
+    led_i2c_mutex = i2c_mutex;
+
+    memset(led_state, 0, sizeof(led_state));
+
+    osMutexAcquire(led_i2c_mutex, portMAX_DELAY);
+    ret = aw9523_init(led_i2c);
+    osMutexRelease(led_i2c_mutex);
+
+    if (ret != HAL_OK) {
+        log_e("Unable to initialize LED driver");
+        return ret;
+    }
+    led_initialized = true;
+
+    /* Try to set all LEDs to the off state */
+    osMutexAcquire(led_i2c_mutex, portMAX_DELAY);
+    for (uint8_t i = 0; i < 12; i++) {
+        aw9523_set_led(led_i2c, i, 0);
+    }
+    osMutexRelease(led_i2c_mutex);
+
     return ret;
-#endif
-    return HAL_OK;
 }
 
-uint16_t led_get_state()
+HAL_StatusTypeDef led_set_value(led_t led, uint8_t value)
 {
-    return led_state;
-}
+    HAL_StatusTypeDef ret = HAL_OK;
+    if (!led_initialized) { return HAL_ERROR; }
 
-HAL_StatusTypeDef led_set_on(led_t led)
-{
-    uint16_t updated_state = led_state | (uint16_t)led;
-    if (updated_state == led_state) {
-        return HAL_OK;
+    osMutexAcquire(led_i2c_mutex, portMAX_DELAY);
+    for (uint8_t i = 0; i < 12; i++) {
+        if ((led & led_map[i]) != 0) {
+            if (led_state[i] != value) {
+                ret = aw9523_set_led(led_i2c, i, value);
+                if (ret != HAL_OK) { break; }
+                led_state[i] = value;
+            }
+        }
     }
-    return led_set_state(updated_state);
-}
+    osMutexRelease(led_i2c_mutex);
 
-HAL_StatusTypeDef led_set_off(led_t led)
-{
-#if 0
-    uint16_t updated_state = led_state & ~((uint16_t)led);
-    if (updated_state == led_state) {
-        return HAL_OK;
-    }
-    return led_set_state(updated_state);
-#endif
-    return HAL_OK;
-}
-
-HAL_StatusTypeDef led_set_brightness(uint8_t brightness)
-{
-#if 0
-    HAL_StatusTypeDef ret;
-
-    const uint16_t max_duty_cycle = stp16cpc26_get_max_brightness(&led_handle);
-    uint16_t duty_cycle;
-
-    if (brightness > 0) {
-        duty_cycle = led_gamma_value(brightness, max_duty_cycle);
-    } else {
-        duty_cycle = max_duty_cycle + 1;
-    }
-
-    ret = stp16cpc26_set_brightness(&led_handle, duty_cycle);
-    if (ret == HAL_OK) {
-        led_brightness = brightness;
-    }
     return ret;
-#endif
-    return HAL_OK;
-}
-
-uint8_t led_get_brightness()
-{
-    return led_brightness;
-}
-
-uint16_t led_gamma_value(uint8_t input, uint16_t max_brightness)
-{
-    /*
-     * This code is based on the following reference snippets:
-     *
-     * L* = 116(Y/Yn)^1/3 - 16 , Y/Yn > 0.008856
-     * L* = 903.3(Y/Yn), Y/Yn <= 0.008856
-     *
-     * https://ledshield.wordpress.com/2012/11/13/led-brightness-to-your-eye-gamma-correction-no/
-     * https://web.archive.org/web/20190122235608/http://forum.arduino.cc/index.php/topic,147810.0.html
-     */
-
-    float brightness_ratio = (input / (float)UINT8_MAX) * 100.0F;
-
-    /* Calculate based on the CIE formula */
-    float L;
-    if (brightness_ratio > 7.9996F) {
-        L = powf(((brightness_ratio + 16.0F) / 116.0F), 3.0F);
-    } else {
-        L = brightness_ratio / 903.3F;
-    }
-
-    /* Convert to the result we want */
-    int result = max_brightness - lroundf(L * (float)max_brightness);
-
-    /* Clamp the output */
-    if (result < 0) { result = 0; }
-    else if (result > max_brightness) { result = max_brightness; }
-
-    return (uint16_t)result;
 }
