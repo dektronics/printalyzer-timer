@@ -11,4 +11,6 @@ HAL_StatusTypeDef aw9523_init(I2C_HandleTypeDef *hi2c);
 
 HAL_StatusTypeDef aw9523_set_led(I2C_HandleTypeDef *hi2c, uint8_t index, uint8_t value);
 
+HAL_StatusTypeDef aw9523_set_led_all(I2C_HandleTypeDef *hi2c, uint8_t value);
+
 #endif /* AW9523_H */

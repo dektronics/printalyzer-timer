@@ -68,12 +68,18 @@ HAL_StatusTypeDef led_set_value(led_t led, uint8_t value)
     if (!led_initialized) { return HAL_ERROR; }
 
     osMutexAcquire(led_i2c_mutex, portMAX_DELAY);
-    for (uint8_t i = 0; i < 12; i++) {
-        if ((led & led_map[i]) != 0) {
-            if (led_state[i] != value) {
-                ret = aw9523_set_led(led_i2c, i, value);
-                if (ret != HAL_OK) { break; }
-                led_state[i] = value;
+    if (led == LED_ILLUM_ALL) {
+        if (aw9523_set_led_all(led_i2c, value) == HAL_OK) {
+            memset(led_state, value, sizeof(led_state));
+        }
+    } else {
+        for (uint8_t i = 0; i < 12; i++) {
+            if ((led & led_map[i]) != 0) {
+                if (led_state[i] != value) {
+                    ret = aw9523_set_led(led_i2c, i, value);
+                    if (ret != HAL_OK) { break; }
+                    led_state[i] = value;
+                }
             }
         }
     }

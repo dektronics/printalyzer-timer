@@ -3,6 +3,8 @@
 #define LOG_TAG "aw9523"
 #include <elog.h>
 
+#include <string.h>
+
 static const uint8_t AW9523_ADDRESS = 0x5B << 1;
 
 /* Registers */
@@ -18,6 +20,7 @@ static const uint8_t AW9523_ADDRESS = 0x5B << 1;
 #define AW9523_CTL          0x11
 #define AW9523_LED_MODE_P0  0x12
 #define AW9523_LED_MODE_P1  0x13
+#define AW9523_LED_DIM_BASE 0x20
 #define AW9523_SW_RSTN      0x7F
 
 static const uint8_t AW9523_LED_DIM[] = {
@@ -67,4 +70,20 @@ HAL_StatusTypeDef aw9523_set_led(I2C_HandleTypeDef *hi2c, uint8_t index, uint8_t
     return HAL_I2C_Mem_Write(hi2c, AW9523_ADDRESS,
         AW9523_LED_DIM[index], I2C_MEMADD_SIZE_8BIT,
         &value, 1, HAL_MAX_DELAY);
+}
+
+HAL_StatusTypeDef aw9523_set_led_all(I2C_HandleTypeDef *hi2c, uint8_t value)
+{
+    if (!hi2c) { return HAL_ERROR; }
+
+    uint8_t data[16] = {0};
+
+    /* Only set LEDs that are actually configured */
+    for(uint8_t i = 0; i < 12; i++) {
+        data[AW9523_LED_DIM[i] - AW9523_LED_DIM_BASE] = value;
+    }
+
+    return HAL_I2C_Mem_Write(hi2c, AW9523_ADDRESS,
+        AW9523_LED_DIM_BASE, I2C_MEMADD_SIZE_8BIT,
+        data, sizeof(data), HAL_MAX_DELAY);
 }
