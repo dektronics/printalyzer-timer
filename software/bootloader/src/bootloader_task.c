@@ -519,7 +519,7 @@ update_result_t process_firmware_update(const char *file_path, uint32_t file_che
             break;
         }
 
-        //BL_PRINTF("Firmware programmed\r\n");
+        BL_PRINTF("Firmware programmed\r\n");
         display_graphic_update_progress_increment(150);
 
         f_rewind(&fp);

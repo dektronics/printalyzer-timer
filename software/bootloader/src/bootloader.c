@@ -46,8 +46,8 @@ bootloader_status_t bootloader_erase(void)
     FLASH_EraseInitTypeDef sEraseInit = {0};
     sEraseInit.TypeErase = FLASH_TYPEERASE_SECTORS;
     sEraseInit.Banks = FLASH_BANK_1;
-    sEraseInit.Sector = FLASH_SECTOR_5; /* 0x08020000 */
-    sEraseInit.NbSectors = 3;
+    sEraseInit.Sector = FLASH_SECTOR_4; /* 0x08010000 */
+    sEraseInit.NbSectors = 4;
     sEraseInit.VoltageRange = FLASH_VOLTAGE_RANGE_3;
 
     HAL_FLASH_Unlock();
@@ -145,7 +145,7 @@ bootloader_flash_protection_t bootloader_get_protection_status(void)
 
     HAL_FLASHEx_OBGetConfig(&sOBInit);
 
-    if (~(sOBInit.WRPSector) & (OB_WRP_SECTOR_5 | OB_WRP_SECTOR_6 | OB_WRP_SECTOR_7)) {
+    if (~(sOBInit.WRPSector) & (OB_WRP_SECTOR_4 | OB_WRP_SECTOR_5 | OB_WRP_SECTOR_6 | OB_WRP_SECTOR_7)) {
         protection |= BL_PROTECTION_WRP;
     }
     if (sOBInit.RDPLevel != OB_RDP_LEVEL_0) {
@@ -154,7 +154,7 @@ bootloader_flash_protection_t bootloader_get_protection_status(void)
 
     HAL_FLASHEx_AdvOBGetConfig(&sAdvOBInit);
 
-    if ((sAdvOBInit.Sectors & 0x8000) && (~(sAdvOBInit.Sectors) & (OB_PCROP_SECTOR_5 | OB_PCROP_SECTOR_6 | OB_PCROP_SECTOR_7))) {
+    if ((sAdvOBInit.Sectors & 0x8000) && (~(sAdvOBInit.Sectors) & (OB_PCROP_SECTOR_4 | OB_PCROP_SECTOR_5 | OB_PCROP_SECTOR_6 | OB_PCROP_SECTOR_7))) {
         protection |= BL_PROTECTION_PCROP;
     }
 
@@ -197,7 +197,7 @@ bootloader_status_t bootloader_config_protection(bootloader_flash_protection_t p
     sOBInit.USERConfig = sOBPrev.USERConfig;
 
     /* Get pages already write protected */
-    protected_sectors = sOBPrev.WRPSector | (OB_WRP_SECTOR_5 | OB_WRP_SECTOR_6 | OB_WRP_SECTOR_7);
+    protected_sectors = sOBPrev.WRPSector | (OB_WRP_SECTOR_4 | OB_WRP_SECTOR_5 | OB_WRP_SECTOR_6 | OB_WRP_SECTOR_7);
 
     do {
         /* Unlock flash to enable control register access */

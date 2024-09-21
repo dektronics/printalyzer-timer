@@ -18,7 +18,7 @@
 #include <stm32f4xx_hal.h>
 
 /** Start address of application space in flash */
-#define APP_ADDRESS 0x08020000UL
+#define APP_ADDRESS 0x08010000UL
 
 /** End address of application space (address of last byte) */
 #define END_ADDRESS 0x0807FFFBUL
