@@ -124,7 +124,7 @@ static const uint8_t cdc_ecm_descriptor[] = {
     0x02,
     0x01,
     0x40,
-    0x01,
+    0x00,
     0x00,
 #endif
     0x00
@@ -269,7 +269,7 @@ struct usbd_interface intf1;
  * sudo ifconfig enxaabbccddeeff up
  * sudo dhcpclient enxaabbccddeeff
 */
-void cdc_ecm_init(uint8_t busid, uint32_t reg_base)
+void cdc_ecm_init(uint8_t busid, uintptr_t reg_base)
 {
     cdc_ecm_lwip_init();
 

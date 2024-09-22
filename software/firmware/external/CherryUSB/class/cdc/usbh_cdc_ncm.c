@@ -48,7 +48,7 @@ static int usbh_cdc_ncm_get_ntb_parameters(struct usbh_cdc_ncm *cdc_ncm_class, s
     setup->wLength = 28;
 
     ret = usbh_control_transfer(cdc_ncm_class->hport, setup, g_cdc_ncm_buf);
-    if (ret < 0) {
+    if (ret < 8) {
         return ret;
     }
 
@@ -259,6 +259,7 @@ void usbh_cdc_ncm_rx_thread(void *argument)
     uint32_t transfer_size = (16 * 1024);
 #endif
 
+    (void)argument;
     USB_LOG_INFO("Create cdc ncm rx thread\r\n");
     // clang-format off
 find_class:
@@ -330,7 +331,7 @@ find_class:
 #else
             if ((g_cdc_ncm_rx_length + (16 * 1024)) > CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE) {
 #endif
-                USB_LOG_ERR("Rx packet is overflow, please ruduce tcp window size or increase CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE\r\n");
+                USB_LOG_ERR("Rx packet is overflow, please reduce tcp window size or increase CONFIG_USBHOST_CDC_NCM_ETH_MAX_RX_SIZE\r\n");
                 while (1) {
                 }
             }
@@ -386,10 +387,12 @@ int usbh_cdc_ncm_eth_output(uint32_t buflen)
 
 __WEAK void usbh_cdc_ncm_run(struct usbh_cdc_ncm *cdc_ncm_class)
 {
+    (void)cdc_ncm_class;
 }
 
 __WEAK void usbh_cdc_ncm_stop(struct usbh_cdc_ncm *cdc_ncm_class)
 {
+    (void)cdc_ncm_class;
 }
 
 const struct usbh_class_driver cdc_ncm_class_driver = {

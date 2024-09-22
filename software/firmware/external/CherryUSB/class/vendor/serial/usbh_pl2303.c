@@ -15,7 +15,7 @@
 
 USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_pl2303_buf[64];
 
-#define CONFIG_USBHOST_MAX_PL2303_CLASS 4
+#define CONFIG_USBHOST_MAX_PL2303_CLASS 1
 
 #define UT_WRITE_VENDOR_DEVICE   (USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE)
 #define UT_READ_VENDOR_DEVICE    (USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE)
@@ -25,11 +25,11 @@ static uint32_t g_devinuse = 0;
 
 static struct usbh_pl2303 *usbh_pl2303_class_alloc(void)
 {
-    int devno;
+    uint8_t devno;
 
     for (devno = 0; devno < CONFIG_USBHOST_MAX_PL2303_CLASS; devno++) {
-        if ((g_devinuse & (1 << devno)) == 0) {
-            g_devinuse |= (1 << devno);
+        if ((g_devinuse & (1U << devno)) == 0) {
+            g_devinuse |= (1U << devno);
             memset(&g_pl2303_class[devno], 0, sizeof(struct usbh_pl2303));
             g_pl2303_class[devno].minor = devno;
             return &g_pl2303_class[devno];
@@ -40,10 +40,10 @@ static struct usbh_pl2303 *usbh_pl2303_class_alloc(void)
 
 static void usbh_pl2303_class_free(struct usbh_pl2303 *pl2303_class)
 {
-    int devno = pl2303_class->minor;
+    uint8_t devno = pl2303_class->minor;
 
-    if (devno >= 0 && devno < 32) {
-        g_devinuse &= ~(1 << devno);
+    if (devno < 32) {
+        g_devinuse &= ~(1U << devno);
     }
     memset(pl2303_class, 0, sizeof(struct usbh_pl2303));
 }
@@ -413,10 +413,12 @@ int usbh_pl2303_bulk_out_transfer(struct usbh_pl2303 *pl2303_class, uint8_t *buf
 
 __WEAK void usbh_pl2303_run(struct usbh_pl2303 *pl2303_class)
 {
+    (void)pl2303_class;
 }
 
 __WEAK void usbh_pl2303_stop(struct usbh_pl2303 *pl2303_class)
 {
+    (void)pl2303_class;
 }
 
 static const uint16_t pl2303_id_table[][2] = {
