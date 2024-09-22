@@ -122,6 +122,43 @@ cp ../../../sys/arduino/u8g2_page_buffer/LoadFromSD/*.ino ../../../../U8g2_Ardui
 mkdir ../../../../U8g2_Arduino/examples/page_buffer/ButtonEmoticon 
 cp ../../../sys/arduino/u8g2_page_buffer/ButtonEmoticon/*.ino ../../../../U8g2_Arduino/examples/page_buffer/ButtonEmoticon/.
 
+# mui
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIBlink
+cp ../../../sys/arduino/u8g2_page_buffer/MUIBlink/*.ino ../../../../U8g2_Arduino/examples/mui/MUIBlink/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIMinimal
+cp ../../../sys/arduino/u8g2_page_buffer/MUIMinimal/*.ino ../../../../U8g2_Arduino/examples/mui/MUIMinimal/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInput1BtnBounce2
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInput1BtnBounce2/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInput1BtnBounce2/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInput2BtnBounce2
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInput2BtnBounce2/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInput2BtnBounce2/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInput3BtnBounce2
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInput3BtnBounce2/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInput3BtnBounce2/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInput3BtnWithU8g2
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInput3BtnWithU8g2/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInput3BtnWithU8g2/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInputSimpleRotary
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInputSimpleRotary/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInputSimpleRotary/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIInputVersatileRotaryEncoder
+cp ../../../sys/arduino/u8g2_page_buffer/MUIInputVersatileRotaryEncoder/*.ino ../../../../U8g2_Arduino/examples/mui/MUIInputVersatileRotaryEncoder/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIStopwatch
+cp ../../../sys/arduino/u8g2_page_buffer/MUIStopwatch/*.ino ../../../../U8g2_Arduino/examples/mui/MUIStopwatch/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUICountDown
+cp ../../../sys/arduino/u8g2_page_buffer/MUICountDown/*.ino ../../../../U8g2_Arduino/examples/mui/MUICountDown/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIWaveformBounce2
+cp ../../../sys/arduino/u8g2_page_buffer/MUIWaveformBounce2/*.ino ../../../../U8g2_Arduino/examples/mui/MUIWaveformBounce2/.
+
+mkdir ../../../../U8g2_Arduino/examples/mui/MUIWaveformSimpleRotary
+cp ../../../sys/arduino/u8g2_page_buffer/MUIWaveformSimpleRotary/*.ino ../../../../U8g2_Arduino/examples/mui/MUIWaveformSimpleRotary/.
 
 # games
 mkdir ../../../../U8g2_Arduino/examples/games/LittleRookChess
@@ -189,6 +226,10 @@ cp ../../../sys/arduino/u8x8/MessageBox/*.ino ../../../../U8g2_Arduino/examples/
 mkdir ../../../../U8g2_Arduino/examples/u8x8/ArduboyTest
 cp ../../../sys/arduino/u8x8/ArduboyTest/*.ino ../../../../U8g2_Arduino/examples/u8x8/ArduboyTest/.
 
+mkdir ../../../../U8g2_Arduino/examples/u8x8/Rotate90
+cp ../../../sys/arduino/u8x8/Rotate90/*.ino ../../../../U8g2_Arduino/examples/u8x8/Rotate90/.
+
+
 # copy other files
 cp ../../../ChangeLog ./../../../../U8g2_Arduino/extras/.
 
@@ -215,6 +256,8 @@ cd ..
 ver=`../u8g2/tools/release/print_release.sh`
 
 sed -i -e "s/version=.*/version=${ver}/" library.properties
+# sed -i -e 's/"version".*/"version": "${ver}",/' library.properties
+sed -i -e "s/.*\"version\".*/  \"version\": \"${ver}\",/" library.json
 
 sed -i -e "s/Download (.*)/Download (${ver})/" README.md
 

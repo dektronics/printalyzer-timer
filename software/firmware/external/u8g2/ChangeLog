@@ -298,7 +298,7 @@ https://github.com/olikraus/u8g2 ChangeLog
   * Experimental support for ST75160, TESTING REQUIRED (issue 1642)
   * Bugfix font compression: Reduced fontsize by up to 4% (issue 1941)
   * Changed SPI mode for SH1106 from 3 to 0 (issue 1901)
-2023-xx-xx      v2.34.xx olikraus@gmail.com
+2023-06-18      v2.34.22 olikraus@gmail.com
   * SSD1327 ZJY M150 128x128 (issue 1960)
   * SSD1316 96x32 (issue 1938)
   * SSD1322 240x128 (issue 2092)
@@ -315,10 +315,37 @@ https://github.com/olikraus/u8g2 ChangeLog
   * Added Spleen Monospaced Font from https://github.com/fcambus/spleen (issue 2015)
   * Extended the "E" font range with subscript characters if available in the original font (issue 2079)
   * Bugfix for ESP32 HW SPI Pin Remapping (issue 377, PR 2123)
-  * Bugfix for LoadFromSD examle (issue 2179)
+  * Bugfix for LoadFromSD example (issue 2179)
   * Changed MUI_LABEL to support UTF8 (issue 2196)
   * Compiler Warning Cleanup for polygon draw (issue 1999, PR 2101)
   * Added MUI fixed width bar graph (issue 2200)
   * Added 04b fonts from u8glib (issue 2157)
   * Added "font_tiny5" (issue 2185)
+  * Added MUI (https://github.com/olikraus/u8g2/wiki/muimanual) examples (issue 1747)
+2024-09-18      v2.35.30 olikraus@gmail.com
+  * ST7586S JLX320160, MD240128 (no flipmode, no u8x8, issues 2186, 2363)
+  * ST75161 JLX160160 (issue 2481)
+  * GP1294AI 256X48 (issue 2213, PR 2222)
+  * UC1628 256x128 (tested), 256x32 (tested), 128x64 (not tested) (issue 2260):
+  * ST7567 96x65 (issue 2332)
+  * ST7539 192x64 (issues 2146 & 2081)
+  * SSD1363 256x128 (issue 2490)
+  * SSD1322 ZJY 256x64 (issue 2386)
+  * UC1604 JLX128x64 (issue 2497)
+  * LS011B7DH03 160x68 (issue 2210)
+  * ST7302 122x250 (no flipmode, no u8x8, issue 2436)
+  * U8x8 example for 90 degree string rotation (issue 2271)
+  * Bugfix for drawUTF8X2 with negative x values (issue 2228)
+  * Examples for I2C adapter board for parallel gfx displays (issue 2191)
+  * New function drawArc (issue 2243, see also https://motla.github.io/arc-algorithm/)
+  * Added "-y" option to otf2bdf. "-y" can be used to fix issues with some fonts (issue 2406) 
+  * Fixed a bug with '\n' in u8log (issue 2319) 
+  * getXOffset for font glyphs (issue 2398)
+  * Improved performance for drawXBM/drawXBMP (issue 2477)
+  * Unifont upgrade from 12.1.02 to 15.1.05 (issue 2502)
+  * Added unifont_jp (issue 2502)
+  * Added BoutiqueBitmap fonts (issue 2265)
+  * MUI: More features and examples
+2024-xx-xx      v2.36.xx        olikraus@gmail.com
+  
   
