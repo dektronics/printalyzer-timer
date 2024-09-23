@@ -47,6 +47,9 @@ static void usbh_serial_cdc_acm_class_free(struct usbh_serial_cdc_acm *cdc_acm_c
 int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
     struct usbh_serial_cdc_acm *cdc_acm_class = (struct usbh_serial_cdc_acm *)serial_class;
+    if (!cdc_acm_class || !cdc_acm_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
     struct usb_setup_packet *setup = serial_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
@@ -63,9 +66,12 @@ int usbh_serial_cdc_acm_set_line_coding(struct usbh_serial_class *serial_class, 
 int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
     struct usbh_serial_cdc_acm *cdc_acm_class = (struct usbh_serial_cdc_acm *)serial_class;
-    struct usb_setup_packet *setup = serial_class->hport->setup;
     int ret;
 
+    if (!cdc_acm_class || !cdc_acm_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    struct usb_setup_packet *setup = serial_class->hport->setup;
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CDC_REQUEST_GET_LINE_CODING;
     setup->wValue = 0;
@@ -83,6 +89,9 @@ int usbh_serial_cdc_acm_get_line_coding(struct usbh_serial_class *serial_class, 
 int usbh_serial_cdc_acm_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts)
 {
     struct usbh_serial_cdc_acm *cdc_acm_class = (struct usbh_serial_cdc_acm *)serial_class;
+    if (!cdc_acm_class || !cdc_acm_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
     struct usb_setup_packet *setup = serial_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;

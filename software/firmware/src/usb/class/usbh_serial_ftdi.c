@@ -121,7 +121,12 @@ static uint32_t baudrate_get_divisor(usbh_ftdi_type_t ftdi_type, uint32_t baud)
 
 int usbh_serial_ftdi_reset(struct usbh_serial_ftdi *ftdi_class)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_RESET_REQUEST;
@@ -134,7 +139,12 @@ int usbh_serial_ftdi_reset(struct usbh_serial_ftdi *ftdi_class)
 
 static int usbh_serial_ftdi_set_modem(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_MODEM_CTRL_REQUEST;
@@ -147,10 +157,15 @@ static int usbh_serial_ftdi_set_modem(struct usbh_serial_ftdi *ftdi_class, uint1
 
 static int usbh_serial_ftdi_set_baudrate(struct usbh_serial_ftdi *ftdi_class, uint32_t baudrate)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
     uint32_t itdf_divisor;
     uint16_t value;
     uint8_t baudrate_high;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     itdf_divisor = baudrate_get_divisor(ftdi_class->ftdi_type, baudrate);
     value = itdf_divisor & 0xFFFF;
@@ -173,10 +188,15 @@ static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class,
      * D11-D12 		STOP_BIT_1=0, STOP_BIT_15=1, STOP_BIT_2=2 
      * D14  		BREAK_OFF=0, BREAK_ON=1
      **/
+    struct usb_setup_packet *setup;
+    uint16_t value;
 
-    uint16_t value = ((isbreak & 0x01) << 14) | ((stopbits & 0x03) << 11) | ((parity & 0x0f) << 8) | (databits & 0x0f);
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    value = ((isbreak & 0x01) << 14) | ((stopbits & 0x03) << 11) | ((parity & 0x0f) << 8) | (databits & 0x0f);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_DATA_REQUEST;
@@ -189,7 +209,12 @@ static int usbh_serial_ftdi_set_data_format(struct usbh_serial_ftdi *ftdi_class,
 
 static int usbh_serial_ftdi_set_latency_timer(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_LATENCY_TIMER_REQUEST;
@@ -202,7 +227,12 @@ static int usbh_serial_ftdi_set_latency_timer(struct usbh_serial_ftdi *ftdi_clas
 
 static int usbh_serial_ftdi_set_flow_ctrl(struct usbh_serial_ftdi *ftdi_class, uint16_t value)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_SET_FLOW_CTRL_REQUEST;
@@ -227,8 +257,13 @@ static int usbh_serial_ftdi_set_flow_ctrl(struct usbh_serial_ftdi *ftdi_class, u
 
 static int usbh_serial_ftdi_read_modem_status(struct usbh_serial_ftdi *ftdi_class)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(ftdi_class);
+    struct usb_setup_packet *setup;
     int ret;
+
+    if (!ftdi_class || !ftdi_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(ftdi_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_DEVICE;
     setup->bRequest = SIO_POLL_MODEM_STATUS_REQUEST;

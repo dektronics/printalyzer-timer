@@ -93,7 +93,12 @@ static int usbh_serial_cp210x_enable(struct usbh_serial_cp210x *cp210x_class)
 
 static int usbh_serial_cp210x_set_flow(struct usbh_serial_cp210x *cp210x_class)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(cp210x_class);
+    struct usb_setup_packet *setup;
+
+    if (!cp210x_class || !cp210x_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(cp210x_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_FLOW;
@@ -108,7 +113,12 @@ static int usbh_serial_cp210x_set_flow(struct usbh_serial_cp210x *cp210x_class)
 
 static int usbh_serial_cp210x_set_chars(struct usbh_serial_cp210x *cp210x_class)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(cp210x_class);
+    struct usb_setup_packet *setup;
+
+    if (!cp210x_class || !cp210x_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(cp210x_class);
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_VENDOR | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = CP210X_SET_CHARS;
@@ -125,7 +135,12 @@ static int usbh_serial_cp210x_set_chars(struct usbh_serial_cp210x *cp210x_class)
 
 static int usbh_serial_cp210x_set_baudrate(struct usbh_serial_cp210x *cp210x_class, uint32_t baudrate)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(cp210x_class);
+    struct usb_setup_packet *setup;
+
+    if (!cp210x_class || !cp210x_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(cp210x_class);
 
     /* Make sure the baudrate setting does not exceed our part's maximum */
     uint32_t maxspeed;
@@ -161,8 +176,13 @@ static int usbh_serial_cp210x_set_baudrate(struct usbh_serial_cp210x *cp210x_cla
 
 static int usbh_serial_cp210x_set_data_format(struct usbh_serial_cp210x *cp210x_class, uint8_t databits, uint8_t parity, uint8_t stopbits)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(cp210x_class);
+    struct usb_setup_packet *setup;
     uint16_t value;
+
+    if (!cp210x_class || !cp210x_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(cp210x_class);
 
     value = ((databits & 0x0F) << 8) | ((parity & 0x0f) << 4) | ((stopbits & 0x03) << 0);
 
@@ -177,8 +197,13 @@ static int usbh_serial_cp210x_set_data_format(struct usbh_serial_cp210x *cp210x_
 
 static int usbh_serial_cp210x_set_mhs(struct usbh_serial_cp210x *cp210x_class, uint8_t dtr, uint8_t rts, uint8_t dtr_mask, uint8_t rts_mask)
 {
-    struct usb_setup_packet *setup = SETUP_PACKET(cp210x_class);
+    struct usb_setup_packet *setup;
     uint16_t value;
+
+    if (!cp210x_class || !cp210x_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(cp210x_class);
 
     value = ((dtr & 0x01) << 0) | ((rts & 0x01) << 1) | ((dtr_mask & 0x01) << 8) | ((rts_mask & 0x01) << 9);
 

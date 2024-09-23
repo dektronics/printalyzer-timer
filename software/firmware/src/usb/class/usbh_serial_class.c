@@ -14,8 +14,8 @@ bool usbh_serial_increment_count(uint8_t *devnum)
     ATOMIC_ENTER_CRITICAL();
     {
         for (devno = 0; devno < CONFIG_USBHOST_MAX_SERIAL_CLASS; devno++) {
-            if ((usbh_serial_dev_in_use & (1 << devno)) == 0) {
-                usbh_serial_dev_in_use |= (1 << devno);
+            if ((usbh_serial_dev_in_use & (1U << devno)) == 0) {
+                usbh_serial_dev_in_use |= (1U << devno);
                 has_dev = true;
                 break;
             }
@@ -36,7 +36,7 @@ void usbh_serial_decrement_count(uint8_t devnum)
     ATOMIC_ENTER_CRITICAL();
     {
         if (devnum < 32) {
-            usbh_serial_dev_in_use &= ~(1 << devno);
+            usbh_serial_dev_in_use &= ~(1U << devno);
         }
     }
     ATOMIC_EXIT_CRITICAL();

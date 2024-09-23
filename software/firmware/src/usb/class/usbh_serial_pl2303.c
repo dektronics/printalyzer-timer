@@ -76,7 +76,12 @@ static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
      * Requests with more obvious naming and typing information will have
      * their own dedicated functions.
      */
-    struct usb_setup_packet *setup = SETUP_PACKET(pl2303_class);
+    struct usb_setup_packet *setup;
+
+    if (!pl2303_class || !pl2303_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = SETUP_PACKET(pl2303_class);
 
     setup->bmRequestType = req_type;
     setup->bRequest = request;
@@ -90,7 +95,12 @@ static int usbh_serial_pl2303_do(struct usbh_serial_pl2303 *pl2303_class,
 int usbh_serial_pl2303_set_line_coding(struct usbh_serial_class *serial_class, struct cdc_line_coding *line_coding)
 {
     struct usbh_serial_pl2303 *pl2303_class = (struct usbh_serial_pl2303 *)serial_class;
-    struct usb_setup_packet *setup = serial_class->hport->setup;
+    struct usb_setup_packet *setup;
+
+    if (!pl2303_class || !pl2303_class->base.hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = serial_class->hport->setup;
 
     memcpy((uint8_t *)&serial_class->line_coding, line_coding, sizeof(struct cdc_line_coding));
 
@@ -112,7 +122,12 @@ int usbh_serial_pl2303_get_line_coding(struct usbh_serial_class *serial_class, s
 
 int usbh_serial_pl2303_set_line_state(struct usbh_serial_class *serial_class, bool dtr, bool rts)
 {
-    struct usb_setup_packet *setup = serial_class->hport->setup;
+    struct usb_setup_packet *setup;
+
+    if (!serial_class || !serial_class->hport) {
+        return -USB_ERR_INVAL;
+    }
+    setup = serial_class->hport->setup;
 
     setup->bmRequestType = UT_WRITE_CLASS_INTERFACE;
     setup->bRequest = CDC_REQUEST_SET_CONTROL_LINE_STATE;
