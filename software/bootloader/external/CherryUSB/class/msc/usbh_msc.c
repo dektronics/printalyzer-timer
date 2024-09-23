@@ -278,7 +278,14 @@ static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
     hport->config.intf[intf].priv = msc_class;
 
     ret = usbh_msc_get_maxlun(msc_class, g_msc_buf[msc_class->sdchar - 'a']);
-    if (ret < 0) {
+    if (ret == -USB_ERR_STALL) {
+        /* (DK)
+         * Per the USB MSC Bulk-Only Transport specification, devices that
+         * do not support multiple LUNs may STALL this command.
+         */
+        USB_LOG_INFO("Multiple LUNs not supported");
+        g_msc_buf[msc_class->sdchar - 'a'][0] = 0;
+    } else if (ret < 0) {
         return ret;
     }
 
