@@ -15,7 +15,7 @@ struct usbh_hid {
     struct usbh_urb intin_urb;              /* INTR IN urb */
     struct usbh_urb intout_urb;             /* INTR OUT urb */
 
-    uint8_t report_desc[256];
+    uint8_t report_desc[384]; /* (DK) Increased from 256->384 */
     uint16_t report_size;
 
     uint8_t protocol;

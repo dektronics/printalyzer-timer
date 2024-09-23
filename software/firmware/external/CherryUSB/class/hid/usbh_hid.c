@@ -20,7 +20,8 @@
 #define INTF_DESC_bInterfaceNumber  2 /** Interface number offset */
 #define INTF_DESC_bAlternateSetting 3 /** Alternate setting offset */
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hid_buf[CONFIG_USBHOST_MAX_HID_CLASS][USB_ALIGN_UP(256, CONFIG_USB_ALIGN_SIZE)];
+/* (DK) Increase buffer from 256->384 */
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hid_buf[CONFIG_USBHOST_MAX_HID_CLASS][USB_ALIGN_UP(384, CONFIG_USB_ALIGN_SIZE)];
 
 static struct usbh_hid g_hid_class[CONFIG_USBHOST_MAX_HID_CLASS];
 static uint32_t g_devinuse = 0;
@@ -217,7 +218,8 @@ int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
                     hid_class->report_size = desc->subdesc[0].wDescriptorLength;
 
                     if (hid_class->report_size > sizeof(g_hid_buf[hid_class->minor])) {
-                        USB_LOG_ERR("HID report descriptor too large\r\n");
+                        /* (DK) Add logging of size violation amount */
+                        USB_LOG_ERR("HID report descriptor too large (%d > %d)\r\n", hid_class->report_size, sizeof(g_hid_buf[hid_class->minor]));
                         return -USB_ERR_INVAL;
                     }
                     found = true;
