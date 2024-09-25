@@ -9,7 +9,8 @@
 
 typedef enum {
     FT260_DEFAULT = 0,
-    FT260_METER_PROBE
+    FT260_METER_PROBE,
+    FT260_DENSISTICK
 } ft260_device_type_t;
 
 typedef enum {

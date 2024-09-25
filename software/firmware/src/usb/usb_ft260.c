@@ -43,6 +43,7 @@ struct ft260_device_t {
 };
 
 static ft260_device_t meter_probe_handle = {0};
+static ft260_device_t densistick_handle = {0};
 
 typedef enum {
     FT260_CONTROL_ATTACH = 0,
@@ -251,8 +252,13 @@ void usbh_ft260_control_attach(struct usbh_hid *hid_class)
     ft260_device_type_t device_type;
     if (hid_class->hport->device_desc.idVendor == 0x0403 && hid_class->hport->device_desc.idProduct == 0x6030) {
         device_type = FT260_DEFAULT;
+        log_d("Device is stock FT260");
     } else if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x132C) {
         device_type = FT260_METER_PROBE;
+        log_d("Device is Printalyzer Meter Probe");
+    } else if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x1382) {
+        device_type = FT260_DENSISTICK;
+        log_d("Device is Printalyzer DensiStick");
     } else {
         log_w("Unknown device type: VID=0x%04X, PID=0x%04X",
             hid_class->hport->device_desc.idVendor,
@@ -335,6 +341,13 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
         }
         callback = meter_probe_handle.callback;
         osMutexRelease(meter_probe_handle.mutex);
+    } else if (dev_handle->device_type == FT260_DENSISTICK) {
+        osMutexAcquire(densistick_handle.mutex, portMAX_DELAY);
+        if (densistick_handle.dev_handle == dev_handle) {
+            densistick_handle.dev_handle = NULL;
+        }
+        callback = densistick_handle.callback;
+        osMutexRelease(densistick_handle.mutex);
     }
 
     dev_handle->connected = 0;
@@ -451,6 +464,12 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
             meter_probe_handle.dev_handle = dev_handle;
         }
         osMutexRelease(meter_probe_handle.mutex);
+    } else if (dev_handle->device_type == FT260_DENSISTICK) {
+        osMutexAcquire(densistick_handle.mutex, portMAX_DELAY);
+        if (!densistick_handle.dev_handle) {
+            densistick_handle.dev_handle = dev_handle;
+        }
+        osMutexRelease(densistick_handle.mutex);
     }
 
     /* Start the interrupt polling */
@@ -796,6 +815,8 @@ ft260_device_t *usbh_ft260_get_device(ft260_device_type_t device_type)
 {
     if (device_type == FT260_METER_PROBE) {
         return &meter_probe_handle;
+    } else if (device_type == FT260_DENSISTICK) {
+        return &densistick_handle;
     } else {
         return NULL;
     }

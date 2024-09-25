@@ -56,7 +56,8 @@ typedef enum {
     HID_DEVICE_KEYBOARD,
     HID_DEVICE_MOUSE,
     HID_DEVICE_FT260_DEFAULT,
-    HID_DEVICE_FT260_METER_PROBE
+    HID_DEVICE_FT260_METER_PROBE,
+    HID_DEVICE_FT260_DENSISTICK
 } hid_device_type_t;
 
 static bool usb_hub_init();
@@ -416,6 +417,8 @@ hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class)
         return HID_DEVICE_FT260_DEFAULT;
     } else if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x132C) {
         return HID_DEVICE_FT260_METER_PROBE;
+    } else if (hid_class->hport->device_desc.idVendor == 0x16D0 && hid_class->hport->device_desc.idProduct == 0x1382) {
+        return HID_DEVICE_FT260_DENSISTICK;
     } else {
         /* Grab the interface descriptor */
         struct usb_interface_descriptor *intf_desc;
@@ -443,6 +446,7 @@ void usbh_hid_run(struct usbh_hid *hid_class)
     switch (device_type) {
     case HID_DEVICE_FT260_DEFAULT:
     case HID_DEVICE_FT260_METER_PROBE:
+    case HID_DEVICE_FT260_DENSISTICK:
         log_d("FT260 device attached (intf=%d, minor=%d)", hid_class->intf, hid_class->minor);
         usbh_ft260_attached(hid_class);
         break;
@@ -472,6 +476,7 @@ void usbh_hid_stop(struct usbh_hid *hid_class)
     switch (device_type) {
     case HID_DEVICE_FT260_DEFAULT:
     case HID_DEVICE_FT260_METER_PROBE:
+    case HID_DEVICE_FT260_DENSISTICK:
         log_d("FT260 device detached (intf=%d, minor=%d)", hid_class->intf, hid_class->minor);
         usbh_ft260_detached(hid_class);
         break;
