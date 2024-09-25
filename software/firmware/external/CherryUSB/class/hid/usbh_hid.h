@@ -15,7 +15,9 @@ struct usbh_hid {
     struct usbh_urb intin_urb;              /* INTR IN urb */
     struct usbh_urb intout_urb;             /* INTR OUT urb */
 
-    uint8_t report_desc[384]; /* (DK) Increased from 256->384 */
+#ifdef CONFIG_USBHOST_HID_GET_REPORT_DESC
+    uint8_t report_desc[256];
+#endif
     uint16_t report_size;
 
     uint8_t protocol;

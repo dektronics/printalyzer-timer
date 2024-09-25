@@ -146,6 +146,9 @@ extern void elog_raw_output(const char *format, ...);
 #define CONFIG_USBHOST_MSC_TIMEOUT 5000
 #endif
 
+/* (DK) Enable getting the HID report descriptor */
+/* #define CONFIG_USBHOST_HID_GET_REPORT_DESC */
+
 /* ================ USB Device Port Configuration ================*/
 
 #ifndef CONFIG_USBDEV_MAX_BUS
