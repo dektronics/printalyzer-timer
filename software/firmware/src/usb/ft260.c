@@ -29,7 +29,9 @@
 
 #define RETRY_TIMEOUT pdMS_TO_TICKS(500)
 
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ft260_buf[64];
+#define REPORT_BUF_SIZE 64
+
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_ft260_buf[CONFIG_USBHOST_MAX_HID_CLASS][USB_ALIGN_UP(REPORT_BUF_SIZE, CONFIG_USB_ALIGN_SIZE)];
 
 static int ft260_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
 static int ft260_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
@@ -344,7 +346,13 @@ int ft260_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t re
      * where we can be sure unrelated HID device drivers won't be trying to
      * share the same buffer.
      */
-    struct usb_setup_packet *setup = hid_class->hport->setup;
+    struct usb_setup_packet *setup;
+
+    if (!hid_class || !hid_class->hport || buflen > REPORT_BUF_SIZE) {
+        return -USB_ERR_INVAL;
+    }
+
+    setup = hid_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = HID_REQUEST_SET_REPORT;
@@ -352,18 +360,20 @@ int ft260_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t re
     setup->wIndex = 0;
     setup->wLength = buflen;
 
-    memcpy(g_ft260_buf, buffer, buflen);
-    return usbh_control_transfer(hid_class->hport, setup, g_ft260_buf);
+    memcpy(g_ft260_buf[hid_class->minor], buffer, buflen);
+    return usbh_control_transfer(hid_class->hport, setup, g_ft260_buf[hid_class->minor]);
 }
 
 int ft260_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen)
 {
-    struct usb_setup_packet *setup = hid_class->hport->setup;
+    struct usb_setup_packet *setup;
     int ret;
 
-    if (buflen > sizeof(g_ft260_buf)) {
+    if (!hid_class || !hid_class->hport || buflen > REPORT_BUF_SIZE) {
         return -USB_ERR_INVAL;
     }
+
+    setup = hid_class->hport->setup;
 
     setup->bmRequestType = USB_REQUEST_DIR_IN | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
     setup->bRequest = HID_REQUEST_GET_REPORT;
@@ -371,12 +381,12 @@ int ft260_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t re
     setup->wIndex = 0;
     setup->wLength = buflen;
 
-    memset(g_ft260_buf, 0, sizeof(buflen));
-    ret = usbh_control_transfer(hid_class->hport, setup, g_ft260_buf);
+    memset(g_ft260_buf[hid_class->minor], 0, sizeof(buflen));
+    ret = usbh_control_transfer(hid_class->hport, setup, g_ft260_buf[hid_class->minor]);
     if (ret < 0) {
         return ret;
     }
-    memcpy(buffer, g_ft260_buf, buflen);
+    memcpy(buffer, g_ft260_buf[hid_class->minor], buflen);
     return ret;
 }
 
@@ -397,19 +407,24 @@ int ft260_i2c_write_request(struct usbh_hid *hid_class, uint8_t dev_address, uin
         return -USB_ERR_INVAL;
     }
 
-    const uint8_t transfer_len = ((report_id - 0xD0 + 1) * 4) + 4;
-
-    memset(g_ft260_buf, 0, transfer_len);
-
-    g_ft260_buf[0] = report_id;
-    g_ft260_buf[1] = dev_address;
-    g_ft260_buf[2] = flags;
-    g_ft260_buf[3] = buflen;
-    if (buflen > 0) {
-        memcpy(g_ft260_buf + 4, buffer, buflen);
+    if (!hid_class || !hid_class->hport || buflen > REPORT_BUF_SIZE) {
+        return -USB_ERR_INVAL;
     }
 
-    usbh_int_urb_fill(&hid_class->intout_urb, hid_class->hport, hid_class->intout, g_ft260_buf, transfer_len, 500, NULL, NULL);
+    const uint8_t transfer_len = ((report_id - 0xD0 + 1) * 4) + 4;
+    uint8_t *transfer_buf = g_ft260_buf[hid_class->minor];
+
+    memset(transfer_buf, 0, transfer_len);
+
+    transfer_buf[0] = report_id;
+    transfer_buf[1] = dev_address;
+    transfer_buf[2] = flags;
+    transfer_buf[3] = buflen;
+    if (buflen > 0) {
+        memcpy(transfer_buf + 4, buffer, buflen);
+    }
+
+    usbh_int_urb_fill(&hid_class->intout_urb, hid_class->hport, hid_class->intout, transfer_buf, transfer_len, 500, NULL, NULL);
     ret = usbh_submit_urb(&hid_class->intout_urb);
     if (ret < 0) {
         log_w("ft260_i2c_write_request error: %d", ret);
@@ -422,15 +437,20 @@ int ft260_i2c_read_request(struct usbh_hid *hid_class, uint8_t dev_address, uint
 {
     int ret;
 
-    memset(g_ft260_buf, 0, 5);
+    if (!hid_class || !hid_class->hport) {
+        return -USB_ERR_INVAL;
+    }
 
-    g_ft260_buf[0] = HID_REPORT_FT260_I2C_READ_REQUEST;
-    g_ft260_buf[1] = dev_address;
-    g_ft260_buf[2] = flags;
-    g_ft260_buf[3] = len & 0x00FF;
-    g_ft260_buf[4] = (len & 0xFF00) >> 8;
+    uint8_t *transfer_buf = g_ft260_buf[hid_class->minor];
+    memset(transfer_buf, 0, 5);
 
-    usbh_int_urb_fill(&hid_class->intout_urb, hid_class->hport, hid_class->intout, g_ft260_buf, 5, 500, NULL, NULL);
+    transfer_buf[0] = HID_REPORT_FT260_I2C_READ_REQUEST;
+    transfer_buf[1] = dev_address;
+    transfer_buf[2] = flags;
+    transfer_buf[3] = len & 0x00FF;
+    transfer_buf[4] = (len & 0xFF00) >> 8;
+
+    usbh_int_urb_fill(&hid_class->intout_urb, hid_class->hport, hid_class->intout, transfer_buf, 5, 500, NULL, NULL);
     ret = usbh_submit_urb(&hid_class->intout_urb);
     if (ret < 0) {
         log_w("ft260_i2c_read_request error: %d", ret);
@@ -444,13 +464,16 @@ int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t
     uint32_t offset = 0;
     uint32_t start_time = osKernelGetTickCount();
 
-    if (!buffer) { return -USB_ERR_INVAL; }
+    if (!hid_class || !hid_class->hport || !buffer) {
+        return -USB_ERR_INVAL;
+    }
 
-    memset(g_ft260_buf, 0, sizeof(g_ft260_buf));
+    uint8_t *transfer_buf = g_ft260_buf[hid_class->minor];
+    memset(transfer_buf, 0, REPORT_BUF_SIZE);
 
     do {
         usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
-            g_ft260_buf, sizeof(g_ft260_buf), 500, NULL, NULL);
+            transfer_buf, REPORT_BUF_SIZE, 500, NULL, NULL);
         ret = usbh_submit_urb(&hid_class->intin_urb);
         if (ret == -USB_ERR_NAK) {
             if (osKernelGetTickCount() - start_time < RETRY_TIMEOUT) {
@@ -460,16 +483,16 @@ int ft260_i2c_input_report(struct usbh_hid *hid_class, uint8_t *buffer, uint16_t
         if (ret < 0) { break; }
 
 #if 0
-        log_d("ft260_i2c_input_report: buflen=%d, payload_len=%d, urb_len=%d", buflen, g_ft260_buf[1], hid_class->intin_urb.actual_length);
+        log_d("ft260_i2c_input_report: buflen=%d, payload_len=%d, urb_len=%d", buflen, transfer_buf[1], hid_class->intin_urb.actual_length);
 #endif
-        if (offset + g_ft260_buf[1] > buflen) {
-            log_w("ft260_i2c_input_report: input overrun: %d + %d > %d", offset, g_ft260_buf[1], buflen);
+        if (offset + transfer_buf[1] > buflen) {
+            log_w("ft260_i2c_input_report: input overrun: %d + %d > %d", offset, transfer_buf[1], buflen);
             ret = -USB_ERR_INVAL;
             break;
         }
 
-        memcpy(buffer + offset, g_ft260_buf + 2, g_ft260_buf[1]);
-        offset += g_ft260_buf[1];
+        memcpy(buffer + offset, transfer_buf + 2, transfer_buf[1]);
+        offset += transfer_buf[1];
         start_time = osKernelGetTickCount();
     } while (offset < buflen);
 
