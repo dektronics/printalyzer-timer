@@ -55,6 +55,7 @@ extern void deinit_peripherals();
 typedef struct {
     const osThreadFunc_t task_func;
     const osThreadAttr_t task_attrs;
+    const uint8_t task_arg;
     osThreadId_t task_handle;
 } task_params_t;
 
@@ -106,6 +107,14 @@ static task_params_t task_list[] = {
         .task_func = task_meter_probe_run,
         .task_attrs = {
             .name = "meter_probe",
+            .stack_size = TASK_METER_PROBE_STACK_SIZE,
+            .priority = osPriorityNormal
+        }
+    },
+    {
+        .task_func = task_meter_probe_run,
+        .task_attrs = {
+            .name = "densistick",
             .stack_size = TASK_METER_PROBE_STACK_SIZE,
             .priority = osPriorityNormal
         }

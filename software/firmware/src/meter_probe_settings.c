@@ -134,8 +134,8 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     HAL_StatusTypeDef ret = HAL_OK;
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
     if (!handle->initialized) { return HAL_ERROR; }
-    if (handle->id.probe_type != METER_PROBE_TYPE_TSL2585
-        && handle->id.probe_type != METER_PROBE_TYPE_TSL2521) {
+    if (handle->id.probe_type != METER_PROBE_SENSOR_TSL2585
+        && handle->id.probe_type != METER_PROBE_SENSOR_TSL2521) {
         return HAL_ERROR;
     }
 
@@ -229,7 +229,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
     uint32_t crc;
 
     if (!handle || !settings_tsl2585) { return HAL_ERROR; }
-    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized || handle->id.probe_type != METER_PROBE_SENSOR_TSL2585) { return HAL_ERROR; }
 
     /* Prepare an empty buffer */
     uint8_t data[PAGE_CAL_SIZE];
@@ -291,7 +291,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     uint32_t crc;
 
     if (!handle || !cal_target) { return HAL_ERROR; }
-    if (!handle->initialized || handle->id.probe_type != METER_PROBE_TYPE_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized || handle->id.probe_type != METER_PROBE_SENSOR_TSL2585) { return HAL_ERROR; }
 
     /* Read just the version */
     ret = m24c08_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
@@ -321,14 +321,14 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     return ret;
 }
 
-const char *meter_probe_type_str(meter_probe_type_t type)
+const char *meter_probe_type_str(meter_probe_sensor_type_t type)
 {
     switch (type) {
-    case METER_PROBE_TYPE_UNKNOWN:
+    case METER_PROBE_SENSOR_UNKNOWN:
         return "UNKNOWN";
-    case METER_PROBE_TYPE_TSL2585:
+    case METER_PROBE_SENSOR_TSL2585:
         return "TSL2585";
-    case METER_PROBE_TYPE_TSL2521:
+    case METER_PROBE_SENSOR_TSL2521:
         return "TSL2521";
     default:
         return "?";

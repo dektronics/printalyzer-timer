@@ -26,6 +26,11 @@
 #define FIFO_ALS_ENTRY_SIZE 7
 
 typedef enum {
+    METER_PROBE_DEVICE_METER_PROBE = 0,
+    METER_PROBE_DEVICE_DENSISTICK
+} meter_probe_device_type_t;
+
+typedef enum {
     METER_PROBE_STATE_NONE = 0,
     METER_PROBE_STATE_INIT,
     METER_PROBE_STATE_ATTACHED,
@@ -132,6 +137,8 @@ typedef struct {
 } tsl2585_fifo_data_t;
 
 typedef struct {
+    /* Device type to control functionality */
+    meter_probe_device_type_t device_type;
     /* Queue for meter probe control events */
     const osMessageQueueAttr_t control_queue_attrs;
     /* Queue to hold the latest sensor reading */
@@ -141,12 +148,23 @@ typedef struct {
 } meter_probe_init_attrs_t;
 
 static const meter_probe_init_attrs_t probe_init_attrs = {
+    .device_type = METER_PROBE_DEVICE_METER_PROBE,
     .control_queue_attrs = { .name = "probe_control_queue" },
     .reading_queue_attrs =  { .name = "probe_sensor_reading_queue" },
     .control_semaphore_attrs = { .name = "probe_control_semaphore_attr" }
 };
 
+static const meter_probe_init_attrs_t stick_init_attrs = {
+    .device_type = METER_PROBE_DEVICE_DENSISTICK,
+    .control_queue_attrs = { .name = "stick_control_queue" },
+    .reading_queue_attrs =  { .name = "stick_sensor_reading_queue" },
+    .control_semaphore_attrs = { .name = "stick_control_semaphore_attr" }
+};
+
 typedef struct __meter_probe_handle_t {
+    /* Device type */
+    meter_probe_device_type_t device_type;
+
     /* Device handles */
     ft260_device_t *device_handle;
     i2c_handle_t *hi2c;
@@ -168,6 +186,9 @@ typedef struct __meter_probe_handle_t {
 
 /* Handle for the instance managing the Meter Probe peripheral */
 static meter_probe_handle_t probe_handle = {0};
+
+/* Handle for the instance managing the DensiStick peripheral */
+static meter_probe_handle_t stick_handle = {0};
 
 /* TSL2585: Only enable Photopic photodiodes on modulator 0 */
 static const tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
@@ -213,15 +234,39 @@ meter_probe_handle_t *meter_probe_handle()
     return &probe_handle;
 }
 
+meter_probe_handle_t *densistick_handle()
+{
+    return &stick_handle;
+}
+
 void task_meter_probe_run(void *argument)
 {
     osSemaphoreId_t task_start_semaphore = argument;
+    bool task_init_success = false;
+    meter_probe_handle_t *handle = NULL;
 
-    log_d("meter_probe_task start");
+    const char *task_name = osThreadGetName(osThreadGetId());
 
-    if (!task_meter_probe_run_init(&probe_handle, &probe_init_attrs)) {
-        return;
-    }
+    log_d("%s task start", task_name);
+
+    do {
+        const meter_probe_init_attrs_t *attrs = NULL;
+
+        if (strcmp(task_name, "meter_probe") == 0) {
+            handle = &probe_handle;
+            attrs = &probe_init_attrs;
+        } else if (strcmp(task_name, "densistick") == 0) {
+            handle = &stick_handle;
+            attrs = &stick_init_attrs;
+        } else {
+            break;
+        }
+
+        if (!task_meter_probe_run_init(handle, attrs)) {
+            break;
+        }
+        task_init_success = true;
+    } while (0);
 
     /* Release the startup semaphore */
     if (osSemaphoreRelease(task_start_semaphore) != osOK) {
@@ -229,11 +274,16 @@ void task_meter_probe_run(void *argument)
         return;
     }
 
-    task_meter_probe_run_loop(&probe_handle);
+    if (task_init_success) {
+        task_meter_probe_run_loop(handle);
+    }
 }
 
 bool task_meter_probe_run_init(meter_probe_handle_t *handle, const meter_probe_init_attrs_t *attrs)
 {
+    /* Set the device type */
+    handle->device_type = attrs->device_type;
+
     /* Create the queue for meter probe control events */
     handle->control_queue = osMessageQueueNew(20, sizeof(meter_probe_control_event_t), &attrs->control_queue_attrs);
     if (!handle->control_queue) {
@@ -256,9 +306,13 @@ bool task_meter_probe_run_init(meter_probe_handle_t *handle, const meter_probe_i
     }
 
     /* Get the persistent device handles used to talk to a connected meter probe */
-    handle->device_handle = usbh_ft260_get_device(FT260_METER_PROBE);
+    if (attrs->device_type == METER_PROBE_DEVICE_METER_PROBE) {
+        handle->device_handle = usbh_ft260_get_device(FT260_METER_PROBE);
+    } else if (attrs->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+        handle->device_handle = usbh_ft260_get_device(FT260_DENSISTICK);
+    }
     if (!handle->device_handle) {
-        log_e("Unable to get meter probe interface");
+        log_e("Unable to get FT260 device interface");
         return false;
     }
     handle->hi2c = usbh_ft260_get_device_i2c(handle->device_handle);
@@ -343,26 +397,50 @@ void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t
     meter_probe_handle_t *handle = user_data;
     if (!handle || handle->device_handle != device) { return; }
 
-    switch (event_type) {
-    case FT260_EVENT_ATTACH:
-        log_d("Meter probe attached");
-        meter_probe_attach(handle);
-        break;
-    case FT260_EVENT_DETACH:
-        log_d("Meter probe detached");
-        meter_probe_detach(handle);
-        break;
-    case FT260_EVENT_INTERRUPT:
-        meter_probe_int_handler(handle, ticks);
-        break;
-    case FT260_EVENT_BUTTON_DOWN:
-        keypad_inject_raw_event(KEYPAD_METER_PROBE, true, ticks);
-        break;
-    case FT260_EVENT_BUTTON_UP:
-        keypad_inject_raw_event(KEYPAD_METER_PROBE, false, ticks);
-        break;
-    default:
-        break;
+    if (handle->device_type == METER_PROBE_DEVICE_METER_PROBE) {
+        switch (event_type) {
+        case FT260_EVENT_ATTACH:
+            log_d("Meter probe attached");
+            meter_probe_attach(handle);
+            break;
+        case FT260_EVENT_DETACH:
+            log_d("Meter probe detached");
+            meter_probe_detach(handle);
+            break;
+        case FT260_EVENT_INTERRUPT:
+            meter_probe_int_handler(handle, ticks);
+            break;
+        case FT260_EVENT_BUTTON_DOWN:
+            keypad_inject_raw_event(KEYPAD_METER_PROBE, true, ticks);
+            break;
+        case FT260_EVENT_BUTTON_UP:
+            keypad_inject_raw_event(KEYPAD_METER_PROBE, false, ticks);
+            break;
+        default:
+            break;
+        }
+    } else if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+        switch (event_type) {
+        case FT260_EVENT_ATTACH:
+            log_d("DensiStick attached");
+            meter_probe_attach(handle);
+            break;
+        case FT260_EVENT_DETACH:
+            log_d("DensiStick detached");
+            meter_probe_detach(handle);
+            break;
+        case FT260_EVENT_INTERRUPT:
+            meter_probe_int_handler(handle, ticks);
+            break;
+        case FT260_EVENT_BUTTON_DOWN:
+            keypad_inject_raw_event(KEYPAD_DENSISTICK, true, ticks);
+            break;
+        case FT260_EVENT_BUTTON_UP:
+            keypad_inject_raw_event(KEYPAD_DENSISTICK, false, ticks);
+            break;
+        default:
+            break;
+        }
     }
 }
 
@@ -400,8 +478,19 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
     log_d("meter_probe_control_start");
 
     do {
-        if (!usb_meter_probe_is_attached()) {
-            log_w("Meter probe not attached");
+        if (handle->device_type == METER_PROBE_DEVICE_METER_PROBE) {
+            if (!usb_meter_probe_is_attached()) {
+                log_w("Meter probe not attached");
+                ret = HAL_ERROR;
+                break;
+            }
+        } else if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+            if (!usb_densistick_is_attached()) {
+                log_w("DensiStick not attached");
+                ret = HAL_ERROR;
+                break;
+            }
+        } else {
             ret = HAL_ERROR;
             break;
         }
@@ -433,8 +522,8 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
          * modulator count and photodiode configuration. Therefore, both
          * use the same driver with only some minor differences in usage.
          */
-        if (handle->probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2585
-            && handle->probe_settings_handle.id.probe_type != METER_PROBE_TYPE_TSL2521) {
+        if (handle->probe_settings_handle.id.probe_type != METER_PROBE_SENSOR_TSL2585
+            && handle->probe_settings_handle.id.probe_type != METER_PROBE_SENSOR_TSL2521) {
             log_w("Unknown meter probe type: %d", handle->probe_settings_handle.id.probe_type);
             ret = HAL_ERROR;
             break;
@@ -459,7 +548,7 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
         if (ret != HAL_OK) { break; }
 
         handle->sensor_state.uv_calibration = 0;
-        if (handle->probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+        if (handle->probe_settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585) {
             ret = tsl2585_get_uv_calibration(handle->hi2c, &handle->sensor_state.uv_calibration);
             if (ret != HAL_OK) { break; }
             log_d("UV calibration value: %d", handle->sensor_state.uv_calibration);
@@ -617,7 +706,7 @@ osStatus_t meter_probe_get_settings(const meter_probe_handle_t *handle, meter_pr
     memset(settings, 0, sizeof(meter_probe_settings_t));
 
     settings->type = handle->probe_settings_handle.id.probe_type;
-    if ((settings->type == METER_PROBE_TYPE_TSL2585 || settings->type == METER_PROBE_TYPE_TSL2521)
+    if ((settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521)
         && handle->has_sensor_settings) {
         memcpy(&settings->settings_tsl2585, &handle->sensor_settings, sizeof(meter_probe_settings_tsl2585_t));
     }
@@ -635,7 +724,7 @@ osStatus_t meter_probe_set_settings(meter_probe_handle_t *handle, const meter_pr
         return osErrorParameter;
     }
 
-    if (settings->type == METER_PROBE_TYPE_TSL2585 || settings->type == METER_PROBE_TYPE_TSL2521) {
+    if (settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521) {
         HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&handle->probe_settings_handle, &settings->settings_tsl2585);
         return hal_to_os_status(ret);
     } else {
@@ -789,11 +878,11 @@ osStatus_t meter_probe_control_sensor_enable(meter_probe_handle_t *handle, senso
             handle->sensor_state.mod_calibration_pending = false;
         }
 
-        if (handle->probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585) {
+        if (handle->probe_settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585) {
             /* Configure photodiodes for Photopic measurement only */
             ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
             if (ret != HAL_OK) { break; }
-        } else if (handle->probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
+        } else if (handle->probe_settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2521) {
             /* Configure photodiodes for Clear measurement only */
             ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2521_phd_mod_vis);
             if (ret != HAL_OK) { break; }

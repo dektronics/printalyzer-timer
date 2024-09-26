@@ -27,7 +27,7 @@ typedef struct {
 } meter_probe_device_info_t;
 
 typedef struct {
-    meter_probe_type_t type;
+    meter_probe_sensor_type_t type;
     meter_probe_settings_tsl2585_t settings_tsl2585;
 } meter_probe_settings_t;
 
@@ -79,6 +79,11 @@ typedef struct __meter_probe_handle_t meter_probe_handle_t;
 * Get the handle to the meter probe instance
 */
 meter_probe_handle_t *meter_probe_handle();
+
+/**
+* Get the handle to the DensiStick instance
+*/
+meter_probe_handle_t *densistick_handle();
 
 /**
  * Start the meter probe task.

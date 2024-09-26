@@ -27,6 +27,7 @@
 #define HEADER_EXPORT_VERSION     1
 #define MAX_CALIBRATION_FILE_SIZE 16384
 
+static menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle);
 static menu_result_t meter_probe_device_info(meter_probe_handle_t *handle);
 static menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle);
 
@@ -47,17 +48,28 @@ static bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *sett
 
 static menu_result_t meter_probe_diagnostics(meter_probe_handle_t *handle, bool fast_mode);
 
+
 menu_result_t menu_meter_probe()
+{
+    meter_probe_handle_t *handle = meter_probe_handle();
+    return menu_meter_probe_impl("Meter Probe", handle);
+}
+
+menu_result_t menu_densistick()
+{
+    meter_probe_handle_t *handle = densistick_handle();
+    return menu_meter_probe_impl("DensiStick", handle);
+}
+
+menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
 
-    meter_probe_handle_t *handle = meter_probe_handle();
-
     /* Attempt to start the meter probe */
     if (meter_probe_start(handle) != osOK) {
         option = display_message(
-            "Meter Probe",
+            title,
             NULL,
             "\n**** Not Detected ****\n", " OK ");
         if (option == UINT8_MAX) {
@@ -69,7 +81,7 @@ menu_result_t menu_meter_probe()
     /* Show the meter probe menu */
     do {
         option = display_selection_list(
-            "Meter Probe", option,
+            title, option,
             "Device Info\n"
             "Sensor Calibration\n"
             "Diagnostics (Normal Mode)\n"
@@ -141,7 +153,7 @@ menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_TYPE_TSL2585 && settings.type != METER_PROBE_TYPE_TSL2521) {
+    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
         /* Unknown meter probe type */
         return MENU_OK;
     }
@@ -433,9 +445,9 @@ bool validate_section_header(const char *buf, size_t len, const meter_probe_devi
         } else if (strncmp("device", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
             has_device = (strncasecmp(pair.value, "Printalyzer Meter Probe", pair.valueLength) == 0);
         } else if (strncmp("type", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
-            if (info->probe_id.probe_type == METER_PROBE_TYPE_TSL2585) {
+            if (info->probe_id.probe_type == METER_PROBE_SENSOR_TSL2585) {
                 has_type_match = (strncmp(pair.value, "TSL2585", pair.valueLength) == 0);
-            } else if (info->probe_id.probe_type == METER_PROBE_TYPE_TSL2521) {
+            } else if (info->probe_id.probe_type == METER_PROBE_SENSOR_TSL2521) {
                 has_type_match = (strncmp(pair.value, "TSL2521", pair.valueLength) == 0);
             }
         } else if (strncmp("revision", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
@@ -625,7 +637,7 @@ menu_result_t meter_probe_sensor_calibration_export(meter_probe_handle_t *handle
         return MENU_OK;
     }
 
-    if ((info.probe_id.probe_type != METER_PROBE_TYPE_TSL2585 && info.probe_id.probe_type != METER_PROBE_TYPE_TSL2521)
+    if ((info.probe_id.probe_type != METER_PROBE_SENSOR_TSL2585 && info.probe_id.probe_type != METER_PROBE_SENSOR_TSL2521)
         || !meter_probe_has_settings(handle)) {
         return MENU_OK;
     }

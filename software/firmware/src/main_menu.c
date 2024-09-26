@@ -45,6 +45,7 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "Step Wedge Properties\n"
                 "Import / Export\n"
                 "Meter Probe\n"
+                "DensiStick\n"
                 "Diagnostics\n"
                 "Update Firmware\n"
                 "About");
@@ -64,10 +65,12 @@ menu_result_t main_menu_start(state_controller_t *controller)
         } else if (option == 7) {
             menu_result = menu_meter_probe();
         } else if (option == 8) {
-            menu_result = menu_diagnostics();
+            menu_result = menu_densistick();
         } else if (option == 9) {
-            menu_result = menu_firmware();
+            menu_result = menu_diagnostics();
         } else if (option == 10) {
+            menu_result = menu_firmware();
+        } else if (option == 11) {
             menu_result = menu_about();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;

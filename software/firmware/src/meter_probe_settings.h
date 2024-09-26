@@ -9,13 +9,13 @@
 typedef struct i2c_handle_t i2c_handle_t;
 
 typedef enum {
-    METER_PROBE_TYPE_UNKNOWN = 0,
-    METER_PROBE_TYPE_TSL2585 = 1,
-    METER_PROBE_TYPE_TSL2521 = 2
-} meter_probe_type_t;
+    METER_PROBE_SENSOR_UNKNOWN = 0,
+    METER_PROBE_SENSOR_TSL2585 = 1,
+    METER_PROBE_SENSOR_TSL2521 = 2
+} meter_probe_sensor_type_t;
 
 typedef struct __meter_probe_id_t {
-    meter_probe_type_t probe_type;
+    meter_probe_sensor_type_t probe_type;
     uint8_t probe_rev_major;
     uint8_t probe_rev_minor;
     char probe_serial[32];
@@ -74,6 +74,6 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
 HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
     const meter_probe_settings_tsl2585_cal_target_t *cal_target);
 
-const char *meter_probe_type_str(meter_probe_type_t type);
+const char *meter_probe_type_str(meter_probe_sensor_type_t type);
 
 #endif /* METER_PROBE_SETTINGS_H */

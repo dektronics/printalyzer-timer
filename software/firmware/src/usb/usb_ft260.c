@@ -6,6 +6,7 @@
 #include "usbh_hid.h"
 #include "ft260.h"
 #include "i2c_interface.h"
+#include "usb_host.h"
 
 #define LOG_TAG "usb_meter_probe"
 #include <elog.h>
@@ -138,7 +139,15 @@ bool usbh_ft260_init()
     meter_probe_handle.i2c_handle.priv = &meter_probe_handle;
     meter_probe_handle.mutex = osMutexNew(NULL);
     if (!meter_probe_handle.mutex) {
-        log_e("Unable to create handle mutex");
+        log_e("Unable to create meter probe handle mutex");
+        return false;
+    }
+
+    memcpy(&densistick_handle.i2c_handle, &i2c_handle_ft260, sizeof(i2c_handle_t));
+    densistick_handle.i2c_handle.priv = &densistick_handle;
+    densistick_handle.mutex = osMutexNew(NULL);
+    if (!densistick_handle.mutex) {
+        log_e("Unable to create densistick handle mutex");
         return false;
     }
 
@@ -159,7 +168,7 @@ void usbh_ft260_attached(struct usbh_hid *hid_class)
     }
 
     /* Send a message informing the task of the attach event */
-    ft260_control_event_t event = {
+    const ft260_control_event_t event = {
         .event_type = FT260_CONTROL_ATTACH,
         .connection = {
             .hid_class = hid_class
@@ -179,7 +188,7 @@ void usbh_ft260_detached(struct usbh_hid *hid_class)
     }
 
     /* Send a message informing the task of the detach event */
-    ft260_control_event_t event = {
+    const ft260_control_event_t event = {
         .event_type = FT260_CONTROL_DETACH,
         .connection = {
             .hid_class = hid_class
@@ -312,14 +321,21 @@ void usbh_ft260_control_attach(struct usbh_hid *hid_class)
 
     /* Invoke the callback to notify of the connection event */
     ft260_device_event_callback_t callback = NULL;
+    ft260_device_t *device_handle = NULL;
+
     if (meter_probe_handle.dev_handle == dev_handle) {
-        osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
-        callback = meter_probe_handle.callback;
-        osMutexRelease(meter_probe_handle.mutex);
+        device_handle = &meter_probe_handle;
+    } else if (densistick_handle.dev_handle == dev_handle) {
+        device_handle = &densistick_handle;
     }
 
-    if (callback) {
-        callback(&meter_probe_handle, FT260_EVENT_ATTACH, osKernelGetTickCount(), meter_probe_handle.user_data);
+    if (device_handle) {
+        osMutexAcquire(device_handle->mutex, portMAX_DELAY);
+        callback = device_handle->callback;
+        osMutexRelease(device_handle->mutex);
+        if (callback) {
+            callback(device_handle, FT260_EVENT_ATTACH, osKernelGetTickCount(), device_handle->user_data);
+        }
     }
 }
 
@@ -368,12 +384,22 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
         log_d("FT260_CONTROL_DETACH");
 
         if (callback) {
-            /* Inject a button release event just in case */
-            if (dev_handle->button_pressed) {
-                callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), meter_probe_handle.user_data);
-            }
+            if (meter_probe_handle.dev_handle == dev_handle) {
+                /* Inject a button release event just in case */
+                if (dev_handle->button_pressed) {
+                    callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), meter_probe_handle.user_data);
+                }
 
-            callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount(), meter_probe_handle.user_data);
+                callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount(), meter_probe_handle.user_data);
+
+            } else if (densistick_handle.dev_handle == dev_handle) {
+                /* Inject a button release event just in case */
+                if (dev_handle->button_pressed) {
+                    callback(&densistick_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), densistick_handle.user_data);
+                }
+
+                callback(&densistick_handle, FT260_EVENT_DETACH, osKernelGetTickCount(), densistick_handle.user_data);
+            }
         }
 
         vPortFree(dev_handle);
@@ -392,7 +418,7 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
         memset(string_buffer, 0, 128);
         ret = usbh_get_string_desc(dev_handle->hid_class0->hport, USB_STRING_SERIAL_INDEX, string_buffer);
         if (ret < 0) {
-            log_w("Failed to get device serial: %d", ret);
+            log_w("Failed to get device serial: %d", usb_error_str(-ret));
             break;
         }
 
@@ -582,15 +608,23 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
                     control_event.interrupt.status_int, control_event.interrupt.status_dcd_ri);
 #endif
     ft260_device_event_callback_t callback = NULL;
+    ft260_device_t *device_handle = NULL;
+
     if (meter_probe_handle.dev_handle == params->handle) {
-        osMutexAcquire(meter_probe_handle.mutex, portMAX_DELAY);
-        callback = meter_probe_handle.callback;
-        osMutexRelease(meter_probe_handle.mutex);
+        device_handle = &meter_probe_handle;
+    } else if (densistick_handle.dev_handle == params->handle) {
+        device_handle = &densistick_handle;
+    }
+
+    if (device_handle) {
+        osMutexAcquire(device_handle->mutex, portMAX_DELAY);
+        callback = device_handle->callback;
+        osMutexRelease(device_handle->mutex);
     }
 
     if (params->status_int & 0x01) {
         if (callback) {
-            callback(&meter_probe_handle, FT260_EVENT_INTERRUPT, params->ticks, meter_probe_handle.user_data);
+            callback(device_handle, FT260_EVENT_INTERRUPT, params->ticks, device_handle->user_data);
         }
     }
     if (params->status_dcd_ri & 0x04) {
@@ -598,10 +632,10 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
         if (params->handle->button_pressed != pressed) {
             params->handle->button_pressed = pressed;
             if (callback) {
-                callback(&meter_probe_handle,
+                callback(device_handle,
                     pressed ? FT260_EVENT_BUTTON_DOWN : FT260_EVENT_BUTTON_UP,
                     params->ticks,
-                    meter_probe_handle.user_data);
+                    device_handle->user_data);
             }
         }
     }
@@ -637,11 +671,14 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
         log_d("nbytes:%d\r\n", nbytes);
         submit_urb = true;
 
-    } else if (nbytes == -USB_ERR_NAK) { /* for dwc2 */
+    } else if (nbytes == -USB_ERR_NAK) {
+        /* for dwc2 */
         submit_urb = true;
-
+    } else if (nbytes == -USB_ERR_STALL) {
+        log_w("Pipe stall");
+        submit_urb = true;
     } else {
-        log_d("Fell out of callback: %d", nbytes);
+        log_d("Fell out of callback: %s", usb_error_str(-nbytes));
     }
 
     if (submit_urb) {

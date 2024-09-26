@@ -551,3 +551,48 @@ bool usb_meter_probe_is_attached()
     osMutexRelease(usb_attach_mutex);
     return result;
 }
+
+bool usb_densistick_is_attached()
+{
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_ft260_is_attached(FT260_DENSISTICK);
+    osMutexRelease(usb_attach_mutex);
+    return result;
+}
+
+const char *usb_error_str(int err)
+{
+    switch (err) {
+    case USB_ERR_NOMEM:
+        return "USB_ERR_NOMEM";
+    case USB_ERR_INVAL:
+        return "USB_ERR_INVAL";
+    case USB_ERR_NODEV:
+        return "USB_ERR_NODEV";
+    case USB_ERR_NOTCONN:
+        return "USB_ERR_NOTCONN";
+    case USB_ERR_NOTSUPP:
+        return "USB_ERR_NOTSUPP";
+    case USB_ERR_BUSY:
+        return "USB_ERR_BUSY";
+    case USB_ERR_RANGE:
+        return "USB_ERR_RANGE";
+    case USB_ERR_STALL:
+        return "USB_ERR_STALL";
+    case USB_ERR_BABBLE:
+        return "USB_ERR_BABBLE";
+    case USB_ERR_NAK:
+        return "USB_ERR_NAK";
+    case USB_ERR_DT:
+        return "USB_ERR_DT";
+    case USB_ERR_IO:
+        return "USB_ERR_IO";
+    case USB_ERR_SHUTDOWN:
+        return "USB_ERR_SHUTDOWN";
+    case USB_ERR_TIMEOUT :
+        return "USB_ERR_TIMEOUT";
+    default:
+        return "USB_ERR_UNKNOWN";
+    }
+}
