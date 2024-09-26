@@ -73,6 +73,13 @@ typedef struct {
     uint32_t elapsed_ticks;/*!< Elapsed ticks since the last sensor reading interrupt */
 } meter_probe_sensor_reading_t;
 
+typedef struct __meter_probe_handle_t meter_probe_handle_t;
+
+/**
+* Get the handle to the meter probe instance
+*/
+meter_probe_handle_t *meter_probe_handle();
+
 /**
  * Start the meter probe task.
  *
@@ -87,12 +94,12 @@ void task_meter_probe_run(void *argument);
 /**
  * Gets whether the meter probe is attached
  */
-bool meter_probe_is_attached();
+bool meter_probe_is_attached(const meter_probe_handle_t *handle);
 
 /**
  * Gets whether the meter probe has been started
  */
-bool meter_probe_is_started();
+bool meter_probe_is_started(const meter_probe_handle_t *handle);
 
 /**
  * Power up the meter probe and get it ready for use.
@@ -102,12 +109,12 @@ bool meter_probe_is_started();
  * connected and ready for use. It will not start the sensor's integration
  * cycle.
  */
-osStatus_t meter_probe_start();
+osStatus_t meter_probe_start(meter_probe_handle_t *handle);
 
 /**
  * Power down the meter probe.
  */
-osStatus_t meter_probe_stop();
+osStatus_t meter_probe_stop(meter_probe_handle_t *handle);
 
 /**
  * Get the meter probe device info.
@@ -116,7 +123,7 @@ osStatus_t meter_probe_stop();
  *
  * @return osOK if data was returned
  */
-osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info);
+osStatus_t meter_probe_get_device_info(const meter_probe_handle_t *handle, meter_probe_device_info_t *info);
 
 /**
  * Get whether meter probe settings were successfully loaded.
@@ -126,7 +133,7 @@ osStatus_t meter_probe_get_device_info(meter_probe_device_info_t *info);
  *
  * @return True if settings are available, false if settings are unavailable.
  */
-bool meter_probe_has_settings();
+bool meter_probe_has_settings(const meter_probe_handle_t *handle);
 
 /**
  * Get the meter probe settings.
@@ -137,7 +144,7 @@ bool meter_probe_has_settings();
  *
  * @return osOK if data was returned
  */
-osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings);
+osStatus_t meter_probe_get_settings(const meter_probe_handle_t *handle, meter_probe_settings_t *settings);
 
 /**
  * Set the meter probe settings.
@@ -148,7 +155,7 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings);
  *
  * @return osOK if the settings were successfully stored
  */
-osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings);
+osStatus_t meter_probe_set_settings(meter_probe_handle_t *handle, const meter_probe_settings_t *settings);
 
 /**
  * Enable the meter probe sensor.
@@ -156,7 +163,7 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings);
  * In the normal enabled mode, the sensor will continuously run its
  * integration cycle and make results available as they come in.
  */
-osStatus_t meter_probe_sensor_enable();
+osStatus_t meter_probe_sensor_enable(meter_probe_handle_t *handle);
 
 /**
  * Enable the meter probe sensor in fast mode.
@@ -172,7 +179,7 @@ osStatus_t meter_probe_sensor_enable();
  * This mode may also result in less robust handling of sensor errors,
  * and is primarily intended for dedicated time-critical measurements.
  */
-osStatus_t meter_probe_sensor_enable_fast_mode();
+osStatus_t meter_probe_sensor_enable_fast_mode(meter_probe_handle_t *handle);
 
 /**
  * Enable the meter probe sensor in single-shot mode.
@@ -180,19 +187,19 @@ osStatus_t meter_probe_sensor_enable_fast_mode();
  * In single-shot mode, the sensor will only run its integration cycle
  * when explicitly triggered.
  */
-osStatus_t meter_probe_sensor_enable_single_shot();
+osStatus_t meter_probe_sensor_enable_single_shot(meter_probe_handle_t *handle);
 
 /**
  * Disable the meter probe sensor.
  */
-osStatus_t meter_probe_sensor_disable();
+osStatus_t meter_probe_sensor_disable(meter_probe_handle_t *handle);
 
 /**
  * Set the meter probe sensor's gain
  *
  * @param gain Sensor ADC gain
  */
-osStatus_t meter_probe_sensor_set_gain(tsl2585_gain_t gain);
+osStatus_t meter_probe_sensor_set_gain(meter_probe_handle_t *handle, tsl2585_gain_t gain);
 
 /**
  * Set the meter probe sensor's integration time
@@ -204,7 +211,7 @@ osStatus_t meter_probe_sensor_set_gain(tsl2585_gain_t gain);
  * @param sample_time Duration of each sample in an integration cycle
  * @param sample_count Number of samples in an integration cycle
  */
-osStatus_t meter_probe_sensor_set_integration(uint16_t sample_time, uint16_t sample_count);
+osStatus_t meter_probe_sensor_set_integration(meter_probe_handle_t *handle, uint16_t sample_time, uint16_t sample_count);
 
 /**
  * Set the modulator calibration repetition rate.
@@ -221,19 +228,19 @@ osStatus_t meter_probe_sensor_set_integration(uint16_t sample_time, uint16_t sam
  * @param value Repetition rate to set
  * @return osOK if the value was successfully set
  */
-osStatus_t meter_probe_sensor_set_mod_calibration(uint8_t value);
+osStatus_t meter_probe_sensor_set_mod_calibration(meter_probe_handle_t *handle, uint8_t value);
 
 /**
  * Enable the meter probe sensor's AGC function
  *
  * @param sample_count Number of samples in an AGC integration cycle
  */
-osStatus_t meter_probe_sensor_enable_agc(uint16_t sample_count);
+osStatus_t meter_probe_sensor_enable_agc(meter_probe_handle_t *handle, uint16_t sample_count);
 
 /**
  * Disable the meter probe sensor's AGC function
  */
-osStatus_t meter_probe_sensor_disable_agc();
+osStatus_t meter_probe_sensor_disable_agc(meter_probe_handle_t *handle);
 
 /**
  * Trigger the meter probe sensor's next sensing cycle.
@@ -245,7 +252,7 @@ osStatus_t meter_probe_sensor_disable_agc();
  * integration time, between the trigger and a new reading becoming
  * available.
  */
-osStatus_t meter_probe_sensor_trigger_next_reading();
+osStatus_t meter_probe_sensor_trigger_next_reading(meter_probe_handle_t *handle);
 
 /**
  * Clear the last sensor reading.
@@ -253,7 +260,7 @@ osStatus_t meter_probe_sensor_trigger_next_reading();
  * This is so we can explicitly block on the next reading in
  * single shot mode.
  */
-osStatus_t meter_probe_sensor_clear_last_reading();
+osStatus_t meter_probe_sensor_clear_last_reading(meter_probe_handle_t *handle);
 
 /**
  * Get the next reading from the meter probe sensor.
@@ -264,7 +271,7 @@ osStatus_t meter_probe_sensor_clear_last_reading();
  * @param timeout Amount of time to wait for a reading to become available
  * @return osOK on success, osErrorTimeout on timeout
  */
-osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *reading, uint32_t timeout);
+osStatus_t meter_probe_sensor_get_next_reading(meter_probe_handle_t *handle, meter_probe_sensor_reading_t *reading, uint32_t timeout);
 
 /**
  * High level function to get a light reading in lux.
@@ -273,7 +280,7 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_sensor_reading_t *rea
  * wraps all the error and range handling behind a simpler
  * interface, and returns the result of the lux calculation.
  */
-meter_probe_result_t meter_probe_measure(float *lux);
+meter_probe_result_t meter_probe_measure(meter_probe_handle_t *handle, float *lux);
 
 /**
  * High level function to get a quick light reading in lux.
@@ -282,7 +289,7 @@ meter_probe_result_t meter_probe_measure(float *lux);
  * except that it only returns data from the most recent
  * sensor cycle and does not block.
  */
-meter_probe_result_t meter_probe_try_measure(float *lux);
+meter_probe_result_t meter_probe_try_measure(meter_probe_handle_t *handle, float *lux);
 
 /**
  * Get the result in a gain and integration time adjusted format.
@@ -293,7 +300,7 @@ meter_probe_result_t meter_probe_try_measure(float *lux);
  * @param sensor_reading Sensor reading data
  * @return Basic count result value
  */
-float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_reading);
+float meter_probe_basic_result(const meter_probe_handle_t *handle, const meter_probe_sensor_reading_t *sensor_reading);
 
 /**
  * Get the result in lux units, after applying all relevant calibration.
@@ -304,6 +311,6 @@ float meter_probe_basic_result(const meter_probe_sensor_reading_t *sensor_readin
  * @param sensor_reading Sensor reading data
  * @return Calibrated lux value
  */
-float meter_probe_lux_result(const meter_probe_sensor_reading_t *sensor_reading);
+float meter_probe_lux_result(const meter_probe_handle_t *handle, const meter_probe_sensor_reading_t *sensor_reading);
 
 #endif /* METER_PROBE_H */

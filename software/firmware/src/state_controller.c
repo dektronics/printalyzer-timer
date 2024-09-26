@@ -125,11 +125,12 @@ void state_controller_loop()
         TickType_t max_focus_ticks = pdMS_TO_TICKS(settings_get_enlarger_focus_timeout());
         if (state_controller_is_enlarger_focus(&state_controller) && (xTaskGetTickCount() - state_controller.focus_start_ticks) >= max_focus_ticks) {
             log_i("Focus mode disabled due to timeout");
+            meter_probe_handle_t *handle = meter_probe_handle();
             state_controller_set_enlarger_focus(&state_controller, false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller.focus_start_ticks = 0;
-            meter_probe_sensor_disable();
-            meter_probe_stop();
+            meter_probe_sensor_disable(handle);
+            meter_probe_stop(handle);
         }
 
         // Check if we will do a state transition on the next loop

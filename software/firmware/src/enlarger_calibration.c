@@ -149,6 +149,8 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
     calibration_result_t calibration_result;
     log_i("Starting enlarger calibration process");
 
+    meter_probe_handle_t *handle = meter_probe_handle();
+
     display_static_list(DISPLAY_TITLE, "\n\nInitializing...");
 
     /* Turn everything off, just in case it isn't already off */
@@ -156,13 +158,13 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
     enlarger_control_set_state_off(&config->control, true);
 
     /* Activate the meter probe */
-    if (meter_probe_start() != osOK) {
+    if (meter_probe_start(handle) != osOK) {
         log_e("Could not initialize meter probe");
         return CALIBRATION_SENSOR_ERROR;
     }
 
     if (!delay_with_cancel(1000)) {
-        meter_probe_stop();
+        meter_probe_stop(handle);
         return CALIBRATION_CANCEL;
     }
 
@@ -175,7 +177,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
         &enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
     if (calibration_result != CALIBRATION_OK) {
         log_e("Could not collect reference stats");
-        meter_probe_stop();
+        meter_probe_stop(handle);
         enlarger_control_set_state_off(&config->control, true);
         return calibration_result;
     }
@@ -197,13 +199,13 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
     calibration_result = calibration_validate_reference_stats(&enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
     if (calibration_result != CALIBRATION_OK) {
         log_w("Reference stats are not usable for calibration");
-        meter_probe_stop();
+        meter_probe_stop(handle);
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
         return calibration_result;
     }
 
     if (!delay_with_cancel(1000)) {
-        meter_probe_stop();
+        meter_probe_stop(handle);
         return CALIBRATION_CANCEL;
     }
 
@@ -229,7 +231,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
             &enlarger_on_stats, &enlarger_off_stats, &sensor_stats);
         if (calibration_result != CALIBRATION_OK) {
             log_e("Could not build profile");
-            meter_probe_stop();
+            meter_probe_stop(handle);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             enlarger_control_set_state_off(&config->control, true);
             return calibration_result;
@@ -244,7 +246,7 @@ calibration_result_t enlarger_calibration_start(enlarger_config_t *config)
     }
     log_i("Profile runs complete");
 
-    meter_probe_stop();
+    meter_probe_stop(handle);
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     enlarger_control_set_state_off(&config->control, true);
 
@@ -355,6 +357,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     uint32_t readings[REFERENCE_READING_ITERATIONS];
     uint32_t sensor_times[REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT];
     uint32_t index;
+    meter_probe_handle_t *handle = meter_probe_handle();
 
     if (!stats_on || !stats_off || !stats_sensor) { return CALIBRATION_FAIL; }
 
@@ -362,19 +365,19 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     enlarger_control_set_state_focus(enlarger_control, true);
 
     log_i("Activating light sensor with AGC");
-    if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) != osOK) {
+    if (meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_integration(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+    if (meter_probe_sensor_set_integration(handle, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_mod_calibration(1) != osOK) {
+    if (meter_probe_sensor_set_mod_calibration(handle, 1) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_enable_agc(SENSOR_NUM_SAMPLES) != osOK) {
+    if (meter_probe_sensor_enable_agc(handle, SENSOR_NUM_SAMPLES) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_enable_fast_mode() != osOK) {
+    if (meter_probe_sensor_enable_fast_mode(handle) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
 
@@ -384,7 +387,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     }
 
     log_i("Finding appropriate gain setting");
-    if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+    if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, 100) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     if (sensor_reading.reading[0].status != METER_SENSOR_RESULT_VALID) {
@@ -401,22 +404,22 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     log_i("Selected gain: %s", tsl2585_gain_str(sensor_gain));
 
     log_i("Reconfiguring light sensor without AGC");
-    if (meter_probe_sensor_disable() != osOK) {
+    if (meter_probe_sensor_disable(handle) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_disable_agc() != osOK) {
+    if (meter_probe_sensor_disable_agc(handle) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_mod_calibration(0xFF) != osOK) {
+    if (meter_probe_sensor_set_mod_calibration(handle, 0xFF) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_gain(sensor_gain) != osOK) {
+    if (meter_probe_sensor_set_gain(handle, sensor_gain) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_set_integration(SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
+    if (meter_probe_sensor_set_integration(handle, SENSOR_SAMPLE_TIME, SENSOR_NUM_SAMPLES) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
-    if (meter_probe_sensor_enable_fast_mode() != osOK) {
+    if (meter_probe_sensor_enable_fast_mode(handle) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
 
@@ -426,7 +429,7 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     log_i("Collecting data with enlarger on");
     index = 0;
     for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT; i++) {
-        if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+        if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
         for (unsigned int j = 0; j < MAX_ALS_COUNT; j++) {
@@ -448,14 +451,14 @@ calibration_result_t calibration_collect_reference_stats(const enlarger_control_
     log_i("Collecting data with enlarger off");
 
     /* Capture a reading as the starting point for sensor cycle measurement */
-    if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+    if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, 100) != osOK) {
         return CALIBRATION_SENSOR_ERROR;
     }
     last_sensor_ticks = sensor_reading.ticks;
 
     index = 0;
     for (unsigned int i = 0; i < REFERENCE_READING_ITERATIONS / MAX_ALS_COUNT; i++) {
-        if (meter_probe_sensor_get_next_reading(&sensor_reading, 100) != osOK) {
+        if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, 100) != osOK) {
             return CALIBRATION_SENSOR_ERROR;
         }
         for (unsigned int j = 0; j < MAX_ALS_COUNT; j++) {
@@ -509,6 +512,8 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
     if (!enlarger_control || !timing_profile || !stats_on || !stats_off) {
         return CALIBRATION_FAIL;
     }
+
+    meter_probe_handle_t *handle = meter_probe_handle();
 
     uint16_t rising_threshold = stats_off->max;
     if (rising_threshold < 2) {
@@ -577,7 +582,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
         /* Loop until the light level starts to rise */
         do {
             /* Get the next sensor reading */
-            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+            if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
                 log_w("Unable to get next sensor reading");
                 result = CALIBRATION_SENSOR_ERROR;
                 break;
@@ -621,7 +626,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
         /* Loop until the light level reaches its steady on threshold */
         do {
             /* Get the next sensor reading */
-            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+            if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
                 log_w("Unable to get next sensor reading");
                 result = CALIBRATION_SENSOR_ERROR;
                 break;
@@ -670,7 +675,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
         /* Loop until the light level starts to fall */
         do {
             /* Get the next sensor reading */
-            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+            if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
                 log_w("Unable to get next sensor reading");
                 result = CALIBRATION_SENSOR_ERROR;
                 break;
@@ -712,7 +717,7 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
         /* Loop until the light level bottoms out */
         do {
             /* Get the next sensor reading */
-            if (meter_probe_sensor_get_next_reading(&sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
+            if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, SENSOR_READING_TIMEOUT) != osOK) {
                 log_w("Unable to get next sensor reading");
                 result = CALIBRATION_SENSOR_ERROR;
                 break;

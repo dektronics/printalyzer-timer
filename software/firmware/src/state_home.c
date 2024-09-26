@@ -228,7 +228,7 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
 
     if (mode == EXPOSURE_MODE_PRINTING_BW
         && state_controller_is_enlarger_focus(controller)
-        && meter_probe_is_started()
+        && meter_probe_is_started(meter_probe_handle())
         && exposure_get_tone_graph(exposure_state) > 0) {
         uint32_t live_tone = state_home_take_live_reading(state, controller);
         if (live_tone > 0) {
@@ -438,7 +438,7 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_TAKE_READING) {
             if (mode != EXPOSURE_MODE_PRINTING_COLOR
-                && state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
+                && state_controller_is_enlarger_focus(controller) && meter_probe_is_started(meter_probe_handle())) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             }
@@ -492,7 +492,7 @@ bool state_home_process_densitometer(state_home_t *state, state_controller_t *co
             exposure_state_defaults(exposure_state);
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_TAKE_READING) {
-            if (state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
+            if (state_controller_is_enlarger_focus(controller) && meter_probe_is_started(meter_probe_handle())) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             }
@@ -579,7 +579,7 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
             exposure_state_defaults(exposure_state);
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_TAKE_READING) {
-            if (state_controller_is_enlarger_focus(controller) && meter_probe_is_started()) {
+            if (state_controller_is_enlarger_focus(controller) && meter_probe_is_started(meter_probe_handle())) {
                 state->updated_tone_element = state_home_take_reading(state, controller);
                 state->display_dirty = true;
             }
@@ -663,20 +663,22 @@ void state_home_check_meter_probe(state_home_t *state)
     static uint16_t sample_time = 719;
     static uint16_t sample_count = 99;
 
+    meter_probe_handle_t *handle = meter_probe_handle();
+
     if (state->enable_meter_probe) {
-        if (meter_probe_is_attached() && !meter_probe_is_started()) {
-            if (meter_probe_start() == osOK) {
-                meter_probe_sensor_set_gain(TSL2585_GAIN_256X);
-                meter_probe_sensor_set_integration(sample_time, sample_count);
-                meter_probe_sensor_set_mod_calibration(1);
-                meter_probe_sensor_enable_agc(sample_count);
-                meter_probe_sensor_enable();
+        if (meter_probe_is_attached(handle) && !meter_probe_is_started(handle)) {
+            if (meter_probe_start(handle) == osOK) {
+                meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X);
+                meter_probe_sensor_set_integration(handle, sample_time, sample_count);
+                meter_probe_sensor_set_mod_calibration(handle, 1);
+                meter_probe_sensor_enable_agc(handle, sample_count);
+                meter_probe_sensor_enable(handle);
             }
         }
     } else {
-        if (meter_probe_is_started()) {
-            meter_probe_sensor_disable();
-            meter_probe_stop();
+        if (meter_probe_is_started(handle)) {
+            meter_probe_sensor_disable(handle);
+            meter_probe_stop(handle);
         }
     }
 }
@@ -694,7 +696,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
         osDelay(SAFELIGHT_OFF_DELAY / 2);
 
-        result = meter_probe_measure(&lux);
+        result = meter_probe_measure(meter_probe_handle(), &lux);
         if (result != METER_READING_OK) {
             break;
         }
@@ -733,7 +735,7 @@ uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *c
     float lux = 0;
     uint32_t live_tone_element = 0;
 
-    result = meter_probe_try_measure(&lux);
+    result = meter_probe_try_measure(meter_probe_handle(), &lux);
 
     if (result == METER_READING_OK) {
         live_tone_element = exposure_get_meter_reading_tone(exposure_state, lux);

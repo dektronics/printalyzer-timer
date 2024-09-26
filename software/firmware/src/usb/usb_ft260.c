@@ -39,6 +39,7 @@ struct ft260_device_t {
     i2c_handle_t i2c_handle;
     usb_ft260_handle_t *dev_handle;
     ft260_device_event_callback_t callback;
+    void *user_data;
     osMutexId_t mutex;
 };
 
@@ -318,7 +319,7 @@ void usbh_ft260_control_attach(struct usbh_hid *hid_class)
     }
 
     if (callback) {
-        callback(&meter_probe_handle, FT260_EVENT_ATTACH, osKernelGetTickCount());
+        callback(&meter_probe_handle, FT260_EVENT_ATTACH, osKernelGetTickCount(), meter_probe_handle.user_data);
     }
 }
 
@@ -369,10 +370,10 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
         if (callback) {
             /* Inject a button release event just in case */
             if (dev_handle->button_pressed) {
-                callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount());
+                callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), meter_probe_handle.user_data);
             }
 
-            callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount());
+            callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount(), meter_probe_handle.user_data);
         }
 
         vPortFree(dev_handle);
@@ -589,7 +590,7 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
 
     if (params->status_int & 0x01) {
         if (callback) {
-            callback(&meter_probe_handle, FT260_EVENT_INTERRUPT, params->ticks);
+            callback(&meter_probe_handle, FT260_EVENT_INTERRUPT, params->ticks, meter_probe_handle.user_data);
         }
     }
     if (params->status_dcd_ri & 0x04) {
@@ -599,7 +600,8 @@ void usbh_ft260_control_interrupt(ft260_interrupt_params_t *params)
             if (callback) {
                 callback(&meter_probe_handle,
                     pressed ? FT260_EVENT_BUTTON_DOWN : FT260_EVENT_BUTTON_UP,
-                    params->ticks);
+                    params->ticks,
+                    meter_probe_handle.user_data);
             }
         }
     }
@@ -822,12 +824,13 @@ ft260_device_t *usbh_ft260_get_device(ft260_device_type_t device_type)
     }
 }
 
-void usbh_ft260_set_device_callback(ft260_device_t *device, ft260_device_event_callback_t callback)
+void usbh_ft260_set_device_callback(ft260_device_t *device, ft260_device_event_callback_t callback, void *user_data)
 {
     if (!device) { return; }
 
     osMutexAcquire(device->mutex, portMAX_DELAY);
     device->callback = callback;
+    device->user_data = user_data;
     osMutexRelease(device->mutex);
 }
 

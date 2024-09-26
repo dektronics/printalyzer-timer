@@ -27,10 +27,10 @@
 #define HEADER_EXPORT_VERSION     1
 #define MAX_CALIBRATION_FILE_SIZE 16384
 
-static menu_result_t meter_probe_device_info();
-static menu_result_t meter_probe_sensor_calibration();
+static menu_result_t meter_probe_device_info(meter_probe_handle_t *handle);
+static menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle);
 
-static menu_result_t meter_probe_sensor_calibration_import();
+static menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle);
 static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
 static bool validate_section_header(const char *buf, size_t len, const meter_probe_device_info_t *info);
 static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
@@ -40,20 +40,22 @@ static bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_p
 
 //static void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal);
 
-static menu_result_t meter_probe_sensor_calibration_export();
+static menu_result_t meter_probe_sensor_calibration_export(meter_probe_handle_t *handle);
 static bool export_calibration_file(const char *filename, const meter_probe_device_info_t *info, const meter_probe_settings_t *settings);
 static bool write_section_header(FIL *fp, const meter_probe_device_info_t *info);
 static bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings);
 
-static menu_result_t meter_probe_diagnostics(bool fast_mode);
+static menu_result_t meter_probe_diagnostics(meter_probe_handle_t *handle, bool fast_mode);
 
 menu_result_t menu_meter_probe()
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
 
+    meter_probe_handle_t *handle = meter_probe_handle();
+
     /* Attempt to start the meter probe */
-    if (meter_probe_start() != osOK) {
+    if (meter_probe_start(handle) != osOK) {
         option = display_message(
             "Meter Probe",
             NULL,
@@ -74,37 +76,37 @@ menu_result_t menu_meter_probe()
             "Diagnostics (Fast Mode)");
 
         if (option == 1) {
-            menu_result = meter_probe_device_info();
+            menu_result = meter_probe_device_info(handle);
         } else if (option == 2) {
-            menu_result = meter_probe_sensor_calibration();
+            menu_result = meter_probe_sensor_calibration(handle);
         } else if (option == 3) {
-            menu_result = meter_probe_diagnostics(false);
+            menu_result = meter_probe_diagnostics(handle, false);
         } else if (option == 4) {
-            menu_result = meter_probe_diagnostics(true);
+            menu_result = meter_probe_diagnostics(handle, true);
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     /* Stop the meter probe before returning */
-    meter_probe_sensor_disable();
-    meter_probe_stop();
+    meter_probe_sensor_disable(handle);
+    meter_probe_stop(handle);
 
     return menu_result;
 }
 
-menu_result_t meter_probe_device_info()
+menu_result_t meter_probe_device_info(meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
     char buf[512];
 
     meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(&info) != osOK) {
+    if (meter_probe_get_device_info(handle, &info) != osOK) {
         return MENU_OK;
     }
 
-    bool has_settings = meter_probe_has_settings();
+    bool has_settings = meter_probe_has_settings(handle);
 
     do {
         size_t offset = 0;
@@ -128,14 +130,14 @@ menu_result_t meter_probe_device_info()
     return menu_result;
 }
 
-menu_result_t meter_probe_sensor_calibration()
+menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
     char buf[640];
 
     meter_probe_settings_t settings;
-    if (meter_probe_get_settings(&settings) != osOK) {
+    if (meter_probe_get_settings(handle, &settings) != osOK) {
         return MENU_OK;
     }
 
@@ -186,10 +188,10 @@ menu_result_t meter_probe_sensor_calibration()
         option = display_selection_list("Sensor Calibration", option, buf);
 
         if (option == option_offset + 1) {
-            menu_result = meter_probe_sensor_calibration_import();
+            menu_result = meter_probe_sensor_calibration_import(handle);
             if (menu_result == MENU_SAVE) {
-                meter_probe_stop();
-                if (meter_probe_start() != osOK) {
+                meter_probe_stop(handle);
+                if (meter_probe_start(handle) != osOK) {
                     menu_result = MENU_TIMEOUT;
                 } else {
                     menu_result = MENU_OK;
@@ -197,7 +199,7 @@ menu_result_t meter_probe_sensor_calibration()
                 }
             }
         } else if (option == option_offset + 2) {
-            menu_result = meter_probe_sensor_calibration_export();
+            menu_result = meter_probe_sensor_calibration_export(handle);
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -206,7 +208,7 @@ menu_result_t meter_probe_sensor_calibration()
     return menu_result;
 }
 
-menu_result_t meter_probe_sensor_calibration_import()
+menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle)
 {
     char buf[256];
     char path_buf[256];
@@ -228,7 +230,7 @@ menu_result_t meter_probe_sensor_calibration_import()
     }
 
     meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(&info) != osOK) {
+    if (meter_probe_get_device_info(handle, &info) != osOK) {
         return MENU_OK;
     }
 
@@ -263,7 +265,7 @@ menu_result_t meter_probe_sensor_calibration_import()
                 "loaded file?\n", NULL, NULL,
                 " NO \n YES ");
             if (option == 2) {
-                if (meter_probe_set_settings(&imported_settings) == osOK) {
+                if (meter_probe_set_settings(handle, &imported_settings) == osOK) {
                     option = display_message(
                         "Meter probe calibration saved\n",
                         NULL, NULL, " Close ");
@@ -598,7 +600,7 @@ bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_se
     }
 }
 
-menu_result_t meter_probe_sensor_calibration_export()
+menu_result_t meter_probe_sensor_calibration_export(meter_probe_handle_t *handle)
 {
     char buf[256];
     char filename[64];
@@ -619,17 +621,17 @@ menu_result_t meter_probe_sensor_calibration_export()
     }
 
     meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(&info) != osOK) {
+    if (meter_probe_get_device_info(handle, &info) != osOK) {
         return MENU_OK;
     }
 
     if ((info.probe_id.probe_type != METER_PROBE_TYPE_TSL2585 && info.probe_id.probe_type != METER_PROBE_TYPE_TSL2521)
-        || !meter_probe_has_settings()) {
+        || !meter_probe_has_settings(handle)) {
         return MENU_OK;
     }
 
     meter_probe_settings_t settings;
-    if (meter_probe_get_settings(&settings) != osOK) {
+    if (meter_probe_get_settings(handle, &settings) != osOK) {
         return MENU_OK;
     }
 
@@ -753,7 +755,7 @@ bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
     return true;
 }
 
-menu_result_t meter_probe_diagnostics(bool fast_mode)
+menu_result_t meter_probe_diagnostics(meter_probe_handle_t *handle, bool fast_mode)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     char buf[512];
@@ -781,7 +783,7 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
 
     /* Get meter probe device info */
     meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(&info) != osOK) {
+    if (meter_probe_get_device_info(handle, &info) != osOK) {
         return MENU_OK;
     }
 
@@ -796,23 +798,23 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
     illum_controller_refresh();
     enlarger_control_set_state_off(&(enlarger_config.control), false);
 
-    if (meter_probe_sensor_set_gain(TSL2585_GAIN_256X) == osOK) {
+    if (meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X) == osOK) {
         gain = TSL2585_GAIN_256X;
     }
 
     sample_time = fast_mode ? 359 : 719;
     sample_count = fast_mode ? 59 : 99;
 
-    if (meter_probe_sensor_set_integration(sample_time, sample_count) != osOK) {
+    if (meter_probe_sensor_set_integration(handle, sample_time, sample_count) != osOK) {
         log_w("Unable to set integration time");
     }
 
     /* Enable internal calibration on every sequencer round */
-    meter_probe_sensor_set_mod_calibration(fast_mode ? 0xFF : 1);
+    meter_probe_sensor_set_mod_calibration(handle, fast_mode ? 0xFF : 1);
 
     for (;;) {
         if (!sensor_initialized) {
-            if ((fast_mode ? meter_probe_sensor_enable_fast_mode() : meter_probe_sensor_enable()) == osOK) {
+            if ((fast_mode ? meter_probe_sensor_enable_fast_mode(handle) : meter_probe_sensor_enable(handle)) == osOK) {
                 sensor_initialized = true;
             } else {
                 log_e("Error initializing TSL2585: %d", ret);
@@ -888,15 +890,15 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
                     agc_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_TEST_STRIP) && !fast_mode) {
-                if (meter_probe_sensor_disable() == osOK) {
+                if (meter_probe_sensor_disable(handle) == osOK) {
                     if (single_shot) {
-                        if (meter_probe_sensor_enable() == osOK) {
+                        if (meter_probe_sensor_enable(handle) == osOK) {
                             single_shot = false;
                         } else {
                             sensor_error = true;
                         }
                     } else {
-                        if (meter_probe_sensor_enable_single_shot() == osOK) {
+                        if (meter_probe_sensor_enable_single_shot(handle) == osOK) {
                             single_shot = true;
                         } else {
                             sensor_error = true;
@@ -908,7 +910,7 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_METER_PROBE)
                 || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
                 if (single_shot) {
-                    meter_probe_sensor_trigger_next_reading();
+                    meter_probe_sensor_trigger_next_reading(handle);
                 }
             } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
                 break;
@@ -924,24 +926,24 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             elapsed_tick_buf_pos = 0;
 
             if (gain_changed) {
-                if (meter_probe_sensor_set_gain(gain) == osOK) {
+                if (meter_probe_sensor_set_gain(handle, gain) == osOK) {
                     gain_changed = false;
                 }
             }
 
             if (time_changed) {
-                if (meter_probe_sensor_set_integration(sample_time, sample_count) == osOK) {
+                if (meter_probe_sensor_set_integration(handle, sample_time, sample_count) == osOK) {
                     time_changed = false;
                 }
             }
         }
         if (agc_changed) {
             if (agc_enabled) {
-                if (meter_probe_sensor_enable_agc(sample_count) == osOK) {
+                if (meter_probe_sensor_enable_agc(handle, sample_count) == osOK) {
                     agc_changed = false;
                 }
             } else {
-                if (meter_probe_sensor_disable_agc() == osOK) {
+                if (meter_probe_sensor_disable_agc(handle) == osOK) {
                     agc_changed = false;
                 }
             }
@@ -953,7 +955,7 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
         } else {
             expected_reading_time = lroundf(atime);
         }
-        if (meter_probe_sensor_get_next_reading(&sensor_reading, single_shot ? 10 : (expected_reading_time * 2)) == osOK) {
+        if (meter_probe_sensor_get_next_reading(handle, &sensor_reading, single_shot ? 10 : (expected_reading_time * 2)) == osOK) {
             float elapsed_tick_avg = 0;
 
             if (sensor_reading.elapsed_ticks < (expected_reading_time * 2)) {
@@ -1009,8 +1011,8 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             }
             else {
                 if (sensor_reading.reading[0].status == METER_SENSOR_RESULT_VALID) {
-                    const float basic_result = meter_probe_basic_result(&sensor_reading);
-                    const float lux_result = meter_probe_lux_result(&sensor_reading);
+                    const float basic_result = meter_probe_basic_result(handle, &sensor_reading);
+                    const float lux_result = meter_probe_lux_result(handle, &sensor_reading);
                     sprintf(buf,
                         "%s (%s, %.2fms)\n"
                         "Data: %lu\n"
@@ -1060,32 +1062,32 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
             sample_time = sensor_reading.sample_time;
             sample_count = sensor_reading.sample_count;
         } else {
-            if (!meter_probe_is_started()) {
+            if (!meter_probe_is_started(handle)) {
                 sprintf(buf, "\n\n**** Detached ****");
                 display_static_list("Meter Probe Diagnostics", buf);
-                if (meter_probe_is_attached()) {
+                if (meter_probe_is_attached(handle)) {
                     bool probe_restarted = false;
                     do {
-                        if (meter_probe_start() != osOK) { break; }
-                        if (meter_probe_get_device_info(&info) != osOK) { break; }
-                        if (meter_probe_sensor_set_gain(gain) != osOK) { break; }
-                        if (meter_probe_sensor_set_integration(sample_time, sample_count) != osOK) { break; }
-                        if (meter_probe_sensor_set_mod_calibration(fast_mode ? 0xFF : 1) != osOK) { break; }
+                        if (meter_probe_start(handle) != osOK) { break; }
+                        if (meter_probe_get_device_info(handle, &info) != osOK) { break; }
+                        if (meter_probe_sensor_set_gain(handle, gain) != osOK) { break; }
+                        if (meter_probe_sensor_set_integration(handle, sample_time, sample_count) != osOK) { break; }
+                        if (meter_probe_sensor_set_mod_calibration(handle, fast_mode ? 0xFF : 1) != osOK) { break; }
                         if (agc_enabled) {
-                            if (meter_probe_sensor_enable_agc(sample_count) != osOK) { break; }
+                            if (meter_probe_sensor_enable_agc(handle, sample_count) != osOK) { break; }
                         }
                         if (fast_mode) {
-                            if (meter_probe_sensor_enable_fast_mode() != osOK) { break; }
+                            if (meter_probe_sensor_enable_fast_mode(handle) != osOK) { break; }
                         } else if (single_shot) {
-                            if (meter_probe_sensor_enable_single_shot() != osOK) { break; }
+                            if (meter_probe_sensor_enable_single_shot(handle) != osOK) { break; }
                         } else {
-                            if (meter_probe_sensor_enable() != osOK) { break; }
+                            if (meter_probe_sensor_enable(handle) != osOK) { break; }
                         }
                         probe_restarted = true;
                     } while (0);
                     if (!probe_restarted) {
                         log_w("Unable to restart meter probe");
-                        meter_probe_stop();
+                        meter_probe_stop(handle);
                     }
                 }
             }
@@ -1096,7 +1098,7 @@ menu_result_t meter_probe_diagnostics(bool fast_mode)
         }
     }
 
-    meter_probe_sensor_disable();
+    meter_probe_sensor_disable(handle);
 
     enlarger_control_set_state_off(&(enlarger_config.control), false);
 
