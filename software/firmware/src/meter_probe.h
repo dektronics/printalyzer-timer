@@ -151,23 +151,6 @@ osStatus_t meter_probe_get_settings(meter_probe_settings_t *settings);
 osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings);
 
 /**
- * Enable oscillator calibration for the meter probe sensor.
- *
- * The meter probe must be started for this function to work, with
- * the sensor in a disabled state. This function sets an internal flag
- * which causes oscillator calibration to be performed as part of the
- * sensor enable process.
- *
- * @return osOK if the flag was successfully set
- */
-osStatus_t meter_probe_sensor_enable_osc_calibration();
-
-/**
- * Disable oscillator calibration for the meter probe sensor.
- */
-osStatus_t meter_probe_sensor_disable_osc_calibration();
-
-/**
  * Enable the meter probe sensor.
  *
  * In the normal enabled mode, the sensor will continuously run its

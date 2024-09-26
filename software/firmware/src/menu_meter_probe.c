@@ -64,9 +64,6 @@ menu_result_t menu_meter_probe()
         return menu_result;
     }
 
-    /* Enable oscillator calibration */
-    meter_probe_sensor_enable_osc_calibration();
-
     /* Show the meter probe menu */
     do {
         option = display_selection_list(
@@ -91,7 +88,6 @@ menu_result_t menu_meter_probe()
 
     /* Stop the meter probe before returning */
     meter_probe_sensor_disable();
-    meter_probe_sensor_disable_osc_calibration();
     meter_probe_stop();
 
     return menu_result;

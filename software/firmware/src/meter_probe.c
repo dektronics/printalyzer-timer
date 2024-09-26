@@ -17,7 +17,6 @@
 #include "keypad.h"
 #include "usb_host.h"
 #include "usb_ft260.h"
-#include "i2c_interface.h"
 #include "util.h"
 
 /*
@@ -143,9 +142,7 @@ static meter_probe_settings_handle_t probe_settings_handle = {0};
 static meter_probe_settings_tsl2585_t sensor_settings = {0};
 static uint8_t sensor_device_id[3];
 static tsl2585_state_t sensor_state = {0};
-static bool sensor_osc_calibration_enabled = false;
 static uint32_t last_aint_ticks = 0;
-static volatile uint8_t sensor_osc_sync_count = 0;
 
 /* Queue for meter probe control events */
 static osMessageQueueId_t meter_probe_control_queue = NULL;
@@ -197,8 +194,6 @@ static osStatus_t meter_probe_control_interrupt(const sensor_control_interrupt_p
 
 static void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks);
 static void meter_probe_int_handler(uint32_t ticks);
-
-static HAL_StatusTypeDef sensor_osc_calibration();
 
 static HAL_StatusTypeDef sensor_control_read_fifo(tsl2585_fifo_data_t *fifo_data, bool *overflow);
 static HAL_StatusTypeDef sensor_control_read_fifo_fast_mode(tsl2585_fifo_data_t *fifo_data, bool *overflow, uint32_t ticks);
@@ -607,40 +602,6 @@ osStatus_t meter_probe_set_settings(const meter_probe_settings_t *settings)
     }
 }
 
-osStatus_t meter_probe_sensor_enable_osc_calibration()
-{
-    //FIXME Might no longer support OSC calibration
-    return osOK;
-#if 0
-    if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
-
-    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
-        || probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
-        sensor_osc_calibration_enabled = true;
-        return osOK;
-    } else {
-        return osErrorParameter;
-    }
-#endif
-}
-
-osStatus_t meter_probe_sensor_disable_osc_calibration()
-{
-    //FIXME Might no longer support OSC calibration
-    return osOK;
-#if 0
-    if (!meter_probe_initialized || !meter_probe_started || sensor_state.running) { return osErrorResource; }
-
-    if (probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2585
-        || probe_settings_handle.id.probe_type == METER_PROBE_TYPE_TSL2521) {
-        sensor_osc_calibration_enabled = false;
-        return osOK;
-    } else {
-        return osErrorParameter;
-    }
-#endif
-}
-
 osStatus_t meter_probe_sensor_enable()
 {
     return meter_probe_sensor_enable_impl(METER_PROBE_START_NORMAL);
@@ -867,13 +828,6 @@ osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_m
             if (ret != HAL_OK) { break; }
         }
 
-        if (sensor_osc_calibration_enabled) {
-            ret = sensor_osc_calibration();
-            if (ret != HAL_OK) {
-                break;
-            }
-        }
-
         if (fast_mode) {
             /* Set the FT260 I2C clock speed to 1MHz for faster FIFO reads */
             if (usbh_ft260_set_i2c_clock_speed(device_handle, 1000) != osOK) {
@@ -899,80 +853,6 @@ osStatus_t meter_probe_control_sensor_enable(sensor_control_start_mode_t start_m
     } while (0);
 
     return hal_to_os_status(ret);
-}
-
-HAL_StatusTypeDef sensor_osc_calibration()
-{
-    //FIXME This routine will need to be rewritten to use an HW trigger synchronized to USB SOF or just removed
-    HAL_StatusTypeDef ret = HAL_OK;
-#if 0
-    uint8_t status3 = 0;
-    uint16_t vsync_period = 0;
-    uint32_t sync_start;
-
-    log_d("TSL2585 oscillator calibration (SW_VSYNC_TRIGGER)");
-
-    do {
-        /* Set VSYNC period target */
-        ret = tsl2585_set_vsync_period_target(hi2c, 720, true); /* 1000Hz */
-        if (ret != HAL_OK) { break; }
-
-        /* Set calibration mode */
-        ret = tsl2585_set_vsync_cfg(hi2c, TSL2585_VSYNC_CFG_OSC_CALIB_AFTER_PON | TSL2585_VSYNC_CFG_VSYNC_MODE);
-        if (ret != HAL_OK) { break; }
-
-        /* Power on the sensor (PON only) */
-        ret = tsl2585_set_enable(hi2c, TSL2585_ENABLE_PON);
-        if (ret != HAL_OK) { break; }
-
-        /* Enable interrupts from the 1kHz timer being used for this process */
-        sync_start = osKernelGetTickCount();
-        sensor_osc_sync_count = 0;
-        __HAL_TIM_ENABLE_IT(&htim3, TIM_IT_UPDATE);
-
-        /* Wait until we've sent at least two I2C sync commands from the ISR */
-        while (sensor_osc_sync_count < 3) {
-            /* Check for timeout conditions and fail accordingly */
-            if (osKernelGetTickCount() - sync_start > 10) {
-                __HAL_TIM_DISABLE_IT(&htim3, TIM_IT_UPDATE);
-                log_w("VSYNC timeout error");
-                break;
-            }
-        }
-
-        /* Check if there was an I2C error inside the ISR */
-        if (sensor_osc_sync_count > 10) {
-            log_w("I2C error during VSYNC trigger interrupt");
-            ret = HAL_ERROR;
-            break;
-        }
-
-        ret = tsl2585_get_status3(hi2c, &status3);
-        if (ret != HAL_OK) { break; }
-
-        if ((status3 & TSL2585_STATUS3_OSC_CALIB_FINISHED) != 0) {
-            ret = tsl2585_get_vsync_period(hi2c, &vsync_period);
-            if (ret != HAL_OK) { break; }
-            log_d("VSYNC_PERIOD=%d (%f Hz)", vsync_period, (1.0F/(vsync_period * 1.388889F))*1000000.0F);
-        } else {
-            log_w("VSYNC_PERIOD did not match the target");
-            ret = HAL_ERROR;
-            break;
-        }
-
-        /* Reconfigure the VSYNC of the sensor back to its default */
-        ret = tsl2585_set_vsync_cfg(hi2c, 0x00);
-        if (ret != HAL_OK) { break; }
-
-    } while (0);
-
-    /* Disable the sensor in case of failure */
-    if (ret != HAL_OK) {
-        log_w("VSYNC calibration failed");
-        tsl2585_disable(hi2c);
-    }
-#endif
-    return ret;
 }
 
 osStatus_t meter_probe_sensor_disable()

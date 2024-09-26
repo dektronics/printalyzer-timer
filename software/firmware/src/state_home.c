@@ -666,7 +666,6 @@ void state_home_check_meter_probe(state_home_t *state)
     if (state->enable_meter_probe) {
         if (meter_probe_is_attached() && !meter_probe_is_started()) {
             if (meter_probe_start() == osOK) {
-                meter_probe_sensor_enable_osc_calibration();
                 meter_probe_sensor_set_gain(TSL2585_GAIN_256X);
                 meter_probe_sensor_set_integration(sample_time, sample_count);
                 meter_probe_sensor_set_mod_calibration(1);
