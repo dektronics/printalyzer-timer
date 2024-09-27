@@ -276,6 +276,23 @@ osStatus_t meter_probe_sensor_enable_agc(meter_probe_handle_t *handle, uint16_t 
 osStatus_t meter_probe_sensor_disable_agc(meter_probe_handle_t *handle);
 
 /**
+ * Enable the DensiStick light source
+ */
+osStatus_t densistick_set_light_enable(meter_probe_handle_t *handle, bool enable);
+
+/**
+ * Change the DensiStick light source brightness
+ *
+ * @value Brightness value, where 0 is maximum and 127 is minimum.
+ */
+osStatus_t densistick_set_light_brightness(meter_probe_handle_t *handle, uint8_t value);
+
+/**
+ * Get the current DensiStick light source brightness
+ */
+uint8_t densistick_get_light_brightness(const meter_probe_handle_t *handle);
+
+/**
  * Trigger the meter probe sensor's next sensing cycle.
  *
  * This function only works in single-shot mode, and only when

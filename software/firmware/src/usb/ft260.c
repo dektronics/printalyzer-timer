@@ -206,6 +206,28 @@ int ft260_i2c_receive(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t *
     return ret;
 }
 
+int ft260_i2c_transmit(struct usbh_hid *hid_class, uint8_t dev_address, const uint8_t *data, uint16_t size)
+{
+    int ret;
+    int step = 0;
+
+    do {
+        /* Write request for the data */
+        ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START | FT260_I2C_STOP, data, size);
+        if (ret < 0) {
+            step = 1;
+            break;
+        }
+
+    } while (0);
+
+    if (ret < 0) {
+        log_w("ft260_i2c_transmit[%d]: dev=0x%02X, ret=%d", step, dev_address, ret);
+    }
+
+    return ret;
+}
+
 int ft260_i2c_mem_read(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t mem_address, uint8_t *data, uint16_t size)
 {
     int ret;

@@ -24,6 +24,7 @@ typedef struct {
     struct usbh_hid *hid_class0; /*!< HID endpoint for I2C and control */
     struct usbh_hid *hid_class1; /*!< HID endpoint for interrupts */
     uint8_t serial_number[FT260_SERIAL_SIZE];
+    ft260_gpio_report_t gpio_report;
     bool button_pressed;
     uint8_t connected;
     uint8_t active;
@@ -383,8 +384,9 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
     if (!dev_handle->hid_class0 && !dev_handle->hid_class1) {
         log_d("FT260_CONTROL_DETACH");
 
+        //FIXME By the time we get here, the dev_handle pointer is NULL so this logic isn't working
         if (callback) {
-            if (meter_probe_handle.dev_handle == dev_handle) {
+            if (dev_handle->device_type == FT260_METER_PROBE) {
                 /* Inject a button release event just in case */
                 if (dev_handle->button_pressed) {
                     callback(&meter_probe_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), meter_probe_handle.user_data);
@@ -392,7 +394,7 @@ void usbh_ft260_control_detach(struct usbh_hid *hid_class)
 
                 callback(&meter_probe_handle, FT260_EVENT_DETACH, osKernelGetTickCount(), meter_probe_handle.user_data);
 
-            } else if (densistick_handle.dev_handle == dev_handle) {
+            } else if (dev_handle->device_type == FT260_DENSISTICK) {
                 /* Inject a button release event just in case */
                 if (dev_handle->button_pressed) {
                     callback(&densistick_handle, FT260_EVENT_BUTTON_UP, osKernelGetTickCount(), densistick_handle.user_data);
@@ -449,6 +451,7 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
 
         log_system_status(&system_status);
 
+        /* Configure initial I2C state */
         ret = ft260_set_i2c_clock_speed(dev_handle->hid_class0, 400);
         if (ret < 0) { break; }
 
@@ -457,6 +460,27 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
 
         log_d("I2C bus status: 0x%02X", bus_status);
         log_d("I2C speed: %dkHz", speed);
+
+
+        if (dev_handle->device_type == FT260_DENSISTICK) {
+            /* Set initial GPIO state */
+            dev_handle->gpio_report.gpio_value = 0; /* GPIO 0-5 set to off */
+            dev_handle->gpio_report.gpio_dir = 0; /* GPIO 0-5 set as input */
+            dev_handle->gpio_report.gpio_ex_value = 0x20; /* GPIOF set to high, all others set to low */
+            dev_handle->gpio_report.gpio_ex_dir = 0x80; /* GPIOH set as output, all others set as input */
+
+            ret = ft260_gpio_write(dev_handle->hid_class0, &dev_handle->gpio_report);
+            if (ret < 0) { break; }
+
+        } else {
+            /* Read initial GPIO state */
+            ret = ft260_gpio_read(dev_handle->hid_class0, &dev_handle->gpio_report);
+            if (ret < 0) { break; }
+        }
+
+        log_d("GPIO Report: value=0x%02X, dir=0x%02X, ex_value=0x%02X, ex_dir=0x%02X",
+            dev_handle->gpio_report.gpio_value, dev_handle->gpio_report.gpio_dir,
+            dev_handle->gpio_report.gpio_ex_value, dev_handle->gpio_report.gpio_ex_dir);
     } while (0);
 
     if (ret < 0) {
@@ -703,8 +727,29 @@ bool usbh_ft260_is_attached(ft260_device_type_t device_type)
 
 static HAL_StatusTypeDef usb_ft260_i2c_transmit(i2c_handle_t *hi2c, uint8_t dev_address, const uint8_t *data, uint16_t len, uint32_t timeout)
 {
-    // Not actually using this function, not yet implemented
-    return HAL_ERROR;
+    HAL_StatusTypeDef result = HAL_OK;
+    if (!hi2c || !hi2c->priv) { return HAL_ERROR; }
+
+    ft260_device_t *device = (ft260_device_t *)hi2c->priv;
+
+    osMutexAcquire(device->mutex, portMAX_DELAY);
+    do {
+        usb_ft260_handle_t *dev_handle = device->dev_handle;
+        if (!dev_handle || !dev_handle->connected || !dev_handle->active) {
+            result = HAL_ERROR;
+            break;
+        }
+
+        struct usbh_hid *hid_class = dev_handle->hid_class0;
+
+        int status = ft260_i2c_transmit(hid_class, dev_address, data, len);
+        if (status < 0) {
+            result = usb_to_hal_status(status);
+        }
+    } while (0);
+    osMutexRelease(device->mutex);
+
+    return result;
 }
 
 static HAL_StatusTypeDef usb_ft260_i2c_receive(i2c_handle_t *hi2c, uint8_t dev_address, uint8_t *data, uint16_t len, uint32_t timeout)
@@ -925,6 +970,7 @@ i2c_handle_t *usbh_ft260_get_device_i2c(ft260_device_t *device)
 osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
 {
     osStatus_t result = osOK;
+    ft260_gpio_report_t update_report;
     if (!device) { return osErrorParameter; }
 
     osMutexAcquire(device->mutex, portMAX_DELAY);
@@ -935,16 +981,29 @@ osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
             break;
         }
 
+        /*
+         * Only support this for the DensiStick, since it is toggling a GPIO pin
+         * specific to that device.
+         */
+        if (dev_handle->device_type != FT260_DENSISTICK) { return osErrorParameter; }
+
         struct usbh_hid *hid_class = dev_handle->hid_class0;
 
-        ft260_gpio_report_t gpio_report = {
-            .gpio_ex_value = value ? FT260_GPIOEX_A : 0,
-            .gpio_ex_dir = FT260_GPIOEX_A
-        };
-        int status = ft260_gpio_write(hid_class, &gpio_report);
+        memcpy(&update_report, &dev_handle->gpio_report, sizeof(ft260_gpio_report_t));
+
+        if (value) {
+            update_report.gpio_ex_value = FT260_GPIOEX_F | FT260_GPIOEX_H;
+        } else {
+            update_report.gpio_ex_value = FT260_GPIOEX_F;
+        }
+
+        int status = ft260_gpio_write(hid_class, &update_report);
         if (status < 0) {
             result = usb_to_os_status(status);
+            break;
         }
+        memcpy(&dev_handle->gpio_report, &update_report, sizeof(ft260_gpio_report_t));
+
     } while (0);
     osMutexRelease(device->mutex);
 

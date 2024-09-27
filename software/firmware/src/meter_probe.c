@@ -10,6 +10,7 @@
 
 #define LOG_TAG "meter_probe"
 #include <elog.h>
+#include <i2c_interface.h>
 
 #include "board_config.h"
 #include "meter_probe_settings.h"
@@ -18,6 +19,9 @@
 #include "usb_host.h"
 #include "usb_ft260.h"
 #include "util.h"
+
+/* I2C address of the digital potentiometer used to control DensiStick light intensity */
+static const uint8_t MCP4017_ADDRESS = 0x2F; /* Use 7-bit address */
 
 /*
  * Size of an ALS reading in the TSL2585 FIFO, when using our
@@ -54,6 +58,8 @@ typedef enum {
     METER_PROBE_CONTROL_SENSOR_ENABLE_AGC,
     METER_PROBE_CONTROL_SENSOR_DISABLE_AGC,
     METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING,
+    METER_PROBE_CONTROL_STICK_SET_LIGHT_ENABLE,
+    METER_PROBE_CONTROL_STICK_SET_LIGHT_VALUE,
     METER_PROBE_CONTROL_INTERRUPT
 } meter_probe_control_event_type_t;
 
@@ -99,6 +105,7 @@ typedef struct {
         sensor_control_mod_cal_params_t mod_calibration;
         sensor_control_agc_params_t agc;
         sensor_control_interrupt_params_t interrupt;
+        int value;
     };
 } meter_probe_control_event_t;
 
@@ -180,6 +187,7 @@ typedef struct __meter_probe_handle_t {
     uint8_t sensor_device_id[3];
     tsl2585_state_t sensor_state;
     uint32_t last_aint_ticks;
+    uint8_t stick_light_brightness;
 
     /* Queues and semaphores */
     osMessageQueueId_t control_queue;
@@ -224,6 +232,8 @@ static osStatus_t meter_probe_control_sensor_set_mod_calibration(meter_probe_han
 static osStatus_t meter_probe_control_sensor_enable_agc(meter_probe_handle_t *handle, const sensor_control_agc_params_t *params);
 static osStatus_t meter_probe_control_sensor_disable_agc(meter_probe_handle_t *handle);
 static osStatus_t meter_probe_control_sensor_trigger_next_reading(meter_probe_handle_t *handle);
+static osStatus_t meter_probe_control_set_light_enable(meter_probe_handle_t *handle, bool enable);
+static osStatus_t meter_probe_control_set_light_value(meter_probe_handle_t *handle, uint8_t value);
 static osStatus_t meter_probe_control_interrupt(meter_probe_handle_t *handle, const sensor_control_interrupt_params_t *params);
 
 static void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks, void *user_data);
@@ -371,6 +381,12 @@ void task_meter_probe_run_loop(meter_probe_handle_t *handle)
                 break;
             case METER_PROBE_CONTROL_SENSOR_TRIGGER_NEXT_READING:
                 ret = meter_probe_control_sensor_trigger_next_reading(handle);
+                break;
+            case METER_PROBE_CONTROL_STICK_SET_LIGHT_ENABLE:
+                ret = meter_probe_control_set_light_enable(handle, (control_event.value == 1) ? true : false);
+                break;
+            case METER_PROBE_CONTROL_STICK_SET_LIGHT_VALUE:
+                ret = meter_probe_control_set_light_value(handle, control_event.value);
                 break;
             case METER_PROBE_CONTROL_INTERRUPT:
                 ret = meter_probe_control_interrupt(handle, &control_event.interrupt);
@@ -567,6 +583,13 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
             log_d("UV calibration value: %d", handle->sensor_state.uv_calibration);
         }
 
+        /* Read the initial value of the DensiStick LED current potentiometer */
+        if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+            ret = i2c_receive(handle->hi2c, MCP4017_ADDRESS, &handle->stick_light_brightness, 1, HAL_MAX_DELAY);
+            if (ret != HAL_OK) { break; }
+            log_d("DensiStick LED brightness value: %d", handle->stick_light_brightness);
+        }
+
         handle->probe_state = METER_PROBE_STATE_STARTED;
     } while (0);
 
@@ -609,6 +632,7 @@ osStatus_t meter_probe_control_stop(meter_probe_handle_t *handle)
 
     if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
         memset(&handle->stick_settings, 0, sizeof(densistick_settings_tsl2585_t));
+        handle->stick_light_brightness = 0;
     } else {
         memset(&handle->probe_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
     }
@@ -1310,6 +1334,72 @@ osStatus_t meter_probe_control_sensor_disable_agc(meter_probe_handle_t *handle)
     }
 
     return hal_to_os_status(ret);
+}
+
+osStatus_t densistick_set_light_enable(meter_probe_handle_t *handle, bool enable)
+{
+    if (!handle) { return osErrorParameter; }
+    if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
+    if (handle->probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    const meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_STICK_SET_LIGHT_ENABLE,
+        .result = &result,
+        .value = enable ? 1 : 0
+    };
+    osMessageQueuePut(handle->control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(handle->control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_set_light_enable(meter_probe_handle_t *handle, bool enable)
+{
+    osStatus_t ret = HAL_OK;
+
+    log_d("meter_probe_control_set_light_enable: %d", enable);
+
+    ret = usbh_ft260_set_device_gpio(handle->device_handle, enable);
+
+    return ret;
+}
+
+osStatus_t densistick_set_light_brightness(meter_probe_handle_t *handle, uint8_t value)
+{
+    if (!handle) { return osErrorParameter; }
+    if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
+    if (handle->probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
+
+    osStatus_t result = osOK;
+    const meter_probe_control_event_t control_event = {
+        .event_type = METER_PROBE_CONTROL_STICK_SET_LIGHT_VALUE,
+        .result = &result,
+        .value = (value > 127) ? 127 : value
+    };
+    osMessageQueuePut(handle->control_queue, &control_event, 0, portMAX_DELAY);
+    osSemaphoreAcquire(handle->control_semaphore, portMAX_DELAY);
+    return result;
+}
+
+osStatus_t meter_probe_control_set_light_value(meter_probe_handle_t *handle, uint8_t value)
+{
+    HAL_StatusTypeDef ret = HAL_OK;
+
+    /* log_d("meter_probe_control_set_light_value: %d", value); */
+
+    ret = i2c_transmit(handle->hi2c, MCP4017_ADDRESS, &value, 1, HAL_MAX_DELAY);
+    if (ret == HAL_OK) {
+        handle->stick_light_brightness = value;
+    }
+
+    return hal_to_os_status(ret);
+}
+
+uint8_t densistick_get_light_brightness(const meter_probe_handle_t *handle)
+{
+    if (!handle) { return 0; }
+    if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return 0; }
+    return handle->stick_light_brightness;
 }
 
 osStatus_t meter_probe_sensor_trigger_next_reading(meter_probe_handle_t *handle)
