@@ -1564,6 +1564,134 @@ meter_probe_result_t meter_probe_try_measure(meter_probe_handle_t *handle, float
     return result;
 }
 
+meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *density, float *raw_reading)
+{
+    meter_probe_result_t result = METER_READING_OK;
+    osStatus_t ret = osOK;
+    meter_probe_sensor_reading_t reading;
+    int skip_count;
+    int invalid_count;
+    int reading_count;
+    float reading_sum;
+
+    if (!handle) {
+        return METER_READING_FAIL;
+    }
+
+    if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return METER_READING_FAIL; }
+
+    do {
+        /* Make sure sensor starts in a disabled state */
+        if (handle->probe_state == METER_PROBE_STATE_RUNNING) {
+            ret = meter_probe_sensor_disable(handle);
+            if (ret != osOK) { break; }
+        }
+
+        /* Make sure light is disabled */
+        ret = densistick_set_light_enable(handle, false);
+        if (ret != osOK) { break; }
+
+        /* Configure light for full power */
+        ret = densistick_set_light_brightness(handle, 0);
+        if (ret != osOK) { break; }
+
+        /* Configure initial sensor settings */
+        ret = meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X);
+        if (ret != osOK) { break; }
+
+        ret = meter_probe_sensor_set_integration(handle, 719, 199);
+        if (ret != osOK) { break; }
+
+        ret = meter_probe_sensor_enable_agc(handle, 49);
+        if (ret != osOK) { break; }
+
+        /* Activate light at full power */
+        ret = densistick_set_light_enable(handle, true);
+        if (ret != osOK) { break; }
+
+        /* Start the sensor */
+        ret = meter_probe_sensor_enable(handle);
+        if (ret != osOK) { break; }
+
+        skip_count = 2;
+        invalid_count = 0;
+        reading_count = 0;
+        reading_sum = 0;
+        do {
+            ret = meter_probe_sensor_get_next_reading(handle, &reading, 500);
+            if (ret == osErrorTimeout) {
+                result = METER_READING_TIMEOUT;
+                break;
+            } else if (ret != osOK) {
+                result = METER_READING_FAIL;
+                break;
+            }
+
+            /* Skip the first few readings */
+            if (skip_count > 0) {
+                skip_count--;
+                continue;
+            }
+
+            /* Make sure the reading is valid */
+            if (reading.reading[0].status != METER_SENSOR_RESULT_VALID) {
+                invalid_count++;
+                if (invalid_count > 5) {
+                    result = METER_READING_TIMEOUT;
+                    break;
+                } else {
+                    continue;
+                }
+            }
+
+            //TODO Decide whether to skip readings where the gain changes
+
+            float basic_reading = meter_probe_basic_result(handle, &reading);
+            reading_sum += basic_reading;
+            reading_count++;
+        } while (reading_count < 2);
+        if (ret != osOK) { break; }
+
+        float avg_reading = reading_sum / (float)reading_count;
+
+        log_d("Raw reading: %f", avg_reading);
+
+        const densistick_settings_tsl2585_cal_target_t *cal_target = &handle->stick_settings.cal_target;
+
+        /* Convert all values into log units */
+        float meas_ll = log10f(avg_reading);
+        float cal_hi_ll = log10f(cal_target->hi_reading);
+        float cal_lo_ll = log10f(cal_target->lo_reading);
+
+        /* Calculate the slope of the line */
+        float m = (cal_target->hi_density - cal_target->lo_density) / (cal_hi_ll - cal_lo_ll);
+
+        /* Calculate the measured density */
+        float meas_d = (m * (meas_ll - cal_lo_ll)) + cal_target->lo_density;
+
+        log_d("Target density: %f", meas_d);
+
+        if (density) {
+            *density = meas_d;
+        }
+
+        if (raw_reading) {
+            *raw_reading = avg_reading;
+        }
+    } while (0);
+
+    /* End the cycle by disabling the light and sensor */
+    densistick_set_light_enable(handle, false);
+    meter_probe_sensor_disable(handle);
+
+    /* Fix any missed errors */
+    if (ret != osOK && result == METER_READING_OK) {
+        result = METER_READING_FAIL;
+    }
+
+    return result;
+}
+
 float meter_probe_basic_result(const meter_probe_handle_t *handle, const meter_probe_sensor_reading_t *sensor_reading)
 {
     if (!handle || !sensor_reading) { return NAN; }

@@ -48,7 +48,7 @@ static bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
 static bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings);
 
 static menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *handle, bool fast_mode);
-
+static menu_result_t densistick_test_reading(meter_probe_handle_t *handle);
 
 menu_result_t menu_meter_probe()
 {
@@ -86,7 +86,8 @@ menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *han
                 title, option,
                 "Device Info\n"
                 "Sensor Calibration\n"
-                "Diagnostics");
+                "Diagnostics\n"
+                "Test Density Reading");
 
             if (option == 1) {
                 menu_result = meter_probe_device_info(handle);
@@ -94,6 +95,8 @@ menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *han
                 menu_result = densistick_sensor_calibration(handle);
             } else if (option == 3) {
                 menu_result = meter_probe_diagnostics(title, handle, false);
+            } else if (option == 4) {
+                menu_result = densistick_test_reading(handle);
             } else if (option == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             }
@@ -1304,3 +1307,70 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
     return MENU_OK;
 }
 
+menu_result_t densistick_test_reading(meter_probe_handle_t *handle)
+{
+    char buf[512];
+    float reading = NAN;
+    float density = NAN;
+    meter_probe_result_t result = METER_READING_OK;
+    bool has_reading = false;
+
+    densistick_set_light_brightness(handle, 127);
+    densistick_set_light_enable(handle, true);
+
+    for (;;) {
+        if (has_reading) {
+            sprintf(buf, "\n"
+                "Raw Reading=%f\n"
+                "Density=%0.02f",
+                reading, density);
+        } else {
+            switch (result) {
+            case METER_READING_LOW:
+                sprintf(buf, "\n\nReading Low");
+                break;
+            case METER_READING_HIGH:
+                sprintf(buf, "\n\nReading High");
+                break;
+            case METER_READING_TIMEOUT:
+                sprintf(buf, "\n\nReading Timeout");
+                break;
+            case METER_READING_FAIL:
+                sprintf(buf, "\n\nReading Failed");
+                break;
+            case METER_READING_OK:
+            default:
+                sprintf(buf, "\n\nNo Reading");
+                break;
+            }
+        }
+        display_static_list("DensiStick Reading Test", buf);
+
+        keypad_event_t keypad_event;
+        if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DENSISTICK)) {
+                log_i("Taking sample reading...");
+                sprintf(buf, "\n\nTaking reading...");
+                display_static_list("DensiStick Reading Test", buf);
+                result = densistick_measure(handle, &density, &reading);
+                if (result == METER_READING_OK) {
+                    has_reading = true;
+                } else {
+                    has_reading = false;
+                }
+                /* Return light to idle state */
+                densistick_set_light_brightness(handle, 127);
+                densistick_set_light_enable(handle, true);
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            } else if (keypad_event.key == KEYPAD_USB_KEYBOARD && keypad_event.pressed
+                && keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL) {
+                break;
+            }
+        }
+    }
+
+    densistick_set_light_enable(handle, false);
+
+    return MENU_OK;
+}

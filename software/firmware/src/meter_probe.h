@@ -342,6 +342,14 @@ meter_probe_result_t meter_probe_measure(meter_probe_handle_t *handle, float *lu
 meter_probe_result_t meter_probe_try_measure(meter_probe_handle_t *handle, float *lux);
 
 /**
+* Get a reflection density reading from the DensiStick
+*
+* This function runs the standard measurement cycle for taking density
+* measurements.
+*/
+meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *density, float *raw_reading);
+
+/**
  * Get the result in a gain and integration time adjusted format.
  *
  * This is the number that should be used for all calculations based on
