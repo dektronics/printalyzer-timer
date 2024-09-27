@@ -17,6 +17,7 @@
 
 #include "tsl2585.h"
 #include "meter_probe_settings.h"
+#include "densistick_settings.h"
 
 /* Maximum number of ALS readings that can be in a result */
 #define MAX_ALS_COUNT 8
@@ -30,6 +31,11 @@ typedef struct {
     meter_probe_sensor_type_t type;
     meter_probe_settings_tsl2585_t settings_tsl2585;
 } meter_probe_settings_t;
+
+typedef struct {
+    meter_probe_sensor_type_t type;
+    densistick_settings_tsl2585_t settings_tsl2585;
+} densistick_settings_t;
 
 typedef enum {
     METER_READING_OK = 0,
@@ -161,6 +167,28 @@ osStatus_t meter_probe_get_settings(const meter_probe_handle_t *handle, meter_pr
  * @return osOK if the settings were successfully stored
  */
 osStatus_t meter_probe_set_settings(meter_probe_handle_t *handle, const meter_probe_settings_t *settings);
+
+/**
+ * Get the DensiStick settings.
+ *
+ * The DensiStick must be started for this function to work.
+ * If settings were not loaded, then this function will return
+ * empty data.
+ *
+ * @return osOK if data was returned
+ */
+osStatus_t densistick_get_settings(const meter_probe_handle_t *handle, densistick_settings_t *settings);
+
+/**
+ * Set the DensiStick settings.
+ *
+ * The DensiStick must be started for this function to work, with
+ * the sensor in a disabled state. After calling this function,
+ * the DensiStick should be restarted to activate the new settings.
+ *
+ * @return osOK if the settings were successfully stored
+ */
+osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistick_settings_t *settings);
 
 /**
  * Enable the meter probe sensor.

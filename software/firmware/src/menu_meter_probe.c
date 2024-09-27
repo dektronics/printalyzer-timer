@@ -30,6 +30,7 @@
 static menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle);
 static menu_result_t meter_probe_device_info(meter_probe_handle_t *handle);
 static menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle);
+static menu_result_t densistick_sensor_calibration(meter_probe_handle_t *handle);
 
 static menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle);
 static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
@@ -80,23 +81,41 @@ menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *han
 
     /* Show the meter probe menu */
     do {
-        option = display_selection_list(
-            title, option,
-            "Device Info\n"
-            "Sensor Calibration\n"
-            "Diagnostics (Normal Mode)\n"
-            "Diagnostics (Fast Mode)");
+        if (handle == densistick_handle()) {
+            option = display_selection_list(
+                title, option,
+                "Device Info\n"
+                "Sensor Calibration\n"
+                "Diagnostics");
 
-        if (option == 1) {
-            menu_result = meter_probe_device_info(handle);
-        } else if (option == 2) {
-            menu_result = meter_probe_sensor_calibration(handle);
-        } else if (option == 3) {
-            menu_result = meter_probe_diagnostics(handle, false);
-        } else if (option == 4) {
-            menu_result = meter_probe_diagnostics(handle, true);
-        } else if (option == UINT8_MAX) {
-            menu_result = MENU_TIMEOUT;
+            if (option == 1) {
+                menu_result = meter_probe_device_info(handle);
+            } else if (option == 2) {
+                menu_result = densistick_sensor_calibration(handle);
+            } else if (option == 3) {
+                menu_result = meter_probe_diagnostics(handle, false);
+            } else if (option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else {
+            option = display_selection_list(
+                title, option,
+                "Device Info\n"
+                "Sensor Calibration\n"
+                "Diagnostics (Normal Mode)\n"
+                "Diagnostics (Fast Mode)");
+
+            if (option == 1) {
+                menu_result = meter_probe_device_info(handle);
+            } else if (option == 2) {
+                menu_result = meter_probe_sensor_calibration(handle);
+            } else if (option == 3) {
+                menu_result = meter_probe_diagnostics(handle, false);
+            } else if (option == 4) {
+                menu_result = meter_probe_diagnostics(handle, true);
+            } else if (option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            }
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
@@ -213,6 +232,103 @@ menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
         } else if (option == option_offset + 2) {
             menu_result = meter_probe_sensor_calibration_export(handle);
         } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+menu_result_t densistick_sensor_calibration(meter_probe_handle_t *handle)
+{
+    menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
+    char buf[640];
+
+    densistick_settings_t settings;
+    if (densistick_get_settings(handle, &settings) != osOK) {
+        return MENU_OK;
+    }
+
+    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
+        /* Unknown meter probe type */
+        return MENU_OK;
+    }
+
+    do {
+        size_t option_offset = 0;
+        size_t offset = 0;
+
+        for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
+            offset += menu_build_padded_format_row(buf + offset,
+                tsl2585_gain_str(gain), "%f",
+                settings.settings_tsl2585.cal_gain.values[gain]);
+            option_offset++;
+        }
+
+#if 0
+        /* Not showing slope values since they are not used */
+        offset += menu_build_padded_format_row(buf + offset,
+            "B0", "%f",
+            settings.settings_tsl2585.cal_slope.b0);
+        option_offset++;
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "B1", "%f",
+            settings.settings_tsl2585.cal_slope.b1);
+        option_offset++;
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "B2", "%f",
+            settings.settings_tsl2585.cal_slope.b2);
+        option_offset++;
+#endif
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-LO Density", "%.2f",
+            settings.settings_tsl2585.cal_target.lo_density);
+        option_offset++;
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-LO Reading", "%f",
+            settings.settings_tsl2585.cal_target.lo_reading);
+        option_offset++;
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-HI Density", "%.2f",
+            settings.settings_tsl2585.cal_target.hi_density);
+        option_offset++;
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-HI Reading", "%f",
+            settings.settings_tsl2585.cal_target.hi_reading);
+        option_offset++;
+
+        buf[offset - 1] = '\0';
+#if 0
+        offset += sprintf(buf + offset, "*** Import from USB device ***\n");
+        offset += sprintf(buf + offset, "*** Export to USB device ***");
+#endif
+
+        option = display_selection_list("Sensor Calibration", option, buf);
+
+#if 0
+        if (option == option_offset + 1) {
+            menu_result = meter_probe_sensor_calibration_import(handle);
+            if (menu_result == MENU_SAVE) {
+                meter_probe_stop(handle);
+                if (meter_probe_start(handle) != osOK) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    menu_result = MENU_OK;
+                    break;
+                }
+            }
+        } else if (option == option_offset + 2) {
+            menu_result = meter_probe_sensor_calibration_export(handle);
+        } else
+#endif
+        if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
