@@ -15,6 +15,8 @@ extern bool menu_event_timeout;
 #define U8X8_MSG_GPIO_MENU_INPUT_ASCII 1
 #define U8X8_MSG_GPIO_MENU_VALUE_INC   2
 #define U8X8_MSG_GPIO_MENU_VALUE_DEC   3
+#define U8X8_MSG_GPIO_MENU_PROBE_BTN   4
+#define U8X8_MSG_GPIO_MENU_STICK_BTN   5
 
 uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params);
 

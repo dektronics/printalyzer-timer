@@ -77,6 +77,12 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
             case KEYPAD_ENCODER_CCW:
                 result = ((uint16_t)event.count << 8) | U8X8_MSG_GPIO_MENU_VALUE_DEC;
                 break;
+            case KEYPAD_METER_PROBE:
+                result = U8X8_MSG_GPIO_MENU_PROBE_BTN;
+                break;
+            case KEYPAD_DENSISTICK:
+                result = U8X8_MSG_GPIO_MENU_STICK_BTN;
+                break;
             default:
                 break;
             }
@@ -508,7 +514,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 break;
             } else {
                 if (data_callback) {
-                    uint16_t input_value = data_callback(user_data);
+                    uint16_t input_value = data_callback(event_action, user_data);
                     if (input_value >= low && input_value <= high) {
                         local_value = input_value;
                         break;

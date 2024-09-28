@@ -121,7 +121,7 @@ typedef struct {
 } display_adjustment_exposure_elements_t;
 
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
-typedef uint16_t (*display_data_source_callback_t)(void *user_data);
+typedef uint16_t (*display_data_source_callback_t)(uint8_t event_action, void *user_data);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle);
 

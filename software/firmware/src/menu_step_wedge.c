@@ -17,7 +17,7 @@
 static int calibration_status(const step_wedge_t *wedge);
 static int menu_step_wedge_list_selection();
 static menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge);
-static uint16_t menu_step_wedge_densitometer_data_callback(void *user_data);
+static uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *user_data);
 
 menu_result_t menu_step_wedge()
 {
@@ -387,7 +387,7 @@ menu_result_t menu_step_wedge_show(const step_wedge_t *wedge)
     return menu_result;
 }
 
-uint16_t menu_step_wedge_densitometer_data_callback(void *user_data)
+uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *user_data)
 {
     bool dens_enable = *((bool *)user_data);
     if (dens_enable) {

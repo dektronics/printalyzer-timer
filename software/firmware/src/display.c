@@ -21,7 +21,7 @@ static u8g2_t u8g2;
 
 osMutexId_t display_mutex;
 static const osMutexAttr_t display_mutex_attributes = {
-  .name = "display_mutex"
+  .name = "display_mutex",
 };
 
 static uint8_t display_contrast = 0x9F;
