@@ -187,6 +187,7 @@ typedef struct __meter_probe_handle_t {
     uint8_t sensor_device_id[3];
     tsl2585_state_t sensor_state;
     uint32_t last_aint_ticks;
+    bool stick_light_enabled;
     uint8_t stick_light_brightness;
 
     /* Queues and semaphores */
@@ -631,6 +632,7 @@ osStatus_t meter_probe_control_stop(meter_probe_handle_t *handle)
     memset(&handle->settings_handle, 0, sizeof(meter_probe_settings_handle_t));
 
     if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+        meter_probe_control_set_light_enable(handle, false);
         memset(&handle->stick_settings, 0, sizeof(densistick_settings_tsl2585_t));
         handle->stick_light_brightness = 0;
     } else {
@@ -1360,8 +1362,16 @@ osStatus_t meter_probe_control_set_light_enable(meter_probe_handle_t *handle, bo
     log_d("meter_probe_control_set_light_enable: %d", enable);
 
     ret = usbh_ft260_set_device_gpio(handle->device_handle, enable);
+    if (ret == osOK) {
+        handle->stick_light_enabled = enable;
+    }
 
     return ret;
+}
+
+bool densistick_get_light_enable(meter_probe_handle_t *handle)
+{
+    return handle->stick_light_enabled;
 }
 
 osStatus_t densistick_set_light_brightness(meter_probe_handle_t *handle, uint8_t value)

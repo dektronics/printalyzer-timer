@@ -74,6 +74,9 @@ typedef struct __display_main_densitometer_elements_t {
     uint16_t density_whole;
     uint16_t density_fractional;
     uint8_t fraction_digits;
+    uint8_t show_ind_probe; /* 0 = hidden, 1 = shown, 2 = highlighted */
+    uint8_t show_ind_dens; /* 0 = hidden, 1 = shown, 2 = highlighted */
+    uint8_t ind_dens; /* 0 = reflection, 1 = transmission */
 } display_main_densitometer_elements_t;
 
 typedef struct __display_main_calibration_elements_t {

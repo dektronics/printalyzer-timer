@@ -60,14 +60,13 @@ float exposure_get_min_exposure_time(const exposure_state_t *state);
 
 float exposure_get_exposure_time(const exposure_state_t *state);
 
-float exposure_get_relative_density(const exposure_state_t *state);
-
 int exposure_get_active_paper_profile_index(const exposure_state_t *state);
 bool exposure_set_active_paper_profile_index(exposure_state_t *state, int index);
 void exposure_clear_active_paper_profile(exposure_state_t *state);
 
 uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux);
 uint32_t exposure_get_meter_reading_tone(const exposure_state_t *state, float lux);
+float exposure_get_lowest_meter_reading(exposure_state_t *state);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
 /*

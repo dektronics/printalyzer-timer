@@ -57,6 +57,8 @@ typedef struct {
     bool enable_meter_probe;
     bool display_dirty;
     bool tone_dirty;
+    uint8_t dens_selected_mode;
+    uint8_t dens_reading_type;
 } state_home_t;
 
 typedef struct {
@@ -65,6 +67,7 @@ typedef struct {
 
 typedef struct {
     state_t base;
+    state_identifier_t prev_state;
     exposure_mode_t working_value;
     bool accepted;
 } state_home_change_mode_t;
@@ -86,14 +89,11 @@ typedef struct {
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
 static bool state_home_process_printing(state_home_t *state, state_controller_t *controller);
-static bool state_home_process_densitometer(state_home_t *state, state_controller_t *controller);
 static bool state_home_process_calibration(state_home_t *state, state_controller_t *controller);
 static void state_home_select_paper_profile(state_controller_t *controller);
 static void state_home_check_meter_probe(state_home_t *state);
 static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *controller);
-static void state_home_reading_warning_beep();
-static void state_home_reading_error_beep();
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_t state_home_data = {
     .base = {
@@ -106,7 +106,9 @@ static state_home_t state_home_data = {
     .live_tone_ticks = 0,
     .highlight_element = 0,
     .display_dirty = true,
-    .tone_dirty = true
+    .tone_dirty = true,
+    .dens_selected_mode = 0,
+    .dens_reading_type = 0
 };
 
 static bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller);
@@ -211,8 +213,6 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
 
     if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
         return state_home_process_printing(state, controller);
-    } else if (mode == EXPOSURE_MODE_DENSITOMETER) {
-        return state_home_process_densitometer(state, controller);
     } else if (mode == EXPOSURE_MODE_CALIBRATION) {
         return state_home_process_calibration(state, controller);
     } else {
@@ -449,60 +449,6 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
     }
 }
 
-bool state_home_process_densitometer(state_home_t *state, state_controller_t *controller)
-{
-    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
-
-    /* Draw current exposure state */
-    if (state->display_dirty) {
-        display_main_densitometer_elements_t main_elements;
-        convert_exposure_to_display_densitometer(&main_elements, exposure_state);
-        display_draw_main_elements_densitometer(&main_elements);
-
-        state->display_dirty = false;
-    }
-
-    /* Handle the next keypad action */
-    keypad_action_t keypad_action;
-    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
-        if (keypad_action.action_id == ACTION_CHANGE_MODE) {
-            state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
-        } else if (keypad_action.action_id == ACTION_FOCUS) {
-            if (!state_controller_is_enlarger_focus(controller)) {
-                log_i("Focus mode enabled");
-                illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
-                state_controller_set_enlarger_focus(controller, true);
-                state_controller_start_focus_timeout(controller);
-                state->enable_meter_probe = true;
-            } else {
-                log_i("Focus mode disabled");
-                state_controller_set_enlarger_focus(controller, false);
-                illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-                state_controller_stop_focus_timeout(controller);
-                state->enable_meter_probe = false;
-            }
-        } else if (keypad_action.action_id == ACTION_MENU) {
-            state_controller_set_next_state(controller, STATE_MENU, 0);
-            state->display_dirty = true;
-        } else if (keypad_action.action_id == ACTION_CLEAR_READINGS) {
-            exposure_clear_meter_readings(exposure_state);
-            state->display_dirty = true;
-        } else if (keypad_action.action_id == ACTION_SET_DEFAULTS) {
-            exposure_clear_meter_readings(exposure_state);
-            exposure_state_defaults(exposure_state);
-            state->display_dirty = true;
-        } else if (keypad_action.action_id == ACTION_TAKE_READING) {
-            if (state_controller_is_enlarger_focus(controller) && meter_probe_is_started(meter_probe_handle())) {
-                state->updated_tone_element = state_home_take_reading(state, controller);
-                state->display_dirty = true;
-            }
-        }
-        return true;
-    } else {
-        return false;
-    }
-}
-
 bool state_home_process_calibration(state_home_t *state, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
@@ -710,19 +656,19 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
         log_i("Measured PEV=%lu (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
-        state_home_reading_warning_beep();
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
         osDelay(pdMS_TO_TICKS(2000));
     } else if (result == METER_READING_HIGH) {
         display_draw_mode_text("Light High");
-        state_home_reading_warning_beep();
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
         osDelay(pdMS_TO_TICKS(2000));
     } else if (result == METER_READING_TIMEOUT) {
         display_draw_mode_text("Timeout");
-        state_home_reading_error_beep();
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
         osDelay(pdMS_TO_TICKS(2000));
     } else if (result == METER_READING_FAIL) {
         display_draw_mode_text("Meter Error");
-        state_home_reading_error_beep();
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
         osDelay(pdMS_TO_TICKS(2000));
     }
     return updated_tone_element;
@@ -742,44 +688,6 @@ uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *c
     }
 
     return live_tone_element;
-}
-
-void state_home_reading_warning_beep()
-{
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
-    buzzer_set_volume(settings_get_buzzer_volume());
-
-    buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(50));
-    buzzer_stop();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(50));
-    buzzer_stop();
-
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
-}
-
-void state_home_reading_error_beep()
-{
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
-    buzzer_set_volume(settings_get_buzzer_volume());
-
-    buzzer_set_frequency(PAM8904E_FREQ_500HZ);
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_stop();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_start();
-    osDelay(pdMS_TO_TICKS(100));
-    buzzer_stop();
-
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
 }
 
 void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
@@ -845,7 +753,8 @@ void state_home_change_mode_entry(state_t *state_base, state_controller_t *contr
     state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    state->working_value = exposure_get_mode(exposure_state);
+    state->prev_state = prev_state;
+    state->working_value = (prev_state == STATE_DENSITOMETER) ? EXPOSURE_MODE_DENSITOMETER : exposure_get_mode(exposure_state);
     state->accepted = false;
 }
 
@@ -916,10 +825,14 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
             }
         } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
             state->accepted = true;
-            state_controller_set_next_state(controller, STATE_HOME, 0);
+            if (state->working_value == EXPOSURE_MODE_DENSITOMETER) {
+                state_controller_set_next_state(controller, STATE_DENSITOMETER, 0);
+            } else {
+                state_controller_set_next_state(controller, STATE_HOME, 0);
+            }
         } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
                    || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
-            state_controller_set_next_state(controller, STATE_HOME, 0);
+            state_controller_set_next_state(controller, state->prev_state, 0);
         }
         return true;
     } else {
@@ -932,7 +845,7 @@ void state_home_change_mode_exit(state_t *state_base, state_controller_t *contro
     state_home_change_mode_t *state = (state_home_change_mode_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
-    if (state->accepted) {
+    if (state->accepted && state->working_value != EXPOSURE_MODE_DENSITOMETER) {
         exposure_set_mode(exposure_state, state->working_value);
     }
 }

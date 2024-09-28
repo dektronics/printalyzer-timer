@@ -38,9 +38,9 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
     const exposure_state_t *exposure, const enlarger_config_t *enlarger);
 
 /**
- * Convert the current exposure state into densitometer mode display elements.
+ * Convert a density value into densitometer mode display elements.
  */
-void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure);
+void convert_density_to_display_densitometer(display_main_densitometer_elements_t *elements, float density);
 
 /**
  * Convert the current exposure state into calibration mode display elements.

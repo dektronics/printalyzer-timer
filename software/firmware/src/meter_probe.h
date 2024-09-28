@@ -281,6 +281,11 @@ osStatus_t meter_probe_sensor_disable_agc(meter_probe_handle_t *handle);
 osStatus_t densistick_set_light_enable(meter_probe_handle_t *handle, bool enable);
 
 /**
+ * Get whether the DensiStick light source is enabled
+ */
+bool densistick_get_light_enable(meter_probe_handle_t *handle);
+
+/**
  * Change the DensiStick light source brightness
  *
  * @value Brightness value, where 0 is maximum and 127 is minimum.

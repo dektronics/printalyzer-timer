@@ -1,11 +1,13 @@
 #include "buzzer.h"
 
 #include <string.h>
+#include <cmsis_os.h>
 
 #define LOG_TAG "buzzer"
 #include <elog.h>
 
 #include "pam8904e.h"
+#include "settings.h"
 
 static pam8904e_handle_t buzzer_handle = {0};
 static buzzer_volume_t buzzer_volume = 0;
@@ -75,4 +77,35 @@ void buzzer_start()
 void buzzer_stop()
 {
     pam8904e_stop(&buzzer_handle);
+}
+
+void buzzer_sequence(buzzer_sequence_t sequence)
+{
+    buzzer_volume_t current_volume = buzzer_get_volume();
+    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+
+    buzzer_set_volume(settings_get_buzzer_volume());
+
+    if (sequence == BUZZER_SEQUENCE_PROBE_WARNING) {
+        buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+    } else if (sequence == BUZZER_SEQUENCE_PROBE_ERROR) {
+        buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_stop();
+    }
+
+    buzzer_set_volume(current_volume);
+    buzzer_set_frequency(current_frequency);
 }

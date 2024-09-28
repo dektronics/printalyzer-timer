@@ -972,6 +972,7 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
 
 void display_draw_main_elements_densitometer(const display_main_densitometer_elements_t *elements)
 {
+    asset_info_t asset;
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     u8g2_SetDrawColor(&u8g2, 0);
@@ -989,6 +990,28 @@ void display_draw_main_elements_densitometer(const display_main_densitometer_ele
         display_draw_counter_time(elements->density_whole,
             elements->density_fractional,
             elements->fraction_digits);
+    }
+
+    /* Draw probe element */
+    if (elements->show_ind_probe > 0) {
+        u8g2_SetDrawColor(&u8g2, 1);
+        if (elements->show_ind_probe > 1) {
+            u8g2_DrawRBox(&u8g2, 8, 8, 32, 26, 3);
+            u8g2_SetDrawColor(&u8g2, 0);
+        }
+        display_asset_get(&asset, ASSET_DENS_IND_PROBE);
+        u8g2_DrawXBM(&u8g2, 10, 10, asset.width, asset.height, asset.bits);
+    }
+
+    /* Draw densitometer element */
+    if (elements->show_ind_dens > 0) {
+        u8g2_SetDrawColor(&u8g2, 1);
+        if (elements->show_ind_dens > 1) {
+            u8g2_DrawRBox(&u8g2, 8, 38, 32, 26, 3);
+            u8g2_SetDrawColor(&u8g2, 0);
+        }
+        display_asset_get(&asset, (elements->ind_dens == 0) ? ASSET_DENS_IND_REFL : ASSET_DENS_IND_TRAN);
+        u8g2_DrawXBM(&u8g2, 13, 40, asset.width, asset.height, asset.bits);
     }
 
     u8g2_SendBuffer(&u8g2);

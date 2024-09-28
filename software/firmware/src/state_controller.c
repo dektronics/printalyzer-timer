@@ -27,6 +27,7 @@
 #include "util.h"
 #include "settings.h"
 #include "state_home.h"
+#include "state_densitometer.h"
 #include "state_timer.h"
 #include "state_test_strip.h"
 #include "state_adjustment.h"
@@ -75,6 +76,7 @@ void state_controller_init()
     state_map[STATE_HOME_CHANGE_MODE] = state_home_change_mode();
     state_map[STATE_HOME_ADJUST_FINE] = state_home_adjust_fine();
     state_map[STATE_HOME_ADJUST_ABSOLUTE] = state_home_adjust_absolute();
+    state_map[STATE_DENSITOMETER] = state_densitometer();
     state_map[STATE_TIMER] = state_timer();
     state_map[STATE_TEST_STRIP] = state_test_strip();
     state_map[STATE_EDIT_ADJUSTMENT] = state_edit_adjustment();

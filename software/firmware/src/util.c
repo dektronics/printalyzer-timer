@@ -72,9 +72,8 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
     }
 }
 
-void convert_exposure_to_display_densitometer(display_main_densitometer_elements_t *elements, const exposure_state_t *exposure)
+void convert_density_to_display_densitometer(display_main_densitometer_elements_t *elements, float density)
 {
-    float density = exposure_get_relative_density(exposure);
     if (isnanf(density)) {
         elements->density_whole = UINT16_MAX;
         elements->density_fractional = UINT16_MAX;
