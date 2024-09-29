@@ -22,7 +22,7 @@
 typedef struct {
     state_t base;
     buzzer_volume_t current_volume;
-    pam8904e_freq_t current_frequency;
+    uint16_t current_frequency;
     teststrip_patches_t teststrip_patches;
     teststrip_mode_t teststrip_mode;
     int exposure_patch_min;
@@ -200,11 +200,11 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     /* Abort if the test strip can't be created */
     if (canceled) {
         buzzer_volume_t current_volume = buzzer_get_volume();
-        pam8904e_freq_t current_frequency = buzzer_get_frequency();
+        uint16_t current_frequency = buzzer_get_frequency();
         buzzer_set_volume(settings_get_buzzer_volume());
 
         /* This is the same beep sequence as an aborted exposure */
-        buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+        buzzer_set_frequency(1000);
         buzzer_start();
         osDelay(pdMS_TO_TICKS(100));
         buzzer_stop();

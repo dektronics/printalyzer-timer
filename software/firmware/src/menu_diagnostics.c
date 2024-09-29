@@ -267,11 +267,11 @@ menu_result_t diagnostics_led()
 menu_result_t diagnostics_buzzer()
 {
     buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+    uint16_t current_frequency = buzzer_get_frequency();
 
     char buf[256];
 
-    pam8904e_freq_t freq = PAM8904E_FREQ_500HZ;
+    uint16_t freq = 500;
     bool freq_changed = false;
     buzzer_volume_t volume = settings_get_buzzer_volume();
     bool volume_changed = false;
@@ -281,44 +281,12 @@ menu_result_t diagnostics_buzzer()
     buzzer_set_volume(volume);
 
     for (;;) {
-        uint32_t freq_num;
-        switch (freq) {
-        case PAM8904E_FREQ_500HZ:
-            freq_num = 500;
-            break;
-        case PAM8904E_FREQ_1000HZ:
-            freq_num = 1000;
-            break;
-        case PAM8904E_FREQ_1500HZ:
-            freq_num = 1500;
-            break;
-        case PAM8904E_FREQ_2000HZ:
-            freq_num = 2000;
-            break;
-        case PAM8904E_FREQ_2500HZ:
-            freq_num = 2500;
-            break;
-        case PAM8904E_FREQ_3000HZ:
-            freq_num = 3000;
-            break;
-        case PAM8904E_FREQ_3600HZ:
-            freq_num = 3600;
-            break;
-        case PAM8904E_FREQ_4000HZ:
-            freq_num = 4000;
-            break;
-        case PAM8904E_FREQ_4500HZ:
-            freq_num = 4500;
-            break;
-        default:
-            freq_num = 0;
-        }
 
         sprintf(buf,
-            "Frequency = %ldHz\n"
+            "Frequency = %dHz\n"
             "Duration = %ldms\n"
             "Volume = %d",
-            freq_num,
+            freq,
             duration,
             volume);
         display_static_list("Buzzer Test", buf);
@@ -330,13 +298,13 @@ menu_result_t diagnostics_buzzer()
                 osDelay(pdMS_TO_TICKS(duration));
                 buzzer_stop();
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-                if (freq > PAM8904E_FREQ_500HZ) {
-                    freq--;
+                if (freq > 200) {
+                    freq -= 100;
                     freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-                if (freq < PAM8904E_FREQ_4500HZ) {
-                    freq++;
+                if (freq < 5000) {
+                    freq += 100;
                     freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {

@@ -125,12 +125,12 @@ HAL_StatusTypeDef exposure_timer_run()
     enlarger_off_event_ticks = 0;
 
     buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+    uint16_t current_frequency = buzzer_get_frequency();
     buzzer_set_volume(settings_get_buzzer_volume());
 
     if (timer_config.start_tone == EXPOSURE_TIMER_START_TONE_COUNTDOWN) {
         do {
-            buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+            buzzer_set_frequency(2000);
             buzzer_start();
             osDelay(pdMS_TO_TICKS(50));
             buzzer_stop();
@@ -140,7 +140,7 @@ HAL_StatusTypeDef exposure_timer_run()
                 break;
             }
 
-            buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+            buzzer_set_frequency(1500);
             buzzer_start();
             osDelay(pdMS_TO_TICKS(50));
             buzzer_stop();
@@ -150,7 +150,7 @@ HAL_StatusTypeDef exposure_timer_run()
                 break;
             }
 
-            buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+            buzzer_set_frequency(500);
             buzzer_start();
             osDelay(pdMS_TO_TICKS(50));
             buzzer_stop();
@@ -163,7 +163,7 @@ HAL_StatusTypeDef exposure_timer_run()
     }
 
     if (!timer_cancel_request) {
-        buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+        buzzer_set_frequency(500);
 
         illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
         osDelay(SAFELIGHT_OFF_DELAY);
@@ -216,7 +216,7 @@ HAL_StatusTypeDef exposure_timer_run()
 
         /* Handling the completion beep outside the ISR for simplicity. */
         if (timer_cancel_request) {
-            buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+            buzzer_set_frequency(1000);
             buzzer_start();
             osDelay(pdMS_TO_TICKS(100));
             buzzer_stop();
@@ -226,21 +226,21 @@ HAL_StatusTypeDef exposure_timer_run()
             buzzer_stop();
         } else {
             if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_SHORT) {
-                buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+                buzzer_set_frequency(1000);
                 buzzer_start();
                 osDelay(pdMS_TO_TICKS(50));
-                buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+                buzzer_set_frequency(2000);
                 osDelay(pdMS_TO_TICKS(50));
-                buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+                buzzer_set_frequency(1500);
                 osDelay(pdMS_TO_TICKS(50));
                 buzzer_stop();
             } else if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_REGULAR) {
-                buzzer_set_frequency(PAM8904E_FREQ_1000HZ);
+                buzzer_set_frequency(1000);
                 buzzer_start();
                 osDelay(pdMS_TO_TICKS(120));
-                buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+                buzzer_set_frequency(2000);
                 osDelay(pdMS_TO_TICKS(120));
-                buzzer_set_frequency(PAM8904E_FREQ_1500HZ);
+                buzzer_set_frequency(1500);
                 osDelay(pdMS_TO_TICKS(120));
                 buzzer_stop();
             }

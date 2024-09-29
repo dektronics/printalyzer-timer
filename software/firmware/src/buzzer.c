@@ -11,7 +11,7 @@
 
 static pam8904e_handle_t buzzer_handle = {0};
 static buzzer_volume_t buzzer_volume = 0;
-static pam8904e_freq_t buzzer_frequency = 0;
+static uint16_t buzzer_frequency = 0;
 
 HAL_StatusTypeDef buzzer_init(const pam8904e_handle_t *handle)
 {
@@ -58,13 +58,13 @@ buzzer_volume_t buzzer_get_volume()
     return buzzer_volume;
 }
 
-void buzzer_set_frequency(pam8904e_freq_t freq)
+void buzzer_set_frequency(uint16_t freq)
 {
     pam8904e_set_frequency(&buzzer_handle, freq);
     buzzer_frequency = freq;
 }
 
-pam8904e_freq_t buzzer_get_frequency()
+uint16_t buzzer_get_frequency()
 {
     return buzzer_frequency;
 }
@@ -82,12 +82,12 @@ void buzzer_stop()
 void buzzer_sequence(buzzer_sequence_t sequence)
 {
     buzzer_volume_t current_volume = buzzer_get_volume();
-    pam8904e_freq_t current_frequency = buzzer_get_frequency();
+    uint16_t current_frequency = buzzer_get_frequency();
 
     buzzer_set_volume(settings_get_buzzer_volume());
 
     if (sequence == BUZZER_SEQUENCE_PROBE_WARNING) {
-        buzzer_set_frequency(PAM8904E_FREQ_2000HZ);
+        buzzer_set_frequency(2000);
         buzzer_start();
         osDelay(pdMS_TO_TICKS(50));
         buzzer_stop();
@@ -96,7 +96,7 @@ void buzzer_sequence(buzzer_sequence_t sequence)
         osDelay(pdMS_TO_TICKS(50));
         buzzer_stop();
     } else if (sequence == BUZZER_SEQUENCE_PROBE_ERROR) {
-        buzzer_set_frequency(PAM8904E_FREQ_500HZ);
+        buzzer_set_frequency(500);
         buzzer_start();
         osDelay(pdMS_TO_TICKS(100));
         buzzer_stop();
