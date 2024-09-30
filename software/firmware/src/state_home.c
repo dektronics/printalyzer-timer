@@ -637,6 +637,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     uint32_t updated_tone_element = 0;
 
     display_draw_mode_text("Measuring");
+    buzzer_sequence(BUZZER_SEQUENCE_PROBE_START);
 
     do {
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
@@ -652,6 +653,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     if (result == METER_READING_OK) {
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);
         updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
         log_i("Measured PEV=%lu (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
     } else if (result == METER_READING_LOW) {

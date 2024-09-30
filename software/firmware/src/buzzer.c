@@ -86,7 +86,49 @@ void buzzer_sequence(buzzer_sequence_t sequence)
 
     buzzer_set_volume(settings_get_buzzer_volume());
 
-    if (sequence == BUZZER_SEQUENCE_PROBE_WARNING) {
+    if (sequence == BUZZER_SEQUENCE_PROBE_START) {
+        buzzer_set_frequency(2000);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_set_frequency(1500);
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_set_frequency(1250);
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_set_frequency(1000);
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_stop();
+    } else if (sequence == BUZZER_SEQUENCE_STICK_START) {
+        buzzer_set_frequency(1500);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_set_frequency(1000);
+        osDelay(pdMS_TO_TICKS(25));
+        buzzer_set_frequency(750);
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_set_frequency(500);
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+    } else if (sequence == BUZZER_SEQUENCE_PROBE_SUCCESS) {
+        buzzer_set_frequency(1000);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_set_frequency(1500);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+    } else if (sequence == BUZZER_SEQUENCE_STICK_SUCCESS) {
+        buzzer_set_frequency(750);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+        osDelay(pdMS_TO_TICKS(100));
+        buzzer_set_frequency(1000);
+        buzzer_start();
+        osDelay(pdMS_TO_TICKS(50));
+        buzzer_stop();
+    } else if (sequence == BUZZER_SEQUENCE_PROBE_WARNING) {
         buzzer_set_frequency(2000);
         buzzer_start();
         osDelay(pdMS_TO_TICKS(50));

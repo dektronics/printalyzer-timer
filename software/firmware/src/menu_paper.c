@@ -818,10 +818,13 @@ uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_
     if (event_action == 5 /*U8X8_MSG_GPIO_MENU_STICK_BTN*/ && data->stick_enable) {
         meter_probe_result_t result = METER_READING_OK;
         float density = NAN;
-
+        buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
         result = densistick_measure(densistick_handle(), &density, NULL);
+        buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
         if (result == METER_READING_OK) {
             return lroundf(density * 100);
+        } else {
+            buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
         }
     }
     return UINT16_MAX;

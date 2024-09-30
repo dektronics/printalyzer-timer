@@ -285,6 +285,7 @@ bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_co
     bool success = false;
 
     display_draw_mode_text("Measuring");
+    buzzer_sequence(BUZZER_SEQUENCE_PROBE_START);
 
     do {
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
@@ -300,6 +301,7 @@ bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_co
     illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     if (result == METER_READING_OK) {
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);
         if (isnanf(state->probe_reading_base) || lux > state->probe_reading_base) {
             state->probe_reading_base = lux;
         } else {
@@ -334,9 +336,11 @@ bool state_densitometer_take_densistick_reading(state_densitometer_t *state, sta
     bool success = false;
 
     display_draw_mode_text("Measuring");
+    buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
 
     result = densistick_measure(densistick_handle(), &density, NULL);
     if (result == METER_READING_OK) {
+        buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
         state->dens_reading.mode = DENSITOMETER_MODE_REFLECTION;
         state->dens_reading.visual = density;
         success = true;
