@@ -1579,7 +1579,7 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
     meter_probe_result_t result = METER_READING_OK;
     osStatus_t ret = osOK;
     meter_probe_sensor_reading_t reading;
-    int skip_count;
+    int agc_step;
     int invalid_count;
     int reading_count;
     float reading_sum;
@@ -1609,10 +1609,10 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
         ret = meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X);
         if (ret != osOK) { break; }
 
-        ret = meter_probe_sensor_set_integration(handle, 719, 199);
+        ret = meter_probe_sensor_set_integration(handle, 719, 29);
         if (ret != osOK) { break; }
 
-        ret = meter_probe_sensor_enable_agc(handle, 49);
+        ret = meter_probe_sensor_enable_agc(handle, 19);
         if (ret != osOK) { break; }
 
         /* Activate light at full power */
@@ -1623,7 +1623,7 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
         ret = meter_probe_sensor_enable(handle);
         if (ret != osOK) { break; }
 
-        skip_count = 2;
+        agc_step = 1;
         invalid_count = 0;
         reading_count = 0;
         reading_sum = 0;
@@ -1637,12 +1637,6 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
                 break;
             }
 
-            /* Skip the first few readings */
-            if (skip_count > 0) {
-                skip_count--;
-                continue;
-            }
-
             /* Make sure the reading is valid */
             if (reading.reading[0].status != METER_SENSOR_RESULT_VALID) {
                 invalid_count++;
@@ -1654,8 +1648,22 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
                 }
             }
 
-            //TODO Decide whether to skip readings where the gain changes
+            /* Handle the process of moving from AGC to measurement */
+            if (agc_step == 1) {
+                /* Disable AGC */
+                ret = meter_probe_sensor_disable_agc(handle);
+                if (ret != osOK) { break; }
+                agc_step++;
+                continue;
+            } else if (agc_step == 2) {
+                /* Set measurement sample time */
+                ret = meter_probe_sensor_set_integration(handle, 719, 199);
+                if (ret != osOK) { break; }
+                agc_step = 0;
+                continue;
+            }
 
+            /* Collect the measurement */
             float basic_reading = meter_probe_basic_result(handle, &reading);
             reading_sum += basic_reading;
             reading_count++;
