@@ -114,7 +114,7 @@ typedef struct {
  */
 typedef struct {
     sensor_control_start_mode_t start_mode;
-    bool running;
+    volatile bool running;
     bool single_shot;
     bool fast_mode;
     uint8_t uv_calibration;
@@ -177,7 +177,7 @@ typedef struct __meter_probe_handle_t {
     i2c_handle_t *hi2c;
 
     /* Device state variables */
-    meter_probe_state_t probe_state;
+    volatile meter_probe_state_t probe_state;
     bool has_sensor_settings;
     meter_probe_settings_handle_t settings_handle;
     union {
