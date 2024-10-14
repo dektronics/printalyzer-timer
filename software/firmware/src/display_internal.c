@@ -15,6 +15,9 @@
 
 #define MY_BORDER_SIZE 1
 
+#define MY_SPACE_BETWEEN_BUTTONS_IN_PIXEL 6
+#define MY_SPACE_BETWEEN_TEXT_AND_BUTTONS_IN_PIXEL 3
+
 extern osMutexId_t display_mutex;
 
 bool menu_event_timeout = false;
@@ -30,8 +33,10 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
 {
     uint16_t result = 0;
 
-    // If we were called via a function that is holding the display mutex,
-    // then release that mutex while blocked on the keypad queue.
+    /*
+     * If we were called via a function that is holding the display mutex,
+     * then release that mutex while blocked on the keypad queue.
+     */
     osStatus_t mutex_released = osMutexRelease(display_mutex);
 
     int timeout;
@@ -50,8 +55,10 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
 
     if (ret == HAL_OK) {
         if (event.pressed) {
-            // Button actions that stay within the menu are handled on
-            // the press event
+            /*
+             * Button actions that stay within the menu are handled on
+             * the press event
+             */
             keypad_key_t keypad_key;
             if (event.key == KEYPAD_USB_KEYBOARD) {
                 keypad_key = keypad_usb_get_keypad_equivalent(&event);
@@ -87,10 +94,12 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
                 break;
             }
         } else {
-            // Button actions that leave the menu, such as accept and cancel
-            // are handled on the release event. This is to prevent side
-            // effects that can occur from other components receiving
-            // release events for these keys.
+            /*
+             * Button actions that leave the menu, such as accept and cancel
+             * are handled on the release event. This is to prevent side
+             * effects that can occur from other components receiving
+             * release events for these keys.
+             */
             if (((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && event.key == KEYPAD_MENU)
                 || ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && event.key == KEYPAD_ADD_ADJUSTMENT)
                 || ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && event.key == KEYPAD_TEST_STRIP)
@@ -101,8 +110,21 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
             }
         }
 
-        // Some USB keys have mappings that don't make sense in the context
-        // of the above logic, or that can't easily be done generically.
+        /*
+         * Check flags that allow the meter probe or DensiStick button to
+         * act as an accept button. These are implemented on the press, not
+         * release, because they're an active action trigger.
+         */
+        if (params & DISPLAY_MENU_ACCEPT_PROBE && result == U8X8_MSG_GPIO_MENU_PROBE_BTN) {
+            result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+        } else if (params & DISPLAY_MENU_ACCEPT_STICK && result == U8X8_MSG_GPIO_MENU_STICK_BTN) {
+            result = ((uint16_t)event.key << 8) | U8X8_MSG_GPIO_MENU_SELECT;
+        }
+
+        /*
+         * Some USB keys have mappings that don't make sense in the context
+         * of the above logic, or that can't easily be done generically.
+         */
         if (result == 0 && event.key == KEYPAD_USB_KEYBOARD && event.pressed) {
             uint8_t keycode = keypad_usb_get_keycode(&event);
             char keychar = keypad_usb_get_ascii(&event);
@@ -119,7 +141,7 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
                 result = U8X8_MSG_GPIO_MENU_HOME;
             } else if ((params & DISPLAY_MENU_INPUT_ASCII) != 0) {
                 if ((keychar >= 32 && keychar < 127) || keychar == '\n' || keychar == '\t') {
-                    // Handle normally printable characters that are correctly mapped
+                    /* Handle normally printable characters that are correctly mapped */
                     result = ((uint16_t)keychar << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
                 } else if (keycode == 0x2A /* KEY_BACKSPACE */ || keycode == 0xBB /* KEY_KEYPAD_BACKSPACE */) {
                     result = ((uint16_t)'\b' << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
@@ -430,6 +452,128 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
     }
 }
 
+static const char *display_f1_2toa(uint16_t v, char sep)
+{
+    static char buf[5];
+
+    buf[0] = '0' + (v % 1000 / 100);
+    buf[1] = sep;
+    buf[2] = '0' + (v % 100 / 10);
+    buf[3] = '0' + (v % 10);
+    buf[4] = '\0';
+
+    return buf;
+}
+
+uint8_t display_UserInterfaceInputValueF1_2(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, char sep, const char *postfix)
+{
+    /*
+     * Based off u8g2_UserInterfaceInputValue() with changes to use
+     * full frame buffer mode and to support the N.DD number format.
+     */
+
+    uint8_t line_height;
+    uint8_t height;
+    u8g2_uint_t pixel_height;
+    u8g2_uint_t y, yy;
+    u8g2_uint_t pixel_width;
+    u8g2_uint_t x, xx;
+
+    uint16_t local_value = *value;
+    uint8_t event;
+    uint8_t count;
+
+    /* Explicitly constrain input values */
+    if (high > 999) { high = 999; }
+    if (low > 0 && low > high) { low = high; }
+    if (local_value < low) { local_value = low; }
+    else if (local_value > high) { local_value = high; }
+
+    /* Only horizontal strings are supported, so force this here */
+    u8g2_SetFontDirection(u8g2, 0);
+
+    /* Force baseline position */
+    u8g2_SetFontPosBaseline(u8g2);
+
+    /* Calculate line height */
+    line_height = u8g2_GetAscent(u8g2);
+    line_height -= u8g2_GetDescent(u8g2);
+
+    /* Calculate overall height of the input value box */
+    height = 1; /* value input line */
+    height += u8x8_GetStringLineCnt(title);
+
+    /* Calculate the height in pixels */
+    pixel_height = height;
+    pixel_height *= line_height;
+
+    /* Calculate offset from top */
+    y = 0;
+    if (pixel_height < u8g2_GetDisplayHeight(u8g2)) {
+        y = u8g2_GetDisplayHeight(u8g2);
+        y -= pixel_height;
+        y /= 2;
+    }
+
+    /* Calculate offset from left for the label */
+    x = 0;
+    pixel_width = u8g2_GetUTF8Width(u8g2, prefix);
+    pixel_width += u8g2_GetUTF8Width(u8g2, "0") * 4;
+    pixel_width += u8g2_GetUTF8Width(u8g2, postfix);
+    if (pixel_width < u8g2_GetDisplayWidth(u8g2)) {
+        x = u8g2_GetDisplayWidth(u8g2);
+        x -= pixel_width;
+        x /= 2;
+    }
+
+    /* Event loop */
+    for(;;) {
+        /* Render */
+        u8g2_ClearBuffer(u8g2);
+        yy = y;
+        yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
+        xx = x;
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, prefix);
+        xx += u8g2_DrawUTF8(u8g2, xx, yy, display_f1_2toa(local_value, sep));
+        u8g2_DrawUTF8(u8g2, xx, yy, postfix);
+        u8g2_SendBuffer(u8g2);
+
+        for(;;) {
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            if (event_result == UINT16_MAX) {
+                menu_event_timeout = true;
+                event = U8X8_MSG_GPIO_MENU_HOME;
+                count = 0;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+                count = (uint8_t)((event_result & 0xFF00) >> 8);
+            }
+
+            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+                *value = local_value;
+                return 1;
+            } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+                return 0;
+            } else if (event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int8_t amount = (event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+                local_value = value_adjust_with_rollover_u16(local_value, 10, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int8_t amount = -1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+                local_value = value_adjust_with_rollover_u16(local_value, -10, low, high);
+                break;
+            }
+        }
+    }
+}
+
 static const char *display_f16toa(uint16_t val, uint8_t wdigits, uint8_t fdigits)
 {
     static char buf[7];
@@ -667,6 +811,111 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
             }
         }
     }
+}
+
+uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3,
+    const char *buttons,
+    display_GetMenuEvent_t event_callback, display_menu_params_t params)
+{
+    /*
+     * Based off u8g2_UserInterfaceMessage() with changes to
+     * support parameters for key event handling that allow for
+     * multiple accept keys.
+     */
+    uint8_t height;
+    uint8_t line_height;
+    u8g2_uint_t pixel_height;
+    u8g2_uint_t y, yy;
+
+    uint8_t cursor = 0;
+    uint8_t button_cnt;
+
+    /* only horizontal strings are supported, so force this here */
+    u8g2_SetFontDirection(u8g2, 0);
+
+    /* force baseline position */
+    u8g2_SetFontPosBaseline(u8g2);
+
+
+    /* calculate line height */
+    line_height = u8g2_GetAscent(u8g2);
+    line_height -= u8g2_GetDescent(u8g2);
+
+    /* calculate overall height of the message box in lines*/
+    height = 1; /* button line */
+    height += u8x8_GetStringLineCnt(title1);
+    if (title2 != NULL) {
+        height++;
+    }
+    height += u8x8_GetStringLineCnt(title3);
+
+    /* calculate the height in pixel */
+    pixel_height = height;
+    pixel_height *= line_height;
+
+    /* ... and add the space between the text and the buttons */
+    pixel_height += MY_SPACE_BETWEEN_TEXT_AND_BUTTONS_IN_PIXEL;
+
+    /* calculate offset from top */
+    y = 0;
+    if (pixel_height < u8g2_GetDisplayHeight(u8g2)) {
+        y = u8g2_GetDisplayHeight(u8g2);
+        y -= pixel_height;
+        y /= 2;
+    }
+    y += u8g2_GetAscent(u8g2);
+
+
+    for (;;) {
+        u8g2_ClearBuffer(u8g2);
+        yy = y;
+        /* draw message box */
+
+        yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title1);
+        if (title2 != NULL) {
+            u8g2_DrawUTF8Line(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), title2, 0, 0);
+            yy += line_height;
+        }
+        yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title3);
+        yy += MY_SPACE_BETWEEN_TEXT_AND_BUTTONS_IN_PIXEL;
+
+        button_cnt = u8g2_draw_button_line(u8g2, yy, u8g2_GetDisplayWidth(u8g2), cursor, buttons);
+        u8g2_SendBuffer(u8g2);
+
+        for (;;) {
+            uint8_t event_action;
+
+            if (event_callback) {
+                uint16_t result = event_callback(u8g2_GetU8x8(u8g2), params);
+                if (result == UINT16_MAX) {
+                    return result;
+                }
+                event_action = (uint8_t)(result & 0x00FF);
+            } else {
+                event_action = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            }
+
+            if (event_action == U8X8_MSG_GPIO_MENU_SELECT) {
+                return cursor + 1;
+            } else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
+                return 0;
+            } else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_DOWN) {
+                cursor++;
+                if (cursor >= button_cnt) {
+                    cursor = 0;
+                }
+                break;
+            } else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_UP) {
+                if (cursor == 0) {
+                    cursor = button_cnt;
+                }
+                cursor--;
+                break;
+            }
+        }
+    }
+    /* never reached */
+    //return 0;
 }
 
 uint8_t display_DrawButtonLine(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cursor, const char *s)

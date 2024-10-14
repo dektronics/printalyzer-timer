@@ -817,6 +817,21 @@ osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistic
     }
 }
 
+osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target)
+{
+    if (!handle || !cal_target) { return osErrorParameter; }
+    if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
+    if (handle->probe_state < METER_PROBE_STATE_STARTED || handle->sensor_state.running) { return osErrorResource; }
+
+    if (handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585 || handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2521) {
+        HAL_StatusTypeDef ret = densistick_settings_set_tsl2585_target(&handle->settings_handle, cal_target);
+        return hal_to_os_status(ret);
+    } else {
+        log_w("Unsupported settings type");
+        return osError;
+    }
+}
+
 osStatus_t meter_probe_sensor_enable(meter_probe_handle_t *handle)
 {
     if (!handle) { return osErrorParameter; }

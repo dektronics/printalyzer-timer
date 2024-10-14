@@ -4,11 +4,13 @@
 #include <math.h>
 
 #define LOG_TAG "densistick_settings"
+#include <cmsis_os2.h>
 #include <elog.h>
 
 #include "settings_util.h"
 #include "m24c08.h"
 #include "tsl2585.h"
+#include "i2c_interface.h" //XXX
 
 extern CRC_HandleTypeDef hcrc;
 
@@ -302,7 +304,7 @@ HAL_StatusTypeDef densistick_settings_set_tsl2585_target(const meter_probe_setti
     if (!handle->initialized || handle->id.probe_type != METER_PROBE_SENSOR_TSL2585) { return HAL_ERROR; }
 
     /* Read just the version */
-    ret = m24c08_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
+    ret = m24c08_read_buffer(handle->hi2c, PAGE_CAL + CAL_TSL2585_VERSION, data, 4);
     if (ret != HAL_OK) { return ret; }
 
     /* Parse and validate the version */
@@ -314,6 +316,7 @@ HAL_StatusTypeDef densistick_settings_set_tsl2585_target(const meter_probe_setti
     }
 
     /* Fill in the target calibration data */
+    memset(data, 0, sizeof(data));
     copy_from_f32(data + (CAL_TSL2585_TARGET_LO_DENSITY - offset), cal_target->lo_density);
     copy_from_f32(data + (CAL_TSL2585_TARGET_LO_READING - offset), cal_target->lo_reading);
     copy_from_f32(data + (CAL_TSL2585_TARGET_HI_DENSITY - offset), cal_target->hi_density);
@@ -325,7 +328,7 @@ HAL_StatusTypeDef densistick_settings_set_tsl2585_target(const meter_probe_setti
     copy_from_u32(data + (CAL_TSL2585_TARGET_CRC - offset), crc);
 
     /* Write the data buffer */
-    ret = m24c08_write_buffer(handle->hi2c, offset, data, sizeof(data));
+    ret = m24c08_write_buffer(handle->hi2c, PAGE_CAL + offset, data, sizeof(data));
     if (ret != HAL_OK) { return ret; }
 
     return ret;

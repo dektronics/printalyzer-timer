@@ -39,6 +39,9 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *msg, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
 
+uint8_t display_UserInterfaceInputValueF1_2(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, char sep, const char *postfix);
+
 uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, const char *msg, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix,
     display_GetMenuEvent_t event_callback, display_menu_params_t params,
@@ -49,6 +52,9 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
     display_input_value_callback_t callback, void *user_data);
 
 uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl,
+    display_GetMenuEvent_t event_callback, display_menu_params_t params);
+
+uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3, const char *buttons,
     display_GetMenuEvent_t event_callback, display_menu_params_t params);
 
 const char *display_u16toa(uint16_t v, uint8_t d);

@@ -26,11 +26,15 @@
 
 #define HEADER_EXPORT_VERSION     1
 #define MAX_CALIBRATION_FILE_SIZE 16384
+#define DENSITY_BUF_SIZE 5
 
 static menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle);
 static menu_result_t meter_probe_device_info(meter_probe_handle_t *handle);
-static menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle);
-static menu_result_t densistick_sensor_calibration(meter_probe_handle_t *handle);
+static menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle);
+static menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle);
+static menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target);
+static menu_result_t densistick_show_calibration(meter_probe_handle_t *handle);
+void format_density_value(char *buf, float value);
 
 static menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle);
 static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
@@ -85,17 +89,20 @@ menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *han
             option = display_selection_list(
                 title, option,
                 "Device Info\n"
-                "Sensor Calibration\n"
+                "Reflection Calibration\n"
+                "Show Calibration Data\n"
                 "Diagnostics\n"
                 "Test Density Reading");
 
             if (option == 1) {
                 menu_result = meter_probe_device_info(handle);
             } else if (option == 2) {
-                menu_result = densistick_sensor_calibration(handle);
+                menu_result = densistick_reflection_calibration(handle);
             } else if (option == 3) {
-                menu_result = meter_probe_diagnostics(title, handle, false);
+                menu_result = densistick_show_calibration(handle);
             } else if (option == 4) {
+                menu_result = meter_probe_diagnostics(title, handle, false);
+            } else if (option == 5) {
                 menu_result = densistick_test_reading(handle);
             } else if (option == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
@@ -104,14 +111,14 @@ menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *han
             option = display_selection_list(
                 title, option,
                 "Device Info\n"
-                "Sensor Calibration\n"
+                "Show Calibration Data\n"
                 "Diagnostics (Normal Mode)\n"
                 "Diagnostics (Fast Mode)");
 
             if (option == 1) {
                 menu_result = meter_probe_device_info(handle);
             } else if (option == 2) {
-                menu_result = meter_probe_sensor_calibration(handle);
+                menu_result = meter_probe_show_calibration(handle);
             } else if (option == 3) {
                 menu_result = meter_probe_diagnostics(title, handle, false);
             } else if (option == 4) {
@@ -164,7 +171,7 @@ menu_result_t meter_probe_device_info(meter_probe_handle_t *handle)
     return menu_result;
 }
 
-menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
+menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
@@ -219,7 +226,7 @@ menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
         offset += sprintf(buf + offset, "*** Import from USB device ***\n");
         offset += sprintf(buf + offset, "*** Export to USB device ***");
 
-        option = display_selection_list("Sensor Calibration", option, buf);
+        option = display_selection_list("Sensor Calibration Data", option, buf);
 
         if (option == option_offset + 1) {
             menu_result = meter_probe_sensor_calibration_import(handle);
@@ -242,7 +249,255 @@ menu_result_t meter_probe_sensor_calibration(meter_probe_handle_t *handle)
     return menu_result;
 }
 
-menu_result_t densistick_sensor_calibration(meter_probe_handle_t *handle)
+menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle)
+{
+    menu_result_t menu_result = MENU_OK;
+    uint8_t option = 1;
+    char buf[256];
+    char buf_lo[DENSITY_BUF_SIZE];
+    char buf_hi[DENSITY_BUF_SIZE];
+    densistick_settings_tsl2585_cal_target_t *cal_target;
+
+    densistick_settings_t settings;
+    if (densistick_get_settings(handle, &settings) != osOK) {
+        return MENU_OK;
+    }
+
+    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
+        /* Unknown meter probe type */
+        return MENU_OK;
+    }
+
+    cal_target = &settings.settings_tsl2585.cal_target;
+
+    do {
+        size_t offset = 0;
+
+        format_density_value(buf_lo, cal_target->lo_density);
+        format_density_value(buf_hi, cal_target->hi_density);
+
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-LO (White)", "%s", buf_lo);
+        offset += menu_build_padded_format_row(buf + offset,
+            "CAL-HI (Black)", "%s", buf_hi);
+
+        sprintf(buf + offset, "*** Measure Reference ***");
+
+        option = display_selection_list("Reflection Calibration", option, buf);
+
+        if (option == 1) {
+            uint16_t working_value;
+            if (is_valid_number(cal_target->lo_density) && cal_target->lo_density >= 0.0F) {
+                working_value = lroundf(cal_target->lo_density * 100);
+            } else {
+                working_value = 8;
+            }
+
+            uint8_t input_option = display_input_value_f1_2(
+                "CAL-LO (White)\n",
+                "D=", &working_value,
+                0, 250, '.', NULL);
+            if (input_option == 1) {
+                cal_target->lo_density = working_value / 100.0F;
+            } else if (input_option == UINT8_MAX) {
+                option = UINT8_MAX;
+            }
+
+        } else if (option == 2) {
+            uint16_t working_value;
+            if (is_valid_number(cal_target->hi_density) && cal_target->hi_density >= 0.0F) {
+                working_value = lroundf(cal_target->hi_density * 100);
+            } else {
+                working_value = 150;
+            }
+
+            uint8_t input_option = display_input_value_f1_2(
+                "CAL-HI (Black)\n",
+                "D=", &working_value,
+                0, 250, '.', NULL);
+            if (input_option == 1) {
+                cal_target->hi_density = working_value / 100.0F;
+            } else if (input_option == UINT8_MAX) {
+                option = UINT8_MAX;
+            }
+
+        } else if (option == 3) {
+            menu_result = densistick_reflection_calibration_measure(handle, cal_target);
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target)
+{
+    meter_probe_result_t meas_result = METER_READING_OK;
+    uint8_t option = 1;
+    float cal_lo_reading = NAN;
+    float cal_hi_reading = NAN;
+
+    do {
+        /* Validate the target densities, just in case */
+        if (!is_valid_number(cal_target->lo_density) || !is_valid_number(cal_target->hi_density)) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (cal_target->lo_density < 0.00F || cal_target->lo_density > 2.5F) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (cal_target->hi_density < 0.00F || cal_target->hi_density > 2.5F) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (cal_target->lo_density >= cal_target->hi_density) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+
+        /* Activate the idle light at minimum brightness */
+        densistick_set_light_brightness(handle, 127);
+        densistick_set_light_enable(handle, true);
+
+        do {
+            option = display_message_params(
+                "Place the sensor on top of the\n"
+                "CAL-LO reference patch and push\n"
+                "the measurement button",
+                "", NULL, " Measure ",
+                DISPLAY_MENU_ACCEPT_STICK);
+        } while (option != 0 && option != 1 && option != UINT8_MAX);
+
+        if (option == 1) {
+            display_draw_mode_text("Measuring");
+            buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
+
+            meas_result = densistick_measure(densistick_handle(), NULL, &cal_lo_reading);
+
+            if (meas_result == METER_READING_OK) {
+                buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
+            } else if (meas_result == METER_READING_TIMEOUT) {
+                display_draw_mode_text("Timeout");
+                buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
+                osDelay(pdMS_TO_TICKS(2000));
+            } else  {
+                display_draw_mode_text("Reading Error");
+                buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
+                osDelay(pdMS_TO_TICKS(2000));
+            }
+        } else {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (meas_result != METER_READING_OK) { break; }
+
+        /* Set light back to idle */
+        densistick_set_light_brightness(handle, 127);
+        densistick_set_light_enable(handle, true);
+
+        do {
+            option = display_message_params(
+                "Place the sensor on top of the\n"
+                "CAL-HI reference patch and push\n"
+                "the measurement button",
+                "", NULL, " Measure ",
+                DISPLAY_MENU_ACCEPT_STICK);
+        } while (option != 0 && option != 1 && option != UINT8_MAX);
+
+        if (option == 1) {
+            display_draw_mode_text("Measuring");
+            buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
+
+            meas_result = densistick_measure(densistick_handle(), NULL, &cal_hi_reading);
+
+            if (meas_result == METER_READING_OK) {
+                buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
+            } else if (meas_result == METER_READING_TIMEOUT) {
+                display_draw_mode_text("Timeout");
+                buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
+                osDelay(pdMS_TO_TICKS(2000));
+            } else  {
+                display_draw_mode_text("Reading Error");
+                buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
+                osDelay(pdMS_TO_TICKS(2000));
+            }
+        } else {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (meas_result != METER_READING_OK) { break; }
+
+        /* Validate reading values */
+        if (isnanf(cal_lo_reading) || isinff(cal_lo_reading)) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (isnanf(cal_hi_reading) || isinff(cal_hi_reading)) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+        if (cal_lo_reading < 0.0F || cal_hi_reading >= cal_lo_reading) {
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+
+        /*
+         * Basic check that LO and HI are far enough apart.
+         * This check has a very generous margin of error and should only catch
+         * extreme errors likely to be caused by obvious user error in
+         * measuring the calibration targets.
+         */
+        float d_delta_expected = cal_target->hi_density - cal_target->lo_density;
+        float d_delta_actual = -1.0F * log10f(cal_hi_reading / cal_lo_reading);
+        log_d("LO-vs-HI d-diff expected=%f, actual=%f", d_delta_expected, d_delta_actual);
+        if (fabs(d_delta_expected - d_delta_actual) > 1.0F) {
+            log_d("Reading out of bounds");
+            meas_result = METER_READING_FAIL;
+            break;
+        }
+
+    } while (0);
+
+    if (meas_result == METER_READING_OK) {
+        densistick_settings_tsl2585_cal_target_t result_target = {0};
+        result_target.lo_density = cal_target->lo_density;
+        result_target.lo_reading = cal_lo_reading;
+        result_target.hi_density = cal_target->hi_density;
+        result_target.hi_reading = cal_hi_reading;
+
+        if (densistick_set_settings_target(handle, &result_target) != osOK) {
+            option = display_message("Unable to save calibration", "", NULL, " OK ");
+        } else {
+            option = display_message("Reflection calibration\ncomplete", "", NULL, " OK ");
+        }
+    } else if (option != UINT8_MAX) {
+        option = display_message("Reflection calibration\nfailed", "", NULL, " OK ");
+    }
+
+    /* Deactivate the idle light */
+    densistick_set_light_enable(handle, false);
+
+    /* Try to restart the device to reload any changed settings */
+    if (meas_result == METER_READING_OK) {
+        meter_probe_stop(handle);
+        meter_probe_start(handle);
+    }
+
+    return option == UINT8_MAX ? MENU_TIMEOUT : MENU_OK;
+}
+
+void format_density_value(char *buf, float value)
+{
+    if (is_valid_number(value) && value >= 0.0F) {
+        snprintf(buf, DENSITY_BUF_SIZE, "%.2f", value);
+    } else {
+        strncpy(buf, "-.--", DENSITY_BUF_SIZE);
+    }
+}
+
+menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;

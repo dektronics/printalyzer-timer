@@ -1779,6 +1779,21 @@ uint8_t display_message(const char *title1, const char *title2, const char *titl
     return menu_event_timeout ? UINT8_MAX : option;
 }
 
+uint8_t display_message_params(const char *title1, const char *title2, const char *title3, const char *buttons,
+    display_menu_params_t params)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+    uint8_t option = display_UserInterfaceMessageCB(&u8g2, title1, title2, title3, buttons,
+        display_GetMenuEvent, params);
+
+    osMutexRelease(display_mutex);
+
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
 uint8_t display_input_value(const char *title, const char *msg, const char *prefix, uint8_t *value,
         uint8_t low, uint8_t high, uint8_t digits, const char *postfix)
 {
@@ -1801,6 +1816,20 @@ uint8_t display_input_value_u16(const char *title, const char *msg, const char *
     display_prepare_menu_font();
     keypad_clear_events();
     uint8_t option = display_UserInterfaceInputValueU16(&u8g2, title, msg, prefix, value, low, high, digits, postfix);
+
+    osMutexRelease(display_mutex);
+
+    return menu_event_timeout ? UINT8_MAX : option;
+}
+
+uint8_t display_input_value_f1_2(const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, char sep, const char *postfix)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+    uint8_t option = display_UserInterfaceInputValueF1_2(&u8g2, title, prefix, value, low, high, sep, postfix);
 
     osMutexRelease(display_mutex);
 

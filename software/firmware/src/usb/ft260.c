@@ -278,7 +278,6 @@ int ft260_i2c_mem_write(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t
             break;
         }
 
-
         /* Write request with the data to be written */
         ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_STOP, data, size);
         if (ret < 0) {
@@ -297,13 +296,35 @@ int ft260_i2c_mem_write(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t
 int ft260_i2c_is_device_ready(struct usbh_hid *hid_class, uint8_t dev_address)
 {
     int ret;
-    //TODO Need to test this and see if we're actually doing things correctly and what error codes to expect
-    ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, NULL, 0);
-    if (ret < 0) {
-        log_w("ft260_i2c_is_device_ready: dev=0x%02X, ret=%d", dev_address, ret);
-        return ret;
-    }
-    return ret;
+    int result = 0;
+    uint8_t bus_status;
+
+    do {
+        ret = ft260_get_i2c_status(hid_class, &bus_status, NULL);
+        if (ret < 0) {
+            log_w("ft260_i2c_is_device_ready: dev=0x%02X, i2c_status_ret=%d", dev_address, ret);
+            result = ret;
+            break;
+        }
+        if ((bus_status & 0x20) == 0) {
+            result = -USB_ERR_BUSY;
+            break;
+        }
+
+        ret = ft260_i2c_write_request(hid_class, dev_address, FT260_I2C_START, NULL, 0);
+        if (ret < 0) {
+            log_w("ft260_i2c_is_device_ready: dev=0x%02X, write_request_ret=%d", dev_address, ret);
+            result = ret;
+        }
+
+        ret = ft260_i2c_reset(hid_class);
+        if (ret < 0) {
+            log_w("ft260_i2c_is_device_ready: dev=0x%02X, reset_ret=%d", dev_address, ret);
+            if (result >= 0) { result = ret; }
+        }
+    } while (0);
+
+    return result;
 }
 
 int ft260_set_uart_enable_dcd_ri(struct usbh_hid *hid_class, bool enable)
@@ -414,10 +435,13 @@ int ft260_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t re
 
 static uint8_t ft260_i2c_report_id(uint8_t payload_size)
 {
-    if (payload_size == 0 || payload_size > 60) {
+    if (payload_size == 0) {
+        return 0xD0;
+    } else if (payload_size > 60) {
         return 0;
+    } else {
+        return 0xD0 + ((payload_size - 1) >> 2);
     }
-    return 0xD0 + ((payload_size - 1) >> 2);
 }
 
 int ft260_i2c_write_request(struct usbh_hid *hid_class, uint8_t dev_address, uint8_t flags, const uint8_t *buffer, uint32_t buflen)

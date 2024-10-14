@@ -191,6 +191,17 @@ osStatus_t densistick_get_settings(const meter_probe_handle_t *handle, densistic
 osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistick_settings_t *settings);
 
 /**
+ * Set the DensiStick target calibration settings.
+ *
+ * The DensiStick must be started for this function to work, with
+ * the sensor in a disabled state. After calling this function,
+ * the DensiStick should be restarted to activate the new settings.
+ *
+ * @return osOK if the settings were successfully stored
+ */
+osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target);
+
+/**
  * Enable the meter probe sensor.
  *
  * In the normal enabled mode, the sensor will continuously run its

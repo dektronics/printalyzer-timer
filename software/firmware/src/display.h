@@ -9,13 +9,15 @@
 #define MENU_TIMEOUT_MS 30000
 
 typedef enum {
-    DISPLAY_MENU_ACCEPT_MENU = 0x01,
-    DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT = 0x02,
-    DISPLAY_MENU_ACCEPT_TEST_STRIP = 0x04,
-    DISPLAY_MENU_ACCEPT_ENCODER = 0x08,
-    DISPLAY_MENU_TIMEOUT_DISABLED = 0x10,
-    DISPLAY_MENU_INPUT_ASCII = 0x20,
-    DISPLAY_MENU_INPUT_POLL = 0x40
+    DISPLAY_MENU_ACCEPT_MENU = 0x0001,
+    DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT = 0x0002,
+    DISPLAY_MENU_ACCEPT_TEST_STRIP = 0x0004,
+    DISPLAY_MENU_ACCEPT_ENCODER = 0x0008,
+    DISPLAY_MENU_ACCEPT_PROBE = 0x0010,
+    DISPLAY_MENU_ACCEPT_STICK = 0x0020,
+    DISPLAY_MENU_TIMEOUT_DISABLED = 0x0100,
+    DISPLAY_MENU_INPUT_ASCII = 0x0200,
+    DISPLAY_MENU_INPUT_POLL = 0x0400
 } display_menu_params_t;
 
 typedef enum {
@@ -214,10 +216,14 @@ uint8_t display_message_graph(const char *title, const char *list, const char *b
 
 void display_static_list(const char *title, const char *list);
 uint8_t display_message(const char *title1, const char *title2, const char *title3, const char *buttons);
+uint8_t display_message_params(const char *title1, const char *title2, const char *title3, const char *buttons,
+    display_menu_params_t params);
 uint8_t display_input_value(const char *title, const char *msg, const char *prefix, uint8_t *value,
         uint8_t low, uint8_t high, uint8_t digits, const char *postfix);
 uint8_t display_input_value_u16(const char *title, const char *msg, const char *prefix, uint16_t *value,
         uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
+uint8_t display_input_value_f1_2(const char *title, const char *prefix, uint16_t *value,
+    uint16_t low, uint16_t high, char sep, const char *postfix);
 uint8_t display_input_value_f16(const char *title, const char *msg, const char *prefix, uint16_t *value,
         uint16_t low, uint16_t high, uint8_t wdigits, uint8_t fdigits, const char *postfix);
 uint8_t display_input_value_f16_data_cb(const char *title, const char *msg, const char *prefix, uint16_t *value,
