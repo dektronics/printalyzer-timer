@@ -4952,12 +4952,6 @@
 		(uuid "55b1dc7f-1b12-47a2-ad84-7281343cc31d")
 	)
 	(junction
-		(at 110.49 34.925)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "600961df-bb3d-4065-84ce-1635a1f4be9a")
-	)
-	(junction
 		(at 73.66 33.655)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5004,12 +4998,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "706dab40-2a1b-419c-9c5a-ff708d9f2ce4")
-	)
-	(junction
-		(at 110.49 29.845)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "73f6bae1-4ab3-4c0d-b3e4-9dde691c2e80")
 	)
 	(junction
 		(at 32.385 114.935)
@@ -5126,6 +5114,10 @@
 		(uuid "fa618e03-deb1-4231-9643-e7b17ab26bea")
 	)
 	(no_connect
+		(at 106.68 37.465)
+		(uuid "002d961e-3cfd-4ff7-892f-72cacaa32e37")
+	)
+	(no_connect
 		(at 165.735 55.88)
 		(uuid "0c29fddc-1c17-4de4-b38f-1a4a247a63e6")
 	)
@@ -5148,6 +5140,10 @@
 	(no_connect
 		(at 201.295 38.1)
 		(uuid "5eb0ddb5-330a-4919-a3e3-e1429053f11d")
+	)
+	(no_connect
+		(at 106.68 34.925)
+		(uuid "63304e0a-1c7c-4541-95a7-cb579094e20d")
 	)
 	(no_connect
 		(at 41.275 53.34)
@@ -5233,7 +5229,7 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 29.845) (xy 116.84 29.845)
+			(xy 106.68 29.845) (xy 116.84 29.845)
 		)
 		(stroke
 			(width 0)
@@ -5473,16 +5469,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 29.845) (xy 110.49 29.845)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "27a49f2b-826b-4fb8-834e-d1ca29330c29")
-	)
-	(wire
-		(pts
 			(xy 75.565 175.895) (xy 75.565 178.435)
 		)
 		(stroke
@@ -5613,16 +5599,6 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 37.465) (xy 110.49 34.925)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3f5c5e73-3a88-4469-b6ed-59c14e2f1f58")
-	)
-	(wire
-		(pts
 			(xy 29.845 25.4) (xy 29.845 35.56)
 		)
 		(stroke
@@ -5640,16 +5616,6 @@
 			(type default)
 		)
 		(uuid "4097185b-83b4-4038-af1f-a4f184a1bc1f")
-	)
-	(wire
-		(pts
-			(xy 106.68 37.465) (xy 110.49 37.465)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "41eee45c-f9b6-4e96-bbeb-516acebbd743")
 	)
 	(wire
 		(pts
@@ -5703,6 +5669,16 @@
 	)
 	(wire
 		(pts
+			(xy 109.855 32.385) (xy 106.68 32.385)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "47a12779-00c9-48f9-9180-a841c5cdd427")
+	)
+	(wire
+		(pts
 			(xy 141.605 50.8) (xy 141.605 46.355)
 		)
 		(stroke
@@ -5730,16 +5706,6 @@
 			(type default)
 		)
 		(uuid "4a0a7c54-a79e-42d2-8bc5-f80f957c8317")
-	)
-	(wire
-		(pts
-			(xy 110.49 29.845) (xy 110.49 32.385)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4b52e193-17d0-4068-be8e-dcd46632ad3c")
 	)
 	(wire
 		(pts
@@ -5993,16 +5959,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 34.925) (xy 110.49 34.925)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6c75dcab-0fdb-4f85-88ae-8ab3c92377ef")
-	)
-	(wire
-		(pts
 			(xy 165.1 128.27) (xy 170.18 128.27)
 		)
 		(stroke
@@ -6083,7 +6039,7 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 34.925) (xy 116.84 34.925)
+			(xy 109.855 34.925) (xy 116.84 34.925)
 		)
 		(stroke
 			(width 0)
@@ -6460,6 +6416,16 @@
 			(type default)
 		)
 		(uuid "a069699b-f1f2-430e-bbcf-58071ea896e8")
+	)
+	(wire
+		(pts
+			(xy 109.855 34.925) (xy 109.855 32.385)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a350f78d-6990-4799-90d1-b8b267dc2d54")
 	)
 	(wire
 		(pts
@@ -6910,16 +6876,6 @@
 			(type default)
 		)
 		(uuid "dbd17c04-cfbc-4992-b2f1-e5759d013e68")
-	)
-	(wire
-		(pts
-			(xy 106.68 32.385) (xy 110.49 32.385)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dc8ce0ac-eb06-4575-a8b9-f85a015edd95")
 	)
 	(wire
 		(pts
@@ -7380,7 +7336,7 @@
 		)
 		(uuid "82a602f5-ff0a-49e1-9696-19f3d1190cd7")
 	)
-	(text "16.5k => 50mA"
+	(text "8.25k => 100mA"
 		(exclude_from_sim no)
 		(at 125.095 88.9 0)
 		(effects
@@ -11257,109 +11213,6 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 111.76 71.12 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "565170b7-04c9-4c5f-9e75-f75baff4d702")
-		(property "Reference" "R23"
-			(at 111.76 69.215 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "16.5k"
-			(at 111.76 73.025 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1773200&DocType=DS&DocLang=English"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "RES SMD 16.5K OHM 1% 1/16W 0603"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "TE Connectivity Passive Product"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer PN" "CPF0603F16K5C1"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier" "Digi-Key"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Supplier PN" "A102224CT-ND"
-			(at 111.76 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "a740b921-3013-47ff-9c7f-68239f2e2e7f")
-		)
-		(pin "2"
-			(uuid "2e349dde-edce-4af9-be9e-cb01da28548a")
-		)
-		(instances
-			(project "densistick"
-				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
-					(reference "R23")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R_Small")
 		(at 73.66 37.465 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12318,6 +12171,109 @@
 			(project "densistick"
 				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
 					(reference "C2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R_Small")
+		(at 111.76 71.12 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6c4ffe27-1c74-4859-b38f-5dd7ebb233fb")
+		(property "Reference" "R23"
+			(at 111.76 69.215 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "8.25k"
+			(at 111.76 73.025 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.vishay.com/docs/28773/crcwce3.pdf"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "RES SMD 8.25K OHM 1% 1/16W 0603"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "CRCW06038K25FKEBC"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "71-CRCW06038K25FKEBC"
+			(at 111.76 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2ebb514e-151c-44d1-98ae-0e9c0387773b")
+		)
+		(pin "2"
+			(uuid "b4c558ae-f386-49bd-9444-27b73a8cf41e")
+		)
+		(instances
+			(project "densistick"
+				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
+					(reference "R23")
 					(unit 1)
 				)
 			)
