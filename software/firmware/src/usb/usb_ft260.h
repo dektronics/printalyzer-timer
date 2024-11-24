@@ -38,6 +38,7 @@ void usbh_ft260_set_device_callback(ft260_device_t *device, ft260_device_event_c
 osStatus_t usbh_ft260_get_device_serial_number(const ft260_device_t *device, char *str);
 osStatus_t usbh_ft260_set_i2c_clock_speed(ft260_device_t *device, uint16_t speed);
 i2c_handle_t *usbh_ft260_get_device_i2c(ft260_device_t *device);
-osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value);
+osStatus_t usbh_ft260_set_device_gpio_led(ft260_device_t *device, bool value);
+osStatus_t usbh_ft260_set_device_gpio_vsync(ft260_device_t *device, bool value);
 
 #endif /* USB_METER_PROBE_H */

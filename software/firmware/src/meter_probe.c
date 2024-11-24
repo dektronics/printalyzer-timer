@@ -1376,7 +1376,7 @@ osStatus_t meter_probe_control_set_light_enable(meter_probe_handle_t *handle, bo
 
     log_d("meter_probe_control_set_light_enable: %d", enable);
 
-    ret = usbh_ft260_set_device_gpio(handle->device_handle, enable);
+    ret = usbh_ft260_set_device_gpio_led(handle->device_handle, enable);
     if (ret == osOK) {
         handle->stick_light_enabled = enable;
     }

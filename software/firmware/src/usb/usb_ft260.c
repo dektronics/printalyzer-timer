@@ -110,6 +110,8 @@ static HAL_StatusTypeDef usb_ft260_i2c_mem_read(i2c_handle_t *hi2c, uint8_t dev_
 static HAL_StatusTypeDef usb_ft260_i2c_is_device_ready(i2c_handle_t *hi2c, uint8_t dev_address, uint32_t timeout);
 static HAL_StatusTypeDef usb_ft260_i2c_reset(i2c_handle_t *hi2c);
 
+static osStatus_t usbh_ft260_set_device_gpio_ex(ft260_device_t *device, uint8_t gpio_ex, bool value);
+
 bool usbh_ft260_init()
 {
     /* Create the semaphore used to synchronize FT260 task communication */
@@ -461,22 +463,22 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
         log_d("I2C bus status: 0x%02X", bus_status);
         log_d("I2C speed: %dkHz", speed);
 
-
+        /* Prepare initial GPIO state depending on device type */
         if (dev_handle->device_type == FT260_DENSISTICK) {
-            /* Set initial GPIO state */
             dev_handle->gpio_report.gpio_value = 0; /* GPIO 0-5 set to off */
             dev_handle->gpio_report.gpio_dir = 0; /* GPIO 0-5 set as input */
             dev_handle->gpio_report.gpio_ex_value = 0x20; /* GPIOF set to high, all others set to low */
-            dev_handle->gpio_report.gpio_ex_dir = 0x80; /* GPIOH set as output, all others set as input */
-
-            ret = ft260_gpio_write(dev_handle->hid_class0, &dev_handle->gpio_report);
-            if (ret < 0) { break; }
-
+            dev_handle->gpio_report.gpio_ex_dir = 0x81; /* GPIOA and GPIOH set as output, all others set as input */
         } else {
-            /* Read initial GPIO state */
-            ret = ft260_gpio_read(dev_handle->hid_class0, &dev_handle->gpio_report);
-            if (ret < 0) { break; }
+            dev_handle->gpio_report.gpio_value = 0; /* GPIO 0-5 set to off */
+            dev_handle->gpio_report.gpio_dir = 0; /* GPIO 0-5 set as input */
+            dev_handle->gpio_report.gpio_ex_value = 0x20; /* GPIOF set to high, all others set to low */
+            dev_handle->gpio_report.gpio_ex_dir = 0x01; /* GPIOA set as output, all others set as input */
         }
+
+        /* Set initial GPIO state */
+        ret = ft260_gpio_write(dev_handle->hid_class0, &dev_handle->gpio_report);
+        if (ret < 0) { break; }
 
         log_d("GPIO Report: value=0x%02X, dir=0x%02X, ex_value=0x%02X, ex_dir=0x%02X",
             dev_handle->gpio_report.gpio_value, dev_handle->gpio_report.gpio_dir,
@@ -967,7 +969,17 @@ i2c_handle_t *usbh_ft260_get_device_i2c(ft260_device_t *device)
     return &device->i2c_handle;
 }
 
-osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
+osStatus_t usbh_ft260_set_device_gpio_led(ft260_device_t *device, bool value)
+{
+    return usbh_ft260_set_device_gpio_ex(device, FT260_GPIOEX_H, value);
+}
+
+osStatus_t usbh_ft260_set_device_gpio_vsync(ft260_device_t *device, bool value)
+{
+    return usbh_ft260_set_device_gpio_ex(device, FT260_GPIOEX_A, value);
+}
+
+osStatus_t usbh_ft260_set_device_gpio_ex(ft260_device_t *device, uint8_t gpio_ex, bool value)
 {
     osStatus_t result = osOK;
     ft260_gpio_report_t update_report;
@@ -981,20 +993,14 @@ osStatus_t usbh_ft260_set_device_gpio(ft260_device_t *device, bool value)
             break;
         }
 
-        /*
-         * Only support this for the DensiStick, since it is toggling a GPIO pin
-         * specific to that device.
-         */
-        if (dev_handle->device_type != FT260_DENSISTICK) { return osErrorParameter; }
-
         struct usbh_hid *hid_class = dev_handle->hid_class0;
 
         memcpy(&update_report, &dev_handle->gpio_report, sizeof(ft260_gpio_report_t));
 
         if (value) {
-            update_report.gpio_ex_value = FT260_GPIOEX_F | FT260_GPIOEX_H;
+            update_report.gpio_ex_value |= gpio_ex;
         } else {
-            update_report.gpio_ex_value = FT260_GPIOEX_F;
+            update_report.gpio_ex_value &= ~gpio_ex;
         }
 
         int status = ft260_gpio_write(hid_class, &update_report);
