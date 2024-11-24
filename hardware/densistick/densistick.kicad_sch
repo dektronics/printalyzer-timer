@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer DensiStick")
-		(date "2024-07-22")
-		(rev "A")
+		(date "2024-11-24")
+		(rev "B")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg <dkonigsberg@dektronics.com>")
 	)
@@ -5108,6 +5108,12 @@
 		(uuid "ef81ae78-e798-4a35-9693-2f32e1165561")
 	)
 	(junction
+		(at 210.185 27.94)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f5736fb6-957f-46b9-a8a5-c2a04b64b212")
+	)
+	(junction
 		(at 124.46 29.845)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5138,16 +5144,8 @@
 		(uuid "517e7db0-754a-42ee-8d6d-0210923fb273")
 	)
 	(no_connect
-		(at 201.295 38.1)
-		(uuid "5eb0ddb5-330a-4919-a3e3-e1429053f11d")
-	)
-	(no_connect
 		(at 106.68 34.925)
 		(uuid "63304e0a-1c7c-4541-95a7-cb579094e20d")
-	)
-	(no_connect
-		(at 41.275 53.34)
-		(uuid "86d82820-7664-4c68-9987-2a9bb65d266a")
 	)
 	(no_connect
 		(at 201.295 43.18)
@@ -5246,16 +5244,6 @@
 			(type default)
 		)
 		(uuid "0a803d3c-ec10-4696-880d-23e7a932dce2")
-	)
-	(wire
-		(pts
-			(xy 222.885 58.42) (xy 234.315 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0d9059ef-45ff-4281-8510-cf082937ccb3")
 	)
 	(wire
 		(pts
@@ -5409,16 +5397,6 @@
 	)
 	(wire
 		(pts
-			(xy 41.275 45.72) (xy 52.07 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1fbb0219-551e-409b-a61b-76e8cebdfb9d")
-	)
-	(wire
-		(pts
 			(xy 155.575 93.345) (xy 155.575 94.615)
 		)
 		(stroke
@@ -5436,6 +5414,16 @@
 			(type default)
 		)
 		(uuid "2235d853-6b5e-40e3-825e-a10b940c52db")
+	)
+	(wire
+		(pts
+			(xy 41.275 45.72) (xy 52.705 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "23355287-17df-4556-886a-c8c2729f741e")
 	)
 	(wire
 		(pts
@@ -5489,16 +5477,6 @@
 	)
 	(wire
 		(pts
-			(xy 210.185 50.8) (xy 234.315 50.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2fa9a011-5193-4b25-aff2-204cecd76aa1")
-	)
-	(wire
-		(pts
 			(xy 83.185 134.62) (xy 83.185 132.715)
 		)
 		(stroke
@@ -5519,13 +5497,13 @@
 	)
 	(wire
 		(pts
-			(xy 216.535 53.34) (xy 234.315 53.34)
+			(xy 201.295 66.04) (xy 236.22 66.04)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "32fb3ac3-a189-4eac-b77c-f9671eba0260")
+		(uuid "33ee258a-583f-4a3c-9c81-bbfa03156a65")
 	)
 	(wire
 		(pts
@@ -5689,6 +5667,16 @@
 	)
 	(wire
 		(pts
+			(xy 201.295 38.1) (xy 202.565 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4958c7b3-02fe-4bb7-b11c-5080b39e71c3")
+	)
+	(wire
+		(pts
 			(xy 144.78 100.965) (xy 144.78 102.235)
 		)
 		(stroke
@@ -5739,16 +5727,6 @@
 	)
 	(wire
 		(pts
-			(xy 41.275 48.26) (xy 52.07 48.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "53fda1fb-12bd-4536-80e1-aab5c0e3fc58")
-	)
-	(wire
-		(pts
 			(xy 141.605 37.465) (xy 141.605 39.37)
 		)
 		(stroke
@@ -5776,16 +5754,6 @@
 			(type default)
 		)
 		(uuid "571ec940-f17f-404b-a2d7-70315278a4b0")
-	)
-	(wire
-		(pts
-			(xy 201.295 66.04) (xy 234.315 66.04)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "57d7982f-52a6-4b5b-b552-5ca081e29123")
 	)
 	(wire
 		(pts
@@ -6119,16 +6087,6 @@
 	)
 	(wire
 		(pts
-			(xy 41.275 43.18) (xy 52.07 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7bfba61b-6752-4a45-9ee6-5984dcb15041")
-	)
-	(wire
-		(pts
 			(xy 19.685 167.005) (xy 19.685 168.91)
 		)
 		(stroke
@@ -6206,6 +6164,16 @@
 			(type default)
 		)
 		(uuid "85aaaceb-e009-4b2c-b2f7-7dbd27be2876")
+	)
+	(wire
+		(pts
+			(xy 41.275 53.34) (xy 52.705 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "869a22de-94d7-4204-b13a-894c7dfd1777")
 	)
 	(wire
 		(pts
@@ -6306,6 +6274,16 @@
 			(type default)
 		)
 		(uuid "93304e86-3924-4ec5-b635-b5f0f5c478bc")
+	)
+	(wire
+		(pts
+			(xy 210.185 50.8) (xy 236.22 50.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9418c283-6341-4e09-b0d7-a1aa4ba64e69")
 	)
 	(wire
 		(pts
@@ -6549,16 +6527,6 @@
 	)
 	(wire
 		(pts
-			(xy 216.535 26.035) (xy 216.535 27.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b2b5380f-34a4-4a73-b3b3-0680c6e1cbec")
-	)
-	(wire
-		(pts
 			(xy 66.675 134.62) (xy 73.66 134.62)
 		)
 		(stroke
@@ -6686,6 +6654,26 @@
 			(type default)
 		)
 		(uuid "c4bd8d11-d131-4014-9f5d-42bde457597f")
+	)
+	(wire
+		(pts
+			(xy 207.645 38.1) (xy 236.22 38.1)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c4da98fd-5f7f-461d-b82e-84bbfdb79e1e")
+	)
+	(wire
+		(pts
+			(xy 41.275 48.26) (xy 52.705 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c5801350-5a8d-4b4a-af76-91cc394a53cb")
 	)
 	(wire
 		(pts
@@ -6839,6 +6827,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.885 58.42) (xy 236.22 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d905605d-fb3c-46cc-bfb7-5bb5db212625")
+	)
+	(wire
+		(pts
 			(xy 67.945 107.315) (xy 81.28 107.315)
 		)
 		(stroke
@@ -6979,6 +6977,16 @@
 	)
 	(wire
 		(pts
+			(xy 41.275 43.18) (xy 52.705 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ee79a98b-6a52-4b53-9a3e-37371d26500d")
+	)
+	(wire
+		(pts
 			(xy 134.62 54.61) (xy 134.62 53.34)
 		)
 		(stroke
@@ -6999,6 +7007,16 @@
 	)
 	(wire
 		(pts
+			(xy 210.185 26.035) (xy 210.185 27.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f0feb474-5360-4730-8881-243df114ee5e")
+	)
+	(wire
+		(pts
 			(xy 43.815 25.4) (xy 46.99 25.4)
 		)
 		(stroke
@@ -7016,6 +7034,16 @@
 			(type default)
 		)
 		(uuid "f21dfff1-cac0-4bff-b9d9-f773ad91c18a")
+	)
+	(wire
+		(pts
+			(xy 216.535 53.34) (xy 236.22 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f40e6aba-279f-455d-a6a3-9a58c0d846bc")
 	)
 	(wire
 		(pts
@@ -7145,7 +7173,7 @@
 	)
 	(rectangle
 		(start 128.905 14.605)
-		(end 241.3 111.125)
+		(end 238.76 111.125)
 		(stroke
 			(width 0)
 			(type dash)
@@ -7380,6 +7408,17 @@
 		)
 		(uuid "a4d5cde6-3740-46bb-996a-d1dbedef95ac")
 	)
+	(text "0x39 - Device address\nI/O pins are 3.3V tolerant"
+		(exclude_from_sim no)
+		(at 59.055 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ad845967-6324-40b8-8695-0be9227182cf")
+	)
 	(text "USB Bridge"
 		(exclude_from_sim no)
 		(at 130.175 17.78 0)
@@ -7492,7 +7531,7 @@
 	)
 	(text "DCFN0 and DCFN1 have internal pull-downs\nDCD is held low to avoid spurious interrupts\nVOUT3V3 supplies the 3.3V power rail"
 		(exclude_from_sim no)
-		(at 193.04 109.855 0)
+		(at 193.675 109.855 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7556,6 +7595,17 @@
 		)
 		(uuid "24df421b-9c1e-49bb-9cb8-58f4ad4c90f7")
 	)
+	(label "TSL_VSYNC"
+		(at 236.22 38.1 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2f860aa3-33d8-40f5-88e9-f832d0e35e13")
+	)
 	(label "I2C_SDA"
 		(at 112.395 175.895 180)
 		(fields_autoplaced yes)
@@ -7568,7 +7618,7 @@
 		(uuid "3f89d5e9-5c50-4acf-90c0-e918adfe078e")
 	)
 	(label "I2C_SDA"
-		(at 234.315 53.34 180)
+		(at 236.22 53.34 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7612,7 +7662,7 @@
 		(uuid "523a126c-99bd-4eda-b9ff-1c8da89ad8d8")
 	)
 	(label "TSL_INT"
-		(at 234.315 58.42 180)
+		(at 236.22 58.42 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7645,7 +7695,7 @@
 		(uuid "59967fa4-a179-4973-9889-268010e25300")
 	)
 	(label "I2C_SCL"
-		(at 234.315 50.8 180)
+		(at 236.22 50.8 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7667,7 +7717,7 @@
 		(uuid "621f67f0-0e06-49a9-bd17-2789267258ea")
 	)
 	(label "PROBE_BTN"
-		(at 234.315 66.04 180)
+		(at 236.22 66.04 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7677,8 +7727,19 @@
 		)
 		(uuid "6f63843d-0ab9-40a9-82d0-4404aab51a0d")
 	)
+	(label "TSL_VSYNC"
+		(at 52.705 53.34 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "71eda215-7006-427a-a079-454063e006a5")
+	)
 	(label "I2C_SCL"
-		(at 52.07 43.18 180)
+		(at 52.705 43.18 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7711,7 +7772,7 @@
 		(uuid "89d3435c-d6eb-4e5b-871a-6c5093e07c97")
 	)
 	(label "TSL_INT"
-		(at 52.07 48.26 180)
+		(at 52.705 48.26 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7733,7 +7794,7 @@
 		(uuid "98fde1ba-b291-4ae4-a549-417cefbfa67c")
 	)
 	(label "I2C_SDA"
-		(at 52.07 45.72 180)
+		(at 52.705 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11528,6 +11589,110 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R_Small")
+		(at 205.105 38.1 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "60eb1503-64a0-4931-9e79-6adfe959a415")
+		(property "Reference" "R6"
+			(at 205.105 36.195 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "33R"
+			(at 205.105 40.005 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 205.105 39.878 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.yageo.com/upload/media/product/productsearch/datasheet/rchip/PYu-RC_Group_51_RoHS_L_12.pdf"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "RES 33 OHM 5% 1/10W 0603"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer PN" "RC0603JR-0733RL"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Digi-Key"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier PN" "311-33GRCT-ND"
+			(at 205.105 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3c206e6d-6e8c-4d45-93dd-374367016825")
+		)
+		(pin "2"
+			(uuid "8824cafe-f0f4-418b-a8fa-c62e71c10fa4")
+		)
+		(instances
+			(project "densistick"
+				(path "/8d0c1d66-35ef-4a53-a28f-436a11b54f42"
+					(reference "R6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:+5V")
 		(at 177.165 22.86 0)
 		(unit 1)
@@ -14961,7 +15126,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 216.535 26.035 0)
+		(at 210.185 26.035 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14969,7 +15134,7 @@
 		(dnp no)
 		(uuid "ae11b21b-56fa-4dd0-ba17-e9f1497e0c6e")
 		(property "Reference" "#PWR018"
-			(at 216.535 29.845 0)
+			(at 210.185 29.845 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14978,7 +15143,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 216.535 22.225 0)
+			(at 210.185 22.225 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14986,7 +15151,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 216.535 26.035 0)
+			(at 210.185 26.035 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14995,7 +15160,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 216.535 26.035 0)
+			(at 210.185 26.035 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15004,7 +15169,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 216.535 26.035 0)
+			(at 210.185 26.035 0)
 			(effects
 				(font
 					(size 1.27 1.27)
