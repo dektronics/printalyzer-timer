@@ -6,7 +6,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer DensiStick")
-		(date "2024-11-24")
+		(date "2024-12-03")
 		(rev "B")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg <dkonigsberg@dektronics.com>")
@@ -17953,6 +17953,7 @@
 		)
 		(pin "28"
 			(uuid "7b090f32-26e2-41dd-9705-207dc0ec6f44")
+			(alternate "GPIOH")
 		)
 		(pin "27"
 			(uuid "e7201806-4383-4a1a-a336-7327de9a94bc")
