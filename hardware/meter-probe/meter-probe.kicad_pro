@@ -90,7 +90,7 @@
         }
       ],
       "drc_exclusions": [
-        "courtyards_overlap|112799999|106250001|1aed903a-aed9-4dd7-9b04-284d148b59fb|00000000-0000-0000-0000-00005f913d0f",
+        "courtyards_overlap|112799999|106250001|00000000-0000-0000-0000-00005f913d0f|1aed903a-aed9-4dd7-9b04-284d148b59fb",
         "lib_footprint_mismatch|104250000|108000000|dbfa5a40-2b31-4f33-992f-72b3f0b80429|00000000-0000-0000-0000-000000000000"
       ],
       "meta": {
@@ -655,7 +655,7 @@
   },
   "schematic": {
     "annotate_start_num": 0,
-    "bom_export_filename": "",
+    "bom_export_filename": "meter-probe.csv",
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ",",
