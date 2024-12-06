@@ -28,6 +28,7 @@ typedef struct {
     bool button_pressed;
     uint8_t connected;
     uint8_t active;
+    volatile uint8_t urb_retry_count;
     USB_MEM_ALIGNX uint8_t ft260_in_buffer[FT260_IN_BUF_SIZE];
 } usb_ft260_handle_t;
 
@@ -52,7 +53,8 @@ typedef enum {
     FT260_CONTROL_ATTACH = 0,
     FT260_CONTROL_DETACH,
     FT260_CONTROL_INTERRUPT,
-    FT260_CONTROL_SUBMIT_URB
+    FT260_CONTROL_SUBMIT_URB,
+    FT260_CONTROL_PORT_RESET
 } ft260_control_event_type_t;
 
 typedef struct {
@@ -73,6 +75,7 @@ typedef struct {
         ft260_connection_params_t connection;
         ft260_interrupt_params_t interrupt;
         struct usbh_urb *urb;
+        struct usbh_hubport *hport;
     };
 } ft260_control_event_t;
 
@@ -221,9 +224,17 @@ void usbh_ft260_thread(void *argument)
                 usbh_ft260_control_interrupt(params);
             } else if (event.event_type == FT260_CONTROL_SUBMIT_URB) {
                 usbh_submit_urb(event.urb);
+            } else if (event.event_type == FT260_CONTROL_PORT_RESET) {
+                log_d("Resetting hub port");
+                usbh_hub_set_feature(
+                    event.hport->parent,
+                    event.hport->port,
+                    HUB_PORT_FEATURE_RESET);
             }
 
-            if (event.event_type != FT260_CONTROL_INTERRUPT && event.event_type != FT260_CONTROL_SUBMIT_URB) {
+            if (event.event_type != FT260_CONTROL_INTERRUPT
+                && event.event_type != FT260_CONTROL_SUBMIT_URB
+                && event.event_type != FT260_CONTROL_PORT_RESET) {
                 /* Check if anything is still connected */
                 bool devices_connected = false;
                 for (uint8_t i = 0; i < CONFIG_USBHOST_MAX_HID_CLASS; i++) {
@@ -526,6 +537,7 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
     }
 
     /* Start the interrupt polling */
+    dev_handle->urb_retry_count = 0;
     usbh_int_urb_fill(&dev_handle->hid_class1->intin_urb,
         dev_handle->hid_class1->hport,
         dev_handle->hid_class1->intin,
@@ -671,8 +683,13 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
 {
     usb_ft260_handle_t *dev_handle = (usb_ft260_handle_t *)arg;
     bool submit_urb = false;
+    bool reset_port = false;
 
     if (!dev_handle->active || !dev_handle->connected) { return; }
+
+    if (nbytes >= 0) {
+        dev_handle->urb_retry_count = 0;
+    }
 
     if (nbytes == 3 && dev_handle->ft260_in_buffer[0] == 0xB1) {
 
@@ -703,14 +720,27 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
     } else if (nbytes == -USB_ERR_STALL) {
         log_w("Pipe stall");
         submit_urb = true;
+        dev_handle->urb_retry_count++;
     } else {
         log_d("Fell out of callback: %s", usb_error_str(-nbytes));
+    }
+
+    if (dev_handle->urb_retry_count > 2) {
+        dev_handle->urb_retry_count = 0;
+        submit_urb = false;
+        reset_port = true;
     }
 
     if (submit_urb) {
         ft260_control_event_t control_event = {
             .event_type = FT260_CONTROL_SUBMIT_URB,
             .urb = &dev_handle->hid_class1->intin_urb
+        };
+        osMessageQueuePut(ft260_control_queue, &control_event, 0, 0);
+    } else if (reset_port) {
+        ft260_control_event_t control_event = {
+            .event_type = FT260_CONTROL_PORT_RESET,
+            .hport = dev_handle->hid_class1->hport
         };
         osMessageQueuePut(ft260_control_queue, &control_event, 0, 0);
     }

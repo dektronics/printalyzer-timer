@@ -556,6 +556,20 @@ static void usbh_hub_events(struct usbh_hub *hub)
             continue;
         }
 
+        /*
+         * (DK)
+         * Handle port reset notifications by checking if the device is
+         * connected and enabled, then triggering a reconnect.
+         * This is to make it possible for a class driver to reset connected
+         * device by resetting the hub port it is connected to.
+         */
+        if (portchange & HUB_PORT_STATUS_C_RESET) {
+            if (portstatus & HUB_PORT_STATUS_CONNECTION && portstatus & HUB_PORT_STATUS_ENABLE) {
+                USB_LOG_WRN("Triggering reconnect due to port reset on Hub %u, Port %u\r\n", hub->index, port + 1);
+                portchange |= HUB_PORT_STATUS_C_CONNECTION;
+            }
+        }
+
         /* Second, if port changes, debounces first */
         if (portchange & HUB_PORT_STATUS_C_CONNECTION) {
             uint16_t connection = 0;
