@@ -362,9 +362,9 @@ const struct usbh_class_driver serial_cp210x_class_driver = {
 
 CLASS_INFO_DEFINE const struct usbh_class_info serial_cp210x_class_info = {
     .match_flags = USB_CLASS_MATCH_VID_PID | USB_CLASS_MATCH_INTF_CLASS,
-    .class = 0xff,
-    .subclass = 0x00,
-    .protocol = 0x00,
+    .bInterfaceClass = 0xff,
+    .bInterfaceSubClass = 0x00,
+    .bInterfaceProtocol = 0x00,
     .id_table = serial_cp210x_id_table,
     .class_driver = &serial_cp210x_class_driver
 };

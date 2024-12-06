@@ -20,14 +20,7 @@
 #define INTF_DESC_bInterfaceNumber  2 /** Interface number offset */
 #define INTF_DESC_bAlternateSetting 3 /** Alternate setting offset */
 
-/* (DK) Use a smaller buffer if not getting the report descriptor */
-#ifdef CONFIG_USBHOST_HID_GET_REPORT_DESC
-#define HID_BUF_SIZE 256
-#else
-#define HID_BUF_SIZE 64
-#endif
-
-USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hid_buf[CONFIG_USBHOST_MAX_HID_CLASS][USB_ALIGN_UP(HID_BUF_SIZE, CONFIG_USB_ALIGN_SIZE)];
+USB_NOCACHE_RAM_SECTION USB_MEM_ALIGNX uint8_t g_hid_buf[CONFIG_USBHOST_MAX_HID_CLASS][USB_ALIGN_UP(64, CONFIG_USB_ALIGN_SIZE)];
 
 static struct usbh_hid g_hid_class[CONFIG_USBHOST_MAX_HID_CLASS];
 static uint32_t g_devinuse = 0;
@@ -57,11 +50,9 @@ static void usbh_hid_class_free(struct usbh_hid *hid_class)
     memset(hid_class, 0, sizeof(struct usbh_hid));
 }
 
-#ifdef CONFIG_USBHOST_HID_GET_REPORT_DESC
-static int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *buffer)
+int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *buffer, uint32_t buflen)
 {
     struct usb_setup_packet *setup;
-    int ret;
 
     if (!hid_class || !hid_class->hport) {
         return -USB_ERR_INVAL;
@@ -72,16 +63,10 @@ static int usbh_hid_get_report_descriptor(struct usbh_hid *hid_class, uint8_t *b
     setup->bRequest = USB_REQUEST_GET_DESCRIPTOR;
     setup->wValue = HID_DESCRIPTOR_TYPE_HID_REPORT << 8;
     setup->wIndex = hid_class->intf;
-    setup->wLength = hid_class->report_size;
+    setup->wLength = buflen;
 
-    ret = usbh_control_transfer(hid_class->hport, setup, g_hid_buf[hid_class->minor]);
-    if (ret < 8) {
-        return ret;
-    }
-    memcpy(buffer, g_hid_buf[hid_class->minor], ret - 8);
-    return ret;
+    return usbh_control_transfer(hid_class->hport, setup, buffer);
 }
-#endif
 
 int usbh_hid_set_idle(struct usbh_hid *hid_class, uint8_t report_id, uint8_t duration)
 {
@@ -166,7 +151,7 @@ int usbh_hid_get_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t
     struct usb_setup_packet *setup;
     int ret;
 
-    if (!hid_class || !hid_class->hport || buflen > HID_BUF_SIZE /*(DK)*/) {
+    if (!hid_class || !hid_class->hport) {
         return -USB_ERR_INVAL;
     }
     setup = hid_class->hport->setup;
@@ -224,14 +209,6 @@ int usbh_hid_connect(struct usbh_hubport *hport, uint8_t intf)
                     }
 
                     hid_class->report_size = desc->subdesc[0].wDescriptorLength;
-
-#ifdef CONFIG_USBHOST_HID_GET_REPORT_DESC
-                    if (hid_class->report_size > sizeof(g_hid_buf[hid_class->minor])) {
-                        /* (DK) Add logging of size violation amount */
-                        USB_LOG_ERR("HID report descriptor too large (%d > %d)\r\n", hid_class->report_size, sizeof(g_hid_buf[hid_class->minor]));
-                        return -USB_ERR_INVAL;
-                    }
-#endif
                     found = true;
                     goto found;
                 }
@@ -259,12 +236,11 @@ found:
         USB_LOG_WRN("Do not support set idle\r\n");
     }
 
-#ifdef CONFIG_USBHOST_HID_GET_REPORT_DESC
-    ret = usbh_hid_get_report_descriptor(hid_class, hid_class->report_desc);
+    /* We read report desc but do nothing (because of too much memory usage for parsing report desc, parsed by users) */
+    ret = usbh_hid_get_report_descriptor(hid_class, g_hid_buf[hid_class->minor], MIN(sizeof(g_hid_buf[hid_class->minor]), hid_class->report_size));
     if (ret < 0) {
         return ret;
     }
-#endif
 
     for (uint8_t i = 0; i < hport->config.intf[intf].altsetting[0].intf_desc.bNumEndpoints; i++) {
         ep_desc = &hport->config.intf[intf].altsetting[0].ep[i].ep_desc;
@@ -327,9 +303,9 @@ const struct usbh_class_driver hid_class_driver = {
 
 CLASS_INFO_DEFINE const struct usbh_class_info hid_custom_class_info = {
     .match_flags = USB_CLASS_MATCH_INTF_CLASS,
-    .class = USB_DEVICE_CLASS_HID,
-    .subclass = 0x00,
-    .protocol = 0x00,
+    .bInterfaceClass = USB_DEVICE_CLASS_HID,
+    .bInterfaceSubClass = 0x00,
+    .bInterfaceProtocol = 0x00,
     .id_table = NULL,
     .class_driver = &hid_class_driver
 };

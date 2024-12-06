@@ -10,6 +10,14 @@
 #include "usbh_core.h"
 #include "usb_hc_ehci.h"
 
+#if !defined(CONFIG_USB_EHCI_CONFIGFLAG)
+#error "aic ehci must define CONFIG_USB_EHCI_CONFIGFLAG"
+#endif
+
+#if CONFIG_USB_OHCI_HCOR_OFFSET != 0x400
+#error "aic CONFIG_USB_OHCI_HCOR_OFFSET must be 0x400"
+#endif
+
 extern void USBH_IRQHandler(uint8_t busid);
 
 static void aic_ehci_isr(int vector, void *arg)
@@ -117,6 +125,7 @@ void usb_hc_low_level_init(struct usbh_bus *bus)
     aicos_request_irq(config[i].irq_num + 1, (irq_handler_t)aic_ohci_isr,
                       0, "usb_host_ohci", bus);
     aicos_irq_enable(config[i].irq_num);
+    aicos_irq_enable(config[i].irq_num + 1);
 }
 
 uint8_t usbh_get_port_speed(struct usbh_bus *bus, const uint8_t port)
@@ -149,7 +158,7 @@ void usb_ehci_dcache_clean_invalidate(uintptr_t addr, uint32_t len)
     aicos_dcache_clean_invalid_range((size_t *)addr, len);
 }
 
-int usbh_init(void)
+int __usbh_init(void)
 {
 #if defined(AIC_USING_USB0_HOST) || defined(AIC_USING_USB1_HOST)
     int bus_id = 0;
@@ -171,11 +180,5 @@ int usbh_init(void)
 #include <rtthread.h>
 #include <rtdevice.h>
 
-INIT_ENV_EXPORT(usbh_init);
-
-#if defined (RT_USING_FINSH)
-#include <finsh.h>
-
-MSH_CMD_EXPORT_ALIAS(lsusb, lsusb, list usb device);
-#endif
+INIT_ENV_EXPORT(__usbh_init);
 #endif

@@ -215,6 +215,12 @@ static inline void dwc2_chan_char_init(struct usbh_bus *bus, uint8_t ch_num, uin
         regval |= USB_OTG_HCCHAR_EPDIR;
     }
 
+    if ((usbh_get_port_speed(bus, 0) == USB_SPEED_HIGH) && (speed != USB_SPEED_HIGH)) {
+        USB_LOG_ERR("Do not support LS/FS device on HS hub\r\n");
+        while (1) {
+        }
+    }
+
     /* LS device plugged to HUB */
     if ((speed == USB_SPEED_LOW) && (usbh_get_port_speed(bus, 0) != USB_SPEED_LOW)) {
         regval |= USB_OTG_HCCHAR_LSDEV;
@@ -775,8 +781,8 @@ int usbh_submit_urb(struct usbh_urb *urb)
         }
     } else {
         /* Check if intr and iso pipe tx fifo is overflow */
-        if (((USB_GET_MAXPACKETSIZE(urb->ep->wMaxPacketSize) == USB_ENDPOINT_TYPE_ISOCHRONOUS) ||
-             (USB_GET_MAXPACKETSIZE(urb->ep->wMaxPacketSize) == USB_ENDPOINT_TYPE_INTERRUPT)) &&
+        if (((USB_GET_ENDPOINT_TYPE(urb->ep->bmAttributes) == USB_ENDPOINT_TYPE_ISOCHRONOUS) ||
+             (USB_GET_ENDPOINT_TYPE(urb->ep->bmAttributes) == USB_ENDPOINT_TYPE_INTERRUPT)) &&
             USB_GET_MAXPACKETSIZE(urb->ep->wMaxPacketSize) > (CONFIG_USB_DWC2_PTX_FIFO_SIZE * 4)) {
             return -USB_ERR_RANGE;
         } else {

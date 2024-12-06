@@ -277,15 +277,13 @@ static int usbh_msc_connect(struct usbh_hubport *hport, uint8_t intf)
     hport->config.intf[intf].priv = msc_class;
 
     ret = usbh_msc_get_maxlun(msc_class, g_msc_buf[msc_class->sdchar - 'a']);
-    if (ret == -USB_ERR_STALL) {
-        /* (DK)
-         * Per the USB MSC Bulk-Only Transport specification, devices that
-         * do not support multiple LUNs may STALL this command.
-         */
-        USB_LOG_INFO("Multiple LUNs not supported");
-        g_msc_buf[msc_class->sdchar - 'a'][0] = 0;
-    } else if (ret < 0) {
-        return ret;
+    if (ret < 0) {
+        if (ret == -USB_ERR_STALL) {
+            USB_LOG_WRN("Device does not support multiple LUNs\r\n");
+            g_msc_buf[msc_class->sdchar - 'a'][0] = 0;
+        } else {
+            return ret;
+        }
     }
 
     USB_LOG_INFO("Get max LUN:%u\r\n", g_msc_buf[msc_class->sdchar - 'a'][0] + 1);
@@ -379,7 +377,6 @@ static int usbh_msc_disconnect(struct usbh_hubport *hport, uint8_t intf)
     return ret;
 }
 
-
 int usbh_msc_scsi_write10(struct usbh_msc *msc_class, uint32_t start_sector, const uint8_t *buffer, uint32_t nsectors)
 {
     struct CBW *cbw;
@@ -446,9 +443,9 @@ const struct usbh_class_driver msc_class_driver = {
 
 CLASS_INFO_DEFINE const struct usbh_class_info msc_class_info = {
     .match_flags = USB_CLASS_MATCH_INTF_CLASS | USB_CLASS_MATCH_INTF_SUBCLASS | USB_CLASS_MATCH_INTF_PROTOCOL,
-    .class = USB_DEVICE_CLASS_MASS_STORAGE,
-    .subclass = MSC_SUBCLASS_SCSI,
-    .protocol = MSC_PROTOCOL_BULK_ONLY,
+    .bInterfaceClass = USB_DEVICE_CLASS_MASS_STORAGE,
+    .bInterfaceSubClass = MSC_SUBCLASS_SCSI,
+    .bInterfaceProtocol = MSC_PROTOCOL_BULK_ONLY,
     .id_table = NULL,
     .class_driver = &msc_class_driver
 };
