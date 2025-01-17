@@ -54,7 +54,6 @@ typedef struct {
     uint32_t live_tone_element;
     uint32_t live_tone_ticks;
     uint8_t highlight_element;
-    bool enable_meter_probe;
     bool display_dirty;
     bool tone_dirty;
     uint8_t dens_selected_mode;
@@ -91,7 +90,7 @@ static bool state_home_process(state_t *state_base, state_controller_t *controll
 static bool state_home_process_printing(state_home_t *state, state_controller_t *controller);
 static bool state_home_process_calibration(state_home_t *state, state_controller_t *controller);
 static void state_home_select_paper_profile(state_controller_t *controller);
-static void state_home_check_meter_probe(state_home_t *state);
+static void state_home_check_meter_probe(state_home_t *state, const state_controller_t *controller);
 static uint32_t state_home_take_reading(state_home_t *state, state_controller_t *controller);
 static uint32_t state_home_take_live_reading(state_home_t *state, state_controller_t *controller);
 static void state_home_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
@@ -209,7 +208,7 @@ bool state_home_process(state_t *state_base, state_controller_t *controller)
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     exposure_mode_t mode = exposure_get_mode(exposure_state);
 
-    state_home_check_meter_probe(state);
+    state_home_check_meter_probe(state, controller);
 
     if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
         return state_home_process_printing(state, controller);
@@ -304,14 +303,14 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
                 if (mode != EXPOSURE_MODE_PRINTING_COLOR) {
-                    state->enable_meter_probe = true;
+                    state_controller_set_enable_meter_probe(controller, true);
                 }
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state->enable_meter_probe = false;
+                state_controller_set_enable_meter_probe(controller, false);
                 state->live_tone_element = 0;
                 state->live_tone_ticks = 0;
                 state->tone_dirty = true;
@@ -477,13 +476,13 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
-                state->enable_meter_probe = true;
+                state_controller_set_enable_meter_probe(controller, true);
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state->enable_meter_probe = false;
+                state_controller_set_enable_meter_probe(controller, false);
             }
         } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
             exposure_adj_increase(exposure_state);
@@ -603,7 +602,7 @@ void state_home_select_paper_profile(state_controller_t *controller)
     vPortFree(profile_list);
 }
 
-void state_home_check_meter_probe(state_home_t *state)
+void state_home_check_meter_probe(state_home_t *state, const state_controller_t *controller)
 {
     /* Start with an integration time of 100ms */
     static uint16_t sample_time = 719;
@@ -611,7 +610,7 @@ void state_home_check_meter_probe(state_home_t *state)
 
     meter_probe_handle_t *handle = meter_probe_handle();
 
-    if (state->enable_meter_probe) {
+    if (state_controller_is_enable_meter_probe(controller)) {
         if (meter_probe_is_attached(handle) && !meter_probe_is_started(handle)) {
             if (meter_probe_start(handle) == osOK) {
                 meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X);
@@ -706,11 +705,11 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller_set_enlarger_focus(controller, false);
             state_controller_stop_focus_timeout(controller);
-            state->enable_meter_probe = false;
+            state_controller_set_enable_meter_probe(controller, false);
             state->live_tone_element = 0;
             state->live_tone_ticks = 0;
             state->tone_dirty = true;
-            state_home_check_meter_probe(state);
+            state_home_check_meter_probe(state, controller);
         }
     }
 }

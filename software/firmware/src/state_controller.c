@@ -40,6 +40,7 @@ struct __state_controller_t {
     exposure_state_t *exposure_state;
     enlarger_config_t enlarger_config;
     bool enlarger_focus_mode;
+    bool enable_meter_probe;
     TickType_t focus_start_ticks;
 };
 
@@ -131,6 +132,7 @@ void state_controller_loop()
             state_controller_set_enlarger_focus(&state_controller, false);
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
             state_controller.focus_start_ticks = 0;
+            state_controller_set_enable_meter_probe(&state_controller, false);
             meter_probe_sensor_disable(handle);
             meter_probe_stop(handle);
         }
@@ -181,6 +183,19 @@ bool state_controller_is_enlarger_focus(const state_controller_t *controller)
 {
     if (!controller) { return false; }
     return controller->enlarger_focus_mode;
+}
+
+void state_controller_set_enable_meter_probe(state_controller_t *controller, bool enabled)
+{
+    if (!controller) { return; }
+    // Currently just treating this as a flag
+    controller->enable_meter_probe = enabled;
+}
+
+bool state_controller_is_enable_meter_probe(const state_controller_t *controller)
+{
+    if (!controller) { return false; }
+    return controller->enable_meter_probe;
 }
 
 void state_controller_reload_enlarger_config(state_controller_t *controller)

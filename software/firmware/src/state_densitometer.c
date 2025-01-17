@@ -30,7 +30,6 @@ typedef enum {
 
 typedef struct {
     state_t base;
-    bool enable_meter_probe;
     bool enable_densistick;
     bool enable_densistick_idle_light;
     bool display_dirty;
@@ -42,7 +41,7 @@ typedef struct {
 
 static void state_densitometer_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_densitometer_process(state_t *state_base, state_controller_t *controller);
-static void state_densitometer_check_meter_probe(state_densitometer_t *state);
+static void state_densitometer_check_meter_probe(state_densitometer_t *state, const state_controller_t *controller);
 static void state_densitometer_check_densistick(state_densitometer_t *state);
 static bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_controller_t *controller);
 static bool state_densitometer_take_densistick_reading(state_densitometer_t *state, state_controller_t *controller);
@@ -55,7 +54,6 @@ static state_densitometer_t state_densitometer_data = {
         .state_exit = state_densitometer_exit
     },
     .display_dirty = true,
-    .enable_meter_probe = false,
     .enable_densistick = false,
     .enable_densistick_idle_light = false,
     .selected_mode = 0,
@@ -116,7 +114,7 @@ bool state_densitometer_process(state_t *state_base, state_controller_t *control
     densitometer_result_t dens_result = DENSITOMETER_RESULT_UNKNOWN;
     densitometer_reading_t reading;
 
-    state_densitometer_check_meter_probe(state);
+    state_densitometer_check_meter_probe(state, controller);
     state_densitometer_check_densistick(state);
 
     dens_result = densitometer_reading_poll(&reading);
@@ -161,13 +159,13 @@ bool state_densitometer_process(state_t *state_base, state_controller_t *control
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
                 state_controller_set_enlarger_focus(controller, true);
                 state_controller_start_focus_timeout(controller);
-                state->enable_meter_probe = true;
+                state_controller_set_enable_meter_probe(controller, true);
             } else {
                 log_i("Focus mode disabled");
                 state_controller_set_enlarger_focus(controller, false);
                 illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
                 state_controller_stop_focus_timeout(controller);
-                state->enable_meter_probe = false;
+                state_controller_set_enable_meter_probe(controller, false);
             }
         } else if (keypad_action.action_id == ACTION_PREV_TYPE) {
             if (state->selected_mode == 1) {
@@ -223,7 +221,7 @@ bool state_densitometer_process(state_t *state_base, state_controller_t *control
     }
 }
 
-void state_densitometer_check_meter_probe(state_densitometer_t *state)
+void state_densitometer_check_meter_probe(state_densitometer_t *state, const state_controller_t *controller)
 {
     /* Start with an integration time of 100ms */
     static uint16_t sample_time = 719;
@@ -231,7 +229,7 @@ void state_densitometer_check_meter_probe(state_densitometer_t *state)
 
     meter_probe_handle_t *handle = meter_probe_handle();
 
-    if (state->enable_meter_probe) {
+    if (state_controller_is_enable_meter_probe(controller)) {
         if (meter_probe_is_attached(handle) && !meter_probe_is_started(handle)) {
             if (meter_probe_start(handle) == osOK) {
                 meter_probe_sensor_set_gain(handle, TSL2585_GAIN_256X);
@@ -390,8 +388,8 @@ void state_densitometer_exit(state_t *state_base, state_controller_t *controller
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
         state_controller_set_enlarger_focus(controller, false);
         state_controller_stop_focus_timeout(controller);
-        state->enable_meter_probe = false;
-        state_densitometer_check_meter_probe(state);
+        state_controller_set_enable_meter_probe(controller, false);
+        state_densitometer_check_meter_probe(state, controller);
     }
 
     state->enable_densistick = false;
