@@ -1750,10 +1750,14 @@ float meter_probe_basic_result(const meter_probe_handle_t *handle, const meter_p
     /* Calculate the basic reading */
     float basic_reading = als_reading / (atime_ms * als_gain);
 
-    /* Slope correction is not used for the DensiStick, just the Meter Probe */
-    if (handle->device_type == METER_PROBE_DEVICE_METER_PROBE) {
-        /* Apply the slope correction */
-        const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &handle->probe_settings.cal_slope;
+    /*
+     * Slope correction is only performed if valid slope correction values are available.
+     * The current calibration processes for both the Meter Probe and the DensiStick
+     * due to not populate these values, because their reference measurements do not
+     * show a predictable slope error to correct.
+     */
+    const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &handle->probe_settings.cal_slope;
+    if (!isnanf(cal_slope->b0) && !isnanf(cal_slope->b1) && !isnanf(cal_slope->b2)) {
         float l_reading = log10f(basic_reading);
         float l_expected = cal_slope->b0 + (cal_slope->b1 * l_reading) + (cal_slope->b2 * powf(l_reading, 2.0F));
         float corr_reading = powf(10.0F, l_expected);
