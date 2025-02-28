@@ -17,7 +17,7 @@
 
 extern CRC_HandleTypeDef hcrc;
 
-#define FIRMWARE_SIZE (384 * 1024)
+#define FIRMWARE_SIZE (448 * 1024)
 
 static const char *DISPLAY_TITLE = "Firmware Update";
 
