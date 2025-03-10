@@ -345,7 +345,7 @@ float exposure_get_lowest_meter_reading(exposure_state_t *state)
 
     float lowest_lux = NAN;
     for (int i = 0; i < state->lux_reading_count; i++) {
-        if (isnanf(lowest_lux) || state->lux_readings[i] < lowest_lux) {
+        if (isnan(lowest_lux) || state->lux_readings[i] < lowest_lux) {
             lowest_lux = state->lux_readings[i];
         }
     }

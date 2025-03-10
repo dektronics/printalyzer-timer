@@ -810,7 +810,7 @@ uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_
         densitometer_reading_t reading;
         if (densitometer_reading_poll(&reading) == DENSITOMETER_RESULT_OK) {
             if ((reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_REFLECTION)
-                && !isnanf(reading.visual) && reading.visual > 0.0F) {
+                && !isnan(reading.visual) && reading.visual > 0.0F) {
                 return lroundf(reading.visual * 100);
             }
         }
@@ -877,10 +877,10 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
         if (!is_valid_number(params->patch_density[i])) {
             continue;
         }
-        if (isnanf(patch_min) || params->patch_density[i] < patch_min) {
+        if (isnan(patch_min) || params->patch_density[i] < patch_min) {
             patch_min = params->patch_density[i];
         }
-        if (isnanf(patch_max) || params->patch_density[i] > patch_max) {
+        if (isnan(patch_max) || params->patch_density[i] > patch_max) {
             patch_max = params->patch_density[i];
         }
         patch_count++;
@@ -1076,15 +1076,15 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         float32_t Hs_x = NAN;
         float32_t Hs_y = NAN;
         for (uint32_t i = 0; i < num_output; i++) {
-            if (isnanf(Ht_y) || fabsf(Ht_D - yq_density_f32[i]) < fabsf(Ht_D - Ht_y)) {
+            if (isnan(Ht_y) || fabsf(Ht_D - yq_density_f32[i]) < fabsf(Ht_D - Ht_y)) {
                 Ht_y = yq_density_f32[i];
                 Ht_x = xq_pev_f32[i];
             }
-            if (isnanf(Hm_y) || fabsf(Hm_D - yq_density_f32[i]) < fabsf(Hm_D - Hm_y)) {
+            if (isnan(Hm_y) || fabsf(Hm_D - yq_density_f32[i]) < fabsf(Hm_D - Hm_y)) {
                 Hm_y = yq_density_f32[i];
                 Hm_x = xq_pev_f32[i];
             }
-            if (isnanf(Hs_y) || fabsf(Hs_D - yq_density_f32[i]) < fabsf(Hs_D - Hs_y)) {
+            if (isnan(Hs_y) || fabsf(Hs_D - yq_density_f32[i]) < fabsf(Hs_D - Hs_y)) {
                 Hs_y = yq_density_f32[i];
                 Hs_x = xq_pev_f32[i];
             }
@@ -1150,10 +1150,10 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         float yq_density_min = NAN;
         float yq_density_max = NAN;
         for (uint32_t i = 0; i < num_graph; i++) {
-            if (isnanf(yq_density_min) || yq_density_f32[i] < yq_density_min) {
+            if (isnan(yq_density_min) || yq_density_f32[i] < yq_density_min) {
                 yq_density_min = yq_density_f32[i];
             }
-            if (isnanf(yq_density_max) || yq_density_f32[i] > yq_density_max) {
+            if (isnan(yq_density_max) || yq_density_f32[i] > yq_density_max) {
                 yq_density_max = yq_density_f32[i];
             }
         }

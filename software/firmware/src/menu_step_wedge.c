@@ -394,7 +394,7 @@ uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *
         densitometer_reading_t reading;
         if (densitometer_reading_poll(&reading) == DENSITOMETER_RESULT_OK) {
             if ((reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_TRANSMISSION)
-                && !isnanf(reading.visual) && reading.visual > 0.0F) {
+                && !isnan(reading.visual) && reading.visual > 0.0F) {
                 return lroundf(reading.visual * 100);
             }
         }

@@ -1972,7 +1972,7 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
     u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 1;
     uint8_t char_width = u8g2_GetMaxCharWidth(&u8g2);
 
-    bzero(str, sizeof(str));
+    memset(str, 0, sizeof(str));
 
     u8g2_SetFontPosBaseline(&u8g2);
 

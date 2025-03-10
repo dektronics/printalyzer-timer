@@ -241,10 +241,10 @@ densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *r
         }
     } while (p && *p != '\0');
 
-    if (!isnanf(working_reading.visual)
-        || !isnanf(working_reading.red)
-        || !isnanf(working_reading.green)
-        || !isnanf(working_reading.blue)) {
+    if (!isnan(working_reading.visual)
+        || !isnan(working_reading.red)
+        || !isnan(working_reading.green)
+        || !isnan(working_reading.blue)) {
         memcpy(reading, &working_reading, sizeof(densitometer_reading_t));
         return DENSITOMETER_RESULT_OK;
     } else {

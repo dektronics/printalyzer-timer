@@ -300,7 +300,7 @@ bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_co
 
     if (result == METER_READING_OK) {
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);
-        if (isnanf(state->probe_reading_base) || lux > state->probe_reading_base) {
+        if (isnan(state->probe_reading_base) || lux > state->probe_reading_base) {
             state->probe_reading_base = lux;
         } else {
             state->probe_reading_current = lux;

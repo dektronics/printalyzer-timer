@@ -375,8 +375,7 @@ HAL_StatusTypeDef keypad_clear_events()
 
 HAL_StatusTypeDef keypad_flush_events()
 {
-    keypad_event_t event;
-    bzero(&event, sizeof(keypad_event_t));
+    keypad_event_t event = {0};
     osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueueReset(keypad_event_queue);
     osMessageQueueReset(keypad_encoder_event_queue);
@@ -395,11 +394,11 @@ HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait
     osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     if (queue == keypad_event_queue) {
         if (osMessageQueueGet(keypad_event_queue, event, NULL, 0) != osOK) {
-            bzero(event, sizeof(keypad_event_t));
+            memset(event, 0, sizeof(keypad_event_t));
         }
     } else if (queue == keypad_encoder_event_queue) {
         if (osMessageQueueGet(keypad_encoder_event_queue, event, NULL, 0) != osOK) {
-            bzero(event, sizeof(keypad_event_t));
+            memset(event, 0, sizeof(keypad_event_t));
         }
     } else {
         ret = HAL_TIMEOUT;

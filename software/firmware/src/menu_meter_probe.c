@@ -430,11 +430,11 @@ menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *ha
         if (meas_result != METER_READING_OK) { break; }
 
         /* Validate reading values */
-        if (isnanf(cal_lo_reading) || isinff(cal_lo_reading)) {
+        if (isnan(cal_lo_reading) || isinf(cal_lo_reading)) {
             meas_result = METER_READING_FAIL;
             break;
         }
-        if (isnanf(cal_hi_reading) || isinff(cal_hi_reading)) {
+        if (isnan(cal_hi_reading) || isinf(cal_hi_reading)) {
             meas_result = METER_READING_FAIL;
             break;
         }
