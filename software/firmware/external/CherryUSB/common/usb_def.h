@@ -340,7 +340,7 @@ struct usb_setup_packet {
 
     /** Number of bytes to transfer */
     uint16_t wLength;
-} __attribute__((packed, aligned(sizeof(uint32_t)))); /* (DK) silence alignment warning */
+} __PACKED;
 
 #define USB_SIZEOF_SETUP_PACKET 8
 
@@ -673,7 +673,7 @@ struct usb_desc_header {
     bDeviceProtocol,            /* bDeviceProtocol */                                                      \
     0x40,                       /* bMaxPacketSize */                                                       \
     bNumConfigurations,         /* bNumConfigurations */                                                   \
-    0x00                        /* bReserved */ 
+    0x00                        /* bReserved */
 
 #define USB_OTHER_SPEED_CONFIG_DESCRIPTOR_INIT(wTotalLength, bNumInterfaces, bConfigurationValue, bmAttributes, bMaxPower) \
     0x09,                              /* bLength */                                                       \
