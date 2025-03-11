@@ -77,8 +77,11 @@ static void *blackout_callback_user_data = NULL;
 /* Current blackout state */
 static bool blackout_state = false;
 
-/* Flag to track initialization state */
+/* Flag to track controller initialization state */
 static bool keypad_initialized = false;
+
+/* Flag to track task initialization state */
+static bool keypad_task_started = false;
 
 static HAL_StatusTypeDef keypad_controller_init();
 static void keypad_task_loop();
@@ -89,94 +92,26 @@ static uint8_t keypad_keycode_to_index(keypad_key_t keycode);
 static uint16_t keypad_pins_to_mask(const tca8418_pins_t *pins);
 static bool keypad_keycode_can_repeat(keypad_key_t keycode);
 
-void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
+HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex)
 {
+    HAL_StatusTypeDef ret;
+
     if (!hi2c || !i2c_mutex) {
-        return;
+        return HAL_ERROR;
     }
 
     if (keypad_initialized) {
-        return;
+        return HAL_ERROR;
     }
 
     keypad_i2c = hi2c;
     keypad_i2c_mutex = i2c_mutex;
-}
 
-void task_keypad_run(void *argument)
-{
-    osSemaphoreId_t task_start_semaphore = argument;
-    log_d("keypad_task start");
-
-    if (!keypad_i2c || !keypad_i2c_mutex) {
-        log_e("Keypad hardware config is not set");
-        return;
+    ret = keypad_controller_init();
+    if (ret == HAL_OK) {
+        keypad_initialized = true;
     }
-
-    /* Create the queues for key events */
-    keypad_raw_event_queue = osMessageQueueNew(20, sizeof(keypad_raw_event_t), &keypad_raw_event_queue_attributes);
-    if (!keypad_raw_event_queue) {
-        log_e("Unable to create raw event queue");
-        return;
-    }
-
-    keypad_event_queue = osMessageQueueNew(20, sizeof(keypad_event_t), &keypad_event_queue_attributes);
-    if (!keypad_event_queue) {
-        log_e("Unable to create event queue");
-        return;
-    }
-
-    keypad_encoder_event_queue = osMessageQueueNew(1, sizeof(keypad_event_t), &keypad_encoder_event_queue_attributes);
-    if (!keypad_event_queue) {
-        log_e("Unable to create encoder event queue");
-        return;
-    }
-
-    keypad_event_mutex = osMutexNew(&keypad_event_mutex_attributes);
-    if (!keypad_event_mutex) {
-        log_e("Unable to create event mutex");
-        return;
-    }
-
-    keypad_event_queue_set = xQueueCreateSet(21);
-    if (!keypad_event_queue_set) {
-        log_e("Unable to create event queue set");
-        return;
-    }
-
-    xQueueAddToSet(keypad_event_queue, keypad_event_queue_set);
-    xQueueAddToSet(keypad_encoder_event_queue, keypad_event_queue_set);
-
-    /* Clear the button state */
-    button_state = 0;
-
-    /* Create the timer to handle key repeat events */
-    button_repeat_timer = xTimerCreate(
-        "keypad_repeat", 1, pdFALSE, (void *)0,
-        keypad_button_repeat_timer_callback);
-    if (!button_repeat_timer) {
-        log_e("Unable to create repeat timer");
-        return;
-    }
-    button_repeat_timer_reload = pdFALSE;
-
-    /* Initialize the keypad controller */
-    if (keypad_controller_init() != HAL_OK) {
-        log_e("Unable to initialize the keypad controller");
-        return;
-    }
-
-    /* Set the initialized flag */
-    keypad_initialized = true;
-
-    /* Release the startup semaphore */
-    if (osSemaphoreRelease(task_start_semaphore) != osOK) {
-        log_e("Unable to release task_start_semaphore");
-        return;
-    }
-
-    /* Start the main task loop */
-    keypad_task_loop();
+    return ret;
 }
 
 HAL_StatusTypeDef keypad_controller_init()
@@ -184,18 +119,21 @@ HAL_StatusTypeDef keypad_controller_init()
     HAL_StatusTypeDef ret = HAL_OK;
     tca8418_pins_t pins_initial = {0};
 
+    const tca8418_pins_t pins_zero = { 0x00, 0x00, 0x00 };
+    const tca8418_pins_t pins_int = { 0x0F, 0xFF, 0x03 };
+    const tca8418_pins_t pins_fifo = { 0x07, 0xFF, 0x03 };
+    const tca8418_pins_t pins_level = { 0x0C, 0x00, 0x00 };
+
+    if (keypad_task_started) {
+        return HAL_ERROR;
+    }
+
     log_i("Initializing keypad controller");
 
-    osMutexAcquire(keypad_i2c_mutex, portMAX_DELAY);
     do {
         if ((ret = tca8418_init(keypad_i2c)) != HAL_OK) {
             break;
         }
-
-        const tca8418_pins_t pins_zero = { 0x00, 0x00, 0x00 };
-        const tca8418_pins_t pins_int = { 0x0F, 0xFF, 0x03 };
-        const tca8418_pins_t pins_fifo = { 0x07, 0xFF, 0x03 };
-        const tca8418_pins_t pins_level = { 0x0C, 0x00, 0x00 };
 
         /* Enable pull-ups on all GPIO pins */
         if ((ret = tca8418_gpio_pullup_disable(keypad_i2c, &pins_zero)) != HAL_OK) {
@@ -246,14 +184,7 @@ HAL_StatusTypeDef keypad_controller_init()
         if ((ret = tca8418_gpio_interrupt_enable(keypad_i2c, &pins_int)) != HAL_OK) {
             break;
         }
-
-        /* Set the configuration register to enable GPIO interrupts */
-        if ((ret = tca8148_set_config(keypad_i2c, TCA8418_CFG_KE_IEN)) != HAL_OK) {
-            break;
-        }
-
     } while (0);
-    osMutexRelease(keypad_i2c_mutex);
 
     if (ret != HAL_OK) {
         log_e("Keypad setup error: %d", ret);
@@ -265,6 +196,82 @@ HAL_StatusTypeDef keypad_controller_init()
     log_i("Keypad controller initialized");
 
     return HAL_OK;
+}
+
+void task_keypad_run(void *argument)
+{
+    osSemaphoreId_t task_start_semaphore = argument;
+    log_d("keypad_task start");
+
+    if (!keypad_i2c || !keypad_i2c_mutex || !keypad_initialized) {
+        log_e("Keypad hardware is not initialized");
+        return;
+    }
+
+    /* Create the queues for key events */
+    keypad_raw_event_queue = osMessageQueueNew(20, sizeof(keypad_raw_event_t), &keypad_raw_event_queue_attributes);
+    if (!keypad_raw_event_queue) {
+        log_e("Unable to create raw event queue");
+        return;
+    }
+
+    keypad_event_queue = osMessageQueueNew(20, sizeof(keypad_event_t), &keypad_event_queue_attributes);
+    if (!keypad_event_queue) {
+        log_e("Unable to create event queue");
+        return;
+    }
+
+    keypad_encoder_event_queue = osMessageQueueNew(1, sizeof(keypad_event_t), &keypad_encoder_event_queue_attributes);
+    if (!keypad_event_queue) {
+        log_e("Unable to create encoder event queue");
+        return;
+    }
+
+    keypad_event_mutex = osMutexNew(&keypad_event_mutex_attributes);
+    if (!keypad_event_mutex) {
+        log_e("Unable to create event mutex");
+        return;
+    }
+
+    keypad_event_queue_set = xQueueCreateSet(21);
+    if (!keypad_event_queue_set) {
+        log_e("Unable to create event queue set");
+        return;
+    }
+
+    xQueueAddToSet(keypad_event_queue, keypad_event_queue_set);
+    xQueueAddToSet(keypad_encoder_event_queue, keypad_event_queue_set);
+
+    /* Create the timer to handle key repeat events */
+    button_repeat_timer = xTimerCreate(
+        "keypad_repeat", 1, pdFALSE, (void *)0,
+        keypad_button_repeat_timer_callback);
+    if (!button_repeat_timer) {
+        log_e("Unable to create repeat timer");
+        return;
+    }
+    button_repeat_timer_reload = pdFALSE;
+
+    /* Set the configuration register to enable GPIO interrupts */
+    if (tca8148_set_config(keypad_i2c, TCA8418_CFG_KE_IEN) != HAL_OK) {
+        log_e("Unable to enable keypad interrupts");
+        return;
+    }
+
+    /* Set the initialized flag */
+    keypad_task_started = true;
+
+    /* Release the startup semaphore */
+    if (osSemaphoreRelease(task_start_semaphore) != osOK) {
+        log_e("Unable to release task_start_semaphore");
+        return;
+    }
+
+    /* Process any pending key events */
+    keypad_int_event_handler();
+
+    /* Start the main task loop */
+    keypad_task_loop();
 }
 
 void keypad_task_loop()
@@ -290,6 +297,12 @@ void keypad_task_loop()
     }
 }
 
+bool keypad_is_blackout_enabled()
+{
+    const int index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
+    return (button_state & (1 << index)) != 0;
+}
+
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data)
 {
     blackout_callback = callback;
@@ -303,6 +316,8 @@ void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *use
 
 HAL_StatusTypeDef keypad_inject_raw_event(keypad_key_t keycode, bool pressed, TickType_t ticks)
 {
+    if (!keypad_task_started) { return HAL_ERROR; }
+
     keypad_raw_event_t raw_event = {
         .keycode = keycode,
         .pressed = pressed,
@@ -315,6 +330,8 @@ HAL_StatusTypeDef keypad_inject_raw_event(keypad_key_t keycode, bool pressed, Ti
 
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
 {
+    if (!keypad_task_started) { return HAL_ERROR; }
+
     if (!event) {
         return HAL_ERROR;
     }
@@ -366,6 +383,7 @@ HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event)
 
 HAL_StatusTypeDef keypad_clear_events()
 {
+    if (!keypad_task_started) { return HAL_ERROR; }
     osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueueReset(keypad_event_queue);
     osMessageQueueReset(keypad_encoder_event_queue);
@@ -375,6 +393,7 @@ HAL_StatusTypeDef keypad_clear_events()
 
 HAL_StatusTypeDef keypad_flush_events()
 {
+    if (!keypad_task_started) { return HAL_ERROR; }
     keypad_event_t event = {0};
     osMutexAcquire(keypad_event_mutex, portMAX_DELAY);
     osMessageQueueReset(keypad_event_queue);
@@ -386,6 +405,7 @@ HAL_StatusTypeDef keypad_flush_events()
 
 HAL_StatusTypeDef keypad_wait_for_event(keypad_event_t *event, int msecs_to_wait)
 {
+    if (!keypad_task_started) { return HAL_ERROR; }
     HAL_StatusTypeDef ret = HAL_OK;
     TickType_t ticks = msecs_to_wait < 0 ? portMAX_DELAY : (msecs_to_wait / portTICK_RATE_MS);
 
@@ -412,7 +432,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
     HAL_StatusTypeDef ret = HAL_OK;
     TickType_t ticks = xTaskGetTickCount();
 
-    if (!keypad_initialized) {
+    if (!keypad_task_started) {
         return ret;
     }
 

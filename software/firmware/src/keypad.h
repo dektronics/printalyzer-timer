@@ -46,11 +46,11 @@ typedef struct {
 typedef void (*keypad_blackout_callback_t)(bool enabled, void *user_data);
 
 /**
- * Initialize keypad hardware configuration.
+ * Initialize keypad hardware and read the initial key state.
  *
  * This must be called prior to starting the keypad task.
  */
-void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
+HAL_StatusTypeDef keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 
 /**
  * Start the keypad task.
@@ -60,22 +60,17 @@ void keypad_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 void task_keypad_run(void *argument);
 
 /**
+ * Get the current state of the blackout switch.
+ *
+ * This function is intended for use during startup, as it does not require
+ * the keypad task to be running.
+ */
+bool keypad_is_blackout_enabled();
+
+/**
  * Set the function to be called when the blackout switch is toggled.
  */
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data);
-
-/**
- * Enable handling of meter probe button events
- *
- * Due to how the meter probe interface is implemented, it should only
- * be enabled when the meter probe power is turned on.
- */
-void keypad_enable_meter_probe();
-
-/**
- * Disable handling of meter probe button events.
- */
-void keypad_disable_meter_probe();
 
 HAL_StatusTypeDef keypad_inject_raw_event(keypad_key_t keycode, bool pressed, TickType_t ticks);
 HAL_StatusTypeDef keypad_inject_event(const keypad_event_t *event);

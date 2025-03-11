@@ -179,6 +179,9 @@ void main_task_run(void *argument)
     /* Initialize the system settings */
     settings_init(&hi2c1, i2c1_mutex);
 
+    /* Initialize the keypad controller */
+    main_task_keypad_init();
+
     /* Initialize the illumination controller */
     illum_controller_init();
 
@@ -201,9 +204,6 @@ void main_task_run(void *argument)
 
     /* Countdown timer init */
     main_task_exposure_timer_init();
-
-    /* Keypad hardware configuration */
-    main_task_keypad_init();
 
     /*
      * Hardware that does depend on dedicated management tasks
@@ -378,7 +378,9 @@ void main_task_keypad_init()
     HAL_GPIO_WritePin(KEY_RESET_GPIO_Port, KEY_RESET_Pin, GPIO_PIN_SET);
     osDelay(1);
 
-    keypad_init(&hi2c1, i2c1_mutex);
+    if (keypad_init(&hi2c1, i2c1_mutex) != HAL_OK) {
+        log_e("Unable to initialize the keypad controller");
+    }
 }
 
 void main_task_enable_interrupts()

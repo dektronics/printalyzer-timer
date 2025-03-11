@@ -7,6 +7,7 @@
 #define LOG_TAG "illum_controller"
 #include <elog.h>
 
+#include "keypad.h"
 #include "relay.h"
 #include "display.h"
 #include "led.h"
@@ -34,6 +35,8 @@ void illum_controller_init()
         log_e("osMutexNew error");
         return;
     }
+
+    illum_blackout = keypad_is_blackout_enabled();
 }
 
 void illum_controller_refresh()
