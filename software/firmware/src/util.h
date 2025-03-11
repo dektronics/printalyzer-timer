@@ -129,7 +129,7 @@ bool is_valid_number(float num);
 /**
  * Convert two adjacent 8-bit elements in an array into a 16-bit unsigned integer
  * @param src Pointer to the source array
- * @param val Output value
+ * @return Output value
  */
 uint16_t conv_array_u16(const uint8_t *src);
 
@@ -153,7 +153,7 @@ osStatus_t usb_to_os_status(int usb_status);
  * Scrub a user-provided file name to ensure it meets requirements.
  *
  * @param filename The filename to scrub
- * @param file extension (e.g. ".dat")
+ * @param ext file extension (e.g. ".dat")
  * @return True if the filename was modified
  */
 bool scrub_export_filename(char *filename, const char *ext);

@@ -11,7 +11,6 @@
 #include "display.h"
 #include "enlarger_config.h"
 #include "exposure_state.h"
-#include "paper_profile.h"
 
 static void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time);
 
@@ -82,7 +81,7 @@ void convert_density_to_display_densitometer(display_main_densitometer_elements_
         float whole;
         float fractional;
         fractional = modff(density, &whole);
-        elements->density_whole = whole;
+        elements->density_whole = (uint16_t)whole;
         elements->density_fractional = round_to_10(lroundf(fractional * 1000.0f));
         elements->fraction_digits = 2;
     }
@@ -106,7 +105,7 @@ void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements,
     float seconds;
     float fractional;
     fractional = modff(exposure_time, &seconds);
-    elements->time_seconds = seconds;
+    elements->time_seconds = (uint16_t)seconds;
     elements->time_milliseconds = round_to_10(lroundf(fractional * 1000.0f));
 
     if (exposure_time < 10) {
