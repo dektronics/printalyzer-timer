@@ -561,6 +561,23 @@ struct controller controller_list[] =
     }
   },
 
+  {
+    "ssd1309", 	16, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "128x128_noname0" },
+      { NULL }
+    }
+  },
+  {
+    "ssd1309", 	16, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_i2c", "i2c", COM_I2C,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "128x128_noname0" },
+      { NULL }
+    }
+  },
+  
   
     {
     "ssd1312", 	16, 	4, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080|COM_8080,
@@ -1704,6 +1721,7 @@ struct controller controller_list[] =
     "", /* is_generate_u8g2_class= */ 1,
     {
       { "128x96" },
+      { "g12896" },
       { NULL }
     }
   },
@@ -1712,6 +1730,7 @@ struct controller controller_list[] =
     "", /* is_generate_u8g2_class= */ 1,
     {
       { "128x96" },
+      { "g12896" },
       { NULL }
     }
   },
@@ -2169,6 +2188,14 @@ struct controller controller_list[] =
     }
   },
   {
+    "ssd1320", 	16, 	9, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
+    "", /* is_generate_u8g2_class= */ 1,
+    {
+      { "128x72" },
+      { NULL }
+    }
+  },
+  {
     "ssd1320", 	20, 	17, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_001", "", COM_4WSPI|COM_3WSPI|COM_6800|COM_8080,
     "", /* is_generate_u8g2_class= */ 1,
     {
@@ -2266,8 +2293,8 @@ struct controller controller_list[] =
       { NULL }
     }
   },
-  {
-    "ssd1363", 	32, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_ssd13xx_fast_i2c", "i2c", COM_I2C,                 // not tested
+  {     
+    "ssd1363", 	32, 	16, 	"u8g2_ll_hvline_vertical_top_lsb", "u8x8_cad_011_ssd13xx_i2c", "i2c", COM_I2C,                 // not tested
     "", /* is_generate_u8g2_class= */ 1,
     {
       { "256x128" },
@@ -2309,6 +2336,14 @@ struct controller controller_list[] =
     "Not tested, might work for RA8835 and SED1335 also", /* is_generate_u8g2_class= */ 1,
     {
       { "240x128" },
+      { NULL }
+    }
+  },
+  {
+    "sed1330", 	30, 	8, 	"u8g2_ll_hvline_horizontal_right_lsb", "u8x8_cad_100", "", COM_6800|COM_8080,
+    "Not tested, might work for RA8835 and SED1335 also", /* is_generate_u8g2_class= */ 1,
+    {
+      { "240x64" },
       { NULL }
     }
   },
