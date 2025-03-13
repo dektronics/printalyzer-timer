@@ -59,6 +59,12 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
         return;
     }
 
+    ret = usbh_msc_scsi_init(msc_class);
+    if (ret < 0) {
+        log_e("usbh_msc_scsi_init error: %d", ret);
+        return;
+    }
+
     usbh_msc_fatfs_handle_t *handle = &msc_handles[devno];
 
     if (handle->msc_class) {
