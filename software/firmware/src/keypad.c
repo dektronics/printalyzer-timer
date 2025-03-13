@@ -299,8 +299,8 @@ void keypad_task_loop()
 
 bool keypad_is_blackout_enabled()
 {
-    const int index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
-    return (button_state & (1 << index)) != 0;
+    const uint8_t index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
+    return (button_state & (1U << index)) != 0;
 }
 
 void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *user_data)
@@ -308,8 +308,8 @@ void keypad_set_blackout_callback(keypad_blackout_callback_t callback, void *use
     blackout_callback = callback;
     blackout_callback_user_data = user_data;
     if (callback) {
-        const int index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
-        blackout_state = (button_state & (1 << index)) != 0;
+        const uint8_t index = keypad_keycode_to_index(KEYPAD_BLACKOUT);
+        blackout_state = (button_state & (1U << index)) != 0;
         callback(blackout_state, user_data);
     }
 }
@@ -465,7 +465,6 @@ HAL_StatusTypeDef keypad_int_event_handler()
         log_d("Key event count: %d", count);
 
         bool key_error = false;
-        bool cb_error = false;
         do {
             uint8_t keycode;
             bool pressed;
@@ -492,7 +491,7 @@ HAL_StatusTypeDef keypad_int_event_handler()
             };
             osMessageQueuePut(keypad_raw_event_queue, &raw_event, 0, 0);
 
-        } while (!key_error && !cb_error);
+        } while (!key_error);
 
         if (key_error) {
             break;
@@ -523,9 +522,9 @@ HAL_StatusTypeDef keypad_int_event_handler()
 void keypad_handle_key_event(uint8_t keycode, bool pressed, TickType_t ticks)
 {
     /* Update the button state information */
-    uint8_t index = keypad_keycode_to_index(keycode);
+    const uint8_t index = keypad_keycode_to_index(keycode);
     if (index < KEYPAD_INDEX_MAX) {
-        uint16_t mask = 1 << index;
+        uint16_t mask = 1U << index;
         if (pressed) {
             button_state |= mask;
         } else {
@@ -575,8 +574,8 @@ void keypad_handle_key_repeat(uint8_t keycode, TickType_t ticks)
      * Make sure the repeated key is still pressed, and shortcut out if
      * it is not.
      */
-    int index = keypad_keycode_to_index(keycode);
-    if (index < KEYPAD_INDEX_MAX && !(button_state & (1 << index))) {
+    const uint8_t index = keypad_keycode_to_index(keycode);
+    if (index < KEYPAD_INDEX_MAX && !(button_state & (1U << index))) {
         xTimerStop(button_repeat_timer, portMAX_DELAY);
         return;
     }
@@ -623,8 +622,8 @@ bool keypad_is_key_pressed(const keypad_event_t *event, keypad_key_t key)
 {
     if (!event) { return false; }
 
-    int index = keypad_keycode_to_index(key);
-    if (index < KEYPAD_INDEX_MAX && event && event->keypad_state & (1 << index)) {
+    const uint8_t index = keypad_keycode_to_index(key);
+    if (index < KEYPAD_INDEX_MAX && event->keypad_state & (1U << index)) {
         return true;
     } else {
         return false;

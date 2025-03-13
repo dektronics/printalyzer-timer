@@ -341,7 +341,7 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
                 event.info.keys[i] = handle->hid_in_buffer[offset + i + 2];
             }
 
-            osMessageQueuePut (usb_hid_keyboard_queue, &event, 0, 0);
+            osMessageQueuePut(usb_hid_keyboard_queue, &event, 0, 0);
 
         } else {
             log_w("Unexpected byte count: %d", nbytes);
@@ -450,12 +450,12 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
     } else {
         uint8_t key = keyboard_ascii_code(report_state, info->state, info->keys[0]);
         if (key >= 32 && key <= 126) {
-            log_d("Keyboard: key='%c', code={%02X,%02X,%02X,%02X,%02X,%02X}",
-                key, info->keys[0], info->keys[1], info->keys[2],
+            log_d("Keyboard: key='%c', mod=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, info->state, info->keys[0], info->keys[1], info->keys[2],
                 info->keys[3], info->keys[4], info->keys[5]);
         } else {
-            log_d("Keyboard: key=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
-                key, info->keys[0], info->keys[1], info->keys[2],
+            log_d("Keyboard: key=0x%02X, mod=0x%02X, code={%02X,%02X,%02X,%02X,%02X,%02X}",
+                key, info->state, info->keys[0], info->keys[1], info->keys[2],
                 info->keys[3], info->keys[4], info->keys[5]);
         }
     }
