@@ -5,6 +5,7 @@
 #include "usbh_core.h"
 #include "usbh_hid.h"
 #include "keypad.h"
+#include "display.h"
 
 #define LOG_TAG "usb_kbd"
 #include <elog.h>
@@ -469,6 +470,13 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
         } else {
             log_w("usbh_hid_set_report error: %d", ret);
         }
+    }
+
+    /* Check for Ctrl-PrintScreen */
+    if ((info->state & (HID_MODIFER_LCTRL | HID_MODIFER_RCTRL)) != 0
+        && info->keys[0] == HID_KBD_USAGE_PRINTSCN) {
+        log_d("Triggering display screenshot");
+        display_save_screenshot();
     }
 
     /* Inject the pressed keys */

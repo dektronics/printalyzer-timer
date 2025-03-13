@@ -36,20 +36,6 @@ void illum_controller_safelight_state(illum_safelight_t mode);
 
 bool illum_controller_is_blackout();
 
-/**
- * Enable or disable screenshot mode.
- *
- * In screenshot mode, the blackout switch will trigger display screenshots
- * instead of turning off device illumination. It is being placed here
- * because this module is otherwise responsible for all blackout behaviors.
- */
-void illum_controller_set_screenshot_mode(bool enabled);
-
-/**
- * Get whether screenshot mode is enabled.
- */
-bool illum_controller_get_screenshot_mode();
-
 void illum_controller_keypad_blackout_callback(bool enabled, void *user_data);
 
 #endif /* ILLUM_CONTROLLER_H */
