@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <errno.h>
-#include <ctype.h>
-#include <ff.h>
 
 #define LOG_TAG "menu_meter_probe"
 #include <elog.h>
@@ -19,13 +16,7 @@
 #include "illum_controller.h"
 #include "enlarger_control.h"
 #include "util.h"
-#include "json_util.h"
-#include "usb_host.h"
-#include "core_json.h"
-#include "file_picker.h"
 
-#define HEADER_EXPORT_VERSION     1
-#define MAX_CALIBRATION_FILE_SIZE 16384
 #define DENSITY_BUF_SIZE 5
 
 static menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle);
@@ -35,21 +26,6 @@ static menu_result_t densistick_reflection_calibration(meter_probe_handle_t *han
 static menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target);
 static menu_result_t densistick_show_calibration(meter_probe_handle_t *handle);
 void format_density_value(char *buf, float value);
-
-static menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle);
-static bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings);
-static bool validate_section_header(const char *buf, size_t len, const meter_probe_device_info_t *info);
-static bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings);
-static bool parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_gain_t *cal_gain);
-static bool parse_section_sensor_cal_slope(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_slope_t *cal_slope);
-static bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_target_t *cal_target);
-
-//static void parse_section_sensor_cal_gain_entry(const char *buf, size_t len, meter_probe_settings_tsl2585_gain_cal_t *gain_cal);
-
-static menu_result_t meter_probe_sensor_calibration_export(meter_probe_handle_t *handle);
-static bool export_calibration_file(const char *filename, const meter_probe_device_info_t *info, const meter_probe_settings_t *settings);
-static bool write_section_header(FIL *fp, const meter_probe_device_info_t *info);
-static bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings);
 
 static menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *handle, bool fast_mode);
 static menu_result_t densistick_test_reading(meter_probe_handle_t *handle);
@@ -188,60 +164,39 @@ menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle)
     }
 
     do {
-        size_t option_offset = 0;
         size_t offset = 0;
 
         for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
                 tsl2585_gain_str(gain), "%f",
                 settings.settings_tsl2585.cal_gain.values[gain]);
-            option_offset++;
         }
 
         offset += menu_build_padded_format_row(buf + offset,
             "B0", "%f",
             settings.settings_tsl2585.cal_slope.b0);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "B1", "%f",
             settings.settings_tsl2585.cal_slope.b1);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "B2", "%f",
             settings.settings_tsl2585.cal_slope.b2);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "Lux slope", "%f",
             settings.settings_tsl2585.cal_target.lux_slope);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "Lux intercept", "%f",
             settings.settings_tsl2585.cal_target.lux_intercept);
-        option_offset++;
 
-        offset += sprintf(buf + offset, "*** Import from USB device ***\n");
-        offset += sprintf(buf + offset, "*** Export to USB device ***");
+        buf[offset - 1] = '\0';
 
         option = display_selection_list("Sensor Calibration Data", option, buf);
 
-        if (option == option_offset + 1) {
-            menu_result = meter_probe_sensor_calibration_import(handle);
-            if (menu_result == MENU_SAVE) {
-                meter_probe_stop(handle);
-                if (meter_probe_start(handle) != osOK) {
-                    menu_result = MENU_TIMEOUT;
-                } else {
-                    menu_result = MENU_OK;
-                    break;
-                }
-            }
-        } else if (option == option_offset + 2) {
-            menu_result = meter_probe_sensor_calibration_export(handle);
-        } else if (option == UINT8_MAX) {
+        if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
@@ -298,7 +253,7 @@ menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle)
                 "D=", &working_value,
                 0, 250, '.', NULL);
             if (input_option == 1) {
-                cal_target->lo_density = working_value / 100.0F;
+                cal_target->lo_density = (float)working_value / 100.0F;
             } else if (input_option == UINT8_MAX) {
                 option = UINT8_MAX;
             }
@@ -316,7 +271,7 @@ menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle)
                 "D=", &working_value,
                 0, 250, '.', NULL);
             if (input_option == 1) {
-                cal_target->hi_density = working_value / 100.0F;
+                cal_target->hi_density = (float)working_value / 100.0F;
             } else if (input_option == UINT8_MAX) {
                 option = UINT8_MAX;
             }
@@ -452,7 +407,7 @@ menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *ha
         float d_delta_expected = cal_target->hi_density - cal_target->lo_density;
         float d_delta_actual = -1.0F * log10f(cal_hi_reading / cal_lo_reading);
         log_d("LO-vs-HI d-diff expected=%f, actual=%f", d_delta_expected, d_delta_actual);
-        if (fabs(d_delta_expected - d_delta_actual) > 1.0F) {
+        if (fabsf(d_delta_expected - d_delta_actual) > 1.0F) {
             log_d("Reading out of bounds");
             meas_result = METER_READING_FAIL;
             break;
@@ -514,14 +469,12 @@ menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
     }
 
     do {
-        size_t option_offset = 0;
         size_t offset = 0;
 
         for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
                 tsl2585_gain_str(gain), "%f",
                 settings.settings_tsl2585.cal_gain.values[gain]);
-            option_offset++;
         }
 
 #if 0
@@ -529,616 +482,42 @@ menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
         offset += menu_build_padded_format_row(buf + offset,
             "B0", "%f",
             settings.settings_tsl2585.cal_slope.b0);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "B1", "%f",
             settings.settings_tsl2585.cal_slope.b1);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "B2", "%f",
             settings.settings_tsl2585.cal_slope.b2);
-        option_offset++;
 #endif
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-LO Density", "%.2f",
             settings.settings_tsl2585.cal_target.lo_density);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-LO Reading", "%f",
             settings.settings_tsl2585.cal_target.lo_reading);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-HI Density", "%.2f",
             settings.settings_tsl2585.cal_target.hi_density);
-        option_offset++;
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-HI Reading", "%f",
             settings.settings_tsl2585.cal_target.hi_reading);
-        option_offset++;
 
         buf[offset - 1] = '\0';
-#if 0
-        offset += sprintf(buf + offset, "*** Import from USB device ***\n");
-        offset += sprintf(buf + offset, "*** Export to USB device ***");
-#endif
 
         option = display_selection_list("Sensor Calibration", option, buf);
 
-#if 0
-        if (option == option_offset + 1) {
-            menu_result = meter_probe_sensor_calibration_import(handle);
-            if (menu_result == MENU_SAVE) {
-                meter_probe_stop(handle);
-                if (meter_probe_start(handle) != osOK) {
-                    menu_result = MENU_TIMEOUT;
-                } else {
-                    menu_result = MENU_OK;
-                    break;
-                }
-            }
-        } else if (option == option_offset + 2) {
-            menu_result = meter_probe_sensor_calibration_export(handle);
-        } else
-#endif
         if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
     return menu_result;
-}
-
-menu_result_t meter_probe_sensor_calibration_import(meter_probe_handle_t *handle)
-{
-    char buf[256];
-    char path_buf[256];
-    uint8_t option;
-    meter_probe_settings_t imported_settings = {0};
-
-    if (!usb_msc_is_mounted()) {
-        option = display_message(
-                "Import from USB device",
-                NULL,
-                "\n"
-                "Please insert a USB storage\n"
-                "device and try again.\n", " OK ");
-        if (option == UINT8_MAX) {
-            return MENU_TIMEOUT;
-        } else {
-            return MENU_OK;
-        }
-    }
-
-    meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(handle, &info) != osOK) {
-        return MENU_OK;
-    }
-
-    imported_settings.type = info.probe_id.probe_type;
-
-    option = file_picker_show("Select Calibration File", path_buf, sizeof(path_buf), NULL);
-    if (option == MENU_TIMEOUT) {
-        return MENU_TIMEOUT;
-    } else if (option != MENU_OK) {
-        return MENU_OK;
-    }
-
-    if (import_calibration_file(path_buf, &info, &imported_settings)) {
-        char filename[33];
-        if (file_picker_expand_filename(filename, 33, path_buf)) {
-            filename[32] = '\0';
-        } else {
-            sprintf(filename, "----");
-        }
-        sprintf(buf,
-            "\n"
-            "Calibration loaded from file:\n"
-            "%s\n", filename);
-        option = display_message(
-            "Import from USB device",
-            NULL, buf, " Close \n Save ");
-
-        if (option == 2) {
-            option = display_message(
-                "Overwrite meter probe\n"
-                "calibration with values from\n"
-                "loaded file?\n", NULL, NULL,
-                " NO \n YES ");
-            if (option == 2) {
-                if (meter_probe_set_settings(handle, &imported_settings) == osOK) {
-                    option = display_message(
-                        "Meter probe calibration saved\n",
-                        NULL, NULL, " Close ");
-                    if (option != UINT8_MAX) {
-                        return MENU_SAVE;
-                    }
-                } else {
-                    option = display_message(
-                        "Unable to save meter probe\n"
-                        "calibration\n",
-                        NULL, NULL, " Close ");
-                }
-            }
-        }
-    } else {
-        option = display_message(
-            "Import from USB device",
-            NULL,
-            "\n"
-            "Calibration was not loaded\n", " OK ");
-    }
-
-    if (option == UINT8_MAX) {
-        return MENU_TIMEOUT;
-    } else {
-        return MENU_OK;
-    }
-}
-
-bool import_calibration_file(const char *filename, const meter_probe_device_info_t *info, meter_probe_settings_t *settings)
-{
-    FRESULT res;
-    FIL fp;
-    bool file_open = false;
-    bool success = false;
-    char *file_buf = NULL;
-    UINT bytes_read = 0;
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-    bool has_valid_header = false;
-    bool has_sensor_cal = false;
-    bool has_valid_sensor_cal = false;
-
-    do {
-        memset(&fp, 0, sizeof(FIL));
-
-        res = f_open(&fp, filename, FA_READ | FA_OPEN_EXISTING);
-        if (res != FR_OK) {
-            log_e("Error opening cal file: %d", res);
-            break;
-        }
-        file_open = true;
-
-        if (f_size(&fp) > MAX_CALIBRATION_FILE_SIZE) {
-            log_e("File is too large: %lu > %d", f_size(&fp), MAX_CALIBRATION_FILE_SIZE);
-            break;
-        }
-
-        log_i("Cal file opened: %s", filename);
-
-        /* Allocate buffer for file */
-        file_buf = pvPortMalloc(f_size(&fp));
-        if (!file_buf) {
-            log_e("Unable to allocate buffer for file: %lu", f_size(&fp));
-            break;
-        }
-
-        /* Read file into buffer */
-        if (f_read(&fp, file_buf, f_size(&fp), &bytes_read) != FR_OK) {
-            log_e("Error reading file");
-            break;
-        }
-        if (bytes_read != f_size(&fp)) {
-            log_e("Short read: %d != %lu", bytes_read, f_size(&fp));
-            break;
-        }
-
-        /* Close file */
-        f_close(&fp);
-        file_open = false;
-
-        log_i("Cal file loaded into buffer");
-
-        /* Validate the JSON */
-        if (JSON_Validate(file_buf, bytes_read) != JSONSuccess) {
-            log_w("JSON invalid");
-            break;
-        }
-
-        log_i("Config file validated as JSON");
-
-        /* Traverse the top level to see what sections are in the file */
-        start = 0;
-        next = 0;
-        status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        while (status == JSONSuccess) {
-            if (pair.key) {
-                if (strncmp("header", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                    has_valid_header = validate_section_header(pair.value, pair.valueLength, info);
-                    if (!has_valid_header) {
-                        break;
-                    }
-                } else if (strncmp("sensor_cal", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                    has_sensor_cal = json_count_elements(pair.value, pair.valueLength) > 0;
-                }
-            }
-
-            status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        }
-
-        if (!has_valid_header) {
-            log_w("File does not contain valid header");
-            break;
-        }
-        log_i("Found valid header");
-        log_i("Found sections: sensor_cal = %d", has_sensor_cal);
-
-        if (!has_sensor_cal) { break; }
-
-        /* Traverse the top level and import */
-        start = 0;
-        next = 0;
-        status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        while (status == JSONSuccess) {
-            if (!pair.key) { continue; }
-
-            if (strncmp("sensor_cal", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                has_valid_sensor_cal = import_section_sensor_cal(pair.value, pair.valueLength, settings);
-            }
-            status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        }
-
-        success = true;
-    } while (0);
-
-    if (file_open) {
-        f_close(&fp);
-    }
-    if (file_buf) {
-        vPortFree(file_buf);
-    }
-
-    return success && has_valid_sensor_cal;
-}
-
-bool validate_section_header(const char *buf, size_t len, const meter_probe_device_info_t *info)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-    int version = -1;
-    int revision = -1;
-    bool has_device = false;
-    bool has_type_match = false;
-
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess) {
-        if (!pair.key) { continue; }
-
-        if (strncmp("version", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-            version = json_parse_int(pair.value, pair.valueLength, 0);
-        } else if (strncmp("device", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
-            has_device = (strncasecmp(pair.value, "Printalyzer Meter Probe", pair.valueLength) == 0);
-        } else if (strncmp("type", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
-            if (info->probe_id.probe_type == METER_PROBE_SENSOR_TSL2585) {
-                has_type_match = (strncmp(pair.value, "TSL2585", pair.valueLength) == 0);
-            } else if (info->probe_id.probe_type == METER_PROBE_SENSOR_TSL2521) {
-                has_type_match = (strncmp(pair.value, "TSL2521", pair.valueLength) == 0);
-            }
-        } else if (strncmp("revision", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-            revision = json_parse_int(pair.value, pair.valueLength, 0);
-        }
-
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    if (version != HEADER_EXPORT_VERSION) {
-        log_w("Export version mismatch");
-        return false;
-    }
-
-    if (!has_device) {
-        log_w("Device name mismatch");
-        return false;
-    }
-
-    if (!has_type_match) {
-        log_w("Device type mismatch");
-        return false;
-    }
-
-    if (revision != info->probe_id.probe_rev_major) {
-        log_w("Device revision mismatch");
-        return false;
-    }
-
-    return true;
-}
-
-bool import_section_sensor_cal(const char *buf, size_t len, meter_probe_settings_t *settings)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-    bool has_gain = false;
-    bool has_slope = false;
-    bool has_target = false;
-
-    /*
-     * Iterate across the section, and import keys as they're found.
-     * This code only does the most basic of validation, relying on the
-     * settings API to implement stricter validation before actually saving
-     * the values.
-     */
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess) {
-        if (pair.key) {
-            if (strncmp("gain", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                has_gain = parse_section_sensor_cal_gain(pair.value, pair.valueLength,
-                    &settings->settings_tsl2585.cal_gain);
-            } else if (strncmp("slope", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                has_slope = parse_section_sensor_cal_slope(pair.value, pair.valueLength,
-                    &settings->settings_tsl2585.cal_slope);
-            } else if (strncmp("target", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                has_target = parse_section_sensor_cal_target(pair.value, pair.valueLength,
-                    &settings->settings_tsl2585.cal_target);
-            }
-        }
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    return has_gain && has_slope && has_target;
-}
-
-bool parse_section_sensor_cal_gain(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_gain_t *cal_gain)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-    tsl2585_gain_t gain = TSL2585_GAIN_0_5X;
-
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess && gain <= TSL2585_GAIN_256X) {
-        if (!pair.key && pair.jsonType == JSONNumber) {
-            cal_gain->values[gain] = json_parse_float(pair.value, pair.valueLength, NAN);
-            gain++;
-        }
-
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    /* Validate the loaded gain */
-    if (gain < TSL2585_GAIN_256X) {
-        return false;
-    }
-
-    for (gain = TSL2585_GAIN_1X; gain <= TSL2585_GAIN_256X; gain++) {
-        if (cal_gain->values[gain] <= cal_gain->values[gain - 1]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-bool parse_section_sensor_cal_slope(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_slope_t *cal_slope)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-
-    cal_slope->b0 = NAN;
-    cal_slope->b1 = NAN;
-    cal_slope->b2 = NAN;
-
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess) {
-        if (pair.key) {
-            if (strncmp("b0", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                cal_slope->b0 =json_parse_float(pair.value, pair.valueLength, NAN);
-            } else if (strncmp("b1", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                cal_slope->b1 =json_parse_float(pair.value, pair.valueLength, NAN);
-            } else if (strncmp("b2", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                cal_slope->b2 =json_parse_float(pair.value, pair.valueLength, NAN);
-            }
-        }
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    if (is_valid_number(cal_slope->b0)
-        && is_valid_number(cal_slope->b1)
-        && is_valid_number(cal_slope->b2)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool parse_section_sensor_cal_target(const char *buf, size_t len, meter_probe_settings_tsl2585_cal_target_t *cal_target)
-{
-    JSONStatus_t status;
-    size_t start = 0;
-    size_t next = 0;
-    JSONPair_t pair = {0};
-
-    cal_target->lux_slope = NAN;
-    cal_target->lux_intercept = NAN;
-
-    status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess) {
-        if (pair.key) {
-            if (strncmp("lux_slope", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                cal_target->lux_slope =json_parse_float(pair.value, pair.valueLength, NAN);
-            } else if (strncmp("lux_intercept", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                cal_target->lux_intercept =json_parse_float(pair.value, pair.valueLength, NAN);
-            }
-        }
-        status = JSON_Iterate(buf, len, &start, &next, &pair);
-    }
-
-    if (is_valid_number(cal_target->lux_slope)
-        && is_valid_number(cal_target->lux_intercept)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-menu_result_t meter_probe_sensor_calibration_export(meter_probe_handle_t *handle)
-{
-    char buf[256];
-    char filename[64];
-    uint8_t option;
-
-    if (!usb_msc_is_mounted()) {
-        option = display_message(
-                "Export to USB device",
-                NULL,
-                "\n"
-                "Please insert a USB storage\n"
-                "device and try again.\n", " OK ");
-        if (option == UINT8_MAX) {
-            return MENU_TIMEOUT;
-        } else {
-            return MENU_OK;
-        }
-    }
-
-    meter_probe_device_info_t info;
-    if (meter_probe_get_device_info(handle, &info) != osOK) {
-        return MENU_OK;
-    }
-
-    if ((info.probe_id.probe_type != METER_PROBE_SENSOR_TSL2585 && info.probe_id.probe_type != METER_PROBE_SENSOR_TSL2521)
-        || !meter_probe_has_settings(handle)) {
-        return MENU_OK;
-    }
-
-    meter_probe_settings_t settings;
-    if (meter_probe_get_settings(handle, &settings) != osOK) {
-        return MENU_OK;
-    }
-
-    if (settings.type != info.probe_id.probe_type) {
-        return MENU_OK;
-    }
-
-    sprintf(filename, "mp-cal-%s.dat", info.probe_id.probe_serial);
-    do {
-        if (display_input_text("Calibration File Name", filename, sizeof(filename)) == 0) {
-            return MENU_OK;
-        }
-    } while (scrub_export_filename(filename, ".dat"));
-
-    if (export_calibration_file(filename, &info, &settings)) {
-        sprintf(buf,
-            "\n"
-            "Calibration saved to file:\n"
-            "%s\n", filename);
-        option = display_message(
-            "Export to USB device",
-            NULL, buf, " OK ");
-    } else {
-        option = display_message(
-            "Export to USB device",
-            NULL,
-            "\n"
-            "Unable to save calibration!\n", " OK ");
-    }
-
-    if (option == UINT8_MAX) {
-        return MENU_TIMEOUT;
-    } else {
-        return MENU_OK;
-    }
-}
-
-bool export_calibration_file(const char *filename, const meter_probe_device_info_t *info, const meter_probe_settings_t *settings)
-{
-    FRESULT res;
-    FIL fp;
-    bool file_open = false;
-    bool success = false;
-
-    do {
-        memset(&fp, 0, sizeof(FIL));
-
-        res = f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
-        if (res != FR_OK) {
-            log_e("Error opening cal file: %d", res);
-            break;
-        }
-        file_open = true;
-
-        f_printf(&fp, "{\n");
-        write_section_header(&fp, info);
-        f_printf(&fp, ",\n");
-        write_section_sensor_cal(&fp, settings);
-        f_printf(&fp, "\n");
-        f_printf(&fp, "}\n");
-
-        log_d("Cal written to file: %s", filename);
-        success = true;
-    } while (0);
-
-    if (file_open) {
-        f_close(&fp);
-    }
-
-    return success;
-}
-
-bool write_section_header(FIL *fp, const meter_probe_device_info_t *info)
-{
-    f_printf(fp, "  \"header\": {\n");
-    json_write_int(fp, 4, "version", HEADER_EXPORT_VERSION, true);
-    json_write_string(fp, 4, "device", "Printalyzer Meter Probe", true);
-    json_write_string(fp, 4, "type", meter_probe_type_str(info->probe_id.probe_type), true);
-    json_write_int(fp, 4, "revision", info->probe_id.probe_rev_major, true);
-    json_write_string(fp, 4, "serial", info->probe_id.probe_serial, false);
-    f_printf(fp, "\n  }");
-    return true;
-}
-
-bool write_section_sensor_cal(FIL *fp, const meter_probe_settings_t *settings)
-{
-    char buf[32];
-
-    f_printf(fp, "  \"sensor_cal\": {\n");
-    f_printf(fp, "    \"gain\": [\n");
-    for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
-        const float gain_val = settings->settings_tsl2585.cal_gain.values[gain];
-
-        if (is_valid_number(gain_val)) {
-            sprintf(buf, "%0.6f", gain_val);
-        } else {
-            sprintf(buf, "null");
-        }
-
-        f_printf(fp, "      %s", buf);
-        if (gain < TSL2585_GAIN_256X) {
-            f_putc(',', fp);
-        }
-        f_putc('\n', fp);
-    }
-    f_printf(fp, "    ],\n");
-
-    f_printf(fp, "    \"slope\": {\n");
-    json_write_float06(fp, 6, "b0", settings->settings_tsl2585.cal_slope.b0, true);
-    json_write_float06(fp, 6, "b1", settings->settings_tsl2585.cal_slope.b1, true);
-    json_write_float06(fp, 6, "b2", settings->settings_tsl2585.cal_slope.b2, false);
-    f_printf(fp, "\n    },\n");
-
-    f_printf(fp, "    \"target\": {\n");
-    json_write_float06(fp, 6, "lux_slope",
-        settings->settings_tsl2585.cal_target.lux_slope, true);
-    json_write_float06(fp, 6, "lux_intercept",
-        settings->settings_tsl2585.cal_target.lux_intercept, false);
-    f_printf(fp, "\n    }\n");
-    f_printf(fp, "  }");
-    return true;
 }
 
 menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *handle, bool fast_mode)
