@@ -1,5 +1,5 @@
 /*
- * coreJSON v3.0.1
+ * coreJSON v3.3.0
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -28,8 +28,24 @@
 #ifndef CORE_JSON_H_
 #define CORE_JSON_H_
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
+
+/**
+ *  @brief By default, has the stand behavior of assert() for
+ *  parameter checking. To swap out the assert(), define this
+ *  macro with the desired behavior.  */
+#ifndef coreJSON_ASSERT
+    #define coreJSON_ASSERT( expr )    assert( expr )
+#endif
+
 
 /**
  * @ingroup json_enum_types
@@ -321,4 +337,11 @@ JSONStatus_t JSON_Iterate( const char * buf,
                            size_t * next,
                            JSONPair_t * outPair );
 /* @[declare_json_iterate] */
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
+
 #endif /* ifndef CORE_JSON_H_ */

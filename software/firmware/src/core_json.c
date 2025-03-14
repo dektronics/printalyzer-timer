@@ -1,6 +1,8 @@
 /*
- * coreJSON v3.0.1
+ * coreJSON v3.3.0
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ *
+ * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,7 +27,7 @@
  * @brief The source file that implements the user-facing functions in core_json.h.
  */
 
-#include <assert.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "core_json.h"
@@ -39,8 +41,13 @@ typedef union
     uint8_t u;
 } char_;
 
-#define isdigit_( x )    ( ( ( x ) >= '0' ) && ( ( x ) <= '9' ) )
-#define iscntrl_( x )    ( ( ( x ) >= '\0' ) && ( ( x ) < ' ' ) )
+#if ( CHAR_MIN == 0 )
+    #define isascii_( x )    ( ( x ) <= '\x7F' )
+#else
+    #define isascii_( x )    ( ( x ) >= '\0' )
+#endif
+#define iscntrl_( x )        ( isascii_( x ) && ( ( x ) < ' ' ) )
+#define isdigit_( x )        ( ( ( x ) >= '0' ) && ( ( x ) <= '9' ) )
 /* NB. This is whitespace as defined by the JSON standard (ECMA-404). */
 #define isspace_( x )                          \
     ( ( ( x ) == ' ' ) || ( ( x ) == '\t' ) || \
@@ -53,6 +60,8 @@ typedef union
 #define isMatchingBracket_( x, y )    ( isCurlyPair_( x, y ) || isSquarePair_( x, y ) )
 #define isSquareOpen_( x )            ( ( x ) == '[' )
 #define isSquareClose_( x )           ( ( x ) == ']' )
+#define isCurlyOpen_( x )             ( ( x ) == '{' )
+#define isCurlyClose_( x )            ( ( x ) == '}' )
 
 /**
  * @brief Advance buffer index beyond whitespace.
@@ -65,9 +74,9 @@ static void skipSpace( const char * buf,
                        size_t * start,
                        size_t max )
 {
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     for( i = *start; i < max; i++ )
     {
@@ -123,9 +132,9 @@ static bool shortestUTF8( size_t length,
                           uint32_t value )
 {
     bool ret = false;
-    uint32_t min, max;
+    uint32_t min = 0U, max = 0U;
 
-    assert( ( length >= 2U ) && ( length <= 4U ) );
+    coreJSON_ASSERT( ( length >= 2U ) && ( length <= 4U ) );
 
     switch( length )
     {
@@ -164,14 +173,14 @@ static bool shortestUTF8( size_t length,
  * @return true if a valid code point was present;
  * false otherwise.
  *
- * 00–7F    Single-byte character
- * 80–BF    Trailing byte
- * C0–DF    Leading byte of two-byte character
- * E0–EF    Leading byte of three-byte character
- * F0–F7    Leading byte of four-byte character
- * F8–FB    Illegal (formerly leading byte of five-byte character)
- * FC–FD    Illegal (formerly leading byte of six-byte character)
- * FE–FF    Illegal
+ * 00-7F    Single-byte character
+ * 80-BF    Trailing byte
+ * C0-DF    Leading byte of two-byte character
+ * E0-EF    Leading byte of three-byte character
+ * F0-F7    Leading byte of four-byte character
+ * F8-FB    Illegal (formerly leading byte of five-byte character)
+ * FC-FD    Illegal (formerly leading byte of six-byte character)
+ * FE-FF    Illegal
  *
  * The octet values C0, C1, and F5 to FF are illegal, since C0 and C1
  * would introduce a non-shortest sequence, and F5 or above would
@@ -182,15 +191,15 @@ static bool skipUTF8MultiByte( const char * buf,
                                size_t max )
 {
     bool ret = false;
-    size_t i, bitCount, j;
-    uint32_t value = 0;
+    size_t i = 0U, bitCount = 0U, j = 0U;
+    uint32_t value = 0U;
     char_ c;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
-    assert( i < max );
-    assert( buf[ i ] < '\0' );
+    coreJSON_ASSERT( i < max );
+    coreJSON_ASSERT( !isascii_( buf[ i ] ) );
 
     c.c = buf[ i ];
 
@@ -247,12 +256,11 @@ static bool skipUTF8( const char * buf,
 {
     bool ret = false;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     if( *start < max )
     {
-        /* an ASCII byte */
-        if( buf[ *start ] >= '\0' )
+        if( isascii_( buf[ *start ] ) )
         {
             *start += 1U;
             ret = true;
@@ -322,15 +330,18 @@ static bool skipOneHexEscape( const char * buf,
                               uint16_t * outValue )
 {
     bool ret = false;
-    size_t i, end;
-    uint16_t value = 0;
+    size_t i = 0U, end = 0U;
+    uint16_t value = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
-    assert( outValue != NULL );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( outValue != NULL );
 
     i = *start;
 #define HEX_ESCAPE_LENGTH    ( 6U )   /* e.g., \u1234 */
-    end = i + HEX_ESCAPE_LENGTH;
+    /* MISRA Ref 14.3.1 [Configuration dependent invariant] */
+    /* More details at: https://github.com/FreeRTOS/coreJSON/blob/main/MISRA.md#rule-143 */
+    /* coverity[misra_c_2012_rule_14_3_violation] */
+    end = ( i <= ( SIZE_MAX - HEX_ESCAPE_LENGTH ) ) ? ( i + HEX_ESCAPE_LENGTH ) : SIZE_MAX;
 
     if( ( end < max ) && ( buf[ i ] == '\\' ) && ( buf[ i + 1U ] == 'u' ) )
     {
@@ -382,10 +393,10 @@ static bool skipHexEscape( const char * buf,
                            size_t max )
 {
     bool ret = false;
-    size_t i;
-    uint16_t value;
+    size_t i = 0U;
+    uint16_t value = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -434,9 +445,9 @@ static bool skipEscape( const char * buf,
                         size_t max )
 {
     bool ret = false;
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -501,9 +512,9 @@ static bool skipString( const char * buf,
                         size_t max )
 {
     bool ret = false;
-    size_t i;
+    size_t i = 0;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -565,9 +576,9 @@ static bool strnEq( const char * a,
                     const char * b,
                     size_t n )
 {
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( a != NULL ) && ( b != NULL ) );
+    coreJSON_ASSERT( ( a != NULL ) && ( b != NULL ) );
 
     for( i = 0; i < n; i++ )
     {
@@ -600,8 +611,8 @@ static bool skipLiteral( const char * buf,
 {
     bool ret = false;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
-    assert( literal != NULL );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( literal != NULL );
 
     if( ( *start < max ) && ( length <= ( max - *start ) ) )
     {
@@ -635,9 +646,21 @@ static bool skipAnyLiteral( const char * buf,
 #define skipLit_( x ) \
     ( skipLiteral( buf, start, max, ( x ), ( sizeof( x ) - 1UL ) ) == true )
 
-    if( skipLit_( "true" ) || skipLit_( "false" ) || skipLit_( "null" ) )
+    if( skipLit_( "true" ) )
     {
         ret = true;
+    }
+    else if( skipLit_( "false" ) )
+    {
+        ret = true;
+    }
+    else if( skipLit_( "null" ) )
+    {
+        ret = true;
+    }
+    else
+    {
+        ret = false;
     }
 
     return ret;
@@ -665,10 +688,10 @@ static bool skipDigits( const char * buf,
                         int32_t * outValue )
 {
     bool ret = false;
-    size_t i, saveStart;
+    size_t i = 0U, saveStart = 0U;
     int32_t value = 0;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     saveStart = *start;
 
@@ -719,9 +742,9 @@ static void skipDecimals( const char * buf,
                           size_t * start,
                           size_t max )
 {
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -747,9 +770,9 @@ static void skipExponent( const char * buf,
                           size_t * start,
                           size_t max )
 {
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -784,9 +807,9 @@ static bool skipNumber( const char * buf,
                         size_t max )
 {
     bool ret = false;
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -841,11 +864,21 @@ static bool skipAnyScalar( const char * buf,
 {
     bool ret = false;
 
-    if( ( skipString( buf, start, max ) == true ) ||
-        ( skipAnyLiteral( buf, start, max ) == true ) ||
-        ( skipNumber( buf, start, max ) == true ) )
+    if( skipString( buf, start, max ) == true )
     {
         ret = true;
+    }
+    else if( skipAnyLiteral( buf, start, max ) == true )
+    {
+        ret = true;
+    }
+    else if( skipNumber( buf, start, max ) == true )
+    {
+        ret = true;
+    }
+    else
+    {
+        ret = false;
     }
 
     return ret;
@@ -870,9 +903,9 @@ static bool skipSpaceAndComma( const char * buf,
                                size_t max )
 {
     bool ret = false;
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     skipSpace( buf, start, max );
     i = *start;
@@ -905,9 +938,9 @@ static void skipArrayScalars( const char * buf,
                               size_t * start,
                               size_t max )
 {
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -940,16 +973,20 @@ static void skipArrayScalars( const char * buf,
  * @param[in,out] start  The index at which to begin.
  * @param[in] max  The size of the buffer.
  *
+ * @return true if a valid scalar key-value pairs were present;
+ * false otherwise.
+ *
  * @note Stops advance if a value is an object or array.
  */
-static void skipObjectScalars( const char * buf,
+static bool skipObjectScalars( const char * buf,
                                size_t * start,
                                size_t max )
 {
-    size_t i;
-    bool comma;
+    size_t i = 0U;
+    bool comma = false;
+    bool ret = true;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -957,6 +994,7 @@ static void skipObjectScalars( const char * buf,
     {
         if( skipString( buf, &i, max ) != true )
         {
+            ret = false;
             break;
         }
 
@@ -964,6 +1002,7 @@ static void skipObjectScalars( const char * buf,
 
         if( ( i < max ) && ( buf[ i ] != ':' ) )
         {
+            ret = false;
             break;
         }
 
@@ -978,6 +1017,7 @@ static void skipObjectScalars( const char * buf,
 
         if( skipAnyScalar( buf, &i, max ) != true )
         {
+            ret = false;
             break;
         }
 
@@ -989,6 +1029,8 @@ static void skipObjectScalars( const char * buf,
             break;
         }
     }
+
+    return ret;
 }
 
 /**
@@ -998,24 +1040,50 @@ static void skipObjectScalars( const char * buf,
  * @param[in,out] start  The index at which to begin.
  * @param[in] max  The size of the buffer.
  * @param[in] mode  The first character of an array '[' or object '{'.
+ *
+ * @return true if a valid scalers were present;
+ * false otherwise.
  */
-static void skipScalars( const char * buf,
+static bool skipScalars( const char * buf,
                          size_t * start,
                          size_t max,
                          char mode )
 {
-    assert( isOpenBracket_( mode ) );
+    size_t i = 0U;
+    bool modeIsOpenBracket = ( bool ) isOpenBracket_( mode );
+    bool ret = true;
+
+    /* assert function may be implemented in macro using a # or ## operator.
+     * Using a local variable here to prevent macro replacement is subjected
+     * to macro itself. */
+    coreJSON_ASSERT( modeIsOpenBracket != false );
+
+    /* Adding this line to avoid unused variable warning in release mode. */
+    ( void ) modeIsOpenBracket;
 
     skipSpace( buf, start, max );
 
-    if( mode == '[' )
+    i = *start;
+
+    if( i < max )
     {
-        skipArrayScalars( buf, start, max );
+        if( mode == '[' )
+        {
+            if( !isSquareClose_( buf[ i ] ) )
+            {
+                skipArrayScalars( buf, start, max );
+            }
+        }
+        else
+        {
+            if( !isCurlyClose_( buf[ i ] ) )
+            {
+                ret = skipObjectScalars( buf, start, max );
+            }
+        }
     }
-    else
-    {
-        skipObjectScalars( buf, start, max );
-    }
+
+    return ret;
 }
 
 /**
@@ -1043,9 +1111,9 @@ static JSONStatus_t skipCollection( const char * buf,
     JSONStatus_t ret = JSONPartial;
     char c, stack[ JSON_MAX_DEPTH ];
     int16_t depth = -1;
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
 
     i = *start;
 
@@ -1060,32 +1128,43 @@ static JSONStatus_t skipCollection( const char * buf,
             case '[':
                 depth++;
 
-                if( depth == JSON_MAX_DEPTH )
+                if( depth >= JSON_MAX_DEPTH )
                 {
                     ret = JSONMaxDepthExceeded;
                     break;
                 }
 
                 stack[ depth ] = c;
-                skipScalars( buf, &i, max, stack[ depth ] );
+
+                if( skipScalars( buf, &i, max, stack[ depth ] ) != true )
+                {
+                    ret = JSONIllegalDocument;
+                }
+
                 break;
 
             case '}':
             case ']':
 
-                if( ( depth > 0 ) && isMatchingBracket_( stack[ depth ], c ) )
+                if( ( depth > 0 ) && ( depth < JSON_MAX_DEPTH ) &&
+                    isMatchingBracket_( stack[ depth ], c ) )
                 {
                     depth--;
 
-                    if( skipSpaceAndComma( buf, &i, max ) == true )
+                    if( ( skipSpaceAndComma( buf, &i, max ) == true ) &&
+                        isOpenBracket_( stack[ depth ] ) )
                     {
-                        skipScalars( buf, &i, max, stack[ depth ] );
+                        if( skipScalars( buf, &i, max, stack[ depth ] ) != true )
+                        {
+                            ret = JSONIllegalDocument;
+                        }
                     }
 
                     break;
                 }
 
-                ret = ( depth == 0 ) ? JSONSuccess : JSONIllegalDocument;
+                ret = ( ( depth == 0 ) && isMatchingBracket_( stack[ depth ], c ) ) ?
+                      JSONSuccess : JSONIllegalDocument;
                 break;
 
             default:
@@ -1119,7 +1198,7 @@ JSONStatus_t JSON_Validate( const char * buf,
                             size_t max )
 {
     JSONStatus_t ret;
-    size_t i = 0;
+    size_t i = 0U;
 
     if( buf == NULL )
     {
@@ -1185,16 +1264,20 @@ static bool nextValue( const char * buf,
                        size_t * valueLength )
 {
     bool ret = true;
-    size_t i, valueStart;
+    size_t i = 0U, valueStart = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
-    assert( ( value != NULL ) && ( valueLength != NULL ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( value != NULL ) && ( valueLength != NULL ) );
 
     i = *start;
     valueStart = i;
 
-    if( ( skipAnyScalar( buf, &i, max ) == true ) ||
-        ( skipCollection( buf, &i, max ) == JSONSuccess ) )
+    if( skipAnyScalar( buf, &i, max ) == true )
+    {
+        *value = valueStart;
+        *valueLength = i - valueStart;
+    }
+    else if( skipCollection( buf, &i, max ) == JSONSuccess )
     {
         *value = valueStart;
         *valueLength = i - valueStart;
@@ -1238,11 +1321,11 @@ static bool nextKeyValuePair( const char * buf,
                               size_t * valueLength )
 {
     bool ret = true;
-    size_t i, keyStart;
+    size_t i = 0U, keyStart = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
-    assert( ( key != NULL ) && ( keyLength != NULL ) );
-    assert( ( value != NULL ) && ( valueLength != NULL ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( key != NULL ) && ( keyLength != NULL ) );
+    coreJSON_ASSERT( ( value != NULL ) && ( valueLength != NULL ) );
 
     i = *start;
     keyStart = i;
@@ -1311,10 +1394,10 @@ static bool objectSearch( const char * buf,
 {
     bool ret = false;
 
-    size_t i = 0, key, keyLength, value = 0, valueLength = 0;
+    size_t i = 0U, key = 0U, keyLength = 0U, value = 0U, valueLength = 0U;
 
-    assert( ( buf != NULL ) && ( query != NULL ) );
-    assert( ( outValue != NULL ) && ( outValueLength != NULL ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( query != NULL ) );
+    coreJSON_ASSERT( ( outValue != NULL ) && ( outValueLength != NULL ) );
 
     skipSpace( buf, &i, max );
 
@@ -1377,11 +1460,11 @@ static bool arraySearch( const char * buf,
                          size_t * outValueLength )
 {
     bool ret = false;
-    size_t i = 0, value = 0, valueLength = 0;
-    uint32_t currentIndex = 0;
+    size_t i = 0U, value = 0U, valueLength = 0U;
+    uint32_t currentIndex = 0U;
 
-    assert( buf != NULL );
-    assert( ( outValue != NULL ) && ( outValueLength != NULL ) );
+    coreJSON_ASSERT( buf != NULL );
+    coreJSON_ASSERT( ( outValue != NULL ) && ( outValueLength != NULL ) );
 
     skipSpace( buf, &i, max );
 
@@ -1403,7 +1486,8 @@ static bool arraySearch( const char * buf,
                 break;
             }
 
-            if( skipSpaceAndComma( buf, &i, max ) != true )
+            if( ( skipSpaceAndComma( buf, &i, max ) != true ) ||
+                ( currentIndex == UINT32_MAX ) )
             {
                 break;
             }
@@ -1435,7 +1519,9 @@ static bool arraySearch( const char * buf,
  * @return true if a valid string was present;
  * false otherwise.
  */
-#define JSON_QUERY_KEY_SEPARATOR    '.'
+#ifndef JSON_QUERY_KEY_SEPARATOR
+    #define JSON_QUERY_KEY_SEPARATOR    '.'
+#endif
 #define isSeparator_( x )    ( ( x ) == JSON_QUERY_KEY_SEPARATOR )
 static bool skipQueryPart( const char * buf,
                            size_t * start,
@@ -1443,10 +1529,10 @@ static bool skipQueryPart( const char * buf,
                            size_t * outLength )
 {
     bool ret = false;
-    size_t i;
+    size_t i = 0U;
 
-    assert( ( buf != NULL ) && ( start != NULL ) && ( outLength != NULL ) );
-    assert( max > 0U );
+    coreJSON_ASSERT( ( buf != NULL ) && ( start != NULL ) && ( outLength != NULL ) );
+    coreJSON_ASSERT( max > 0U );
 
     i = *start;
 
@@ -1492,11 +1578,11 @@ static JSONStatus_t multiSearch( const char * buf,
                                  size_t * outValueLength )
 {
     JSONStatus_t ret = JSONSuccess;
-    size_t i = 0, start = 0, queryStart = 0, value = 0, length = max;
+    size_t i = 0U, start = 0U, queryStart = 0U, value = 0U, length = max;
 
-    assert( ( buf != NULL ) && ( query != NULL ) );
-    assert( ( outValue != NULL ) && ( outValueLength != NULL ) );
-    assert( ( max > 0U ) && ( queryLength > 0U ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( query != NULL ) );
+    coreJSON_ASSERT( ( outValue != NULL ) && ( outValueLength != NULL ) );
+    coreJSON_ASSERT( ( max > 0U ) && ( queryLength > 0U ) );
 
     while( i < queryLength )
     {
@@ -1669,12 +1755,10 @@ JSONStatus_t JSON_SearchT( char * buf,
                            size_t * outValueLength,
                            JSONTypes_t * outType )
 {
-    /* MISRA Rule 11.3 prohibits casting a pointer to a different type.
-     * This instance is a false positive, as the rule permits the
-     * addition of a type qualifier. */
+    /* MISRA Ref 11.3.1 [Pointer conversion] */
+    /* More details at: https://github.com/FreeRTOS/coreJSON/blob/main/MISRA.md#rule-113 */
     /* coverity[misra_c_2012_rule_11_3_violation] */
-    return JSON_SearchConst( ( const char * ) buf, max, query, queryLength,
-                             ( const char ** ) outValue, outValueLength, outType );
+    return JSON_SearchConst( ( const char * ) buf, max, query, queryLength, ( const char ** ) outValue, outValueLength, outType );
 }
 
 /** @cond DO_NOT_DOCUMENT */
@@ -1707,10 +1791,10 @@ static JSONStatus_t iterate( const char * buf,
     JSONStatus_t ret = JSONNotFound;
     bool found = false;
 
-    assert( ( buf != NULL ) && ( max > 0U ) );
-    assert( ( start != NULL ) && ( next != NULL ) );
-    assert( ( outKey != NULL ) && ( outKeyLength != NULL ) );
-    assert( ( outValue != NULL ) && ( outValueLength != NULL ) );
+    coreJSON_ASSERT( ( buf != NULL ) && ( max > 0U ) );
+    coreJSON_ASSERT( ( start != NULL ) && ( next != NULL ) );
+    coreJSON_ASSERT( ( outKey != NULL ) && ( outKeyLength != NULL ) );
+    coreJSON_ASSERT( ( outValue != NULL ) && ( outValueLength != NULL ) );
 
     if( *start < max )
     {
@@ -1759,7 +1843,7 @@ JSONStatus_t JSON_Iterate( const char * buf,
                            JSONPair_t * outPair )
 {
     JSONStatus_t ret;
-    size_t key, keyLength, value, valueLength;
+    size_t key = 0U, keyLength = 0U, value = 0U, valueLength = 0U;
 
     if( ( buf == NULL ) || ( start == NULL ) || ( next == NULL ) ||
         ( outPair == NULL ) )
