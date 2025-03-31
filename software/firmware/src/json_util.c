@@ -74,30 +74,39 @@ float json_parse_float(const char *buf, size_t len, float def_value)
     return result;
 }
 
-void json_write_string(FIL *fp, int indent, const char *key, const char *val, bool has_more)
+static void json_write_indent(FIL *fp, int indent)
 {
     for (int i = 0; i < indent; i++) {
         f_putc(' ', fp);
     }
+}
 
-    f_printf(fp, "\"%s\": \"%s\"", key, val);
-
+static void json_write_end(FIL *fp, bool has_more)
+{
     if (has_more) {
         f_puts(",\n", fp);
     }
 }
 
+void json_write_string(FIL *fp, int indent, const char *key, const char *val, bool has_more)
+{
+    json_write_indent(fp, indent);
+    f_printf(fp, "\"%s\": \"%s\"", key, val);
+    json_write_end(fp, has_more);
+}
+
 void json_write_int(FIL *fp, int indent, const char *key, int val, bool has_more)
 {
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
+    json_write_indent(fp, indent);
     f_printf(fp, "\"%s\": %d", key, val);
+    json_write_end(fp, has_more);
+}
 
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
+void json_write_uint(FIL *fp, int indent, const char *key, unsigned int val, bool has_more)
+{
+    json_write_indent(fp, indent);
+    f_printf(fp, "\"%s\": %u", key, val);
+    json_write_end(fp, has_more);
 }
 
 void json_write_float02(FIL *fp, int indent, const char *key, float val, bool has_more)
@@ -109,15 +118,9 @@ void json_write_float02(FIL *fp, int indent, const char *key, float val, bool ha
         sprintf(buf, "%0.2f", val);
     }
 
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
+    json_write_indent(fp, indent);
     f_printf(fp, "\"%s\": %s", key, buf);
-
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
+    json_write_end(fp, has_more);
 }
 
 void json_write_float06(FIL *fp, int indent, const char *key, float val, bool has_more)
@@ -129,13 +132,14 @@ void json_write_float06(FIL *fp, int indent, const char *key, float val, bool ha
         sprintf(buf, "%0.6f", val);
     }
 
-    for (int i = 0; i < indent; i++) {
-        f_putc(' ', fp);
-    }
-
+    json_write_indent(fp, indent);
     f_printf(fp, "\"%s\": %s", key, buf);
+    json_write_end(fp, has_more);
+}
 
-    if (has_more) {
-        f_puts(",\n", fp);
-    }
+void json_write_bool(FIL *fp, int indent, const char *key, bool val, bool has_more)
+{
+    json_write_indent(fp, indent);
+    f_printf(fp, "\"%s\": %s", key, val ? "true" : "false");
+    json_write_end(fp, has_more);
 }

@@ -38,6 +38,7 @@
 
 #define HEADER_EXPORT_VERSION     1
 #define CONFIG_EXPORT_VERSION     1
+#define SAFELIGHT_EXPORT_VERSION  1
 #define ENLARGER_EXPORT_VERSION   1
 #define PAPER_EXPORT_VERSION      1
 #define STEP_WEDGE_EXPORT_VERSION 1
@@ -60,6 +61,7 @@ static menu_result_t menu_export_config();
 static bool export_config_file(const char *filename);
 static bool write_section_header(FIL *fp);
 static bool write_section_config(FIL *fp);
+static bool write_section_safelight(FIL *fp);
 static bool write_section_enlargers(FIL *fp);
 static bool write_section_papers(FIL *fp);
 static bool write_section_step_wedge(FIL *fp);
@@ -748,9 +750,9 @@ void parse_section_paper_grades(const char *buf, size_t len, paper_profile_t *pr
     int count = 0;
 
     status = JSON_Iterate(buf, len, &start, &next, &pair);
-    while (status == JSONSuccess && count < CONTRAST_GRADE_MAX) {
+    while (status == JSONSuccess && count < CONTRAST_WHOLE_GRADE_COUNT) {
         if (!pair.key && pair.jsonType == JSONObject) {
-            parse_section_paper_grade_entry(pair.value, pair.valueLength, &(profile->grade[count]));
+            parse_section_paper_grade_entry(pair.value, pair.valueLength, &(profile->grade[CONTRAST_WHOLE_GRADES[count]]));
             count++;
         }
 
@@ -963,6 +965,8 @@ bool export_config_file(const char *filename)
         f_printf(&fp, ",\n");
         write_section_config(&fp);
         f_printf(&fp, ",\n");
+        write_section_safelight(&fp);
+        f_printf(&fp, ",\n");
         write_section_enlargers(&fp);
         f_printf(&fp, ",\n");
         write_section_papers(&fp);
@@ -986,10 +990,10 @@ bool write_section_header(FIL *fp)
 {
     const app_descriptor_t *app_descriptor = app_descriptor_get();
     f_printf(fp, "  \"header\": {\n");
-    json_write_int(fp, 4, "version", HEADER_EXPORT_VERSION, true);
-    json_write_string(fp, 4, "device", app_descriptor->project_name, true);
-    json_write_string(fp, 4, "build_describe", app_descriptor->build_describe, true);
-    json_write_string(fp, 4, "build_date", app_descriptor->build_date, false);
+    json_write(fp, 4, "version", HEADER_EXPORT_VERSION, true);
+    json_write(fp, 4, "device", app_descriptor->project_name, true);
+    json_write(fp, 4, "build_describe", app_descriptor->build_describe, true);
+    json_write(fp, 4, "build_date", app_descriptor->build_date, false);
     f_printf(fp, "\n  }");
     return true;
 }
@@ -997,29 +1001,49 @@ bool write_section_header(FIL *fp)
 bool write_section_config(FIL *fp)
 {
     f_printf(fp, "  \"settings\": {\n");
-    json_write_int(fp, 4, "version", CONFIG_EXPORT_VERSION, true);
-    json_write_int(fp, 4, "exposure_time", settings_get_default_exposure_time(), true);
-    json_write_int(fp, 4, "contrast_grade", (uint8_t)settings_get_default_contrast_grade(), true);
-    json_write_int(fp, 4, "step_size", (uint8_t)settings_get_default_step_size(), true);
-    //FIXME json_write_int(fp, 4, "safelight_mode", (uint8_t)settings_get_safelight_mode(), true);
-    json_write_int(fp, 4, "focus_timeout", settings_get_enlarger_focus_timeout(), true);
-    json_write_int(fp, 4, "display_brightness", settings_get_display_brightness(), true);
-    json_write_int(fp, 4, "led_brightness", settings_get_led_brightness(), true);
-    json_write_int(fp, 4, "buzzer_volume", (uint8_t)settings_get_buzzer_volume(), true);
-    json_write_int(fp, 4, "teststrip_mode", (uint8_t)settings_get_teststrip_mode(), true);
-    json_write_int(fp, 4, "teststrip_patches", (uint8_t)settings_get_teststrip_patches(), true);
-    json_write_int(fp, 4, "enlarger_config_index", settings_get_default_enlarger_config_index(), true);
-    json_write_int(fp, 4, "paper_profile_index", settings_get_default_paper_profile_index(), true);
+    json_write(fp, 4, "version", CONFIG_EXPORT_VERSION, true);
+    json_write(fp, 4, "exposure_time", settings_get_default_exposure_time(), true);
+    json_write(fp, 4, "contrast_grade", settings_get_default_contrast_grade(), true);
+    json_write(fp, 4, "step_size", settings_get_default_step_size(), true);
+    json_write(fp, 4, "focus_timeout", settings_get_enlarger_focus_timeout(), true);
+    json_write(fp, 4, "display_brightness", settings_get_display_brightness(), true);
+    json_write(fp, 4, "led_brightness", settings_get_led_brightness(), true);
+    json_write(fp, 4, "buzzer_volume", settings_get_buzzer_volume(), true);
+    json_write(fp, 4, "teststrip_mode", settings_get_teststrip_mode(), true);
+    json_write(fp, 4, "teststrip_patches", settings_get_teststrip_patches(), true);
+    json_write(fp, 4, "enlarger_config_index", settings_get_default_enlarger_config_index(), true);
+    json_write(fp, 4, "paper_profile_index", settings_get_default_paper_profile_index(), false);
+    f_printf(fp, "\n  }");
+    return true;
+}
+
+bool write_section_safelight(FIL *fp)
+{
+    safelight_config_t config;
+    settings_get_safelight_config(&config);
+
+    f_printf(fp, "  \"safelight\": {\n");
+    json_write(fp, 4, "version", SAFELIGHT_EXPORT_VERSION, true);
+    json_write(fp, 4, "mode", config.mode, true);
+
+    if (config.control == SAFELIGHT_CONTROL_RELAY) {
+        json_write(fp, 4, "control", config.control, false);
+    } else {
+        json_write(fp, 4, "control", config.control, true);
+        json_write(fp, 4, "dmx_address", config.dmx_address, true);
+        json_write(fp, 4, "dmx_wide_mode", config.dmx_wide_mode, true);
+        json_write(fp, 4, "dmx_on_value", config.dmx_on_value, false);
+    }
+
     f_printf(fp, "\n  }");
     return true;
 }
 
 bool write_section_enlargers(FIL *fp)
 {
-    int i;
+    int i, j;
     enlarger_config_t config;
 
-    //TODO Redo the enlarger section to handle the new config structure layout and fields
     f_printf(fp, "  \"enlargers\": [\n");
     for (i = 0; i < MAX_ENLARGER_CONFIGS; i++) {
         if (!settings_get_enlarger_config(&config, i)) {
@@ -1029,15 +1053,46 @@ bool write_section_enlargers(FIL *fp)
             f_printf(fp, ",\n");
         }
         f_printf(fp, "    {\n");
-        json_write_int(fp, 6, "version", ENLARGER_EXPORT_VERSION, true);
-        json_write_string(fp, 6, "name", config.name, true);
-        json_write_int(fp, 6, "turn_on_delay", config.timing.turn_on_delay, true);
-        json_write_int(fp, 6, "rise_time", config.timing.rise_time, true);
-        json_write_int(fp, 6, "rise_time_equiv", config.timing.rise_time_equiv, true);
-        json_write_int(fp, 6, "turn_off_delay", config.timing.turn_off_delay, true);
-        json_write_int(fp, 6, "fall_time", config.timing.fall_time, true);
-        json_write_int(fp, 6, "fall_time_equiv", config.timing.fall_time_equiv, true);
-        json_write_int(fp, 6, "contrast_filter", (uint32_t)config.contrast_filter, false);
+        json_write(fp, 6, "version", ENLARGER_EXPORT_VERSION, true);
+        json_write(fp, 6, "name", config.name, true);
+
+        f_printf(fp, "      \"control\": {\n");
+        json_write(fp, 8, "dmx_control", config.control.dmx_control, config.control.dmx_control);
+        if (config.control.dmx_control) {
+            json_write(fp, 8, "channel_set", config.control.channel_set, true);
+            json_write(fp, 8, "dmx_wide_mode", config.control.dmx_wide_mode, true);
+            json_write(fp, 8, "dmx_channel_red", config.control.dmx_channel_red, true);
+            json_write(fp, 8, "dmx_channel_green", config.control.dmx_channel_green, true);
+            json_write(fp, 8, "dmx_channel_blue", config.control.dmx_channel_blue, true);
+            json_write(fp, 8, "dmx_channel_white", config.control.dmx_channel_white, true);
+            json_write(fp, 8, "contrast_mode", config.control.contrast_mode, true);
+            json_write(fp, 8, "focus_value", config.control.focus_value, true);
+            json_write(fp, 8, "safe_value", config.control.safe_value, true);
+            f_printf(fp, "        \"grade_values\": [\n");
+            for (j = 0; j < CONTRAST_WHOLE_GRADE_COUNT; j++) {
+                if (j > 0) {
+                    f_printf(fp, ",\n");
+                }
+                f_printf(fp, "          {\"red\": %u, \"green\": %u, \"blue\": %u, \"white\": %u}",
+                    config.control.grade_values[CONTRAST_WHOLE_GRADES[j]].channel_red,
+                    config.control.grade_values[CONTRAST_WHOLE_GRADES[j]].channel_green,
+                    config.control.grade_values[CONTRAST_WHOLE_GRADES[j]].channel_blue,
+                    config.control.grade_values[CONTRAST_WHOLE_GRADES[j]].channel_white);
+            }
+            f_printf(fp, "\n        ]");
+        }
+        f_printf(fp, "\n      },\n");
+
+        f_printf(fp, "      \"timing\": {\n");
+        json_write(fp, 8, "turn_on_delay", config.timing.turn_on_delay, true);
+        json_write(fp, 8, "rise_time", config.timing.rise_time, true);
+        json_write(fp, 8, "rise_time_equiv", config.timing.rise_time_equiv, true);
+        json_write(fp, 8, "turn_off_delay", config.timing.turn_off_delay, true);
+        json_write(fp, 8, "fall_time", config.timing.fall_time, true);
+        json_write(fp, 8, "fall_time_equiv", config.timing.fall_time_equiv, false);
+        f_printf(fp, "\n      },\n");
+
+        json_write(fp, 6, "contrast_filter", config.contrast_filter, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {
@@ -1063,17 +1118,19 @@ bool write_section_papers(FIL *fp)
             f_printf(fp, ",\n");
         }
         f_printf(fp, "    {\n");
-        json_write_int(fp, 6, "version", PAPER_EXPORT_VERSION, true);
-        json_write_string(fp, 6, "name", profile.name, true);
+        json_write(fp, 6, "version", PAPER_EXPORT_VERSION, true);
+        json_write(fp, 6, "name", profile.name, true);
 
         f_printf(fp, "      \"grades\": [\n");
 
-        for (j = 0; j < CONTRAST_GRADE_MAX; j++) {
+        for (j = 0; j < CONTRAST_WHOLE_GRADE_COUNT; j++) {
             if (j > 0) {
                 f_printf(fp, ",\n");
             }
             f_printf(fp, "        {\"ht_lev100\": %lu, \"hm_lev100\": %lu, \"hs_lev100\": %lu}",
-                profile.grade[j].ht_lev100, profile.grade[j].hm_lev100, profile.grade[j].hs_lev100);
+                profile.grade[CONTRAST_WHOLE_GRADES[j]].ht_lev100,
+                profile.grade[CONTRAST_WHOLE_GRADES[j]].hm_lev100,
+                profile.grade[CONTRAST_WHOLE_GRADES[j]].hs_lev100);
         }
         f_printf(fp, "\n      ],\n");
         json_write_float02(fp, 6, "max_net_density", profile.max_net_density, false);
@@ -1098,11 +1155,11 @@ bool write_section_step_wedge(FIL *fp)
     }
 
     f_printf(fp, "  \"step_wedge\": {\n");
-    json_write_int(fp, 4, "version", STEP_WEDGE_EXPORT_VERSION, true);
-    json_write_string(fp, 4, "name", wedge->name, true);
+    json_write(fp, 4, "version", STEP_WEDGE_EXPORT_VERSION, true);
+    json_write(fp, 4, "name", wedge->name, true);
     json_write_float02(fp, 4, "base_density", wedge->base_density, true);
     json_write_float02(fp, 4, "density_increment", wedge->density_increment, true);
-    json_write_int(fp, 4, "step_count", wedge->step_count, true);
+    json_write(fp, 4, "step_count", wedge->step_count, true);
     f_printf(fp, "    \"step_densities\": [\n      ");
     for (i = 0; i < wedge->step_count; i++) {
         if (i > 0) {
