@@ -108,7 +108,7 @@ extern void elog_raw_output(const char *format, ...);
 #define CONFIG_USBHOST_MAX_EXTHUBS          2
 #define CONFIG_USBHOST_MAX_EHPORTS          4
 #define CONFIG_USBHOST_MAX_INTERFACES       8
-#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 8
+#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 1
 #define CONFIG_USBHOST_MAX_ENDPOINTS        4
 
 #define CONFIG_USBHOST_MAX_CDC_ACM_CLASS 4
