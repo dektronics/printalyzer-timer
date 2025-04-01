@@ -11,6 +11,7 @@
 
 #define LOG_TAG "menu_import_export"
 #include <elog.h>
+#include <illum_controller.h>
 
 #include "display.h"
 #include "settings.h"
@@ -43,14 +44,29 @@
 #define PAPER_EXPORT_VERSION      1
 #define STEP_WEDGE_EXPORT_VERSION 1
 
+typedef struct {
+    bool has_valid_header;
+    bool has_settings;
+    bool has_safelight;
+    int has_enlargers;
+    int has_papers;
+    bool has_step_wedge;
+} conf_file_properties_t;
+
 static menu_result_t menu_import_config(state_controller_t *controller);
 static bool import_config_file(const char *filename, bool *reload_paper);
+static bool parse_file_properties(conf_file_properties_t *file_properties, const char *buf, UINT len);
 static bool validate_section_header(const char *buf, size_t len);
-static menu_result_t import_section_prompt(bool *has_settings, int *has_enlargers, int *has_papers, bool *has_step_wedge);
+static menu_result_t import_section_prompt(conf_file_properties_t *file_properties);
 static int parse_section_version(const char *buf, size_t len);
 static bool import_section_settings(const char *buf, size_t len, int *enlarger_config_index, int *paper_profile_index);
+static bool import_section_safelight(const char *buf, size_t len);
 static int import_section_enlargers(const char *buf, size_t len);
 static bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *config);
+static void parse_section_enlarger_control(const char *buf, size_t len, enlarger_control_t *control);
+static void parse_section_enlarger_control_grade_values(const char *buf, size_t len, enlarger_control_t *control);
+static void parse_section_enlarger_control_grade_entry(const char *buf, size_t len, enlarger_grade_values_t *grade_values);
+static void parse_section_enlarger_timing(const char *buf, size_t len, enlarger_timing_t *timing);
 static int import_section_papers(const char *buf, size_t len);
 static bool parse_section_paper(const char *buf, size_t len, paper_profile_t *profile);
 static void parse_section_paper_grades(const char *buf, size_t len, paper_profile_t *profile);
@@ -147,6 +163,8 @@ menu_result_t menu_import_config(state_controller_t *controller)
         state_controller_reload_paper_profile(controller, true);
     }
 
+    illum_controller_refresh();
+
     if (option == UINT8_MAX) {
         return MENU_TIMEOUT;
     } else {
@@ -166,11 +184,7 @@ bool import_config_file(const char *filename, bool *reload_paper)
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
-    bool has_valid_header = false;
-    bool has_settings = false;
-    int has_enlargers = 0;
-    int has_papers = 0;
-    bool has_step_wedge = false;
+    conf_file_properties_t file_properties = {0};
     int enlarger_config_index = -1;
     int paper_profile_index = -1;
     int imported_enlargers = -1;
@@ -226,52 +240,27 @@ bool import_config_file(const char *filename, bool *reload_paper)
         log_i("Config file validated as JSON");
 
         /* Traverse the top level to see what sections are in the file */
-        start = 0;
-        next = 0;
-        status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        while (status == JSONSuccess) {
-            if (pair.key) {
-                if (strncmp("header", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                    has_valid_header = validate_section_header(pair.value, pair.valueLength);
-                    if (!has_valid_header) {
-                        break;
-                    }
-                } else if (strncmp("settings", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                    has_settings = json_count_elements(pair.value, pair.valueLength) > 0;
-                } else if (strncmp("enlargers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                    has_enlargers = json_count_elements(pair.value, pair.valueLength);
-                } else if (strncmp("papers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                    has_papers = json_count_elements(pair.value, pair.valueLength);
-                } else if (strncmp("step_wedge", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                    has_step_wedge = json_count_elements(pair.value, pair.valueLength) > 0;
-                }
-            }
-
-            status = JSON_Iterate(file_buf, bytes_read, &start, &next, &pair);
-        }
-
-        if (!has_valid_header) {
-            log_w("File does not contain valid header");
+        if (!parse_file_properties(&file_properties, file_buf, bytes_read)) {
+            display_message(
+                "Import from USB device",
+                NULL,
+                "\n"
+                "File does not contain any\n"
+                "configurations.\n", " OK ");
             break;
         }
-        log_i("Found valid header");
-
-        log_i("Found sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
-            has_settings, has_enlargers, has_papers, has_step_wedge);
 
         /* Show user prompt of sections to import */
-        menu_result = import_section_prompt(&has_settings, &has_enlargers, &has_papers, &has_step_wedge);
+        menu_result = import_section_prompt(&file_properties);
         if (menu_result != MENU_SAVE) {
             /* No sections were selected */
             break;
         }
-        if (!has_settings && !has_enlargers && !has_papers && !has_step_wedge) {
-            /* No sections were found */
-            break;
-        }
 
-        log_i("Selected sections: settings = %d, enlargers = %d, papers = %d, step_wedge = %d",
-            has_settings, has_enlargers, has_papers, has_step_wedge);
+        log_i("Selected sections: settings=%d, safelight=%d, enlargers=%d, papers=%d, step_wedge=%d",
+            file_properties.has_settings, file_properties.has_safelight,
+            file_properties.has_enlargers, file_properties.has_papers,
+            file_properties.has_step_wedge);
 
         /* Traverse the top level and import any selected sections */
         start = 0;
@@ -281,19 +270,23 @@ bool import_config_file(const char *filename, bool *reload_paper)
             if (!pair.key) { continue; }
 
             if (strncmp("settings", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                if (has_settings) {
+                if (file_properties.has_settings) {
                     import_section_settings(pair.value, pair.valueLength, &enlarger_config_index, &paper_profile_index);
                 }
+            } else if (strncmp("safelight", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                if (file_properties.has_safelight) {
+                    import_section_safelight(pair.value, pair.valueLength);
+                }
             } else if (strncmp("enlargers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                if (has_enlargers) {
+                if (file_properties.has_enlargers) {
                     imported_enlargers = import_section_enlargers(pair.value, pair.valueLength);
                 }
             } else if (strncmp("papers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
-                if (has_papers) {
+                if (file_properties.has_papers) {
                     imported_papers = import_section_papers(pair.value, pair.valueLength);
                 }
             } else if (strncmp("step_wedge", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
-                if (has_step_wedge) {
+                if (file_properties.has_step_wedge) {
                     import_section_step_wedge(pair.value, pair.valueLength);
                 }
             }
@@ -305,14 +298,14 @@ bool import_config_file(const char *filename, bool *reload_paper)
     } while (0);
 
     /* Set default indices for enlarger and paper sections */
-    if (has_enlargers && imported_enlargers > 0 && enlarger_config_index >= 0) {
+    if (file_properties.has_enlargers && imported_enlargers > 0 && enlarger_config_index >= 0) {
         if (enlarger_config_index < imported_enlargers) {
             settings_set_default_enlarger_config_index(enlarger_config_index);
         } else {
             settings_set_default_enlarger_config_index(0);
         }
     }
-    if (has_papers && imported_papers > 0 && paper_profile_index >= 0) {
+    if (file_properties.has_papers && imported_papers > 0 && paper_profile_index >= 0) {
         if (paper_profile_index < imported_papers) {
             settings_set_default_paper_profile_index(paper_profile_index);
         } else {
@@ -329,6 +322,60 @@ bool import_config_file(const char *filename, bool *reload_paper)
     }
 
     return success;
+}
+
+bool parse_file_properties(conf_file_properties_t *file_properties, const char *buf, UINT len)
+{
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+    JSONStatus_t status;
+
+    memset(file_properties, 0, sizeof(conf_file_properties_t));
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("header", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                file_properties->has_valid_header = validate_section_header(pair.value, pair.valueLength);
+                if (!file_properties->has_valid_header) {
+                    break;
+                }
+            } else if (strncmp("settings", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                file_properties->has_settings = json_count_elements(pair.value, pair.valueLength) > 0;
+            } else if (strncmp("safelight", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                file_properties->has_safelight = json_count_elements(pair.value, pair.valueLength) > 0;
+            } else if (strncmp("enlargers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
+                file_properties->has_enlargers = json_count_elements(pair.value, pair.valueLength);
+            } else if (strncmp("papers", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
+                file_properties->has_papers = json_count_elements(pair.value, pair.valueLength);
+            } else if (strncmp("step_wedge", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                file_properties->has_step_wedge = json_count_elements(pair.value, pair.valueLength) > 0;
+            }
+        }
+
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+
+    if (!file_properties->has_valid_header) {
+        log_w("File does not contain valid header");
+        return false;
+    }
+    log_i("Found valid header");
+
+    log_i("Found sections: settings=%d, safelight=%d, enlargers=%d, papers=%d, step_wedge=%d",
+        file_properties->has_settings, file_properties->has_safelight,
+        file_properties->has_enlargers, file_properties->has_papers,
+        file_properties->has_step_wedge);
+
+    if (!file_properties->has_settings && !file_properties->has_safelight
+        && file_properties->has_enlargers == 0 && file_properties->has_papers == 0
+        && !file_properties->has_step_wedge) {
+        log_w("File has no sections");
+        return false;
+    }
+
+    return true;
 }
 
 bool validate_section_header(const char *buf, size_t len)
@@ -356,83 +403,91 @@ bool validate_section_header(const char *buf, size_t len)
     return (version == HEADER_EXPORT_VERSION && has_device);
 }
 
-menu_result_t import_section_prompt(bool *has_settings, int *has_enlargers, int *has_papers, bool *has_step_wedge)
+menu_result_t import_section_prompt(conf_file_properties_t *file_properties)
 {
     char buf[256];
     size_t offset = 0;
     uint8_t option = 0;
+    uint8_t index = 0;
     menu_result_t menu_result = MENU_OK;
     bool select_settings = true;
+    bool select_safelight = true;
     bool select_enlargers = true;
     bool select_papers = true;
     bool select_step_wedge = true;
-
-    if (!has_settings || !has_enlargers || !has_papers || !has_step_wedge) {
-        return MENU_CANCEL;
-    }
-
-    if (!(*has_settings) && *has_enlargers == 0 && *has_papers == 0 && !(*has_step_wedge)) {
-        option = display_message(
-            "Import from USB device",
-            NULL,
-            "\n"
-            "File does not contain any\n"
-            "configurations.\n", " OK ");
-        if (option == UINT8_MAX) {
-            return MENU_TIMEOUT;
-        } else {
-            return MENU_CANCEL;
-        }
-    }
+    uint8_t index_settings = 0;
+    uint8_t index_safelight = 0;
+    uint8_t index_enlargers = 0;
+    uint8_t index_papers = 0;
+    uint8_t index_step_wedge = 0;
+    uint8_t index_import = 0;
 
     do {
+        index = 0;
         offset = 0;
-        if (*has_settings) {
+        if (file_properties->has_settings) {
             offset += sprintf(buf + offset, select_settings ? "[*]" : "[ ]");
             offset += sprintf(buf + offset, " Settings                    \n");
+            index_settings = ++index;
         }
-        if (*has_enlargers > 0) {
+        if (file_properties->has_safelight) {
+            offset += sprintf(buf + offset, select_safelight ? "[*]" : "[ ]");
+            offset += sprintf(buf + offset, " Safelight configuration     \n");
+            index_safelight = ++index;
+        }
+        if (file_properties->has_enlargers > 0) {
             offset += sprintf(buf + offset, select_enlargers ? "[*]" : "[ ]");
-            sprintf(buf + offset, " Enlarger profiles (%d)", *has_enlargers);
+            sprintf(buf + offset, " Enlarger profiles (%d)", file_properties->has_enlargers);
             offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH - 3);
             offset += sprintf(buf + offset, "\n");
+            index_enlargers = ++index;
         }
-        if (*has_papers > 0) {
+        if (file_properties->has_papers > 0) {
             offset += sprintf(buf + offset, select_papers ? "[*]" : "[ ]");
-            sprintf(buf + offset, " Paper profiles (%d)", *has_papers);
+            sprintf(buf + offset, " Paper profiles (%d)", file_properties->has_papers);
             offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH - 3);
             offset += sprintf(buf + offset, "\n");
+            index_papers = ++index;
         }
-        if (*has_step_wedge) {
+        if (file_properties->has_step_wedge) {
             offset += sprintf(buf + offset, select_step_wedge ? "[*]" : "[ ]");
             offset += sprintf(buf + offset, " Step wedge properties       \n");
+            index_step_wedge = ++index;
         }
-        offset += sprintf(buf + offset, "*** Import selected ***");
+        sprintf(buf + offset, "*** Import selected ***");
+        index_import = ++index;
 
         option = display_selection_list("Import from USB device", option, buf);
-        if (option == 1) {
+        if (option == index_settings) {
             select_settings = !select_settings;
-        } else if (option == 2) {
+        } else if (option == index_safelight) {
+            select_safelight = !select_safelight;
+        } else if (option == index_enlargers) {
             select_enlargers = !select_enlargers;
-        } else if (option == 3) {
+        } else if (option == index_papers) {
             select_papers = !select_papers;
-        } else if (option == 4) {
+        } else if (option == index_step_wedge) {
             select_step_wedge = !select_step_wedge;
-        } else if (option == 5) {
-            if (!select_settings && !select_enlargers && !select_papers && !select_step_wedge) {
+        } else if (option == index_import) {
+            if (!select_settings && !select_safelight
+                && !select_enlargers && !select_papers
+                && !select_step_wedge) {
                 continue;
             }
-            if (*has_settings) {
-                *has_settings = select_settings;
+            if (index_settings > 0) {
+                file_properties->has_settings = select_settings;
             }
-            if (*has_enlargers > 0) {
-                *has_enlargers = select_enlargers ? *has_enlargers : 0;
+            if (index_safelight > 0) {
+                file_properties->has_safelight = select_safelight;
             }
-            if (*has_papers > 0) {
-                *has_papers = select_papers ? *has_papers : 0;
+            if (index_enlargers > 0) {
+                file_properties->has_enlargers = select_enlargers ? file_properties->has_enlargers : 0;
             }
-            if (*has_step_wedge) {
-                *has_step_wedge = select_step_wedge;
+            if (index_papers > 0) {
+                file_properties->has_papers = select_papers ? file_properties->has_papers : 0;
+            }
+            if (index_step_wedge) {
+                file_properties->has_step_wedge = select_step_wedge;
             }
             menu_result = MENU_SAVE;
             break;
@@ -440,7 +495,7 @@ menu_result_t import_section_prompt(bool *has_settings, int *has_enlargers, int 
             menu_result = MENU_TIMEOUT;
             break;
         }
-    } while (option > 0 && menu_result != MENU_TIMEOUT);
+    } while (option > 0);
 
     return menu_result;
 }
@@ -473,7 +528,7 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_config_i
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
-    int version = -1;
+    int version;
 
     /* Validate the section version up front */
     version = parse_section_version(buf, len);
@@ -505,11 +560,6 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_config_i
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
                 if (num >= 0 && num <= UINT8_MAX) {
                     settings_set_default_step_size(num);
-                }
-            } else if (strncmp("safelight_mode", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                int num = json_parse_int(pair.value, pair.valueLength, -1);
-                if (num >= 0 && num <= UINT8_MAX) {
-                    //FIXME settings_set_safelight_mode(num);
                 }
             } else if (strncmp("focus_timeout", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
@@ -561,6 +611,66 @@ bool import_section_settings(const char *buf, size_t len, int *enlarger_config_i
     }
 
     return true;
+}
+
+bool import_section_safelight(const char *buf, size_t len)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+    int version = -1;
+    safelight_config_t config = {0};
+
+    /* Validate the section version up front */
+    version = parse_section_version(buf, len);
+    if (version != SAFELIGHT_EXPORT_VERSION) {
+        log_w("Safelight section has invalid version: %d", version);
+        return false;
+    }
+
+    /*
+     * Iterate across the section, and parse key values as they're found.
+     */
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("mode", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0) {
+                    config.mode = num;
+                }
+            } else if (strncmp("control", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0) {
+                    config.control = num;
+                }
+            } else if (strncmp("dmx_address", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num > 0 && num <= 512) {
+                    config.dmx_address = num - 1;
+                }
+            } else if (strncmp("dmx_wide_mode", pair.key, pair.keyLength) == 0) {
+                config.dmx_wide_mode = (pair.jsonType == JSONTrue) ? true : false;
+            } else if (strncmp("dmx_on_value", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    config.dmx_on_value = num;
+                }
+            }
+
+        }
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+
+    /* Clear DMX values from the structure if relay-only mode was selected */
+    if (config.control == SAFELIGHT_CONTROL_RELAY) {
+        config.dmx_address = 0;
+        config.dmx_wide_mode = false;
+        config.dmx_on_value = 0;
+    }
+
+    return settings_set_safelight_config(&config);
 }
 
 int import_section_enlargers(const char *buf, size_t len)
@@ -625,25 +735,16 @@ bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *conf
 
     memset(config, 0, sizeof(enlarger_config_t));
 
-    //TODO Redo the enlarger section to handle the new config structure layout and fields
     status = JSON_Iterate(buf, len, &start, &next, &pair);
     while (status == JSONSuccess) {
         if (pair.key) {
             if (strncmp("name", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONString) {
                 strncpy(config->name, pair.value, MIN(pair.valueLength, 32));
                 config->name[31] = '\0';
-            } else if (strncmp("turn_on_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.turn_on_delay = json_parse_int(pair.value, pair.valueLength, 0);
-            } else if (strncmp("rise_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.rise_time = json_parse_int(pair.value, pair.valueLength, 0);
-            } else if (strncmp("rise_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.rise_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
-            } else if (strncmp("turn_off_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.turn_off_delay = json_parse_int(pair.value, pair.valueLength, 0);
-            } else if (strncmp("fall_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.fall_time = json_parse_int(pair.value, pair.valueLength, 0);
-            } else if (strncmp("fall_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
-                config->timing.fall_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("control", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                parse_section_enlarger_control(pair.value, pair.valueLength, &config->control);
+            } else if (strncmp("timing", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONObject) {
+                parse_section_enlarger_timing(pair.value, pair.valueLength, &config->timing);
             } else if (strncmp("contrast_filter", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
                 if (num >= 0 && num <= CONTRAST_FILTER_MAX) {
@@ -655,6 +756,163 @@ bool parse_section_enlarger(const char *buf, size_t len, enlarger_config_t *conf
     }
 
     return enlarger_config_is_valid(config);
+}
+
+void parse_section_enlarger_control(const char *buf, size_t len, enlarger_control_t *control)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("dmx_control", pair.key, pair.keyLength) == 0) {
+                if (pair.jsonType == JSONTrue) {
+                    control->dmx_control = true;
+                } else {
+                    /* Skip parsing the rest if DMX control is disabled */
+                    control->dmx_control = false;
+                    break;
+                }
+            } else if (strncmp("channel_set", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0) {
+                    control->channel_set = num;
+                }
+            } else if (strncmp("dmx_wide_mode", pair.key, pair.keyLength) == 0) {
+                control->dmx_wide_mode = (pair.jsonType == JSONTrue) ? true : false;
+            } else if (strncmp("dmx_channel_red", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num > 0 && num <= 512) {
+                    control->dmx_channel_red = num - 1;
+                }
+            } else if (strncmp("dmx_channel_green", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num > 0 && num <= 512) {
+                    control->dmx_channel_green = num - 1;
+                }
+            } else if (strncmp("dmx_channel_blue", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num > 0 && num <= 512) {
+                    control->dmx_channel_blue = num - 1;
+                }
+            } else if (strncmp("dmx_channel_white", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num > 0 && num <= 512) {
+                    control->dmx_channel_white = num - 1;
+                }
+            } else if (strncmp("contrast_mode", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0) {
+                    control->contrast_mode = num;
+                }
+            } else if (strncmp("focus_value", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    control->focus_value = num;
+                }
+            } else if (strncmp("safe_value", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    control->safe_value = num;
+                }
+            } else if (strncmp("grade_values", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
+                parse_section_enlarger_control_grade_values(pair.value, pair.valueLength, control);
+            }
+        }
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+
+    /* Clear any DMX parameters if DMX control is disabled */
+    if (!control->dmx_control) {
+        memset(control, 0, sizeof(enlarger_control_t));
+    }
+}
+
+void parse_section_enlarger_control_grade_values(const char *buf, size_t len, enlarger_control_t *control)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+    int count = 0;
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess && count < CONTRAST_WHOLE_GRADE_COUNT) {
+        if (!pair.key && pair.jsonType == JSONObject) {
+            parse_section_enlarger_control_grade_entry(pair.value, pair.valueLength,
+                &(control->grade_values[CONTRAST_WHOLE_GRADES[count]]));
+            count++;
+        }
+
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+}
+
+void parse_section_enlarger_control_grade_entry(const char *buf, size_t len, enlarger_grade_values_t *grade_values)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("red", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    grade_values->channel_red = num;
+                }
+            } else if (strncmp("green", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    grade_values->channel_green = num;
+                }
+            } else if (strncmp("blue", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    grade_values->channel_blue = num;
+                }
+            } else if (strncmp("white", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, -1);
+                if (num >= 0 && num <= UINT16_MAX) {
+                    grade_values->channel_white = num;
+                }
+            }
+        }
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
+}
+
+void parse_section_enlarger_timing(const char *buf, size_t len, enlarger_timing_t *timing)
+{
+    JSONStatus_t status;
+    size_t start = 0;
+    size_t next = 0;
+    JSONPair_t pair = {0};
+
+    status = JSON_Iterate(buf, len, &start, &next, &pair);
+    while (status == JSONSuccess) {
+        if (pair.key) {
+            if (strncmp("turn_on_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->turn_on_delay = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("rise_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->rise_time = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("rise_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->rise_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("turn_off_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->turn_off_delay = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("fall_time", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->fall_time = json_parse_int(pair.value, pair.valueLength, 0);
+            } else if (strncmp("fall_time_equiv", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                timing->fall_time_equiv = json_parse_int(pair.value, pair.valueLength, 0);
+            }
+        }
+        status = JSON_Iterate(buf, len, &start, &next, &pair);
+    }
 }
 
 int import_section_papers(const char *buf, size_t len)
@@ -788,7 +1046,7 @@ bool import_section_step_wedge(const char *buf, size_t len)
     size_t start = 0;
     size_t next = 0;
     JSONPair_t pair = {0};
-    int version = -1;
+    int version;
     const char *name_buf = NULL;
     size_t name_len = 0;
     float base_density = NAN;
@@ -1030,7 +1288,7 @@ bool write_section_safelight(FIL *fp)
         json_write(fp, 4, "control", config.control, false);
     } else {
         json_write(fp, 4, "control", config.control, true);
-        json_write(fp, 4, "dmx_address", config.dmx_address, true);
+        json_write(fp, 4, "dmx_address", config.dmx_address + 1, true);
         json_write(fp, 4, "dmx_wide_mode", config.dmx_wide_mode, true);
         json_write(fp, 4, "dmx_on_value", config.dmx_on_value, false);
     }
@@ -1061,10 +1319,10 @@ bool write_section_enlargers(FIL *fp)
         if (config.control.dmx_control) {
             json_write(fp, 8, "channel_set", config.control.channel_set, true);
             json_write(fp, 8, "dmx_wide_mode", config.control.dmx_wide_mode, true);
-            json_write(fp, 8, "dmx_channel_red", config.control.dmx_channel_red, true);
-            json_write(fp, 8, "dmx_channel_green", config.control.dmx_channel_green, true);
-            json_write(fp, 8, "dmx_channel_blue", config.control.dmx_channel_blue, true);
-            json_write(fp, 8, "dmx_channel_white", config.control.dmx_channel_white, true);
+            json_write(fp, 8, "dmx_channel_red", config.control.dmx_channel_red + 1, true);
+            json_write(fp, 8, "dmx_channel_green", config.control.dmx_channel_green + 1, true);
+            json_write(fp, 8, "dmx_channel_blue", config.control.dmx_channel_blue + 1, true);
+            json_write(fp, 8, "dmx_channel_white", config.control.dmx_channel_white + 1, true);
             json_write(fp, 8, "contrast_mode", config.control.contrast_mode, true);
             json_write(fp, 8, "focus_value", config.control.focus_value, true);
             json_write(fp, 8, "safe_value", config.control.safe_value, true);
