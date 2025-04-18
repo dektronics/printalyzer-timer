@@ -119,13 +119,13 @@ typedef enum {
 #define TSL2585_STATUS4_INIT_BUSY                0x01 /*!< Initialization Busy */
 
 /* ALS_STATUS register values */
-#define TSL2585_MEAS_SEQR_STEP 0xC0 /*< Mask for bits that contains the sequencer step where ALS data was measured */
-#define TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS 0x20 /*< Indicates analog saturation of ALS data0 in data registers ALS_ADATA0 */
-#define TSL2585_ALS_DATA1_ANALOG_SATURATION_STATUS 0x10 /*< Indicates analog saturation of ALS data1 in data registers ALS_ADATA1 */
-#define TSL2585_ALS_DATA2_ANALOG_SATURATION_STATUS 0x08 /*< Indicates analog saturation of ALS data2 in data registers ALS_ADATA2 */
-#define TSL2585_ALS_DATA0_SCALED_STATUS 0x04 /*< Indicates if ALS data0 needs to be multiplied */
-#define TSL2585_ALS_DATA1_SCALED_STATUS 0x02 /*< Indicates if ALS data1 needs to be multiplied */
-#define TSL2585_ALS_DATA2_SCALED_STATUS 0x01 /*< Indicates if ALS data2 needs to be multiplied */
+#define TSL2585_MEAS_SEQR_STEP 0xC0 /*!< Mask for bits that contains the sequencer step where ALS data was measured */
+#define TSL2585_ALS_DATA0_ANALOG_SATURATION_STATUS 0x20 /*!< Indicates analog saturation of ALS data0 in data registers ALS_ADATA0 */
+#define TSL2585_ALS_DATA1_ANALOG_SATURATION_STATUS 0x10 /*!< Indicates analog saturation of ALS data1 in data registers ALS_ADATA1 */
+#define TSL2585_ALS_DATA2_ANALOG_SATURATION_STATUS 0x08 /*!< Indicates analog saturation of ALS data2 in data registers ALS_ADATA2 */
+#define TSL2585_ALS_DATA0_SCALED_STATUS 0x04 /*!< Indicates if ALS data0 needs to be multiplied */
+#define TSL2585_ALS_DATA1_SCALED_STATUS 0x02 /*!< Indicates if ALS data1 needs to be multiplied */
+#define TSL2585_ALS_DATA2_SCALED_STATUS 0x01 /*!< Indicates if ALS data2 needs to be multiplied */
 
 /* VSYNC_CONTROL register values */
 #define TSL2585_VSYNC_CONTROL_HOLD_VSYNC_PERIOD 0x02 /*!< If set to "1" VSYNC_PERIOD cannot be updated until read */
