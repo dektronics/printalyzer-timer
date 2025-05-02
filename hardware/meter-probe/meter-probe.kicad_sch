@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Meter Probe")
-		(date "2024-12-03")
-		(rev "F")
+		(date "2025-04-30")
+		(rev "G")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
@@ -777,21 +777,19 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "R"
-				(at 0.762 0.508 0)
+				(at 0 0 90)
 				(effects
 					(font
-						(size 1.27 1.27)
+						(size 1.016 1.016)
 					)
-					(justify left)
 				)
 			)
 			(property "Value" "R_Small"
-				(at 0.762 -1.016 0)
+				(at 1.778 0 90)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
 			(property "Footprint" ""
@@ -1972,7 +1970,6 @@
 							)
 						)
 					)
-					(alternate "" input line)
 					(alternate "GPIOA" bidirectional line)
 					(alternate "TX_ACTIVE" output line)
 					(alternate "TX_LED" output line)
@@ -2245,7 +2242,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Project:TSL2585"
+		(symbol "Project:TSL2522"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -2258,7 +2255,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "TSL2585"
+			(property "Value" "TSL2522"
 				(at 0.635 11.43 0)
 				(effects
 					(font
@@ -2268,7 +2265,7 @@
 				)
 			)
 			(property "Footprint" "lib_fp:AMS_TSL2585_OLGA-6_2x1mm_P0.65mm"
-				(at 1.27 -11.43 0)
+				(at 0 -24.892 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2276,8 +2273,8 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://ams.com/documents/20143/6148289/TSL2585_DS001043_4-00.pdf"
-				(at 0 -24.13 0)
+			(property "Datasheet" "https://look.ams-osram.com/m/297a255d37b15c/original/TSL2522-Highly-sensitive-ambient-light-sensor-with-light-flicker-detection.pdf"
+				(at 0 -29.972 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2285,8 +2282,8 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "Light sensor with UVA detection, I2C interface, 1.8V, FN"
-				(at 0 0 0)
+			(property "Description" "Light sensor with Photopic and IR detection, I2C interface, 1.8V, FN"
+				(at 0 -27.432 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2303,10 +2300,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "TSL2585_0_0"
+			(symbol "TSL2522_0_0"
 				(polyline
 					(pts
-						(xy -4.572 3.937) (xy -3.302 5.207) (xy -0.127 5.207) (xy -0.127 2.667) (xy -3.302 2.667) (xy -4.572 3.937)
+						(xy -4.572 3.302) (xy -3.302 4.572) (xy -0.127 4.572) (xy -0.127 2.032) (xy -3.302 2.032) (xy -4.572 3.302)
 					)
 					(stroke
 						(width 0)
@@ -2318,20 +2315,7 @@
 				)
 				(polyline
 					(pts
-						(xy -4.572 0.762) (xy -3.302 2.032) (xy -0.127 2.032) (xy -0.127 -0.508) (xy -3.302 -0.508) (xy -4.572 0.762)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -4.572 -2.413) (xy -3.302 -1.143) (xy -0.127 -1.143) (xy -0.127 -3.683) (xy -3.302 -3.683)
-						(xy -4.572 -2.413)
+						(xy -4.572 0.127) (xy -3.302 1.397) (xy -0.127 1.397) (xy -0.127 -1.143) (xy -3.302 -1.143) (xy -4.572 0.127)
 					)
 					(stroke
 						(width 0)
@@ -2342,7 +2326,7 @@
 					)
 				)
 				(text "ADC"
-					(at -2.032 3.937 0)
+					(at -2.032 3.302 0)
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2350,15 +2334,7 @@
 					)
 				)
 				(text "ADC"
-					(at -2.032 0.762 0)
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(text "ADC"
-					(at -2.032 -2.413 0)
+					(at -2.032 0.127 0)
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -2366,7 +2342,7 @@
 					)
 				)
 			)
-			(symbol "TSL2585_0_1"
+			(symbol "TSL2522_0_1"
 				(rectangle
 					(start -8.89 10.16)
 					(end 8.89 -10.16)
@@ -2379,10 +2355,10 @@
 					)
 				)
 			)
-			(symbol "TSL2585_1_0"
+			(symbol "TSL2522_1_0"
 				(polyline
 					(pts
-						(xy -5.842 1.143) (xy -5.842 3.937) (xy -4.572 3.937)
+						(xy -5.842 0.508) (xy -5.842 3.302) (xy -4.572 3.302)
 					)
 					(stroke
 						(width 0)
@@ -2394,19 +2370,7 @@
 				)
 				(polyline
 					(pts
-						(xy -5.842 -2.032) (xy -5.842 0.762) (xy -4.572 0.762)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -5.842 -5.207) (xy -5.842 -2.413) (xy -4.572 -2.413)
+						(xy -5.842 -2.667) (xy -5.842 0.127) (xy -4.572 0.127)
 					)
 					(stroke
 						(width 0)
@@ -2417,10 +2381,10 @@
 					)
 				)
 			)
-			(symbol "TSL2585_1_1"
+			(symbol "TSL2522_1_1"
 				(polyline
 					(pts
-						(xy -6.985 1.905) (xy -7.874 1.016)
+						(xy -6.985 1.27) (xy -7.874 0.381)
 					)
 					(stroke
 						(width 0)
@@ -2432,7 +2396,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 1.905) (xy -7.493 1.905)
+						(xy -6.985 1.27) (xy -7.493 1.27)
 					)
 					(stroke
 						(width 0)
@@ -2444,7 +2408,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 1.905) (xy -6.985 1.397)
+						(xy -6.985 1.27) (xy -6.985 0.762)
 					)
 					(stroke
 						(width 0)
@@ -2456,7 +2420,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -1.27) (xy -7.874 -2.159)
+						(xy -6.985 -1.905) (xy -7.874 -2.794)
 					)
 					(stroke
 						(width 0)
@@ -2468,7 +2432,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -1.27) (xy -7.493 -1.27)
+						(xy -6.985 -1.905) (xy -7.493 -1.905)
 					)
 					(stroke
 						(width 0)
@@ -2480,7 +2444,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -1.27) (xy -6.985 -1.778)
+						(xy -6.985 -1.905) (xy -6.985 -2.413)
 					)
 					(stroke
 						(width 0)
@@ -2492,7 +2456,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -4.445) (xy -7.874 -5.334)
+						(xy -6.858 2.286) (xy -7.747 1.397)
 					)
 					(stroke
 						(width 0)
@@ -2504,7 +2468,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -4.445) (xy -7.493 -4.445)
+						(xy -6.858 2.286) (xy -7.366 2.286)
 					)
 					(stroke
 						(width 0)
@@ -2516,7 +2480,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.985 -4.445) (xy -6.985 -4.953)
+						(xy -6.858 2.286) (xy -6.858 1.778)
 					)
 					(stroke
 						(width 0)
@@ -2528,7 +2492,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.858 2.921) (xy -7.747 2.032)
+						(xy -6.858 -0.889) (xy -7.747 -1.778)
 					)
 					(stroke
 						(width 0)
@@ -2540,7 +2504,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.858 2.921) (xy -7.366 2.921)
+						(xy -6.858 -0.889) (xy -7.366 -0.889)
 					)
 					(stroke
 						(width 0)
@@ -2552,7 +2516,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.858 2.921) (xy -6.858 2.413)
+						(xy -6.858 -0.889) (xy -6.858 -1.397)
 					)
 					(stroke
 						(width 0)
@@ -2564,7 +2528,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.858 -0.254) (xy -7.747 -1.143)
+						(xy -6.604 2.667) (xy -4.953 2.667)
 					)
 					(stroke
 						(width 0)
@@ -2576,79 +2540,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.858 -0.254) (xy -7.366 -0.254)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.858 -0.254) (xy -6.858 -0.762)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.858 -3.429) (xy -7.747 -4.318)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.858 -3.429) (xy -7.366 -3.429)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.858 -3.429) (xy -6.858 -3.937)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.604 3.302) (xy -4.953 3.302)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.604 1.651) (xy -4.953 1.651) (xy -5.842 3.302) (xy -6.604 1.651)
+						(xy -6.604 1.016) (xy -4.953 1.016) (xy -5.842 2.667) (xy -6.604 1.016)
 					)
 					(stroke
 						(width 0)
@@ -2660,7 +2552,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.604 0.127) (xy -4.953 0.127)
+						(xy -6.604 -0.508) (xy -4.953 -0.508)
 					)
 					(stroke
 						(width 0)
@@ -2672,31 +2564,7 @@
 				)
 				(polyline
 					(pts
-						(xy -6.604 -1.524) (xy -4.953 -1.524) (xy -5.842 0.127) (xy -6.604 -1.524)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.604 -3.048) (xy -4.953 -3.048)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -6.604 -4.699) (xy -4.953 -4.699) (xy -5.842 -3.048) (xy -6.604 -4.699)
+						(xy -6.604 -2.159) (xy -4.953 -2.159) (xy -5.842 -0.508) (xy -6.604 -2.159)
 					)
 					(stroke
 						(width 0)
@@ -2716,7 +2584,7 @@
 							)
 						)
 					)
-					(number "1"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2770,7 +2638,7 @@
 							)
 						)
 					)
-					(number "6"
+					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2788,7 +2656,7 @@
 							)
 						)
 					)
-					(number "5"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2806,7 +2674,7 @@
 							)
 						)
 					)
-					(number "2"
+					(number "6"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -15387,7 +15255,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Project:TSL2585")
+		(lib_id "Project:TSL2522")
 		(at 145.415 84.455 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -15404,7 +15272,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "TSL2585"
+		(property "Value" "TSL2522"
 			(at 154.94 95.885 0)
 			(effects
 				(font
@@ -15414,7 +15282,7 @@
 			)
 		)
 		(property "Footprint" "lib_fp:AMS_TSL2585_OLGA-6_2x1mm_P0.65mm"
-			(at 146.685 95.885 0)
+			(at 145.415 109.347 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15422,8 +15290,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://ams.com/documents/20143/6148289/TSL2585_DS001043_4-00.pdf"
-			(at 145.415 108.585 0)
+		(property "Datasheet" "https://look.ams-osram.com/m/297a255d37b15c/original/TSL2522-Highly-sensitive-ambient-light-sensor-with-light-flicker-detection.pdf"
+			(at 145.415 114.427 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15431,8 +15299,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "AMBIENT LIGHT SENSOR"
-			(at 145.415 84.455 0)
+		(property "Description" "Light sensor with Photopic and IR detection, I2C interface, 1.8V, FN"
+			(at 145.415 111.887 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15449,7 +15317,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "TSL25853PM"
+		(property "Manufacturer PN" "TSL25223"
 			(at 145.415 84.455 0)
 			(effects
 				(font
@@ -15458,7 +15326,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Digi-Key"
+		(property "Supplier" "Mouser"
 			(at 145.415 84.455 0)
 			(effects
 				(font
@@ -15467,7 +15335,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "4991-TSL25853PMCT-ND"
+		(property "Supplier PN" "985-TSL25223OLGA6"
 			(at 145.415 84.455 0)
 			(effects
 				(font
