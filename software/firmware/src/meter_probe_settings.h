@@ -2,58 +2,29 @@
 #define METER_PROBE_SETTINGS_H
 
 #include <stm32f4xx_hal.h>
-#include <stdbool.h>
 
+#include "peripheral_settings.h"
 #include "tsl2585.h"
 
 typedef struct i2c_handle_t i2c_handle_t;
 
 typedef enum {
-    METER_PROBE_SENSOR_UNKNOWN = 0,
-    METER_PROBE_SENSOR_TSL2585 = 1,
-    METER_PROBE_SENSOR_TSL2521 = 2
-} meter_probe_sensor_type_t;
+    METER_PROBE_TYPE_UNKNOWN = 0,
+    METER_PROBE_TYPE_BASELINE = 1
+} meter_probe_type_t;
 
-typedef struct __meter_probe_id_t {
-    meter_probe_sensor_type_t probe_type;
-    uint8_t probe_rev_major;
-    uint8_t probe_rev_minor;
-    char probe_serial[32];
-} meter_probe_id_t;
-
-typedef struct __meter_probe_settings_handle_t {
-    i2c_handle_t *hi2c;
-    bool initialized;
-    meter_probe_id_t id;
-} meter_probe_settings_handle_t;
-
-typedef struct __meter_probe_settings_tsl2585_cal_gain_t {
-    float values[TSL2585_GAIN_256X + 1];
-} meter_probe_settings_tsl2585_cal_gain_t;
-
-typedef struct __meter_probe_settings_tsl2585_cal_slope_t {
-    float b0;
-    float b1;
-    float b2;
-} meter_probe_settings_tsl2585_cal_slope_t;
-
-typedef struct __meter_probe_settings_tsl2585_cal_target_t {
-    float lux_slope;
-    float lux_intercept;
-} meter_probe_settings_tsl2585_cal_target_t;
-
-typedef struct __meter_probe_settings_tsl2585_t {
-    meter_probe_settings_tsl2585_cal_gain_t cal_gain;
-    meter_probe_settings_tsl2585_cal_slope_t cal_slope;
-    meter_probe_settings_tsl2585_cal_target_t cal_target;
-} meter_probe_settings_tsl2585_t;
+typedef struct {
+    meter_probe_type_t type;
+    peripheral_cal_gain_t cal_gain;
+    peripheral_cal_linear_target_t cal_target;
+} meter_probe_settings_t;
 
 /**
  * Initialize the settings interface for the connected meter probe.
  *
  * @param hi2c Handle for the I2C peripheral used by the meter probe
  */
-HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, i2c_handle_t *hi2c);
+HAL_StatusTypeDef meter_probe_settings_init(peripheral_settings_handle_t *handle, i2c_handle_t *hi2c);
 
 /**
  * Clear the meter probe settings to factory blank.
@@ -65,15 +36,15 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
  */
 HAL_StatusTypeDef meter_probe_settings_clear(i2c_handle_t *hi2c);
 
-HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_handle_t *handle,
-    meter_probe_settings_tsl2585_t *settings_tsl2585);
+HAL_StatusTypeDef meter_probe_settings_get(const peripheral_settings_handle_t *handle,
+    meter_probe_settings_t *settings);
 
-HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_handle_t *handle,
-    const meter_probe_settings_tsl2585_t *settings_tsl2585);
+HAL_StatusTypeDef meter_probe_settings_set(const peripheral_settings_handle_t *handle,
+    const meter_probe_settings_t *settings);
 
-HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
-    const meter_probe_settings_tsl2585_cal_target_t *cal_target);
+HAL_StatusTypeDef meter_probe_settings_set_target(const peripheral_settings_handle_t *handle,
+    const peripheral_cal_linear_target_t *cal_target);
 
-const char *meter_probe_type_str(meter_probe_sensor_type_t type);
+const char *meter_probe_type_str(meter_probe_type_t type);
 
 #endif /* METER_PROBE_SETTINGS_H */

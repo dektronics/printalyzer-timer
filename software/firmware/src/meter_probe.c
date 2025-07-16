@@ -179,12 +179,12 @@ typedef struct __meter_probe_handle_t {
     /* Device state variables */
     volatile meter_probe_state_t probe_state;
     bool has_sensor_settings;
-    meter_probe_settings_handle_t settings_handle;
+    peripheral_settings_handle_t settings_handle;
     union {
-        meter_probe_settings_tsl2585_t probe_settings;
-        densistick_settings_tsl2585_t stick_settings;
+        meter_probe_settings_t probe_settings;
+        densistick_settings_t stick_settings;
     };
-    uint8_t sensor_device_id[3];
+    tsl2585_sensor_type_t sensor_type;
     tsl2585_state_t sensor_state;
     uint32_t last_aint_ticks;
     bool stick_light_enabled;
@@ -202,14 +202,24 @@ static meter_probe_handle_t probe_handle = {0};
 /* Handle for the instance managing the DensiStick peripheral */
 static meter_probe_handle_t stick_handle = {0};
 
-/* TSL2585: Only enable Photopic photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
-    0, TSL2585_MOD0, 0, 0, 0, TSL2585_MOD0
+/* TSL2520 and TSL2521: Only enable Clear photodiodes on modulator 0 */
+static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
+    TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD_NONE
 };
 
-/* TSL2521: Only enable Clear photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
-    0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, 0
+/* TSL2522: Only enable Photopic photodiodes on modulator 0 */
+static const tsl2585_modulator_t sensor_tsl2522_phd_mod_vis[] = {
+    TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD_NONE
+};
+
+/* TSL2585: Only enable Photopic photodiodes on modulator 0 */
+static const tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
+    TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD0
+};
+
+/* TCS3410: Only enable Clear photodiode on modulator 0 */
+static const tsl2585_modulator_t sensor_tcs3410_phd_mod_vis[] = {
+    TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE
 };
 
 static bool task_meter_probe_run_init(meter_probe_handle_t *handle, const meter_probe_init_attrs_t *attrs);
@@ -516,7 +526,7 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
         }
 
         /* Populate values that come from the USB descriptor */
-        usbh_ft260_get_device_serial_number(handle->device_handle, handle->settings_handle.id.probe_serial);
+        usbh_ft260_get_device_serial_number(handle->device_handle, handle->settings_handle.id.serial);
 
         /* Set the FT260 I2C clock speed to the default of 400kHz */
         if (usbh_ft260_set_i2c_clock_speed(handle->device_handle, 400) != osOK) {
@@ -536,30 +546,31 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
             break;
         }
 
-        log_i("%s: type=%s, rev=[%d,%d], serial=%s",
-            (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) ? "DensiStick" : "Meter Probe",
-            meter_probe_type_str(handle->settings_handle.id.probe_type),
-            handle->settings_handle.id.probe_rev_major,
-            handle->settings_handle.id.probe_rev_minor,
-            handle->settings_handle.id.probe_serial);
+        if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+            log_i("DensiStick: type=%s, rev=[%d,%d], serial=%s",
+                meter_probe_type_str(handle->settings_handle.type),
+                handle->settings_handle.id.rev_major,
+                handle->settings_handle.id.rev_minor,
+                handle->settings_handle.id.serial);
+        } else {
+            log_i("Meter Probe: type=%s, rev=[%d,%d], serial=%s",
+                densistick_type_str(handle->settings_handle.type),
+                handle->settings_handle.id.rev_major,
+                handle->settings_handle.id.rev_minor,
+                handle->settings_handle.id.serial);
+        }
 
-        /*
-         * The TSL2585 and TSL2521 are almost identical, except for the
-         * modulator count and photodiode configuration. Therefore, both
-         * use the same driver with only some minor differences in usage.
-         */
-        if (handle->settings_handle.id.probe_type != METER_PROBE_SENSOR_TSL2585
-            && handle->settings_handle.id.probe_type != METER_PROBE_SENSOR_TSL2521) {
-            log_w("Unknown meter probe type: %d", handle->settings_handle.id.probe_type);
+        if (handle->settings_handle.type != METER_PROBE_TYPE_BASELINE) {
+            log_w("Unknown peripheral type: %d", handle->settings_handle.type);
             ret = HAL_ERROR;
             break;
         }
 
         /* Read the settings for the current sensor type */
         if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
-            ret = densistick_settings_get_tsl2585(&handle->settings_handle, &handle->stick_settings);
+            ret = densistick_settings_get(&handle->settings_handle, &handle->stick_settings);
         } else {
-            ret = meter_probe_settings_get_tsl2585(&handle->settings_handle, &handle->probe_settings);
+            ret = meter_probe_settings_get(&handle->settings_handle, &handle->probe_settings);
         }
         if (ret == HAL_OK) {
             handle->has_sensor_settings = true;
@@ -574,11 +585,11 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
          * This routine should complete with the sensor in a disabled
          * state.
          */
-        ret = tsl2585_init(handle->hi2c, handle->sensor_device_id);
+        ret = tsl2585_init(handle->hi2c, &handle->sensor_type);
         if (ret != HAL_OK) { break; }
 
         handle->sensor_state.uv_calibration = 0;
-        if (handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585) {
+        if (handle->sensor_type == SENSOR_TYPE_TSL2585) {
             ret = tsl2585_get_uv_calibration(handle->hi2c, &handle->sensor_state.uv_calibration);
             if (ret != HAL_OK) { break; }
             log_d("UV calibration value: %d", handle->sensor_state.uv_calibration);
@@ -629,14 +640,14 @@ osStatus_t meter_probe_control_stop(meter_probe_handle_t *handle)
     }
 
     /* Clear the settings */
-    memset(&handle->settings_handle, 0, sizeof(meter_probe_settings_handle_t));
+    memset(&handle->settings_handle, 0, sizeof(peripheral_settings_handle_t));
 
     if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
         meter_probe_control_set_light_enable(handle, false);
-        memset(&handle->stick_settings, 0, sizeof(densistick_settings_tsl2585_t));
+        memset(&handle->stick_settings, 0, sizeof(densistick_settings_t));
         handle->stick_light_brightness = 0;
     } else {
-        memset(&handle->probe_settings, 0, sizeof(meter_probe_settings_tsl2585_t));
+        memset(&handle->probe_settings, 0, sizeof(meter_probe_settings_t));
     }
 
     memset(&handle->sensor_state, 0, sizeof(tsl2585_state_t));
@@ -730,8 +741,9 @@ osStatus_t meter_probe_get_device_info(const meter_probe_handle_t *handle, meter
 
     memset(info, 0, sizeof(meter_probe_device_info_t));
 
-    memcpy(&info->probe_id, &handle->settings_handle.id, sizeof(meter_probe_id_t));
-    memcpy(info->sensor_id, handle->sensor_device_id, 3);
+    info->peripheral_type = handle->settings_handle.type;
+    memcpy(&info->peripheral_id, &handle->settings_handle.id, sizeof(peripheral_id_t));
+    info->sensor_type = handle->sensor_type;
 
     return osOK;
 }
@@ -749,13 +761,7 @@ osStatus_t meter_probe_get_settings(const meter_probe_handle_t *handle, meter_pr
     if (handle->device_type != METER_PROBE_DEVICE_METER_PROBE) { return osErrorParameter; }
     if (handle->probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
-    memset(settings, 0, sizeof(meter_probe_settings_t));
-
-    settings->type = handle->settings_handle.id.probe_type;
-    if ((settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521)
-        && handle->has_sensor_settings) {
-        memcpy(&settings->settings_tsl2585, &handle->probe_settings, sizeof(meter_probe_settings_tsl2585_t));
-    }
+    memcpy(settings, &handle->probe_settings, sizeof(meter_probe_settings_t));
 
     return osOK;
 }
@@ -766,13 +772,13 @@ osStatus_t meter_probe_set_settings(meter_probe_handle_t *handle, const meter_pr
     if (handle->device_type != METER_PROBE_DEVICE_METER_PROBE) { return osErrorParameter; }
     if (handle->probe_state < METER_PROBE_STATE_STARTED || handle->sensor_state.running) { return osErrorResource; }
 
-    if (settings->type != handle->settings_handle.id.probe_type) {
+    if (settings->type != handle->settings_handle.type) {
         log_w("Invalid settings device type");
         return osErrorParameter;
     }
 
-    if (settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521) {
-        HAL_StatusTypeDef ret = meter_probe_settings_set_tsl2585(&handle->settings_handle, &settings->settings_tsl2585);
+    if (settings->type == METER_PROBE_TYPE_BASELINE) {
+        HAL_StatusTypeDef ret = meter_probe_settings_set(&handle->settings_handle, settings);
         return hal_to_os_status(ret);
     } else {
         log_w("Unsupported settings type");
@@ -786,13 +792,7 @@ osStatus_t densistick_get_settings(const meter_probe_handle_t *handle, densistic
     if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
     if (handle->probe_state < METER_PROBE_STATE_STARTED) { return osErrorResource; }
 
-    memset(settings, 0, sizeof(densistick_settings_t));
-
-    settings->type = handle->settings_handle.id.probe_type;
-    if ((settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521)
-        && handle->has_sensor_settings) {
-        memcpy(&settings->settings_tsl2585, &handle->stick_settings, sizeof(densistick_settings_tsl2585_t));
-    }
+    memcpy(settings, &handle->stick_settings, sizeof(densistick_settings_t));
 
     return osOK;
 }
@@ -803,13 +803,13 @@ osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistic
     if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
     if (handle->probe_state < METER_PROBE_STATE_STARTED || handle->sensor_state.running) { return osErrorResource; }
 
-    if (settings->type != handle->settings_handle.id.probe_type) {
+    if (settings->type != handle->settings_handle.type) {
         log_w("Invalid settings device type");
         return osErrorParameter;
     }
 
-    if (settings->type == METER_PROBE_SENSOR_TSL2585 || settings->type == METER_PROBE_SENSOR_TSL2521) {
-        HAL_StatusTypeDef ret = densistick_settings_set_tsl2585(&handle->settings_handle, &settings->settings_tsl2585);
+    if (settings->type == DENSISTICK_TYPE_BASELINE) {
+        HAL_StatusTypeDef ret = densistick_settings_set(&handle->settings_handle, settings);
         return hal_to_os_status(ret);
     } else {
         log_w("Unsupported settings type");
@@ -817,14 +817,14 @@ osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistic
     }
 }
 
-osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target)
+osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const peripheral_cal_density_target_t *cal_target)
 {
     if (!handle || !cal_target) { return osErrorParameter; }
     if (handle->device_type != METER_PROBE_DEVICE_DENSISTICK) { return osErrorParameter; }
     if (handle->probe_state < METER_PROBE_STATE_STARTED || handle->sensor_state.running) { return osErrorResource; }
 
-    if (handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585 || handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2521) {
-        HAL_StatusTypeDef ret = densistick_settings_set_tsl2585_target(&handle->settings_handle, cal_target);
+    if (handle->settings_handle.type == DENSISTICK_TYPE_BASELINE) {
+        HAL_StatusTypeDef ret = densistick_settings_set_target(&handle->settings_handle, cal_target);
         return hal_to_os_status(ret);
     } else {
         log_w("Unsupported settings type");
@@ -977,15 +977,19 @@ osStatus_t meter_probe_control_sensor_enable(meter_probe_handle_t *handle, senso
             handle->sensor_state.mod_calibration_pending = false;
         }
 
-        if (handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2585) {
-            /* Configure photodiodes for Photopic measurement only */
-            ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
-            if (ret != HAL_OK) { break; }
-        } else if (handle->settings_handle.id.probe_type == METER_PROBE_SENSOR_TSL2521) {
-            /* Configure photodiodes for Clear measurement only */
+        /* Configure photodiodes for Photopic or Clear measurement only */
+        if (handle->sensor_type == SENSOR_TYPE_TSL2520 || handle->sensor_type == SENSOR_TYPE_TSL2521) {
             ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2521_phd_mod_vis);
-            if (ret != HAL_OK) { break; }
+        } else if (handle->sensor_type == SENSOR_TYPE_TSL2522) {
+            ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2522_phd_mod_vis);
+        } else if (handle->sensor_type == SENSOR_TYPE_TSL2585) {
+            ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tsl2585_phd_mod_vis);
+        } else if (handle->sensor_type == SENSOR_TYPE_TCS3410) {
+            ret = tsl2585_set_mod_photodiode_smux(handle->hi2c, TSL2585_STEP0, sensor_tcs3410_phd_mod_vis);
+        } else {
+            log_w("Unknown sensor type, not configuring SMUX");
         }
+        if (ret != HAL_OK) { break; }
 
         if (handle->sensor_state.gain_pending) {
             ret = tsl2585_set_mod_gain(handle->hi2c, TSL2585_MOD0, TSL2585_STEP0, handle->sensor_state.gain[0]);
@@ -1689,7 +1693,7 @@ meter_probe_result_t densistick_measure(meter_probe_handle_t *handle, float *den
 
         log_d("Raw reading: %f", avg_reading);
 
-        const densistick_settings_tsl2585_cal_target_t *cal_target = &handle->stick_settings.cal_target;
+        const peripheral_cal_density_target_t *cal_target = &handle->stick_settings.cal_target;
 
         /* Convert all values into log units */
         float meas_ll = log10f(avg_reading);
@@ -1750,21 +1754,7 @@ float meter_probe_basic_result(const meter_probe_handle_t *handle, const meter_p
     /* Calculate the basic reading */
     float basic_reading = als_reading / (atime_ms * als_gain);
 
-    /*
-     * Slope correction is only performed if valid slope correction values are available.
-     * The current calibration processes for both the Meter Probe and the DensiStick
-     * due to not populate these values, because their reference measurements do not
-     * show a predictable slope error to correct.
-     */
-    const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &handle->probe_settings.cal_slope;
-    if (!isnan(cal_slope->b0) && !isnan(cal_slope->b1) && !isnan(cal_slope->b2)) {
-        float l_reading = log10f(basic_reading);
-        float l_expected = cal_slope->b0 + (cal_slope->b1 * l_reading) + (cal_slope->b2 * powf(l_reading, 2.0F));
-        float corr_reading = powf(10.0F, l_expected);
-        return corr_reading;
-    } else {
-        return basic_reading;
-    }
+    return basic_reading;
 }
 
 float meter_probe_lux_result(const meter_probe_handle_t *handle, const meter_probe_sensor_reading_t *sensor_reading)

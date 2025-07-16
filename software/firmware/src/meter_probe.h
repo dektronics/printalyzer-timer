@@ -23,19 +23,10 @@
 #define MAX_ALS_COUNT 8
 
 typedef struct {
-    meter_probe_id_t probe_id;
-    uint8_t sensor_id[3];
+    uint8_t peripheral_type;
+    peripheral_id_t peripheral_id;
+    tsl2585_sensor_type_t sensor_type;
 } meter_probe_device_info_t;
-
-typedef struct {
-    meter_probe_sensor_type_t type;
-    meter_probe_settings_tsl2585_t settings_tsl2585;
-} meter_probe_settings_t;
-
-typedef struct {
-    meter_probe_sensor_type_t type;
-    densistick_settings_tsl2585_t settings_tsl2585;
-} densistick_settings_t;
 
 typedef enum {
     METER_READING_OK = 0,
@@ -199,7 +190,7 @@ osStatus_t densistick_set_settings(meter_probe_handle_t *handle, const densistic
  *
  * @return osOK if the settings were successfully stored
  */
-osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target);
+osStatus_t densistick_set_settings_target(meter_probe_handle_t *handle, const peripheral_cal_density_target_t *cal_target);
 
 /**
  * Enable the meter probe sensor.

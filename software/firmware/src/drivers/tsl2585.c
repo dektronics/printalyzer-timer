@@ -173,22 +173,26 @@ static const uint8_t TSL2585_ADDRESS = 0x39; // Use 7-bit address
 #define TSL2585_MEAS_MODE0_MEASUREMENT_SEQUENCER_SINGLE_SHOT_MODE 0x20
 #define TSL2585_MEAS_MODE0_MOD_FIFO_ALS_STATUS_WRITE_ENABLE 0x10
 
-HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, uint8_t *sensor_id)
+HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, tsl2585_sensor_type_t *sensor_type)
 {
     HAL_StatusTypeDef ret;
     uint8_t data;
+    uint8_t devId;
+    uint8_t revId;
+    uint8_t auxId;
+    tsl2585_sensor_type_t detected_type = SENSOR_TYPE_UNKNOWN;
 
-    log_i("Initializing TSL2585");
+    log_i("Initializing TSL25XX");
 
     ret = i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_ID, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    log_i("Device ID: %02X", data);
-    if (sensor_id) { sensor_id[0] = data; }
+    devId = data;
+    log_i("Device ID: %02X", devId);
 
-    if (data != 0x5C) {
+    if (devId != 0x5C) {
         log_e("Invalid Device ID");
         return HAL_ERROR;
     }
@@ -198,16 +202,37 @@ HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, uint8_t *sensor_id)
         return ret;
     }
 
-    log_i("Revision ID: %02X", data);
-    if (sensor_id) { sensor_id[1] = data; }
+    revId = data;
+    log_i("Revision ID: %02X", revId);
 
     ret = i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_AUX_ID, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
         return ret;
     }
 
-    log_i("Aux ID: %02X", data & 0x0F);
-    if (sensor_id) { sensor_id[2] = data & 0x0F; }
+    auxId = data & 0x0F;
+    log_i("Aux ID: %02X", auxId);
+
+    /* Detect sensor type from identification registers */
+    if (devId == 0x5C && revId == 0x11) {
+        if (auxId == 0b0110) {
+            detected_type = SENSOR_TYPE_TSL2585;
+        } else if (auxId == 0b0010) {
+            /*
+             * TSL2520 and TSL2521 identify the same here, so they will need to be
+             * distinguished some other way when and if that matters.
+             * If the flicker engine is not used, then they can be treated identically.
+             */
+            detected_type = SENSOR_TYPE_TSL2521;
+        } else if (auxId == 0b0101) {
+            detected_type = SENSOR_TYPE_TSL2522;
+        } else if (auxId == 0b0001) {
+            detected_type = SENSOR_TYPE_TCS3410;
+        }
+    }
+
+    if (sensor_type) { *sensor_type = detected_type; }
+    log_i("Device Type: %s", tsl2585_sensor_type_str(detected_type));
 
     ret = i2c_mem_read(hi2c, TSL2585_ADDRESS, TSL2585_STATUS, I2C_MEMADD_SIZE_8BIT, &data, 1, HAL_MAX_DELAY);
     if (ret != HAL_OK) {
@@ -237,7 +262,7 @@ HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, uint8_t *sensor_id)
         return ret;
     }
 
-    log_i("TSL2585 Initialized");
+    log_i("TSL25XX Initialized");
 
     return HAL_OK;
 }
@@ -1524,6 +1549,20 @@ HAL_StatusTypeDef tsl2585_read_fifo_combo(i2c_handle_t *hi2c, tsl2585_fifo_statu
     }
 
     return ret;
+}
+
+static const char *TSL2585_SENSOR_TYPE_STR[] = {
+    "UNKNOWN", "TSL2585", "TSL2520", "TSL2521", "TSL2522", "TCS3410"
+};
+
+const char* tsl2585_sensor_type_str(tsl2585_sensor_type_t sensor_type)
+{
+    if (sensor_type >= SENSOR_TYPE_UNKNOWN && sensor_type <= SENSOR_TYPE_TCS3410) {
+        return TSL2585_SENSOR_TYPE_STR[sensor_type];
+    } else {
+        return "?";
+    }
+
 }
 
 static const char *TSL2585_GAIN_STR[] = {

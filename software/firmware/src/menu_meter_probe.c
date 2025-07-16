@@ -21,9 +21,9 @@
 
 static menu_result_t menu_meter_probe_impl(const char *title, meter_probe_handle_t *handle);
 static menu_result_t meter_probe_device_info(meter_probe_handle_t *handle);
-static menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle);
+static menu_result_t meter_probe_show_calibration(const meter_probe_handle_t *handle);
 static menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle);
-static menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target);
+static menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const peripheral_cal_density_target_t *cal_target);
 static menu_result_t densistick_show_calibration(meter_probe_handle_t *handle);
 void format_density_value(char *buf, float value);
 
@@ -127,12 +127,22 @@ menu_result_t meter_probe_device_info(meter_probe_handle_t *handle)
 
     do {
         size_t offset = 0;
-        offset += menu_build_padded_str_row(buf + offset, "Probe Type",
-            meter_probe_type_str(info.probe_id.probe_type));
-        offset += menu_build_padded_format_row(buf + offset, "Revision", "%d", info.probe_id.probe_rev_major);
-        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%s", info.probe_id.probe_serial);
-        offset += menu_build_padded_format_row(buf + offset, "Sensor ID", "%02X%02X%02X",
-            info.sensor_id[0], info.sensor_id[1], info.sensor_id[2]);
+        if (handle == meter_probe_handle()) {
+            offset += menu_build_padded_str_row(buf + offset, "Peripheral Type",
+                meter_probe_type_str(info.peripheral_type));
+
+        } else if (handle == densistick_handle()) {
+            offset += menu_build_padded_str_row(buf + offset, "Peripheral Type",
+                densistick_type_str(info.peripheral_type));
+
+        }
+        offset += menu_build_padded_format_row(buf + offset, "Revision", "%d.%d",
+            info.peripheral_id.rev_major,
+            info.peripheral_id.rev_minor);
+        offset += menu_build_padded_format_row(buf + offset, "Serial Number", "%s",
+            info.peripheral_id.serial);
+        offset += menu_build_padded_format_row(buf + offset, "Sensor Type", "%s",
+            tsl2585_sensor_type_str(info.sensor_type));
         offset += menu_build_padded_str_row(buf + offset, "Calibration",
             (has_settings ? "Loaded" : "Missing"));
         buf[offset - 1] = '\0';
@@ -147,7 +157,7 @@ menu_result_t meter_probe_device_info(meter_probe_handle_t *handle)
     return menu_result;
 }
 
-menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle)
+menu_result_t meter_probe_show_calibration(const meter_probe_handle_t *handle)
 {
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
@@ -158,7 +168,7 @@ menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle)
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
+    if (settings.type != METER_PROBE_TYPE_BASELINE) {
         /* Unknown meter probe type */
         return MENU_OK;
     }
@@ -169,28 +179,16 @@ menu_result_t meter_probe_show_calibration(meter_probe_handle_t *handle)
         for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
                 tsl2585_gain_str(gain), "%f",
-                settings.settings_tsl2585.cal_gain.values[gain]);
+                settings.cal_gain.values[gain]);
         }
 
         offset += menu_build_padded_format_row(buf + offset,
-            "B0", "%f",
-            settings.settings_tsl2585.cal_slope.b0);
-
-        offset += menu_build_padded_format_row(buf + offset,
-            "B1", "%f",
-            settings.settings_tsl2585.cal_slope.b1);
-
-        offset += menu_build_padded_format_row(buf + offset,
-            "B2", "%f",
-            settings.settings_tsl2585.cal_slope.b2);
-
-        offset += menu_build_padded_format_row(buf + offset,
             "Lux slope", "%f",
-            settings.settings_tsl2585.cal_target.lux_slope);
+            settings.cal_target.lux_slope);
 
         offset += menu_build_padded_format_row(buf + offset,
             "Lux intercept", "%f",
-            settings.settings_tsl2585.cal_target.lux_intercept);
+            settings.cal_target.lux_intercept);
 
         buf[offset - 1] = '\0';
 
@@ -211,19 +209,19 @@ menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle)
     char buf[256];
     char buf_lo[DENSITY_BUF_SIZE];
     char buf_hi[DENSITY_BUF_SIZE];
-    densistick_settings_tsl2585_cal_target_t *cal_target;
+    peripheral_cal_density_target_t *cal_target;
 
     densistick_settings_t settings;
     if (densistick_get_settings(handle, &settings) != osOK) {
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
+    if (settings.type != DENSISTICK_TYPE_BASELINE) {
         /* Unknown meter probe type */
         return MENU_OK;
     }
 
-    cal_target = &settings.settings_tsl2585.cal_target;
+    cal_target = &settings.cal_target;
 
     do {
         size_t offset = 0;
@@ -286,7 +284,7 @@ menu_result_t densistick_reflection_calibration(meter_probe_handle_t *handle)
     return menu_result;
 }
 
-menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const densistick_settings_tsl2585_cal_target_t *cal_target)
+menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *handle, const peripheral_cal_density_target_t *cal_target)
 {
     meter_probe_result_t meas_result = METER_READING_OK;
     uint8_t option = 1;
@@ -416,7 +414,7 @@ menu_result_t densistick_reflection_calibration_measure(meter_probe_handle_t *ha
     } while (0);
 
     if (meas_result == METER_READING_OK) {
-        densistick_settings_tsl2585_cal_target_t result_target = {0};
+        peripheral_cal_density_target_t result_target = {0};
         result_target.lo_density = cal_target->lo_density;
         result_target.lo_reading = cal_lo_reading;
         result_target.hi_density = cal_target->hi_density;
@@ -463,7 +461,7 @@ menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
         return MENU_OK;
     }
 
-    if (settings.type != METER_PROBE_SENSOR_TSL2585 && settings.type != METER_PROBE_SENSOR_TSL2521) {
+    if (settings.type != DENSISTICK_TYPE_BASELINE) {
         /* Unknown meter probe type */
         return MENU_OK;
     }
@@ -474,7 +472,7 @@ menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
         for (tsl2585_gain_t gain = 0; gain <= TSL2585_GAIN_256X; gain++) {
             offset += menu_build_padded_format_row(buf + offset,
                 tsl2585_gain_str(gain), "%f",
-                settings.settings_tsl2585.cal_gain.values[gain]);
+                settings.cal_gain.values[gain]);
         }
 
 #if 0
@@ -494,19 +492,19 @@ menu_result_t densistick_show_calibration(meter_probe_handle_t *handle)
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-LO Density", "%.2f",
-            settings.settings_tsl2585.cal_target.lo_density);
+            settings.cal_target.lo_density);
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-LO Reading", "%f",
-            settings.settings_tsl2585.cal_target.lo_reading);
+            settings.cal_target.lo_reading);
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-HI Density", "%.2f",
-            settings.settings_tsl2585.cal_target.hi_density);
+            settings.cal_target.hi_density);
 
         offset += menu_build_padded_format_row(buf + offset,
             "CAL-HI Reading", "%f",
-            settings.settings_tsl2585.cal_target.hi_reading);
+            settings.cal_target.hi_reading);
 
         buf[offset - 1] = '\0';
 
@@ -778,7 +776,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
                 size_t offset;
 
                 offset = sprintf(buf, "%s (%s, %.2fms)\n",
-                    meter_probe_type_str(info.probe_id.probe_type),
+                    tsl2585_sensor_type_str(info.sensor_type),
                     tsl2585_gain_str(sensor_reading.reading[0].gain), atime);
 
                 for (uint8_t i = 0; i < MAX_ALS_COUNT; i++) {
@@ -817,7 +815,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
                             "Basic: %f\n"
                             "[%s][%3d][%s] {%.2f}\n"
                             "%s",
-                            meter_probe_type_str(info.probe_id.probe_type),
+                            tsl2585_sensor_type_str(info.sensor_type),
                             tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
                             sensor_reading.reading[0].data,
                             basic_result,
@@ -832,7 +830,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
                             "Basic: %f, Lux: %f\n"
                             "[%s][%s] {%.2f}\n"
                             "%s",
-                            meter_probe_type_str(info.probe_id.probe_type),
+                            tsl2585_sensor_type_str(info.sensor_type),
                             tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
                             sensor_reading.reading[0].data,
                             basic_result, lux_result,
@@ -863,7 +861,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
                             "\n"
                             "[%s][%3d][%s]\n"
                             "%s",
-                            meter_probe_type_str(info.probe_id.probe_type),
+                            tsl2585_sensor_type_str(info.sensor_type),
                             tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
                             status_str,
                             (light_source_enabled ? "**" : "--"), stick_light_val,
@@ -876,7 +874,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
                             "\n"
                             "[%s][%s]\n"
                             "%s",
-                            meter_probe_type_str(info.probe_id.probe_type),
+                            tsl2585_sensor_type_str(info.sensor_type),
                             tsl2585_gain_str(sensor_reading.reading[0].gain), atime,
                             status_str,
                             (light_source_enabled ? "**" : "--"),

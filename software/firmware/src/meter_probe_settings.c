@@ -55,10 +55,7 @@ extern CRC_HandleTypeDef hcrc;
 #define CAL_TSL2585_GAIN_CRC    60 /* 4B (uint32_t) */
 
 /* TSL2585 Slope Calibration (16B) */
-#define CAL_TSL2585_SLOPE_B0    64 /* 4B (float) */
-#define CAL_TSL2585_SLOPE_B1    68 /* 4B (float) */
-#define CAL_TSL2585_SLOPE_B2    72 /* 4B (float) */
-#define CAL_TSL2558_SLOPE_CRC   76 /* 4B (uint32_t) */
+#define CAL_TSL2585_SLOPE_RESERVED 64 /* 16B (unused) */
 
 /* TSL2585 Target Calibration (16B) */
 #define CAL_TSL2585_TARGET_LUX_SLOPE     80 /* 4B (float) */
@@ -66,7 +63,7 @@ extern CRC_HandleTypeDef hcrc;
 #define CAL_TSL2585_RESERVED2            88 /* 4B (for page alignment) */
 #define CAL_TSL2585_TARGET_CRC           92 /* 4B (uint32_t) */
 
-HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handle, i2c_handle_t *hi2c)
+HAL_StatusTypeDef meter_probe_settings_init(peripheral_settings_handle_t *handle, i2c_handle_t *hi2c)
 {
     HAL_StatusTypeDef ret;
     uint8_t header_data[PAGE_HEADER_SIZE];
@@ -92,9 +89,14 @@ HAL_StatusTypeDef meter_probe_settings_init(meter_probe_settings_handle_t *handl
         handle->hi2c = hi2c;
 
         /* Read the probe type information out of the rest of the ID page */
-        handle->id.probe_type = header_data[HEADER_DEV_TYPE];
-        handle->id.probe_rev_major = header_data[HEADER_DEV_REV_MAJOR];
-        handle->id.probe_rev_minor = header_data[HEADER_DEV_REV_MINOR];
+        handle->type = header_data[HEADER_DEV_TYPE];
+        handle->id.rev_major = header_data[HEADER_DEV_REV_MAJOR];
+        handle->id.rev_minor = header_data[HEADER_DEV_REV_MINOR];
+
+        if (handle->type == METER_PROBE_TYPE_UNKNOWN) {
+            log_w("Probe type is not set, defaulting to baseline");
+            handle->type = METER_PROBE_TYPE_BASELINE;
+        }
 
         handle->hi2c = hi2c;
 
@@ -128,14 +130,13 @@ HAL_StatusTypeDef meter_probe_settings_clear(i2c_handle_t *hi2c)
     return ret;
 }
 
-HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_handle_t *handle,
-    meter_probe_settings_tsl2585_t *settings_tsl2585)
+HAL_StatusTypeDef meter_probe_settings_get(const peripheral_settings_handle_t *handle,
+    meter_probe_settings_t *settings)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    if (!handle || !settings_tsl2585) { return HAL_ERROR; }
+    if (!handle || !settings) { return HAL_ERROR; }
     if (!handle->initialized) { return HAL_ERROR; }
-    if (handle->id.probe_type != METER_PROBE_SENSOR_TSL2585
-        && handle->id.probe_type != METER_PROBE_SENSOR_TSL2521) {
+    if (handle->type != METER_PROBE_TYPE_BASELINE) {
         return HAL_ERROR;
     }
 
@@ -156,7 +157,8 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
         return HAL_ERROR;
     }
 
-    memset(settings_tsl2585, 0, sizeof(meter_probe_settings_tsl2585_t));
+    memset(settings, 0, sizeof(meter_probe_settings_t));
+    settings->type = handle->type;
 
     /* Validate the gain data CRC */
     crc = copy_to_u32(data + CAL_TSL2585_GAIN_CRC);
@@ -165,7 +167,7 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
         (CAL_TSL2585_GAIN_CRC - CAL_TSL2585_GAIN_0_5X) / 4UL);
     if (crc == calculated_crc) {
         /* Parse the gain calibration data */
-        meter_probe_settings_tsl2585_cal_gain_t *cal_gain = &settings_tsl2585->cal_gain;
+        peripheral_cal_gain_t *cal_gain = &settings->cal_gain;
         cal_gain->values[TSL2585_GAIN_0_5X] = copy_to_f32(data + CAL_TSL2585_GAIN_0_5X);
         cal_gain->values[TSL2585_GAIN_1X] = copy_to_f32(data + CAL_TSL2585_GAIN_1X);
         cal_gain->values[TSL2585_GAIN_2X] = copy_to_f32(data + CAL_TSL2585_GAIN_2X);
@@ -179,27 +181,8 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     } else {
         log_w("Invalid TSL2585 cal gain CRC: %08X != %08X", crc, calculated_crc);
         for (size_t i = 0; i <= TSL2585_GAIN_256X; i++) {
-            settings_tsl2585->cal_gain.values[i] = NAN;
+            settings->cal_gain.values[i] = NAN;
         }
-    }
-
-    /* Validate the slope data CRC */
-    crc = copy_to_u32(data + CAL_TSL2558_SLOPE_CRC);
-    calculated_crc = HAL_CRC_Calculate(&hcrc,
-        (uint32_t *)(data + CAL_TSL2585_SLOPE_B0),
-        (CAL_TSL2558_SLOPE_CRC - CAL_TSL2585_SLOPE_B0) / 4UL);
-    if (crc == calculated_crc) {
-        /* Parse the gain calibration data */
-        meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
-        cal_slope->b0 = copy_to_f32(data + CAL_TSL2585_SLOPE_B0);
-        cal_slope->b1 = copy_to_f32(data + CAL_TSL2585_SLOPE_B1);
-        cal_slope->b2 = copy_to_f32(data + CAL_TSL2585_SLOPE_B2);
-    } else {
-        log_w("Invalid TSL2585 cal slope CRC: %08X != %08X", crc, calculated_crc);
-        meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
-        cal_slope->b0 = NAN;
-        cal_slope->b1 = NAN;
-        cal_slope->b2 = NAN;
     }
 
     /* Validate the target data CRC */
@@ -209,12 +192,12 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
         (CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) / 4UL);
     if (crc == calculated_crc) {
         /* Parse the target calibration data */
-        meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+        peripheral_cal_linear_target_t *cal_target = &settings->cal_target;
         cal_target->lux_slope = copy_to_f32(data + CAL_TSL2585_TARGET_LUX_SLOPE);
         cal_target->lux_intercept = copy_to_f32(data + CAL_TSL2585_TARGET_LUX_INTERCEPT);
     } else {
         log_w("Invalid TSL2585 cal target CRC: %08X != %08X", crc, calculated_crc);
-        meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+        peripheral_cal_linear_target_t *cal_target = &settings->cal_target;
         cal_target->lux_slope = NAN;
         cal_target->lux_intercept = NAN;
     }
@@ -222,24 +205,23 @@ HAL_StatusTypeDef meter_probe_settings_get_tsl2585(const meter_probe_settings_ha
     return ret;
 }
 
-HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_handle_t *handle,
-    const meter_probe_settings_tsl2585_t *settings_tsl2585)
+HAL_StatusTypeDef meter_probe_settings_set(const peripheral_settings_handle_t *handle,
+    const meter_probe_settings_t *settings)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint32_t crc;
 
-    if (!handle || !settings_tsl2585) { return HAL_ERROR; }
-    if (!handle->initialized || handle->id.probe_type != METER_PROBE_SENSOR_TSL2585) { return HAL_ERROR; }
+    if (!handle || !settings) { return HAL_ERROR; }
+    if (!handle->initialized || handle->type != settings->type) { return HAL_ERROR; }
 
     /* Prepare an empty buffer */
-    uint8_t data[PAGE_CAL_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_CAL_SIZE] = {0};
 
     /* Set the version */
     copy_from_u32(data + CAL_TSL2585_VERSION, LATEST_CAL_TSL2585_VERSION);
 
     /* Fill in the gain calibration data */
-    const meter_probe_settings_tsl2585_cal_gain_t *cal_gain = &settings_tsl2585->cal_gain;
+    const peripheral_cal_gain_t *cal_gain = &settings->cal_gain;
     copy_from_f32(data + CAL_TSL2585_GAIN_0_5X, cal_gain->values[TSL2585_GAIN_0_5X]);
     copy_from_f32(data + CAL_TSL2585_GAIN_1X, cal_gain->values[TSL2585_GAIN_1X]);
     copy_from_f32(data + CAL_TSL2585_GAIN_2X, cal_gain->values[TSL2585_GAIN_2X]);
@@ -255,18 +237,8 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
         (CAL_TSL2585_GAIN_CRC - CAL_TSL2585_GAIN_0_5X) / 4UL);
     copy_from_u32(data + CAL_TSL2585_GAIN_CRC, crc);
 
-    /* Fill in the slope calibration data */
-    const meter_probe_settings_tsl2585_cal_slope_t *cal_slope = &settings_tsl2585->cal_slope;
-    copy_from_f32(data + CAL_TSL2585_SLOPE_B0, cal_slope->b0);
-    copy_from_f32(data + CAL_TSL2585_SLOPE_B1, cal_slope->b1);
-    copy_from_f32(data + CAL_TSL2585_SLOPE_B2, cal_slope->b2);
-
-    crc = HAL_CRC_Calculate(&hcrc, (uint32_t *)(data + CAL_TSL2585_SLOPE_B0),
-        (CAL_TSL2558_SLOPE_CRC - CAL_TSL2585_SLOPE_B0) / 4UL);
-    copy_from_u32(data + CAL_TSL2558_SLOPE_CRC, crc);
-
     /* Fill in the target calibration data */
-    const meter_probe_settings_tsl2585_cal_target_t *cal_target = &settings_tsl2585->cal_target;
+    const peripheral_cal_linear_target_t *cal_target = &settings->cal_target;
     copy_from_f32(data + CAL_TSL2585_TARGET_LUX_SLOPE, cal_target->lux_slope);
     copy_from_f32(data + CAL_TSL2585_TARGET_LUX_INTERCEPT, cal_target->lux_intercept);
 
@@ -281,8 +253,8 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585(const meter_probe_settings_ha
     return ret;
 }
 
-HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_settings_handle_t *handle,
-    const meter_probe_settings_tsl2585_cal_target_t *cal_target)
+HAL_StatusTypeDef meter_probe_settings_set_target(const peripheral_settings_handle_t *handle,
+    const peripheral_cal_linear_target_t *cal_target)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) + 4];
@@ -291,7 +263,7 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     uint32_t crc;
 
     if (!handle || !cal_target) { return HAL_ERROR; }
-    if (!handle->initialized || handle->id.probe_type != METER_PROBE_SENSOR_TSL2585) { return HAL_ERROR; }
+    if (!handle->initialized || handle->type != METER_PROBE_TYPE_BASELINE) { return HAL_ERROR; }
 
     /* Read just the version */
     ret = m24c08_read_buffer(handle->hi2c, CAL_TSL2585_VERSION, data, 4);
@@ -321,15 +293,13 @@ HAL_StatusTypeDef meter_probe_settings_set_tsl2585_target(const meter_probe_sett
     return ret;
 }
 
-const char *meter_probe_type_str(meter_probe_sensor_type_t type)
+const char *meter_probe_type_str(meter_probe_type_t type)
 {
     switch (type) {
-    case METER_PROBE_SENSOR_UNKNOWN:
-        return "UNKNOWN";
-    case METER_PROBE_SENSOR_TSL2585:
-        return "TSL2585";
-    case METER_PROBE_SENSOR_TSL2521:
-        return "TSL2521";
+    case METER_PROBE_TYPE_UNKNOWN:
+        return "Unknown";
+    case METER_PROBE_TYPE_BASELINE:
+        return "Baseline";
     default:
         return "?";
     }

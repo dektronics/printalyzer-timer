@@ -1,7 +1,10 @@
 /*
- * TSL2585
- * Miniature Ambient Light Sensor
- * with UV and Light Flicker Detection
+ * Common driver for the TSL25xx family of ambient light sensors:
+ * - TSL2585 (Photopic, UV-A, IR, Flicker)
+ * - TSL2520 (Clear, IR)
+ * - TSL2521 (Clear, IR, Flicker)
+ * - TSL2522 (Photopic, IR, Flicker)
+ * - TCS3410 (RGB, Clear, Flicker)
  */
 
 #ifndef TSL2585_H
@@ -14,7 +17,35 @@ typedef struct i2c_handle_t i2c_handle_t;
 
 #define TSL2585_SAMPLE_TIME_BASE 1.388889F /*!< Sample time base in microseconds */
 
+/**
+ * Identifier for the detected sensor type.
+ *
+ * All of these sensors have the same I2C interface, and primarily differ
+ * in terms of:
+ * - How many modulators are available
+ * - The configuration of photodiodes
+ * - Whether or not flicker detection is supported
+ */
 typedef enum {
+    SENSOR_TYPE_UNKNOWN = 0,
+    SENSOR_TYPE_TSL2585,
+    SENSOR_TYPE_TSL2520,
+    SENSOR_TYPE_TSL2521,
+    SENSOR_TYPE_TSL2522,
+    SENSOR_TYPE_TCS3410
+} tsl2585_sensor_type_t;
+
+/**
+ * The number of modulators depends on the sensor model:
+ *
+ *      | TSL2585 | TSL2520 | TSL2521 | TSL2522 | TCS3410 |
+ * -----+---------+---------+---------+---------+---------+
+ * MOD0 |    x    |    x    |    x    |    x    |    x    |
+ * MOD1 |    x    |    x    |    x    |    x    |    x    |
+ * MOD2 |    x    |   ---   |   ---   |   ---   |    x    |
+ */
+typedef enum {
+    TSL2585_MOD_NONE = 0x00,
     TSL2585_MOD0 = 0x01,
     TSL2585_MOD1 = 0x02,
     TSL2585_MOD2 = 0x04
@@ -29,13 +60,25 @@ typedef enum {
     TSL2585_STEPS_ALL = 0x0F
 } tsl2585_step_t;
 
+/**
+ * The photodiode assignment depends on the sensor model:
+ *
+ *       | TSL2585  | TSL2520 | TSL2521 | TSL2522  | TCS3410 |
+ * ------+----------+---------+---------+----------+---------+
+ * PHD_0 | IR       | IR      | IR      | IR       | Flicker |
+ * PHD_1 | Photopic | Clear   | Clear   | Photopic | Clear   |
+ * PHD_2 | IR       | Clear   | Clear   | Photopic | Flicker |
+ * PHD_3 | UV-A     | Clear   | Clear   | Photopic | Green   |
+ * PHD_4 | UV-A     | Clear   | Clear   | Photopic | Blue    |
+ * PHD_5 | Photopic | IR      | IR      | IR       | Red     |
+ */
 typedef enum {
-    TSL2585_PHD_0 = 0, /*!< TSL2585: IR,       TSL2521: IR */
-    TSL2585_PHD_1,     /*!< TSL2585: Photopic, TSL2521: Clear */
-    TSL2585_PHD_2,     /*!< TSL2585: IR,       TSL2521: Clear */
-    TSL2585_PHD_3,     /*!< TSL2585: UV-A,     TSL2521: Clear */
-    TSL2585_PHD_4,     /*!< TSL2585: UV-A,     TSL2521: Clear */
-    TSL2585_PHD_5,     /*!< TSL2585: Photopic, TSL2521: IR    */
+    TSL2585_PHD_0 = 0,
+    TSL2585_PHD_1,
+    TSL2585_PHD_2,
+    TSL2585_PHD_3,
+    TSL2585_PHD_4,
+    TSL2585_PHD_5,
     TSL2585_PHD_MAX
 } tsl2585_photodiode_t;
 
@@ -148,7 +191,7 @@ typedef enum {
 #define TSL2585_GPIO_INT_VSYNC_GPIO_OUT    0x02 /*!< Set the VSYNC/GPIO pin HI or LOW */
 #define TSL2585_GPIO_INT_VSYNC_GPIO_IN     0x01 /*!< External HIGH or LOW value applied to the VSYNC/GPIO pin */
 
-HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, uint8_t *sensor_id);
+HAL_StatusTypeDef tsl2585_init(i2c_handle_t *hi2c, tsl2585_sensor_type_t *sensor_type);
 
 HAL_StatusTypeDef tsl2585_get_enable(i2c_handle_t *hi2c, uint8_t *value);
 HAL_StatusTypeDef tsl2585_set_enable(i2c_handle_t *hi2c, uint8_t value);
@@ -341,6 +384,7 @@ HAL_StatusTypeDef tsl2585_read_fifo(i2c_handle_t *hi2c, uint8_t *data, uint16_t 
 
 HAL_StatusTypeDef tsl2585_read_fifo_combo(i2c_handle_t *hi2c, tsl2585_fifo_status_t *status, uint8_t *data, uint16_t len);
 
+const char* tsl2585_sensor_type_str(tsl2585_sensor_type_t sensor_type);
 const char* tsl2585_gain_str(tsl2585_gain_t gain);
 float tsl2585_gain_value(tsl2585_gain_t gain);
 float tsl2585_integration_time_ms(uint16_t sample_time, uint16_t num_samples);
