@@ -68,7 +68,7 @@
 
 - F103 使用 fsdev ip
 - F429 主从使用 USB1, 引脚 pb14/pb15, 并且都使用 dma 模式
-- H7 设备使用 USB0, 引脚 pa11/pa12，主机使用 USB_OTG_HS ,引脚 pb14/pb15，并且需要做 nocache 处理
+- H7 设备使用 USB0, 引脚 pa11/pa12，没有开DMA 模式。主机使用 USB1 ,引脚 pb14/pb15，并且需要做 nocache 处理
 
 demo 底下提供了 **stm32xxx.ioc** 文件，双击打开，点击 **Generate Code** 即可。
 
@@ -127,7 +127,7 @@ USB Device 移植要点
 
 .. figure:: img/stm32_5.png
 
-- 添加 CherryUSB 必须要的源码（ **usbd_core.c** 、 **usb_dc_dwc2.c** 或者是 **usb_dc_fsdev.c**  ）,以及想要使用的 class 驱动，可以将对应的 class template 添加方便测试。
+- 添加 CherryUSB 必须要的源码（ **usbd_core.c** 、 **dwc2/usb_dc_dwc2.c** 或者是 **fsdev/usb_dc_fsdev.c**  ）,以及想要使用的 class 驱动，可以将对应的 class template 添加方便测试。
 
 .. figure:: img/stm32_6.png
 
@@ -139,7 +139,7 @@ USB Device 移植要点
 
 .. figure:: img/stm32_8.png
 
-- 如果使用 dwc2 ip，需要增加 **usb_glue_st.c** 文件，并在 `usb_config.h` 中实现以下宏：
+- 如果使用 dwc2 ip，需要增加 **dwc2/usb_glue_st.c** 文件，并在 `usb_config.h` 中实现以下宏：
 
 .. code-block:: C
 
@@ -154,7 +154,7 @@ USB Device 移植要点
     #define CONFIG_USB_DWC2_TX4_FIFO_SIZE (64 / 4)
     #define CONFIG_USB_DWC2_TX5_FIFO_SIZE (64 / 4)
 
-- 如果使用 fsdev ip，在 `usb_config.h` 中实现以下宏：
+- 如果使用 fsdev ip，（V1.5.0 开始需要增加 **fsdev/usb_glue_st.c**） 在 `usb_config.h` 中实现以下宏：
 
 .. code-block:: C
 
@@ -166,6 +166,8 @@ USB Device 移植要点
 .. figure:: img/stm32_10.png
 .. figure:: img/stm32_11.png
 
+.. note :: 以下两个步骤从 V1.5.0 开始不再需要，**fsdev/usb_glue_st.c**, **dwc2/usb_glue_st.c** 文件中已经实现
+
 - 拷贝 **xxx_msp.c** 中的 **HAL_PCD_MspInit** 函数中的内容到 **usb_dc_low_level_init** 函数中，屏蔽 st 生成的 usb 初始化
 
 .. figure:: img/stm32_12.png
@@ -174,6 +176,8 @@ USB Device 移植要点
 - 在中断函数中调用 `USBD_IRQHandler`，并传入 `busid`
 
 .. figure:: img/stm32_13.png
+
+- 如果芯片带 cache，cache 修改参考 :ref:`usb_cache` 章节
 
 - 调用 template 的内容初始化，并填入 `busid` 和 USB IP 的 `reg base`， `busid` 从 0 开始，不能超过 `CONFIG_USBDEV_MAX_BUS`
 
@@ -206,15 +210,14 @@ USB Host 移植要点
     #define CONFIG_USB_DWC2_PTX_FIFO_SIZE (1024 / 4)
     #define CONFIG_USB_DWC2_RX_FIFO_SIZE ((1012 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE) / 4)
 
+.. note :: 以下两个步骤从 V1.5.0 开始不再需要，**fsdev/usb_glue_st.c**, **dwc2/usb_glue_st.c** 文件中已经实现
+
 - 拷贝 **xxx_msp.c** 中的 `HAL_HCD_MspInit` 函数中的内容到 `usb_hc_low_level_init` 函数中，屏蔽 st 生成的 usb 初始化
 - 在中断函数中调用 `USBH_IRQHandler`，并传入 `busid`
+- 链接脚本修改参考 :ref:`usbh_link_script` 章节
+- 如果芯片带 cache，cache 修改参考 :ref:`usb_cache` 章节
 - 调用 `usbh_initialize` 并填入 `busid` 和 USB IP 的 `reg base`， `busid` 从 0 开始，不能超过 `CONFIG_USBHOST_MAX_BUS`
 - 启动线程
 
 .. figure:: img/stm32_18.png
 .. figure:: img/stm32_19.png
-
-- 如果使用 **msc**，并且带文件系统，需要自行添加文件系统文件了，对应的 porting 编写参考 **fatfs_usbh.c** 文件。
-
-.. figure:: img/stm32_21.png
-

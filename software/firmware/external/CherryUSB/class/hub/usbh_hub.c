@@ -153,6 +153,7 @@ static int _usbh_hub_clear_feature(struct usbh_hub *hub, uint8_t port, uint8_t f
     return usbh_control_transfer(hub->parent, setup, NULL);
 }
 
+#if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static int _usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
 {
     struct usb_setup_packet *setup;
@@ -168,7 +169,6 @@ static int _usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
     return usbh_control_transfer(hub->parent, setup, NULL);
 }
 
-#if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static int parse_hub_descriptor(struct usb_hub_descriptor *desc, uint16_t length)
 {
     (void)length;
@@ -180,15 +180,15 @@ static int parse_hub_descriptor(struct usb_hub_descriptor *desc, uint16_t length
         USB_LOG_ERR("unexpected descriptor 0x%02x\r\n", desc->bDescriptorType);
         return -2;
     } else {
-        USB_LOG_RAW("Hub Descriptor:\r\n");
-        USB_LOG_RAW("bLength: 0x%02x             \r\n", desc->bLength);
-        USB_LOG_RAW("bDescriptorType: 0x%02x     \r\n", desc->bDescriptorType);
-        USB_LOG_RAW("bNbrPorts: 0x%02x           \r\n", desc->bNbrPorts);
-        USB_LOG_RAW("wHubCharacteristics: 0x%04x \r\n", desc->wHubCharacteristics);
-        USB_LOG_RAW("bPwrOn2PwrGood: 0x%02x      \r\n", desc->bPwrOn2PwrGood);
-        USB_LOG_RAW("bHubContrCurrent: 0x%02x    \r\n", desc->bHubContrCurrent);
-        USB_LOG_RAW("DeviceRemovable: 0x%02x     \r\n", desc->DeviceRemovable);
-        USB_LOG_RAW("PortPwrCtrlMask: 0x%02x     \r\n", desc->PortPwrCtrlMask);
+        USB_LOG_DBG("Hub Descriptor:\r\n");
+        USB_LOG_DBG("bLength: 0x%02x             \r\n", desc->bLength);
+        USB_LOG_DBG("bDescriptorType: 0x%02x     \r\n", desc->bDescriptorType);
+        USB_LOG_DBG("bNbrPorts: 0x%02x           \r\n", desc->bNbrPorts);
+        USB_LOG_DBG("wHubCharacteristics: 0x%04x \r\n", desc->wHubCharacteristics);
+        USB_LOG_DBG("bPwrOn2PwrGood: 0x%02x      \r\n", desc->bPwrOn2PwrGood);
+        USB_LOG_DBG("bHubContrCurrent: 0x%02x    \r\n", desc->bHubContrCurrent);
+        USB_LOG_DBG("DeviceRemovable: 0x%02x     \r\n", desc->DeviceRemovable);
+        USB_LOG_DBG("PortPwrCtrlMask: 0x%02x     \r\n", desc->PortPwrCtrlMask);
     }
     return 0;
 }
@@ -204,14 +204,14 @@ static int parse_hub_ss_descriptor(struct usb_hub_ss_descriptor *desc, uint16_t 
         USB_LOG_ERR("unexpected descriptor 0x%02x\r\n", desc->bDescriptorType);
         return -2;
     } else {
-        USB_LOG_RAW("SuperSpeed Hub Descriptor:\r\n");
-        USB_LOG_RAW("bLength: 0x%02x             \r\n", desc->bLength);
-        USB_LOG_RAW("bDescriptorType: 0x%02x     \r\n", desc->bDescriptorType);
-        USB_LOG_RAW("bNbrPorts: 0x%02x           \r\n", desc->bNbrPorts);
-        USB_LOG_RAW("wHubCharacteristics: 0x%04x \r\n", desc->wHubCharacteristics);
-        USB_LOG_RAW("bPwrOn2PwrGood: 0x%02x      \r\n", desc->bPwrOn2PwrGood);
-        USB_LOG_RAW("bHubContrCurrent: 0x%02x    \r\n", desc->bHubContrCurrent);
-        USB_LOG_RAW("DeviceRemovable: 0x%02x     \r\n", desc->DeviceRemovable);
+        USB_LOG_DBG("SuperSpeed Hub Descriptor:\r\n");
+        USB_LOG_DBG("bLength: 0x%02x             \r\n", desc->bLength);
+        USB_LOG_DBG("bDescriptorType: 0x%02x     \r\n", desc->bDescriptorType);
+        USB_LOG_DBG("bNbrPorts: 0x%02x           \r\n", desc->bNbrPorts);
+        USB_LOG_DBG("wHubCharacteristics: 0x%04x \r\n", desc->wHubCharacteristics);
+        USB_LOG_DBG("bPwrOn2PwrGood: 0x%02x      \r\n", desc->bPwrOn2PwrGood);
+        USB_LOG_DBG("bHubContrCurrent: 0x%02x    \r\n", desc->bHubContrCurrent);
+        USB_LOG_DBG("DeviceRemovable: 0x%02x     \r\n", desc->DeviceRemovable);
     }
     return 0;
 }
@@ -271,6 +271,7 @@ int usbh_hub_clear_feature(struct usbh_hub *hub, uint8_t port, uint8_t feature)
     }
 }
 
+#if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static int usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
 {
     struct usb_setup_packet roothub_setup;
@@ -289,7 +290,6 @@ static int usbh_hub_set_depth(struct usbh_hub *hub, uint16_t depth)
     }
 }
 
-#if CONFIG_USBHOST_MAX_EXTHUBS > 0
 static void hub_int_complete_callback(void *arg, int nbytes)
 {
     struct usbh_hub *hub = (struct usbh_hub *)arg;
@@ -404,7 +404,7 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
 
     for (uint8_t port = 0; port < hub->nports; port++) {
         ret = usbh_hub_get_portstatus(hub, port + 1, &port_status);
-        USB_LOG_INFO("port %u, status:0x%02x, change:0x%02x\r\n", port + 1, port_status.wPortStatus, port_status.wPortChange);
+        USB_LOG_DBG("port %u, status:0x%02x, change:0x%02x\r\n", port + 1, port_status.wPortStatus, port_status.wPortChange);
         if (ret < 0) {
             return ret;
         }
@@ -417,7 +417,7 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
 
     hub->int_buffer = g_hub_intbuf[hub->bus->busid][hub->index - 1];
 
-    hub->int_timer = usb_osal_timer_create("hubint_tim", USBH_GET_URB_INTERVAL(hub->intin->bInterval, hport->speed), hub_int_timeout, hub, 0);
+    hub->int_timer = usb_osal_timer_create("hubint_tim", USBH_GET_URB_INTERVAL(hub->intin->bInterval, hport->speed) / 1000, hub_int_timeout, hub, 0);
     if (hub->int_timer == NULL) {
         USB_LOG_ERR("No memory to alloc int_timer\r\n");
         return -USB_ERR_NOMEM;
@@ -759,14 +759,14 @@ int usbh_hub_deinitialize(struct usbh_bus *bus)
     struct usbh_hub *hub;
     size_t flags;
 
-    flags = usb_osal_enter_critical_section();
-
     hub = &bus->hcd.roothub;
     for (uint8_t port = 0; port < hub->nports; port++) {
         hport = &hub->child[port];
 
         usbh_hubport_release(hport);
     }
+
+    flags = usb_osal_enter_critical_section();
 
     usb_hc_deinit(bus);
 

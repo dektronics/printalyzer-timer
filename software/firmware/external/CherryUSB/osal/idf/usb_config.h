@@ -8,6 +8,7 @@
 
 #include "sdkconfig.h"
 #include "esp_rom_sys.h"
+#include "esp_attr.h"
 
 /* ================ USB common Configuration ================ */
 
@@ -25,8 +26,15 @@
 #define CONFIG_USB_ALIGN_SIZE 4
 #endif
 
+// #define CONFIG_USB_DCACHE_ENABLE
+
 /* attribute data into no cache ram */
-#define USB_NOCACHE_RAM_SECTION
+#define USB_NOCACHE_RAM_SECTION DRAM_DMA_ALIGNED_ATTR
+
+/* use usb_memcpy default for high performance but cost more flash memory.
+ * And, arm libc has a bug that memcpy() may cause data misalignment when the size is not a multiple of 4.
+*/
+// #define CONFIG_USB_MEMCPY_DISABLE
 
 /* ================= USB Device Stack Configuration ================ */
 
@@ -48,6 +56,9 @@
 
 /* Enable test mode */
 // #define CONFIG_USBDEV_TEST_MODE
+
+/* enable advance desc register api */
+#define CONFIG_USBDEV_ADVANCE_DESC
 
 /* move ep0 setup handler from isr to thread */
 // #define CONFIG_USBDEV_EP0_THREAD
@@ -84,7 +95,7 @@
 // #define CONFIG_USBDEV_MSC_POLLING
 
 /* move msc read & write from isr to thread */
-// #define CONFIG_USBDEV_MSC_THREAD
+#define CONFIG_USBDEV_MSC_THREAD
 
 #ifndef CONFIG_USBDEV_MSC_PRIO
 #define CONFIG_USBDEV_MSC_PRIO 4
@@ -92,6 +103,28 @@
 
 #ifndef CONFIG_USBDEV_MSC_STACKSIZE
 #define CONFIG_USBDEV_MSC_STACKSIZE 2048
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_MAX_BUFSIZE
+#define CONFIG_USBDEV_MTP_MAX_BUFSIZE 2048
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_MAX_OBJECTS
+#define CONFIG_USBDEV_MTP_MAX_OBJECTS 256
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_MAX_PATHNAME
+#define CONFIG_USBDEV_MTP_MAX_PATHNAME 256
+#endif
+
+#define CONFIG_USBDEV_MTP_THREAD
+
+#ifndef CONFIG_USBDEV_MTP_PRIO
+#define CONFIG_USBDEV_MTP_PRIO 4
+#endif
+
+#ifndef CONFIG_USBDEV_MTP_STACKSIZE
+#define CONFIG_USBDEV_MTP_STACKSIZE 4096
 #endif
 
 #ifndef CONFIG_USBDEV_RNDIS_RESP_BUFFER_SIZE
@@ -112,6 +145,7 @@
 #endif
 
 #define CONFIG_USBDEV_RNDIS_USING_LWIP
+#define CONFIG_USBDEV_CDC_ECM_USING_LWIP
 
 /* ================ USB HOST Stack Configuration ================== */
 
@@ -134,10 +168,10 @@
 #define CONFIG_USBHOST_PSC_PRIO 0
 #endif
 #ifndef CONFIG_USBHOST_PSC_STACKSIZE
-#define CONFIG_USBHOST_PSC_STACKSIZE 2048
+#define CONFIG_USBHOST_PSC_STACKSIZE 4096
 #endif
 
-// #define CONFIG_USBHOST_GET_STRING_DESC
+//#define CONFIG_USBHOST_GET_STRING_DESC
 
 // #define CONFIG_USBHOST_MSOS_ENABLE
 #ifndef CONFIG_USBHOST_MSOS_VENDOR_CODE
@@ -212,63 +246,28 @@
 #define CONFIG_USBHOST_BLUETOOTH_RX_SIZE 2048
 #endif
 
-/* ================ USB Device Port Configuration ================*/
-
 #if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#define ESP_USBD_BASE           0x60080000
-
+#define ESP_USB_FS0_BASE            0x60080000
+#define ESP_USBD_BASE               ESP_USB_FS0_BASE
+#define ESP_USBH_BASE               ESP_USB_FS0_BASE
 #define CONFIG_USBDEV_MAX_BUS 1
-// esp32s2/s3 has 7 endpoints in device mode (include ep0)
-#define CONFIG_USBDEV_EP_NUM 7
-
-/* ---------------- DWC2 Configuration ---------------- */
-//esp32s2/s3 can support up to 5 IN endpoints(include ep0) at the same time
-#define CONFIG_USB_DWC2_RXALL_FIFO_SIZE (320 / 4)
-#define CONFIG_USB_DWC2_TX0_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX1_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX2_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX3_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX4_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX5_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX6_FIFO_SIZE (64 / 4)
-#define CONFIG_USB_DWC2_TX7_FIFO_SIZE (0 / 4)
-#define CONFIG_USB_DWC2_TX8_FIFO_SIZE (0 / 4)
-
-#define CONFIG_USB_DWC2_DMA_ENABLE
-
-#elif CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32P4
+#define CONFIG_USBHOST_MAX_BUS 1
+#elif CONFIG_IDF_TARGET_ESP32P4
+#define ESP_USB_HS0_BASE            0x50000000
+#define ESP_USB_FS0_BASE            0x50040000
+#define ESP_USBD_BASE               ESP_USB_HS0_BASE
+#define ESP_USBH_BASE               ESP_USB_HS0_BASE
+#define CONFIG_USBDEV_MAX_BUS 2
+#define CONFIG_USBHOST_MAX_BUS 2
 #define CONFIG_USB_HS
-#define ESP_USBD_BASE           0x60080000
-// todo: check c5, p4 in later
-#define CONFIG_USBDEV_EP_NUM 7
 #else
 #error "Unsupported SoC"
 #endif
 
-/* ================ USB Host Port Configuration ==================*/
+#if CONFIG_IDF_TARGET_ESP32P4
+#define CONFIG_USB_DCACHE_ENABLE
 
-#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-#define ESP_USBH_BASE               0x60080000
+#undef CONFIG_USB_ALIGN_SIZE
+#define CONFIG_USB_ALIGN_SIZE CONFIG_CACHE_L1_CACHE_LINE_SIZE
 
-#define CONFIG_USBHOST_MAX_BUS 1
-// esp32s2/s3 has 8 endpoints in host mode (include ep0)
-#define CONFIG_USBHOST_PIPE_NUM 8
-
-/* ---------------- DWC2 Configuration ---------------- */
-/* largest non-periodic USB packet used / 4 */
-#define CONFIG_USB_DWC2_NPTX_FIFO_SIZE (240 / 4)
-/* largest periodic USB packet used / 4 */
-#define CONFIG_USB_DWC2_PTX_FIFO_SIZE (240 / 4)
-/*
- * (largest USB packet used / 4) + 1 for status information + 1 transfer complete +
- * 1 location each for Bulk/Control endpoint for handling NAK/NYET scenario
- */
-#define CONFIG_USB_DWC2_RX_FIFO_SIZE ((200 - CONFIG_USB_DWC2_NPTX_FIFO_SIZE - CONFIG_USB_DWC2_PTX_FIFO_SIZE))
-
-#elif CONFIG_IDF_TARGET_ESP32C5 || CONFIG_IDF_TARGET_ESP32P4
-// todo: check c5, p4 in later
-#define ESP_USBH_BASE               0x60080000
-#define CONFIG_USBHOST_PIPE_NUM 8
-#else
-#error "Unsupported SoC"
 #endif

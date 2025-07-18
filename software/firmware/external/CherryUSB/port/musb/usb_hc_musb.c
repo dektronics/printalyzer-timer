@@ -429,9 +429,18 @@ static int usbh_reset_port(struct usbh_bus *bus, const uint8_t port)
 {
     g_musb_hcd[bus->hcd.hcd_id].port_pe = 0;
     HWREGB(USB_BASE + MUSB_POWER_OFFSET) |= USB_POWER_RESET;
+
+#ifdef CONFIG_USB_MUSB_SIFLI
+    extern void musb_reset_prev(void);
+    musb_reset_prev();
+#endif
     usb_osal_msleep(20);
     HWREGB(USB_BASE + MUSB_POWER_OFFSET) &= ~(USB_POWER_RESET);
     usb_osal_msleep(20);
+#ifdef CONFIG_USB_MUSB_SIFLI
+    extern void musb_reset_post(void);
+    musb_reset_post();
+#endif
     g_musb_hcd[bus->hcd.hcd_id].port_pe = 1;
     return 0;
 }
@@ -504,11 +513,7 @@ int usb_hc_init(struct usbh_bus *bus)
         offset = usbh_musb_fifo_config(bus, &cfg[i], offset);
     }
 
-    if (offset > usb_get_musb_ram_size()) {
-        USB_LOG_ERR("offset:%d is overflow, please check your table\r\n", offset);
-        while (1) {
-        }
-    }
+    USB_ASSERT_MSG(offset <= usb_get_musb_ram_size(), "Your fifo config is overflow, please check");
 
     /* Enable USB interrupts */
     regval = USB_IE_RESET | USB_IE_CONN | USB_IE_DISCON |
@@ -769,6 +774,16 @@ int usbh_kill_urb(struct usbh_urb *urb)
     urb->hcpriv = NULL;
     urb->errorcode = -USB_ERR_SHUTDOWN;
     pipe->urb = NULL;
+
+    if (urb->ep->bEndpointAddress & 0x80) {
+        HWREGH(USB_BASE + MUSB_RXIE_OFFSET) &= ~(1 << (urb->ep->bEndpointAddress & 0x0f));
+        HWREGH(USB_BASE + MUSB_RXIS_OFFSET) = (1 << (urb->ep->bEndpointAddress & 0x0f));
+    } else {
+        HWREGH(USB_BASE + MUSB_TXIE_OFFSET) &= ~(1 << (urb->ep->bEndpointAddress & 0x0f));
+        HWREGH(USB_BASE + MUSB_TXIS_OFFSET) = (1 << (urb->ep->bEndpointAddress & 0x0f));
+    }
+
+    musb_fifo_flush(bus, urb->ep->bEndpointAddress);
 
     if (urb->timeout) {
         usb_osal_sem_give(pipe->waitsem);
