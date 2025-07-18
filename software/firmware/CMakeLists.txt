@@ -101,6 +101,9 @@ set(PROJECT_INCLUDE_DIRECTORIES
     ${PROJECT_DIR}/system
     ${PROJECT_DIR}/drivers
     ${PROJECT_DIR}/usb
+    ${PROJECT_DIR}/display
+    ${PROJECT_DIR}/menu
+    ${PROJECT_DIR}/peripheral
 )
 
 # Sources
