@@ -538,3 +538,72 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
         HAL_NVIC_DisableIRQ(USART6_IRQn);
     }
 }
+
+/**
+ * HCD MSP Initialization
+ * @param hhcd: HCD handle pointer
+ * @retval None
+ */
+void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+    if (hhcd->Instance == USB_OTG_HS) {
+        /* Initialize the peripherals clock */
+        PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
+        PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
+        PeriphClkInitStruct.PLLSAI.PLLSAIN = 96;
+        PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
+        PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
+        PeriphClkInitStruct.PLLSAIDivQ = 1;
+        PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLSAIP;
+        if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+            Error_Handler();
+        }
+
+        __HAL_RCC_GPIOB_CLK_ENABLE();
+
+        /*
+         * USB_OTG_HS GPIO Configuration
+         * PB14     ------> USB_OTG_HS_DM
+         * PB15     ------> USB_OTG_HS_DP
+         */
+        GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
+        GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Pull = GPIO_NOPULL;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+        GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+        HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+        /* Peripheral clock enable */
+        __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+
+        /* Peripheral interrupt init */
+        HAL_NVIC_SetPriority(OTG_HS_IRQn, 5, 0);
+        HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
+    }
+}
+
+/**
+ * HCD MSP De-Initialization
+ * @param hhcd: HCD handle pointer
+ * @retval None
+ */
+void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
+{
+    if (hhcd->Instance == USB_OTG_HS) {
+        /* Peripheral clock disable */
+        __HAL_RCC_USB_OTG_HS_CLK_DISABLE();
+
+        /**
+         * USB_OTG_HS GPIO Configuration
+         * PB14     ------> USB_OTG_HS_DM
+         * PB15     ------> USB_OTG_HS_DP
+         */
+        HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14|GPIO_PIN_15);
+
+        /* Peripheral interrupt deinit */
+        HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
+    }
+}

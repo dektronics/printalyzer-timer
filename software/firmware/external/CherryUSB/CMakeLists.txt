@@ -10,6 +10,11 @@
 
 add_library(cherryusb STATIC)
 
+target_link_libraries(cherryusb PRIVATE
+    cmsis
+    hal
+)
+
 target_link_libraries(cherryusb INTERFACE "-u cdc_acm_class_info")
 target_link_libraries(cherryusb INTERFACE "-u cdc_data_class_info")
 target_link_libraries(cherryusb INTERFACE "-u hid_custom_class_info")

@@ -71,61 +71,6 @@ static void sof_watchdog_timer_callback(TimerHandle_t xTimer);
 
 static hid_device_type_t usbh_hid_check_device_type(const struct usbh_hid *hid_class);
 
-void usb_hc_low_level_init(struct usbh_bus *bus)
-{
-    GPIO_InitTypeDef GPIO_InitStruct = {0};
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
-
-    /* Initialize the peripherals clock */
-    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_CLK48;
-    PeriphClkInitStruct.PLLSAI.PLLSAIM = 8;
-    PeriphClkInitStruct.PLLSAI.PLLSAIN = 96;
-    PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
-    PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV4;
-    PeriphClkInitStruct.PLLSAIDivQ = 1;
-    PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48CLKSOURCE_PLLSAIP;
-    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
-        Error_Handler();
-    }
-
-    __HAL_RCC_GPIOB_CLK_ENABLE();
-
-    /*
-     * USB_OTG_HS GPIO Configuration
-     * PB14     ------> USB_OTG_HS_DM
-     * PB15     ------> USB_OTG_HS_DP
-     */
-    GPIO_InitStruct.Pin = GPIO_PIN_14|GPIO_PIN_15;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
-    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-    /* Peripheral clock enable */
-    __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
-
-    /* Peripheral interrupt init */
-    HAL_NVIC_SetPriority(OTG_HS_IRQn, 5, 0);
-    HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
-}
-
-void usb_hc_low_level_deinit(struct usbh_bus *bus)
-{
-    /* Peripheral clock disable */
-    __HAL_RCC_USB_OTG_HS_CLK_DISABLE();
-
-    /**
-     * USB_OTG_HS GPIO Configuration
-     * PB14     ------> USB_OTG_HS_DM
-     * PB15     ------> USB_OTG_HS_DP
-     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_14|GPIO_PIN_15);
-
-    /* Peripheral interrupt deinit */
-    HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
-}
-
 bool usb_host_init()
 {
     /* Make sure the USB2422 hub is in reset, and the VBUS signal is low */
@@ -190,9 +135,7 @@ void usb_host_deinit()
     osDelay(2);
 
     /* Shutdown the USB stack */
-    usb_hc_low_level_deinit(0); /* Temporary workaround */
-    //FIXME Re-enable once this is known to work cleanly
-    //usbh_deinitialize(0);
+    usbh_deinitialize(0);
 }
 
 bool usb_hub_init()

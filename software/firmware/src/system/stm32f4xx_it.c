@@ -179,12 +179,3 @@ void USART6_IRQHandler(void)
 {
     HAL_UART_IRQHandler(&huart6);
 }
-
-/**
- * @brief This function handles USB On The Go HS global interrupt.
- */
-void OTG_HS_IRQHandler(void)
-{
-    extern void USBH_IRQHandler(uint8_t busid);
-    USBH_IRQHandler(0);
-}

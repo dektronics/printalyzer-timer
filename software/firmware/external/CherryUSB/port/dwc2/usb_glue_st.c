@@ -186,9 +186,9 @@ const struct dwc2_user_params param_pb14_pb15 = {
         [15] = 0 },
 
     .host_dma_desc_enable = false,
-    .host_rx_fifo_size = 628,
-    .host_nperio_tx_fifo_size = 128, // 512 byte
-    .host_perio_tx_fifo_size = 256,  // 1024 byte
+    .host_rx_fifo_size = 512, /* (DK) Was: 628 (2512b) */
+    .host_nperio_tx_fifo_size = 256, /* (DK) Was: 128 (512b) */
+    .host_perio_tx_fifo_size = 224, /* (DK) Was: 256 (1024b) */
 #ifdef CONFIG_USB_HS
     .device_gccfg = 0,
     .host_gccfg = 0,

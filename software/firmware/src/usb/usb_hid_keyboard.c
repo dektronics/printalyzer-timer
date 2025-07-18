@@ -374,7 +374,7 @@ uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode
 
     if (((report_state & HID_KBD_OUTPUT_REPORT_CAPSLOCK) != 0
         && ((key >= 'A' && key <= 'Z') || (key >= 'a' && key <= 'z'))) ||
-        (state & (HID_MODIFER_LSHIFT | HID_MODIFER_RSHIFT)) != 0) {
+        (state & (HID_MODIFIER_LSHIFT | HID_MODIFIER_RSHIFT)) != 0) {
         key = keyboard_shift_keys[keyboard_codes[keycode]];
     }
     return key;
@@ -473,7 +473,7 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
     }
 
     /* Check for Ctrl-PrintScreen */
-    if ((info->state & (HID_MODIFER_LCTRL | HID_MODIFER_RCTRL)) != 0
+    if ((info->state & (HID_MODIFIER_LCTRL | HID_MODIFIER_RCTRL)) != 0
         && info->keys[0] == HID_KBD_USAGE_PRINTSCN) {
         log_d("Triggering display screenshot");
         display_save_screenshot();
