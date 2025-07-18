@@ -172,6 +172,7 @@ static int usbh_serial_cdc_acm_disconnect(struct usbh_hubport *hport, uint8_t in
 #endif
 
         if (hport->config.intf[intf].devname[0] != '\0') {
+            usb_osal_thread_schedule_other();
             USB_LOG_INFO("Unregister CDC ACM Class:%s\r\n", hport->config.intf[intf].devname);
             usbh_serial_stop((struct usbh_serial_class *)cdc_acm_class);
         }

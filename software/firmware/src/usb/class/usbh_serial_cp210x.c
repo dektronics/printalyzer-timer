@@ -335,6 +335,7 @@ static int usbh_serial_cp210x_disconnect(struct usbh_hubport *hport, uint8_t int
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
+            usb_osal_thread_schedule_other();
             log_i("Unregister CP210X Class:%s", hport->config.intf[intf].devname);
             usbh_serial_stop((struct usbh_serial_class *)cp210x_class);
         }

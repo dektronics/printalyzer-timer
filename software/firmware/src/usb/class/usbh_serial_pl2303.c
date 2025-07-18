@@ -362,6 +362,7 @@ static int usbh_serial_pl2303_disconnect(struct usbh_hubport *hport, uint8_t int
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
+            usb_osal_thread_schedule_other();
             log_i("Unregister PL2303 Class:%s", hport->config.intf[intf].devname);
             usbh_serial_stop((struct usbh_serial_class *)pl2303_class);
         }

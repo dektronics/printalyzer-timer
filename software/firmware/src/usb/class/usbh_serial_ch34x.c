@@ -297,6 +297,7 @@ static int usbh_serial_ch34x_disconnect(struct usbh_hubport *hport, uint8_t intf
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
+            usb_osal_thread_schedule_other();
             log_i("Unregister CH34X Class:%s", hport->config.intf[intf].devname);
             usbh_serial_stop((struct usbh_serial_class *)ch34x_class);
         }

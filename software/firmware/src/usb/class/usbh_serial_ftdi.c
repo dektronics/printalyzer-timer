@@ -430,6 +430,7 @@ static int usbh_serial_ftdi_disconnect(struct usbh_hubport *hport, uint8_t intf)
         }
 
         if (hport->config.intf[intf].devname[0] != '\0') {
+            usb_osal_thread_schedule_other();
             log_i("Unregister FTDI Class:%s", hport->config.intf[intf].devname);
             usbh_serial_stop((struct usbh_serial_class *)ftdi_class);
         }
