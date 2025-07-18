@@ -196,7 +196,6 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
 
 # Post-build commands to embed the checksum
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    DEPENDS ${EXECUTABLE}
     COMMAND ${CMAKE_OBJCOPY} --gap-fill 0xff $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}-temp.elf
     COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE}-temp.elf ${EXECUTABLE}-temp.bin
     COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/checksum.pl ${EXECUTABLE}-temp.bin ${EXECUTABLE}-desc.dat
