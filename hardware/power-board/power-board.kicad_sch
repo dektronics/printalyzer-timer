@@ -10127,7 +10127,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_Audio:Jack_XLR_Neutrik_NC5FBH_Horizontal"
+		(property "Footprint" "Connector_Audio:Jack_XLR_Neutrik_NC5FAH_Horizontal"
 			(at 104.775 153.035 0)
 			(effects
 				(font
@@ -10136,7 +10136,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.mouser.com/datasheet/2/289/nc5fbh-3-1853668.pdf"
+		(property "Datasheet" "https://www.neutrik.us/media/8323/download/nc5fah-3.pdf"
 			(at 104.775 153.035 0)
 			(effects
 				(font
@@ -10163,7 +10163,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "NC5FBH"
+		(property "Manufacturer PN" "NC5FAH"
 			(at 104.775 153.035 0)
 			(effects
 				(font
@@ -10181,7 +10181,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "568-NC5FBH"
+		(property "Supplier PN" "568-NC5FAH"
 			(at 104.775 153.035 0)
 			(effects
 				(font
