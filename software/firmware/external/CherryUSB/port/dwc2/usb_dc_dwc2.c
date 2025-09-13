@@ -172,7 +172,12 @@ static inline void dwc2_set_mode(uint8_t busid, uint8_t mode)
         USB_OTG_GLB->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
     }
 
-    usbd_dwc2_delay_ms(50);
+    while (1) {
+        if ((USB_OTG_GLB->GINTSTS & 0x1U) == USB_OTG_MODE_DEVICE) {
+            break;
+        }
+        usbd_dwc2_delay_ms(10);
+    }
 }
 
 static inline int dwc2_flush_rxfifo(uint8_t busid)
@@ -777,6 +782,7 @@ int usbd_ep_set_stall(uint8_t busid, const uint8_t ep)
     }
 
     if ((ep_idx == 0) && g_dwc2_udc[busid].user_params.device_dma_enable) {
+        usb_dcache_invalidate((uintptr_t)&g_dwc2_udc[busid].setup, USB_ALIGN_UP(8, CONFIG_USB_ALIGN_SIZE));
         dwc2_ep0_start_read_setup(busid, (uint8_t *)&g_dwc2_udc[busid].setup);
     }
 
@@ -947,6 +953,7 @@ int usbd_ep_start_read(uint8_t busid, const uint8_t ep, uint8_t *data, uint32_t 
     }
 
     if (g_dwc2_udc[busid].user_params.device_dma_enable) {
+        usb_dcache_invalidate((uintptr_t)data, USB_ALIGN_UP(data_len, CONFIG_USB_ALIGN_SIZE));
         USB_OTG_OUTEP(ep_idx)->DOEPDMA = (uint32_t)data;
     }
     if (g_dwc2_udc[busid].out_ep[ep_idx].ep_type == USB_ENDPOINT_TYPE_ISOCHRONOUS) {

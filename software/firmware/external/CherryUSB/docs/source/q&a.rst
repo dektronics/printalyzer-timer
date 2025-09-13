@@ -10,12 +10,13 @@ Q & A
 
 提问中请包含以下信息：
 
+- 使用的版本
 - 使用的板子，引脚，USB IP
-- USB 中断，时钟，引脚，寄存器地址是否正确，截图
+- 是否配置 USB 中断，USB 时钟，USB 引脚，USB phy 配置，以及 USB 寄存器地址是否正确，截图
 - 是否能进 USB 中断
 - 芯片是否带有 cache功能，是否做了 no cache 处理，截图
-- 硬件是否正常，是否使用杜邦线连接，如果正常，请说明正常原因
-- 配置 **#define CONFIG_USB_DBG_LEVEL USB_DBG_LOG** 并提供 log，仅限商业 IP, 其余 IP 禁止开启 log，否则无法枚举
+- USB 电路是否画正确，是否使用杜邦线连接，是否直连，如果正常，请说明正常原因
+- 如果能进中断，配置 **#define CONFIG_USB_DBG_LEVEL USB_DBG_LOG** 并提供 log，仅限商业 IP, 其余 IP 禁止开启 log，否则无法枚举
 - 是否流片并销售
 
 其余问题提问模板
@@ -36,12 +37,7 @@ ST 命名为 USB_OTG_FS, USB_OTG_HS，并不是说明本身是高速或者全速
 GD IP 问题
 ------------------
 
-GD IP 采用 DWC2，但是读取的硬件参数都是 0（我也不懂为什么不给人知道），因此需要用户自行知道硬件信息，以下列举 GD32F4 的信息：
-
-CONFIG_USBDEV_EP_NUM pa11/pa12 引脚必须为 4，PB14/PB15 引脚必须为 6，并删除 usb_dc_dwc2.c 中 while(1){}
-
-- 当 CONFIG_USBDEV_EP_NUM 为4 时，fifo_num 不得大于 320 字
-- 当 CONFIG_USBDEV_EP_NUM 为6 时，fifo_num 不得大于 1280 字
+GD IP 采用 DWC2，但是读取的硬件参数都是 0（我也不懂为什么不给人知道），因此需要用户自行知道硬件信息，从 1.5.0 开始由于需要读取硬件信息，因此无法直接使用。
 
 其次 GD 复位以后无法使用 EPDIS 功能关闭端点，需要用户删除 reset 中断中的以下代码：
 
@@ -49,11 +45,6 @@ CONFIG_USBDEV_EP_NUM pa11/pa12 引脚必须为 4，PB14/PB15 引脚必须为 6�
 
     USB_OTG_INEP(i)->DIEPCTL = (USB_OTG_DIEPCTL_EPDIS | USB_OTG_DIEPCTL_SNAK);
     USB_OTG_OUTEP(i)->DOEPCTL = (USB_OTG_DOEPCTL_EPDIS | USB_OTG_DOEPCTL_SNAK);
-
-dwc2 has less endpoints than config, please check
----------------------------------------------------------------
-
-该 IP 硬件上没有这么多端点，请修改 `CONFIG_USBDEV_EP_NUM`
 
 Ep addr XXX overflow
 ------------------------------
@@ -75,7 +66,6 @@ CONFIG_USB_HS 何时使用
 
 当你的芯片硬件支持高速，并想初始化成高速模式时开启，相关 IP 会根据该宏配置内部或者外部 高速 PHY。
 
-
 Failed to enable port
 ----------------------------------------------------------------
 
@@ -84,6 +74,25 @@ Failed to enable port
 移植 usb host 出现 urb  返回 -12/-14
 ----------------------------------------------------------------
 
--12 就检查 phy 配置，通信不良
+检查 phy 配置，cache 配置（如果有），电源供电（建议自供电）
 
--14 就检查 phy 配置，cache 配置（如果有），fifo配置，寄存器地址， IP 是否真的标准等等
+USB_ERR_NAK 说明
+----------------------------------------------------------------
+USB_ERR_NAK 只存在于 DWC2 buffer dma 模式，DWC2 在 buffer dma模式下对于中断传输不支持硬件处理 NAK 中断，因此需要软件处理，导致 NAK 中断非常多，建议搭配定时器使用。
+DWC2 scatter/gather dma 模式下全部由硬件处理，但是不支持 split 传输。总结， **半斤 IP**。
+
+USB host 连接 USB 网卡问题
+----------------------------------------------------------------
+
+表现为能识别网卡并且分配到 IP 地址，但是无法 ping 通，这是因为网卡自身需要开启自动拨号，通常需要使用 AT 口设置。具体为 EC20/ML307 等模块。
+
+PC 识别的 COM 口如何更改名称
+----------------------------------------------------------------
+
+这是微软对 CDC ACM 的驱动问题，无法修改，如需修改，请联系微软并缴纳费用即可更改。
+
+connect 和 disconnect event 不触发
+----------------------------------------------------------------
+
+当前仅 hpm 芯片支持 connect 和 disconnect 事件，其他芯片请使用 USB 检测 vbus 电路。DWC2 IP 支持，但是由于需要占用引脚，并且大多是log 口，
+然后不同使能的配置也不一样，因此不做支持。

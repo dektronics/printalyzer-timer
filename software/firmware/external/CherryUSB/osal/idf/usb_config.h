@@ -28,7 +28,12 @@
 
 // #define CONFIG_USB_DCACHE_ENABLE
 
-/* attribute data into no cache ram */
+/* attribute data into no cache ram 
+* DRAM_DMA_ALIGNED_ATTR was introduced in IDF 5.3. If not defined, it falls back to DMA_ATTR
+*/
+#ifndef DRAM_DMA_ALIGNED_ATTR
+#define DRAM_DMA_ALIGNED_ATTR DMA_ATTR
+#endif
 #define USB_NOCACHE_RAM_SECTION DRAM_DMA_ALIGNED_ATTR
 
 /* use usb_memcpy default for high performance but cost more flash memory.
@@ -144,16 +149,13 @@
 #define CONFIG_USBDEV_RNDIS_VENDOR_DESC "CherryUSB"
 #endif
 
-#define CONFIG_USBDEV_RNDIS_USING_LWIP
-#define CONFIG_USBDEV_CDC_ECM_USING_LWIP
-
 /* ================ USB HOST Stack Configuration ================== */
 
 #define CONFIG_USBHOST_MAX_RHPORTS          1
 #define CONFIG_USBHOST_MAX_EXTHUBS          1
 #define CONFIG_USBHOST_MAX_EHPORTS          4
 #define CONFIG_USBHOST_MAX_INTERFACES       8
-#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 8
+#define CONFIG_USBHOST_MAX_INTF_ALTSETTINGS 2
 #define CONFIG_USBHOST_MAX_ENDPOINTS        4
 
 #define CONFIG_USBHOST_MAX_CDC_ACM_CLASS 4
