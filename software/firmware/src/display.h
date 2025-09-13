@@ -6,6 +6,10 @@
 #include "u8g2_stm32_hal.h"
 #include "contrast.h"
 
+#ifdef ENABLE_EMC_TEST
+#include "keypad.h"
+#endif
+
 #define MENU_TIMEOUT_MS 30000
 
 typedef enum {
@@ -122,6 +126,15 @@ typedef struct {
     bool time_too_short;
 } display_adjustment_exposure_elements_t;
 
+#ifdef ENABLE_EMC_TEST
+typedef struct {
+    bool enlarger_on;
+    bool safelight_on;
+    uint8_t dmx_ch_a;
+    uint8_t dmx_ch_b;
+} display_emc_elements_t;
+#endif
+
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
 typedef uint16_t (*display_data_source_callback_t)(uint8_t event_action, void *user_data);
 
@@ -234,5 +247,9 @@ uint8_t display_input_value_cb(const char *title, const char *msg, const char *p
         display_input_value_callback_t callback, void *user_data);
 
 uint8_t display_input_text(const char *title, char *text, size_t text_len);
+
+#ifdef ENABLE_EMC_TEST
+void display_emc_elements(const keypad_event_t *keypad_event, const display_emc_elements_t *elements);
+#endif
 
 #endif /* DISPLAY_H */

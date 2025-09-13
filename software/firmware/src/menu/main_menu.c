@@ -27,6 +27,9 @@
 #include "menu_firmware.h"
 
 static menu_result_t menu_about();
+#ifdef ENABLE_EMC_TEST
+static menu_result_t menu_emc_test();
+#endif
 
 menu_result_t main_menu_start(state_controller_t *controller)
 {
@@ -48,7 +51,11 @@ menu_result_t main_menu_start(state_controller_t *controller)
                 "DensiStick\n"
                 "Diagnostics\n"
                 "Update Firmware\n"
-                "About");
+                "About"
+#ifdef ENABLE_EMC_TEST
+                "\nEMC Test Cycle"
+#endif
+        );
 
         if (option == 1) {
             menu_result = menu_settings();
@@ -72,6 +79,10 @@ menu_result_t main_menu_start(state_controller_t *controller)
             menu_result = menu_firmware();
         } else if (option == 11) {
             menu_result = menu_about();
+#ifdef ENABLE_EMC_TEST
+        } else if (option == 12) {
+            menu_result = menu_emc_test();
+#endif
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -166,3 +177,41 @@ menu_result_t menu_about()
     }
     return menu_result;
 }
+
+#ifdef ENABLE_EMC_TEST
+menu_result_t menu_emc_test()
+{
+    bool keypad_pressed = false;
+    keypad_event_t keypad_event = {0};
+    display_emc_elements_t emc_elements = {0};
+
+    for (;;) {
+        //TODO
+        display_emc_elements(&keypad_event, &emc_elements);
+
+        if (keypad_event.key == KEYPAD_CANCEL && keypad_event.repeated) {
+            keypad_pressed = true;
+            break;
+        }
+
+        keypad_event.key = 0;
+        keypad_event.pressed = false;
+        keypad_event.repeated = false;
+        keypad_wait_for_event(&keypad_event, 200);
+    }
+
+    if (keypad_pressed) {
+        for (;;) {
+            if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
+                if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    return MENU_OK;
+}
+#endif
