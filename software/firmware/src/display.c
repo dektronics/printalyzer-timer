@@ -2112,3 +2112,158 @@ void display_prepare_menu_font()
     u8g2_SetFontMode(&u8g2, 0);
     u8g2_SetDrawColor(&u8g2, 1);
 }
+
+#ifdef ENABLE_EMC_TEST
+void display_emc_elements(const keypad_event_t *keypad_event, const display_emc_elements_t *elements)
+{
+    char buf[128];
+
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    u8g2_uint_t x = 0;
+    u8g2_uint_t y = 0;
+    u8g2_uint_t line_height = u8g2_GetAscent(&u8g2) - u8g2_GetDescent(&u8g2) + 2;
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_ClearBuffer(&u8g2);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    display_prepare_menu_font();
+
+    /* Draw relay and DMX elements */
+
+    sprintf(buf,
+        "ENLG    [%s]\n"
+        "SFLT    [%s]\n"
+        "DMX [%02X][%02X]",
+        elements->enlarger_on ? "**" : "  ",
+        elements->safelight_on ? "**" : "  ",
+        elements->dmx_ch_a, elements->dmx_ch_b);
+    y = (u8g2_uint_t)u8g2_GetAscent(&u8g2);
+    u8g2_DrawUTF8Lines(&u8g2, x, y, 0, line_height, buf);
+
+    /* Draw keypad state elements */
+
+    y = u8g2_GetDisplayHeight(&u8g2) - 20;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_START)) {
+        u8g2_DrawBox(&u8g2, x, y, 8, 18);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 8, 18);
+    }
+    x += 11;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_FOCUS)) {
+        u8g2_DrawBox(&u8g2, x, y, 8, 18);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 8, 18);
+    }
+    x += 13;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_DEC_CONTRAST)) {
+        u8g2_DrawBox(&u8g2, x, y + 10, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y + 10, 8, 8);
+    }
+    x += 10;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_INC_EXPOSURE)) {
+        u8g2_DrawBox(&u8g2, x, y, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 8, 8);
+    }
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_DEC_EXPOSURE)) {
+        u8g2_DrawBox(&u8g2, x, y + 10, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y + 10, 8, 8);
+    }
+    x += 10;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_INC_CONTRAST)) {
+        u8g2_DrawBox(&u8g2, x, y + 10, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y + 10, 8, 8);
+    }
+    x += 13;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+        u8g2_DrawBox(&u8g2, x, y, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 8, 8);
+    }
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_TEST_STRIP)) {
+        u8g2_DrawBox(&u8g2, x, y + 10, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y + 10, 8, 8);
+    }
+    x += 10;
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_CANCEL)) {
+        u8g2_DrawBox(&u8g2, x, y, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 8, 8);
+    }
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_MENU)) {
+        u8g2_DrawBox(&u8g2, x, y + 10, 8, 8);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y + 10, 8, 8);
+    }
+    x += 14 + 6;
+    y += 6;
+
+    if (keypad_event->key == KEYPAD_ENCODER_CCW) {
+        u8g2_DrawFilledEllipse(&u8g2, x, y, 6, 6, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_LOWER_LEFT);
+    } else {
+        u8g2_DrawEllipse(&u8g2, x, y, 6, 6, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_LOWER_LEFT);
+    }
+
+    if (keypad_event->key == KEYPAD_ENCODER_CW) {
+        u8g2_DrawFilledEllipse(&u8g2, x, y, 6, 6, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_RIGHT);
+    } else {
+        u8g2_DrawEllipse(&u8g2, x, y, 6, 6, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_RIGHT);
+    }
+
+    u8g2_SetDrawColor(&u8g2, 0);
+    u8g2_DrawFilledEllipse(&u8g2, x, y, 3, 3, U8G2_DRAW_ALL);
+    u8g2_SetDrawColor(&u8g2, 1);
+
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_ENCODER)) {
+        u8g2_DrawFilledEllipse(&u8g2, x, y, 3, 3, U8G2_DRAW_ALL);
+    } else {
+        u8g2_DrawEllipse(&u8g2, x, y, 3, 3, U8G2_DRAW_ALL);
+    }
+
+    x -= 7;
+    y += 8;
+    if (keypad_is_key_pressed(keypad_event, KEYPAD_FOOTSWITCH)) {
+        u8g2_DrawBox(&u8g2, x, y, 15, 4);
+    } else {
+        u8g2_DrawFrame(&u8g2, x, y, 15, 4);
+    }
+
+    x = 100;
+    y = 0;
+    u8g2_DrawVLine(&u8g2, x, y, u8g2_GetDisplayHeight(&u8g2));
+
+    /* Draw Meter Probe elements */
+    y = (u8g2_uint_t)u8g2_GetAscent(&u8g2);
+    u8g2_DrawUTF8Lines(&u8g2, x, y, 78, line_height, "Meter\nProbe");
+    //TODO
+
+    x = 178;
+    y = 0;
+    u8g2_DrawVLine(&u8g2, x, y, u8g2_GetDisplayHeight(&u8g2));
+
+    /* Draw DensiStick elements */
+    y = (u8g2_uint_t)u8g2_GetAscent(&u8g2);
+    u8g2_DrawUTF8Lines(&u8g2, x, y, 78, line_height, "Densi\nStick");
+    //TODO
+
+    u8g2_SendBuffer(&u8g2);
+
+    osMutexRelease(display_mutex);
+}
+#endif
