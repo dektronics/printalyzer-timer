@@ -185,7 +185,7 @@ bool usbh_msc_drive_serial(uint8_t num, char *buf, size_t len)
         }
 
         memset(string_buffer, 0, 128);
-        ret = usbh_get_string_desc(msc_handles[num].msc_class->hport, USB_STRING_SERIAL_INDEX, string_buffer);
+        ret = usbh_get_string_desc(msc_handles[num].msc_class->hport, USB_STRING_SERIAL_INDEX, string_buffer, sizeof(string_buffer));
         if (ret < 0) {
             log_e("Unable to get device serial number: %d", ret);
             return false;

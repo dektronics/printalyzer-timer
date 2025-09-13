@@ -431,7 +431,7 @@ void usbh_ft260_control_startup(usb_ft260_handle_t *dev_handle)
 
         /* Get SerialNumber string */
         memset(string_buffer, 0, 128);
-        ret = usbh_get_string_desc(dev_handle->hid_class0->hport, USB_STRING_SERIAL_INDEX, string_buffer);
+        ret = usbh_get_string_desc(dev_handle->hid_class0->hport, USB_STRING_SERIAL_INDEX, string_buffer, sizeof(string_buffer));
         if (ret < 0) {
             log_w("Failed to get device serial: %d", usb_error_str(-ret));
             break;
