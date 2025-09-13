@@ -11,6 +11,7 @@ find_package(Perl REQUIRED)
 
 # Build configuration options
 option(USE_SEGGER_RTT "Enable logging via SEGGER RTT" OFF)
+option(ENABLE_EMC_TEST "Enable the EMC test cycle feature" ON)
 
 # Specify cross-compilers and tools
 set(CMAKE_C_COMPILER arm-none-eabi-gcc)
@@ -119,6 +120,10 @@ if(USE_SEGGER_RTT)
     add_subdirectory(${EXTERNAL_DIR}/RTT)
     target_compile_definitions(${EXECUTABLE} PRIVATE USE_SEGGER_RTT)
     target_link_libraries(${EXECUTABLE} PRIVATE RTT)
+endif()
+
+if(ENABLE_EMC_TEST)
+    target_compile_definitions(${EXECUTABLE} PRIVATE ENABLE_EMC_TEST)
 endif()
 
 # Subdirectories to include
