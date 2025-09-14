@@ -210,6 +210,16 @@ menu_result_t menu_emc_test()
     }
 
     for (;;) {
+        if (mp_running && !meter_probe_is_started(mp_handle)) {
+            mp_running = false;
+            mp_active = false;
+        }
+
+        if (ds_running && !meter_probe_is_started(ds_handle)) {
+            ds_running = false;
+            ds_active = false;
+        }
+
         /* Start the Meter Probe if attached and not started */
         if (!mp_start_error && !mp_active && meter_probe_is_attached(mp_handle)) {
             if (meter_probe_start(mp_handle) == osOK) {
@@ -267,11 +277,12 @@ menu_result_t menu_emc_test()
             if (meter_probe_sensor_get_next_reading(ds_handle, &ds_reading, 0) == osOK) {
                 emc_elements.ds_reading = meter_probe_basic_result(ds_handle, &ds_reading);
             }
+            emc_elements.ds_light = densistick_get_light_enable(ds_handle);
+            emc_elements.ds_light_value = densistick_get_light_brightness(ds_handle);
         } else {
             emc_elements.ds_reading = NAN;
         }
 
-        //TODO
         display_emc_elements(&keypad_event, &emc_elements);
 
         if (keypad_event.key == KEYPAD_CANCEL && keypad_event.repeated) {
