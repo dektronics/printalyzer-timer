@@ -732,6 +732,14 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
     }
 
     if (submit_urb) {
+        /* Reassign URB structure fields since the library may have modified them */
+        usbh_int_urb_fill(&dev_handle->hid_class1->intin_urb,
+            dev_handle->hid_class1->hport,
+            dev_handle->hid_class1->intin,
+            dev_handle->ft260_in_buffer,
+            MIN(dev_handle->hid_class1->intin->wMaxPacketSize, FT260_IN_BUF_SIZE), 0,
+            usbh_ft260_int_callback, dev_handle);
+
         ft260_control_event_t control_event = {
             .event_type = FT260_CONTROL_SUBMIT_URB,
             .urb = &dev_handle->hid_class1->intin_urb
