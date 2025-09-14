@@ -2256,15 +2256,15 @@ void display_emc_elements(const keypad_event_t *keypad_event, const display_emc_
     if (elements->mp_connected) {
         sprintf(buf, "%f", elements->mp_reading);
         u8g2_DrawUTF8Line(&u8g2, x, y + (line_height * 3), 78, buf, 0, false);
+
+        y = u8g2_GetDisplayHeight(&u8g2) - 5;
+        if (keypad_is_key_pressed(keypad_event, KEYPAD_METER_PROBE)) {
+            u8g2_DrawFilledEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
+        } else {
+            u8g2_DrawEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
+        }
     } else {
         u8g2_DrawButtonUTF8(&u8g2, x + 39, y + (line_height * 3), U8G2_BTN_HCENTER | U8G2_BTN_BW1, 0, 2, 2, "Detached");
-    }
-
-    y = u8g2_GetDisplayHeight(&u8g2) - 5;
-    if (keypad_is_key_pressed(keypad_event, KEYPAD_METER_PROBE)) {
-        u8g2_DrawFilledEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
-    } else {
-        u8g2_DrawEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
     }
 
     x = 178;
@@ -2276,18 +2276,25 @@ void display_emc_elements(const keypad_event_t *keypad_event, const display_emc_
     y = (u8g2_uint_t)u8g2_GetAscent(&u8g2);
     u8g2_DrawUTF8Lines(&u8g2, x, y, 78, line_height, "Densi\nStick");
 
-    if (elements->mp_connected) {
+    if (elements->ds_connected) {
         sprintf(buf, "%f", elements->ds_reading);
         u8g2_DrawUTF8Line(&u8g2, x, y + (line_height * 3), 78, buf, 0, false);
+
+        if (elements->ds_light) {
+            sprintf(buf, "[%02X]", elements->ds_light_value);
+        } else {
+            sprintf(buf, "[--]");
+        }
+        u8g2_DrawUTF8Line(&u8g2, x, y + (line_height * 4), 78, buf, 0, false);
+
+        y = u8g2_GetDisplayHeight(&u8g2) - 5;
+        if (keypad_is_key_pressed(keypad_event, KEYPAD_DENSISTICK)) {
+            u8g2_DrawFilledEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
+        } else {
+            u8g2_DrawEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
+        }
     } else {
         u8g2_DrawButtonUTF8(&u8g2, x + 39, y + (line_height * 3), U8G2_BTN_HCENTER | U8G2_BTN_BW1, 0, 2, 2, "Detached");
-    }
-
-    y = u8g2_GetDisplayHeight(&u8g2) - 5;
-    if (keypad_is_key_pressed(keypad_event, KEYPAD_DENSISTICK)) {
-        u8g2_DrawFilledEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
-    } else {
-        u8g2_DrawEllipse(&u8g2, x + 39, y, 4, 4, U8G2_DRAW_ALL);
     }
 
     u8g2_SendBuffer(&u8g2);
