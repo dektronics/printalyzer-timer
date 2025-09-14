@@ -132,6 +132,10 @@ typedef struct {
     bool safelight_on;
     uint8_t dmx_ch_a;
     uint8_t dmx_ch_b;
+    bool mp_connected;
+    bool ds_connected;
+    float mp_reading;
+    float ds_reading;
 } display_emc_elements_t;
 #endif
 

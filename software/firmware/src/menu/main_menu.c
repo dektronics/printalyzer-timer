@@ -26,6 +26,12 @@
 #include "menu_diagnostics.h"
 #include "menu_firmware.h"
 
+#ifdef ENABLE_EMC_TEST
+#include "meter_probe.h"
+#include "math.h"
+#endif
+
+
 static menu_result_t menu_about();
 #ifdef ENABLE_EMC_TEST
 static menu_result_t menu_emc_test();
@@ -182,10 +188,89 @@ menu_result_t menu_about()
 menu_result_t menu_emc_test()
 {
     bool keypad_pressed = false;
+    bool mp_active = false;
+    bool mp_start_error = false;
+    bool mp_running = false;
+    meter_probe_sensor_reading_t mp_reading = {0};
+    bool ds_active = false;
+    bool ds_start_error = false;
+    bool ds_running = false;
+    meter_probe_sensor_reading_t ds_reading = {0};
     keypad_event_t keypad_event = {0};
     display_emc_elements_t emc_elements = {0};
 
+    meter_probe_handle_t *mp_handle = meter_probe_handle();
+    meter_probe_handle_t *ds_handle = densistick_handle();
+
+    if (meter_probe_start(mp_handle) == osOK) {
+        mp_active = true;
+    }
+    if (meter_probe_start(ds_handle) == osOK) {
+        ds_active = true;
+    }
+
     for (;;) {
+        /* Start the Meter Probe if attached and not started */
+        if (!mp_start_error && !mp_active && meter_probe_is_attached(mp_handle)) {
+            if (meter_probe_start(mp_handle) == osOK) {
+                mp_active = true;
+            } else {
+                mp_start_error = true;
+            }
+        }
+
+        /* Start the DensiStick if attached and not started */
+        if (!ds_start_error && !ds_active && meter_probe_is_attached(ds_handle)) {
+            if (meter_probe_start(ds_handle) == osOK) {
+                ds_active = true;
+            } else {
+                ds_start_error = true;
+            }
+        }
+
+        /* Start the Meter Probe sensor read process */
+        if (!mp_running) {
+            meter_probe_sensor_set_gain(mp_handle, TSL2585_GAIN_256X);
+            meter_probe_sensor_set_integration(mp_handle, 719, 99);
+            meter_probe_sensor_set_mod_calibration(mp_handle, 1);
+            meter_probe_sensor_enable_agc(mp_handle, 19);
+            if (meter_probe_sensor_enable(mp_handle) == osOK) {
+                mp_running = true;
+            }
+            //FIXME prevent infinite loop on error
+        }
+
+        /* Start the DensiStick sensor read process */
+        if (!ds_running) {
+            meter_probe_sensor_set_gain(ds_handle, TSL2585_GAIN_256X);
+            meter_probe_sensor_set_integration(ds_handle, 719, 99);
+            meter_probe_sensor_set_mod_calibration(ds_handle, 1);
+            meter_probe_sensor_enable_agc(ds_handle, 19);
+            if (meter_probe_sensor_enable(ds_handle) == osOK) {
+                ds_running = true;
+            }
+            //FIXME prevent infinite loop on error
+        }
+
+        emc_elements.mp_connected = mp_active;
+        emc_elements.ds_connected = ds_active;
+
+        if (mp_running) {
+            if (meter_probe_sensor_get_next_reading(mp_handle, &mp_reading, 0) == osOK) {
+                emc_elements.mp_reading = meter_probe_basic_result(mp_handle, &mp_reading);
+            }
+        } else {
+            emc_elements.mp_reading = NAN;
+        }
+
+        if (ds_running) {
+            if (meter_probe_sensor_get_next_reading(ds_handle, &ds_reading, 0) == osOK) {
+                emc_elements.ds_reading = meter_probe_basic_result(ds_handle, &ds_reading);
+            }
+        } else {
+            emc_elements.ds_reading = NAN;
+        }
+
         //TODO
         display_emc_elements(&keypad_event, &emc_elements);
 
@@ -210,6 +295,18 @@ menu_result_t menu_emc_test()
                 break;
             }
         }
+    }
+
+    /* Stop the Meter Probe */
+    if (mp_active) {
+        meter_probe_sensor_disable(mp_handle);
+        meter_probe_stop(mp_handle);
+    }
+
+    /* Stop the DensiStick */
+    if (ds_active) {
+        meter_probe_sensor_disable(ds_handle);
+        meter_probe_stop(ds_handle);
     }
 
     return MENU_OK;
