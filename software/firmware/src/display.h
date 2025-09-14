@@ -136,6 +136,8 @@ typedef struct {
     bool ds_connected;
     float mp_reading;
     float ds_reading;
+    bool ds_light;
+    uint8_t ds_light_value;
 } display_emc_elements_t;
 #endif
 
