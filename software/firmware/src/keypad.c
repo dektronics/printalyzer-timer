@@ -19,7 +19,7 @@
 #include "tca8418.h"
 #include "util.h"
 
-#define KEYPAD_INDEX_MAX       14
+#define KEYPAD_INDEX_MAX       15
 #define KEYPAD_REPEAT_DELAY_MS 600
 #define KEYPAD_REPEAT_RATE_S   25
 
@@ -738,6 +738,8 @@ uint8_t keypad_keycode_to_index(keypad_key_t keycode)
         return 12;
     case KEYPAD_METER_PROBE:
         return 13;
+    case KEYPAD_DENSISTICK:
+        return 14;
     default:
         return KEYPAD_INDEX_MAX;
     }
@@ -756,9 +758,6 @@ uint16_t keypad_pins_to_mask(const tca8418_pins_t *pins)
     }
     if ((pins->rows & 0x04) == 0) {
         mask |= 1 << keypad_keycode_to_index(KEYPAD_FOOTSWITCH);
-    }
-    if ((pins->rows & 0x08) == 0) {
-        mask |= 1 << keypad_keycode_to_index(KEYPAD_METER_PROBE);
     }
 
     if ((pins->cols_l & 0x01) == 0) {
@@ -811,6 +810,7 @@ bool keypad_keycode_can_repeat(keypad_key_t keycode)
     case KEYPAD_MENU:
     case KEYPAD_ENCODER:
     case KEYPAD_METER_PROBE:
+    case KEYPAD_DENSISTICK:
         return true;
     case KEYPAD_BLACKOUT:
     case KEYPAD_FOOTSWITCH:
