@@ -28,6 +28,9 @@
 
 #ifdef ENABLE_EMC_TEST
 #include "meter_probe.h"
+#include "relay.h"
+#include "dmx.h"
+#include "buzzer.h"
 #include "math.h"
 #endif
 
@@ -191,13 +194,24 @@ menu_result_t menu_emc_test()
     bool mp_active = false;
     bool mp_start_error = false;
     bool mp_running = false;
+    bool mp_run_error = false;
     meter_probe_sensor_reading_t mp_reading = {0};
     bool ds_active = false;
     bool ds_start_error = false;
     bool ds_running = false;
+    bool ds_run_error = false;
+    bool emc_cycle_running = false;
+    uint8_t emc_cycle_index = 0;
+    uint32_t emc_cycle_time = 0;
+    uint8_t dmx_frame_val[8] = {0};
     meter_probe_sensor_reading_t ds_reading = {0};
     keypad_event_t keypad_event = {0};
     display_emc_elements_t emc_elements = {0};
+
+    const bool current_enlarger = relay_enlarger_is_enabled();
+    const bool current_safelight = relay_safelight_is_enabled();
+    const buzzer_volume_t current_volume = buzzer_get_volume();
+    const uint16_t current_frequency = buzzer_get_frequency();
 
     meter_probe_handle_t *mp_handle = meter_probe_handle();
     meter_probe_handle_t *ds_handle = densistick_handle();
@@ -210,6 +224,8 @@ menu_result_t menu_emc_test()
     }
 
     for (;;) {
+        const uint32_t loop_ticks = osKernelGetTickCount();
+
         if (mp_running && !meter_probe_is_started(mp_handle)) {
             mp_running = false;
             mp_active = false;
@@ -224,6 +240,7 @@ menu_result_t menu_emc_test()
         if (!mp_start_error && !mp_active && meter_probe_is_attached(mp_handle)) {
             if (meter_probe_start(mp_handle) == osOK) {
                 mp_active = true;
+                mp_run_error = false;
             } else {
                 mp_start_error = true;
             }
@@ -233,33 +250,36 @@ menu_result_t menu_emc_test()
         if (!ds_start_error && !ds_active && meter_probe_is_attached(ds_handle)) {
             if (meter_probe_start(ds_handle) == osOK) {
                 ds_active = true;
+                ds_run_error = false;
             } else {
                 ds_start_error = true;
             }
         }
 
         /* Start the Meter Probe sensor read process */
-        if (!mp_running) {
+        if (!mp_running && !mp_run_error) {
             meter_probe_sensor_set_gain(mp_handle, TSL2585_GAIN_256X);
             meter_probe_sensor_set_integration(mp_handle, 719, 99);
             meter_probe_sensor_set_mod_calibration(mp_handle, 1);
             meter_probe_sensor_enable_agc(mp_handle, 19);
             if (meter_probe_sensor_enable(mp_handle) == osOK) {
                 mp_running = true;
+            } else {
+                mp_run_error = true;
             }
-            //FIXME prevent infinite loop on error
         }
 
         /* Start the DensiStick sensor read process */
-        if (!ds_running) {
+        if (!ds_running && !ds_run_error) {
             meter_probe_sensor_set_gain(ds_handle, TSL2585_GAIN_256X);
             meter_probe_sensor_set_integration(ds_handle, 719, 99);
             meter_probe_sensor_set_mod_calibration(ds_handle, 1);
             meter_probe_sensor_enable_agc(ds_handle, 19);
             if (meter_probe_sensor_enable(ds_handle) == osOK) {
                 ds_running = true;
+            } else {
+                ds_run_error = true;
             }
-            //FIXME prevent infinite loop on error
         }
 
         emc_elements.mp_connected = mp_active;
@@ -277,13 +297,102 @@ menu_result_t menu_emc_test()
             if (meter_probe_sensor_get_next_reading(ds_handle, &ds_reading, 0) == osOK) {
                 emc_elements.ds_reading = meter_probe_basic_result(ds_handle, &ds_reading);
             }
-            emc_elements.ds_light = densistick_get_light_enable(ds_handle);
-            emc_elements.ds_light_value = densistick_get_light_brightness(ds_handle);
         } else {
             emc_elements.ds_reading = NAN;
         }
 
+        /* Handle EMC test cycle */
+        if (emc_cycle_running && (loop_ticks - emc_cycle_time) >= 1000) {
+            if (emc_cycle_index == 0) {
+                /* Initial setup state for EMC cycle */
+
+                /* Relays both off */
+                relay_enlarger_enable(false);
+                relay_safelight_enable(false);
+
+                /* DMX frame clear but transmitting */
+                dmx_clear_frame(false);
+                dmx_enable();
+                dmx_start();
+
+                /* Set initial buzzer frequency and volume */
+                buzzer_set_frequency(500);
+                buzzer_set_volume(BUZZER_VOLUME_HIGH);
+                buzzer_stop();
+
+                /* Set initial DensiStick light value */
+                densistick_set_light_enable(ds_handle, false);
+                densistick_set_light_brightness(ds_handle, 0);
+            } else if (emc_cycle_index == 1) {
+                /* Simulate focus state */
+
+                relay_enlarger_enable(false);
+                relay_safelight_enable(true);
+
+                dmx_frame_val[0] = 0xFF;
+                dmx_frame_val[3] = 0x00;
+                dmx_set_frame(0, dmx_frame_val, sizeof(dmx_frame_val), true);
+            } else if (emc_cycle_index == 2) {
+                densistick_set_light_enable(ds_handle, true);
+            } else if (emc_cycle_index == 3) {
+                buzzer_set_frequency(750);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_stop();
+                osDelay(pdMS_TO_TICKS(100));
+                buzzer_set_frequency(1000);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_stop();
+                densistick_set_light_brightness(ds_handle, 127);
+            } else if (emc_cycle_index == 4) {
+                densistick_set_light_enable(ds_handle, false);
+            } else if (emc_cycle_index == 5) {
+                /* Simulate expose state */
+
+                relay_enlarger_enable(true);
+                relay_safelight_enable(false);
+
+                dmx_frame_val[0] = 0x00;
+                dmx_frame_val[3] = 0xFF;
+                dmx_set_frame(0, dmx_frame_val, sizeof(dmx_frame_val), true);
+            } else if (emc_cycle_index >= 6 && emc_cycle_index <= 10) {
+                buzzer_set_frequency(500);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(40));
+                buzzer_stop();
+            } else if (emc_cycle_index == 11) {
+                buzzer_set_frequency(1000);
+                buzzer_start();
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_set_frequency(2000);
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_set_frequency(1500);
+                osDelay(pdMS_TO_TICKS(50));
+                buzzer_stop();
+            }
+
+            /* Advance to next cycle index */
+            emc_cycle_index++;
+            emc_cycle_time = loop_ticks;
+            if (emc_cycle_index > 11) { emc_cycle_index = 1; }
+        }
+
+        /* Populate various display elements */
+        emc_elements.enlarger_on = relay_enlarger_is_enabled();
+        emc_elements.safelight_on = relay_safelight_is_enabled();
+        emc_elements.dmx_ch_a = dmx_frame_val[0];
+        emc_elements.dmx_ch_b = dmx_frame_val[3];
+        emc_elements.ds_light = densistick_get_light_enable(ds_handle);
+        emc_elements.ds_light_value = densistick_get_light_brightness(ds_handle);
+
         display_emc_elements(&keypad_event, &emc_elements);
+
+        if (keypad_event.key == KEYPAD_START && keypad_event.repeated && !emc_cycle_running) {
+            emc_cycle_running = true;
+            emc_cycle_index = 0;
+            emc_cycle_time = osKernelGetTickCount();
+        }
 
         if (keypad_event.key == KEYPAD_CANCEL && keypad_event.repeated) {
             keypad_pressed = true;
@@ -293,7 +402,14 @@ menu_result_t menu_emc_test()
         keypad_event.key = 0;
         keypad_event.pressed = false;
         keypad_event.repeated = false;
-        keypad_wait_for_event(&keypad_event, 200);
+        const uint32_t elapsed_ticks = osKernelGetTickCount() - loop_ticks;
+        int wait_ticks;
+        if (elapsed_ticks > 200) {
+            wait_ticks = 0;
+        } else {
+            wait_ticks = 200 - (int)elapsed_ticks;
+        }
+        keypad_wait_for_event(&keypad_event, wait_ticks);
     }
 
     if (keypad_pressed) {
@@ -319,6 +435,19 @@ menu_result_t menu_emc_test()
         meter_probe_sensor_disable(ds_handle);
         meter_probe_stop(ds_handle);
     }
+
+    /* Revert the relay state */
+    relay_enlarger_enable(current_enlarger);
+    relay_safelight_enable(current_safelight);
+
+    /* Clear the DMX state */
+    if (dmx_get_port_state() == DMX_PORT_ENABLED_TRANSMITTING) {
+        dmx_stop();
+    }
+
+    /* Revert the buzzer state */
+    buzzer_set_volume(current_volume);
+    buzzer_set_frequency(current_frequency);
 
     return MENU_OK;
 }
