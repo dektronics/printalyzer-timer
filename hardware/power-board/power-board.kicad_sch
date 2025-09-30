@@ -8006,7 +8006,7 @@
 				)
 			)
 		)
-		(property "Footprint" "lib_fp:Choke_Schaffner_RN116-02-22.5x21.5mm"
+		(property "Footprint" "lib_fp:Choke_Schaffner_RN218-02-12.5x10.0mm"
 			(at 56.515 76.835 0)
 			(effects
 				(font
@@ -8024,7 +8024,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CMC 47MH 500MA 2LN TH"
+		(property "Description" "CMC 47MH 600MA 2LN TH"
 			(at 56.515 76.835 0)
 			(effects
 				(font
@@ -8033,7 +8033,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Schaffner EMC Inc."
+		(property "Manufacturer" "TE Connectivity Schaffner"
 			(at 56.515 76.835 0)
 			(effects
 				(font
@@ -8042,7 +8042,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "RN116-0.5-02-47M"
+		(property "Manufacturer PN" "RN218-0.6-02-47M"
 			(at 56.515 76.835 0)
 			(effects
 				(font
@@ -8060,7 +8060,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "817-2113-ND"
+		(property "Supplier PN" "817-2300-ND"
 			(at 56.515 76.835 0)
 			(effects
 				(font
