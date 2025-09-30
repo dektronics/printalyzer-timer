@@ -6,8 +6,8 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Power Input Board")
-		(date "2024-06-12")
-		(rev "E")
+		(date "2025-09-30")
+		(rev "F")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
 	)
