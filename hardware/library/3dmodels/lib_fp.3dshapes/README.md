@@ -428,6 +428,13 @@ this directory's `.gitignore` file.
 * Rotation: X = -180 deg, Z = 90 deg
 * Offset: X = 5.0 mm, Y = -7.5 mm, Z = 20.0 mm
 
+### Schaffner\_RN218-x-02
+* Status: Included (No terms listed with download)
+* Source: Manufacturer <https://www.schaffner.com/fileadmin/user_upload/pim/products/Schaffner_cad_data_RN_series.zip>
+* Footprint: `lib_fp:Choke_Schaffner_RN212-02-12.5x18.0mm`
+* Rotation: X = -180 deg, Z = 90 deg
+* Offset: X = 5.0 mm, Y = -6.25 mm, Z = 20.0 mm
+
 ### Schaffner\_RN112-x-02
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://www.schaffner.com/fileadmin/user_upload/pim/products/Schaffner_cad_data_RN_series.zip>
