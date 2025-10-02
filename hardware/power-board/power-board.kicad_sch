@@ -8265,7 +8265,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer PN" "GSP1.9113.1"
+		(property "Manufacturer PN" "GSP1.9101.1"
 			(at 27.94 27.305 0)
 			(effects
 				(font
@@ -8283,7 +8283,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier PN" "486-1008-ND"
+		(property "Supplier PN" "486-4100-ND"
 			(at 27.94 27.305 0)
 			(effects
 				(font

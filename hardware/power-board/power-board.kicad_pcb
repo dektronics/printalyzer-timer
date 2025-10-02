@@ -1599,7 +1599,7 @@
 				)
 			)
 		)
-		(property "Manufacturer PN" "GSP1.9113.1"
+		(property "Manufacturer PN" "GSP1.9101.1"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1625,7 +1625,7 @@
 				)
 			)
 		)
-		(property "Supplier PN" "486-1008-ND"
+		(property "Supplier PN" "486-4100-ND"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
