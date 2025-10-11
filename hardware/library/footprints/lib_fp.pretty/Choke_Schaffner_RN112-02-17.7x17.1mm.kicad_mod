@@ -1,7 +1,7 @@
 (footprint "Choke_Schaffner_RN112-02-17.7x17.1mm"
-	(version 20240108)
+	(version 20241229)
 	(generator "pcbnew")
-	(generator_version "8.0")
+	(generator_version "9.0")
 	(layer "F.Cu")
 	(descr "Current-compensated Chokes, Schaffner, RN112-02, 17.7mmx17.1mm https://www.schaffner.com/fileadmin/user_upload/pim/products/datasheets/RN_series.pdf")
 	(tags "chokes schaffner tht")
@@ -27,18 +27,6 @@
 			)
 		)
 	)
-	(property "Footprint" ""
-		(at 0 0 0)
-		(unlocked yes)
-		(layer "F.Fab")
-		(hide yes)
-		(uuid "babdc2ff-4895-484a-bc5a-c29259070b8d")
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-	)
 	(property "Datasheet" ""
 		(at 0 0 0)
 		(unlocked yes)
@@ -48,6 +36,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -60,6 +49,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
+				(thickness 0.15)
 			)
 		)
 	)
@@ -374,7 +364,7 @@
 	(pad "1" thru_hole rect
 		(at 0 0)
 		(size 2 2)
-		(drill 0.9)
+		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
 		(uuid "90889022-44c4-4f5c-8bd0-a3b81aa6045a")
@@ -382,7 +372,7 @@
 	(pad "2" thru_hole circle
 		(at 15 0)
 		(size 2 2)
-		(drill 0.9)
+		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
 		(uuid "28d7618a-1776-45ca-a2f3-5babbb3e1e44")
@@ -390,7 +380,7 @@
 	(pad "3" thru_hole circle
 		(at 0 10)
 		(size 2 2)
-		(drill 0.9)
+		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
 		(uuid "d5dc1f54-fb97-4969-8060-17628505ce59")
@@ -398,11 +388,12 @@
 	(pad "4" thru_hole circle
 		(at 15 10)
 		(size 2 2)
-		(drill 0.9)
+		(drill 1)
 		(layers "*.Cu" "*.Mask")
 		(remove_unused_layers no)
 		(uuid "23540fff-e1ea-4bf3-81a4-5d5ea7402f08")
 	)
+	(embedded_fonts no)
 	(model "${KIPRJMOD}/../library/3dmodels/lib_fp.3dshapes/Schaffner_RN112-x-02.step"
 		(offset
 			(xyz 7.5 -5 12.6)
