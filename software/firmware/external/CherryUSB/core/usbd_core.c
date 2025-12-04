@@ -1145,18 +1145,26 @@ void usbd_event_suspend_handler(uint8_t busid)
 
 void usbd_event_reset_handler(uint8_t busid)
 {
+    struct usb_endpoint_descriptor ep0;
+
     usbd_set_address(busid, 0);
     g_usbd_core[busid].device_address = 0;
     g_usbd_core[busid].configuration = 0;
     g_usbd_core[busid].ep0_next_state = USBD_EP0_STATE_SETUP;
 #ifdef CONFIG_USBDEV_ADVANCE_DESC
     g_usbd_core[busid].speed = USB_SPEED_UNKNOWN;
+
+    USB_ASSERT_MSG(g_usbd_core[busid].descriptors->device_descriptor_callback != NULL,
+                   "device_descriptor_callback is NULL\r\n");
+
+    struct usb_device_descriptor *device_desc = (struct usb_device_descriptor *)g_usbd_core[busid].descriptors->device_descriptor_callback(g_usbd_core[busid].speed);
+    ep0.wMaxPacketSize = device_desc->bMaxPacketSize0;
+#else
+    ep0.wMaxPacketSize = USB_CTRL_EP_MPS;
 #endif
-    struct usb_endpoint_descriptor ep0;
 
     ep0.bLength = 7;
     ep0.bDescriptorType = USB_DESCRIPTOR_TYPE_ENDPOINT;
-    ep0.wMaxPacketSize = USB_CTRL_EP_MPS;
     ep0.bmAttributes = USB_ENDPOINT_TYPE_CONTROL;
     ep0.bEndpointAddress = USB_CONTROL_IN_EP0;
     ep0.bInterval = 0;
@@ -1536,11 +1544,7 @@ int usbd_initialize(uint8_t busid, uintptr_t reg_base, void (*event_handler)(uin
     int ret;
     struct usbd_bus *bus;
 
-    if (busid >= CONFIG_USBDEV_MAX_BUS) {
-        USB_LOG_ERR("bus overflow\r\n");
-        while (1) {
-        }
-    }
+    USB_ASSERT_MSG(busid < CONFIG_USBDEV_MAX_BUS, "bus overflow\r\n");
 
     bus = &g_usbdev_bus[busid];
     bus->reg_base = reg_base;
@@ -1569,22 +1573,17 @@ int usbd_initialize(uint8_t busid, uintptr_t reg_base, void (*event_handler)(uin
 
 int usbd_deinitialize(uint8_t busid)
 {
-    if (busid >= CONFIG_USBDEV_MAX_BUS) {
-        USB_LOG_ERR("bus overflow\r\n");
-        while (1) {
-        }
-    }
+    USB_ASSERT_MSG(busid < CONFIG_USBDEV_MAX_BUS, "bus overflow\r\n");
 
     g_usbd_core[busid].event_handler(busid, USBD_EVENT_DEINIT);
     usbd_class_event_notify_handler(busid, USBD_EVENT_DEINIT, NULL);
     usb_dc_deinit(busid);
-    g_usbd_core[busid].intf_offset = 0;
 #ifdef CONFIG_USBDEV_EP0_THREAD
-    if (g_usbd_core[busid].usbd_ep0_mq) {
-        usb_osal_mq_delete(g_usbd_core[busid].usbd_ep0_mq);
-    }
     if (g_usbd_core[busid].usbd_ep0_thread) {
         usb_osal_thread_delete(g_usbd_core[busid].usbd_ep0_thread);
+    }
+    if (g_usbd_core[busid].usbd_ep0_mq) {
+        usb_osal_mq_delete(g_usbd_core[busid].usbd_ep0_mq);
     }
 #endif
 

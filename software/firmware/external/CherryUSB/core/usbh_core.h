@@ -62,6 +62,7 @@ enum usbh_event_type {
 #define USB_CLASS_MATCH_INTF_CLASS    0x0004
 #define USB_CLASS_MATCH_INTF_SUBCLASS 0x0008
 #define USB_CLASS_MATCH_INTF_PROTOCOL 0x0010
+#define USB_CLASS_MATCH_INTF_NUM      0x0020
 #define USB_CLASS_MATCH_VID_PID       (USB_CLASS_MATCH_VENDOR | USB_CLASS_MATCH_PRODUCT)
 
 #define CLASS_CONNECT(hport, i)    ((hport)->config.intf[i].class_driver->connect(hport, i))
@@ -96,6 +97,7 @@ struct usbh_class_info {
     uint8_t bInterfaceClass;       /* Base device class code */
     uint8_t bInterfaceSubClass;    /* Sub-class, depends on base class. Eg. */
     uint8_t bInterfaceProtocol;    /* Protocol, depends on base class. Eg. */
+    uint8_t bInterfaceNumber;      /* Interface number */
     const uint16_t (*id_table)[2]; /* List of Vendor/Product ID pairs */
     const struct usbh_class_driver *class_driver;
 };
@@ -199,8 +201,8 @@ struct usbh_bus {
     struct usbh_devaddr_map devgen;
     usb_osal_thread_t hub_thread;
     usb_osal_mq_t hub_mq;
-
-    void (*event_handler)(uint8_t busid, uint8_t hub_index, uint8_t hub_port, uint8_t intf, uint8_t event);
+    usb_osal_mutex_t mutex;
+    usbh_event_handler_t event_handler;
 };
 
 static inline void usbh_control_urb_fill(struct usbh_urb *urb,
@@ -311,6 +313,7 @@ int usbh_initialize(uint8_t busid, uintptr_t reg_base, usbh_event_handler_t even
 int usbh_deinitialize(uint8_t busid);
 void *usbh_find_class_instance(const char *devname);
 struct usbh_hubport *usbh_find_hubport(uint8_t busid, uint8_t hub_index, uint8_t hub_port);
+uint8_t usbh_get_hport_active_config_index(struct usbh_hubport *hport);
 
 int lsusb(int argc, char **argv);
 

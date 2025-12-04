@@ -388,6 +388,11 @@ static int usbh_hub_connect(struct usbh_hubport *hport, uint8_t intf)
         hub->tt_think = ((hub->hub_desc.wHubCharacteristics & HUB_CHAR_TTTT_MASK) >> 5);
     }
 
+    if (hub->nports > CONFIG_USBHOST_MAX_EHPORTS) {
+        USB_LOG_ERR("Hub nports %u overflow\r\n", hub->nports);
+        return -USB_ERR_NOMEM;
+    }
+
     for (uint8_t port = 0; port < hub->nports; port++) {
         hub->child[port].port = port + 1;
         hub->child[port].parent = hub;
@@ -736,7 +741,9 @@ static void usbh_hub_thread(CONFIG_USB_OSAL_THREAD_SET_ARGV)
         if (ret < 0) {
             continue;
         }
+        usb_osal_mutex_take(bus->mutex);
         usbh_hub_events(hub);
+        usb_osal_mutex_give(bus->mutex);
     }
 }
 
@@ -766,6 +773,12 @@ int usbh_hub_initialize(struct usbh_bus *bus)
         return -1;
     }
 
+    bus->mutex = usb_osal_mutex_create();
+    if (bus->mutex == NULL) {
+        USB_LOG_ERR("Failed to create bus mutex\r\n");
+        return -1;
+    }
+
     snprintf(thread_name, 32, "usbh_hub%u", bus->busid);
     bus->hub_thread = usb_osal_thread_create(thread_name, CONFIG_USBHOST_PSC_STACKSIZE, CONFIG_USBHOST_PSC_PRIO, usbh_hub_thread, bus);
     if (bus->hub_thread == NULL) {
@@ -779,8 +792,8 @@ int usbh_hub_deinitialize(struct usbh_bus *bus)
 {
     struct usbh_hubport *hport;
     struct usbh_hub *hub;
-    size_t flags;
 
+    usb_osal_mutex_take(bus->mutex);
     hub = &bus->hcd.roothub;
     for (uint8_t port = 0; port < hub->nports; port++) {
         hport = &hub->child[port];
@@ -788,15 +801,13 @@ int usbh_hub_deinitialize(struct usbh_bus *bus)
         usbh_hubport_release(hport);
     }
 
-    flags = usb_osal_enter_critical_section();
-
     usb_hc_deinit(bus);
 
-    usb_osal_leave_critical_section(flags);
-
-    usb_osal_mq_delete(bus->hub_mq);
     usb_osal_thread_delete(bus->hub_thread);
+    usb_osal_mq_delete(bus->hub_mq);
 
+    usb_osal_mutex_give(bus->mutex);
+    usb_osal_mutex_delete(bus->mutex);
     return 0;
 }
 
