@@ -360,6 +360,11 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
     }
 
     if (submit_urb) {
+        /* Reassign URB structure fields since the library may have modified them */
+        usbh_int_urb_fill(&hid_class->intin_urb, hid_class->hport, hid_class->intin,
+            handle->hid_in_buffer, MIN(hid_class->intin->wMaxPacketSize, HID_BUF_SIZE),
+            0, usbh_hid_keyboard_callback, hid_class);
+
         usb_hid_keyboard_event_t event = {
             .event_type = USB_KBD_SUBMIT_URB,
             .hid_class = hid_class
