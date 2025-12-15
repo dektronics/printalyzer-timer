@@ -126,11 +126,10 @@ usbh_initialize
 
 .. code-block:: C
 
-    int usbh_initialize(uint8_t busid, uint32_t reg_base, usbh_event_handler_t event_handler);
+    int usbh_initialize(uint8_t busid, uint32_t reg_base);
 
 - **busid**  bus id，从 0开始，不能超过 `CONFIG_USBHOST_MAX_BUS`
 - **reg_base**  hcd 寄存器基地址
-- **event_handler**  host 事件回调函数，可以为NULL
 - **return**  0 表示正常其他表示错误
 
 usbh_find_class_instance

@@ -83,7 +83,7 @@ SHELL_CMD_EXPORT_ALIAS(usbh_deinit, usbh_deinit, usbh deinit);
 int usbh_init(int argc, char **argv)
 {
     printf("usbh_init\r\n");
-    usbh_initialize(0, 0x20072000, NULL);
+    usbh_initialize(0, 0x20072000);
     return 0;
 }
 

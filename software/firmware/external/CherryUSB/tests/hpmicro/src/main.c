@@ -47,9 +47,8 @@ int main(void)
 
     uvc2lcd_init();
 #endif
-
 #ifndef CONFIG_USB_OTG_ENABLE
-    usbh_initialize(0, CONFIG_HPM_USBH_BASE, NULL);
+    usbh_initialize(0, CONFIG_HPM_USBH_BASE);
 #else
     extern void cdc_acm_otg_init(uint8_t busid, uintptr_t reg_base);
     cdc_acm_otg_init(0, CONFIG_HPM_USBH_BASE);

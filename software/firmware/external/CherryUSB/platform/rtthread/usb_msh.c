@@ -21,7 +21,7 @@ int usbh_init(int argc, char **argv)
 
     busid = atoi(argv[1]);
     reg_base = strtoll(argv[2], NULL, 16);
-    usbh_initialize(busid, reg_base, NULL);
+    usbh_initialize(busid, reg_base);
 
     return 0;
 }
