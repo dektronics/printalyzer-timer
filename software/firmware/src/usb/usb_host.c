@@ -110,7 +110,7 @@ bool usb_host_init()
      * May need to modify this library function so the error code
      * is actually returned. It isn't, so not handling it.
      */
-    usbh_initialize(0, USB_OTG_HS_PERIPH_BASE, NULL);
+    usbh_initialize(0, USB_OTG_HS_PERIPH_BASE);
 
     log_i("USB stack initialized");
 
