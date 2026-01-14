@@ -201,6 +201,7 @@ menu_result_t menu_emc_test()
     bool ds_running = false;
     bool ds_run_error = false;
     bool emc_cycle_running = false;
+    bool emc_cycle_relay_toggle = false;
     uint8_t emc_cycle_index = 0;
     uint32_t emc_cycle_time = 0;
     uint8_t dmx_frame_val[8] = {0};
@@ -306,9 +307,15 @@ menu_result_t menu_emc_test()
             if (emc_cycle_index == 0) {
                 /* Initial setup state for EMC cycle */
 
-                /* Relays both off */
-                relay_enlarger_enable(false);
-                relay_safelight_enable(false);
+                if (emc_cycle_relay_toggle) {
+                    /* Relays both off */
+                    relay_enlarger_enable(false);
+                    relay_safelight_enable(false);
+                } else {
+                    /* Relays both on (not toggled during cycle) */
+                    relay_enlarger_enable(true);
+                    relay_safelight_enable(true);
+                }
 
                 /* DMX frame clear but transmitting */
                 dmx_clear_frame(false);
@@ -326,8 +333,10 @@ menu_result_t menu_emc_test()
             } else if (emc_cycle_index == 1) {
                 /* Simulate focus state */
 
-                relay_enlarger_enable(false);
-                relay_safelight_enable(true);
+                if (emc_cycle_relay_toggle) {
+                    relay_enlarger_enable(false);
+                    relay_safelight_enable(true);
+                }
 
                 dmx_frame_val[0] = 0xFF;
                 dmx_frame_val[3] = 0x00;
@@ -350,8 +359,10 @@ menu_result_t menu_emc_test()
             } else if (emc_cycle_index == 5) {
                 /* Simulate expose state */
 
-                relay_enlarger_enable(true);
-                relay_safelight_enable(false);
+                if (emc_cycle_relay_toggle) {
+                    relay_enlarger_enable(true);
+                    relay_safelight_enable(false);
+                }
 
                 dmx_frame_val[0] = 0x00;
                 dmx_frame_val[3] = 0xFF;
@@ -390,6 +401,14 @@ menu_result_t menu_emc_test()
 
         if (keypad_event.key == KEYPAD_START && keypad_event.repeated && !emc_cycle_running) {
             emc_cycle_running = true;
+            emc_cycle_relay_toggle = true;
+            emc_cycle_index = 0;
+            emc_cycle_time = osKernelGetTickCount();
+        }
+
+        if (keypad_event.key == KEYPAD_FOCUS && keypad_event.repeated && !emc_cycle_running) {
+            emc_cycle_running = true;
+            emc_cycle_relay_toggle = false;
             emc_cycle_index = 0;
             emc_cycle_time = osKernelGetTickCount();
         }
