@@ -721,6 +721,11 @@ void usbh_ft260_int_callback(void *arg, int nbytes)
         log_w("Pipe stall");
         submit_urb = true;
         dev_handle->urb_retry_count++;
+    } else if (nbytes == -USB_ERR_IO) {//XXX
+        log_w("I/O error");
+        //XXX Worth giving this a try
+        submit_urb = true;
+        dev_handle->urb_retry_count++;
     } else {
         log_d("Fell out of callback: %s", usb_error_str(-nbytes));
     }

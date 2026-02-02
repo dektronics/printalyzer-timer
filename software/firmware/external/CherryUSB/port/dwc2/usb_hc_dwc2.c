@@ -1195,6 +1195,7 @@ static void dwc2_inchan_irq_handler(struct usbh_bus *bus, uint8_t ch_num)
             }
         } else if (chan_intstatus & USB_OTG_HCINT_AHBERR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_AHBERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_STALL) {
             urb->errorcode = -USB_ERR_STALL;
@@ -1266,15 +1267,19 @@ static void dwc2_inchan_irq_handler(struct usbh_bus *bus, uint8_t ch_num)
             }
         } else if (chan_intstatus & USB_OTG_HCINT_TXERR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_TXERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_BBERR) {
             urb->errorcode = -USB_ERR_BABBLE;
+            printf("USB_OTG_HCINT_BBERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_DTERR) {
             urb->errorcode = -USB_ERR_DT;
+            printf("USB_OTG_HCINT_DTERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_FRMOR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_FRMOR\r\n");//XXX
             dwc2_urb_waitup(urb);
         }
     }
@@ -1357,6 +1362,7 @@ static void dwc2_outchan_irq_handler(struct usbh_bus *bus, uint8_t ch_num)
             }
         } else if (chan_intstatus & USB_OTG_HCINT_AHBERR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_AHBERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_STALL) {
             urb->errorcode = -USB_ERR_STALL;
@@ -1428,15 +1434,19 @@ static void dwc2_outchan_irq_handler(struct usbh_bus *bus, uint8_t ch_num)
             }
         } else if (chan_intstatus & USB_OTG_HCINT_TXERR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_TXERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_BBERR) {
             urb->errorcode = -USB_ERR_BABBLE;
+            printf("USB_OTG_HCINT_BBERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_DTERR) {
             urb->errorcode = -USB_ERR_DT;
+            printf("USB_OTG_HCINT_DTERR\r\n");//XXX
             dwc2_urb_waitup(urb);
         } else if (chan_intstatus & USB_OTG_HCINT_FRMOR) {
             urb->errorcode = -USB_ERR_IO;
+            printf("USB_OTG_HCINT_FRMOR\r\n");//XXX
             dwc2_urb_waitup(urb);
         }
     }
