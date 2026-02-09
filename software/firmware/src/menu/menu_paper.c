@@ -1023,11 +1023,14 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         uint32_t p = 0;
         for (int i = params->wedge->step_count - 1; i >= 0; --i) {
             if (is_valid_number(params->patch_density[i])) {
-                x_pev_f32[p] = roundf((float)params->calibration_pev - (params->wedge->step_density[i] * 100.0F));
+
+
+
+                x_pev_f32[p] = roundf((float)params->calibration_pev - (step_wedge_get_density(params->wedge, i) * 100.0F));
 #if 0
                 log_i("[i=%lu,p=%lu] %0.02f = %lu - (%0.02f * 100)",
                     i, p,
-                    x_pev_f32[p], params->calibration_pev, params->wedge->step_density[i]);
+                    x_pev_f32[p], params->calibration_pev, step_wedge_get_density(params->wedge, i));
 #endif
                 y_density_f32[p] = params->patch_density[i];
                 p++;
