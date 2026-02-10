@@ -311,6 +311,8 @@ static inline void dwc2_chan_transfer(struct usbh_bus *bus, uint8_t ch_num, uint
     __IO uint32_t tmpreg;
     uint8_t is_oddframe;
 
+    const size_t flags = usb_osal_enter_critical_section(); /* (DK) */
+
     /* Initialize the HCTSIZn register */
     USB_OTG_HC(ch_num)->HCTSIZ = (size & USB_OTG_HCTSIZ_XFRSIZ) |
                                  (((uint32_t)num_packets << 19) & USB_OTG_HCTSIZ_PKTCNT) |
@@ -328,6 +330,8 @@ static inline void dwc2_chan_transfer(struct usbh_bus *bus, uint8_t ch_num, uint
     tmpreg &= ~USB_OTG_HCCHAR_CHDIS;
     tmpreg |= USB_OTG_HCCHAR_CHENA;
     USB_OTG_HC(ch_num)->HCCHAR = tmpreg;
+
+    usb_osal_leave_critical_section(flags); /* (DK) */
 }
 
 static inline void dwc2_chan_enable_csplit(struct usbh_bus *bus, uint8_t ch_num, bool enable)
