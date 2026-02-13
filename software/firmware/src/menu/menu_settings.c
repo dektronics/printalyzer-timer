@@ -21,6 +21,7 @@ static menu_result_t menu_settings_test_strip_mode();
 static menu_result_t menu_settings_enlarger_auto_shutoff();
 static menu_result_t menu_settings_display_brightness();
 static menu_result_t menu_settings_buzzer_volume();
+static menu_result_t menu_settings_menu_timeout();
 
 menu_result_t menu_settings()
 {
@@ -35,7 +36,8 @@ menu_result_t menu_settings()
             "Test Strip Mode\n"
             "Enlarger Auto-Shutoff\n"
             "Display Brightness\n"
-            "Buzzer Volume");
+            "Buzzer Volume\n"
+            "Menu Timeout");
 
         if (option == 1) {
             menu_result = menu_settings_default_exposure();
@@ -49,6 +51,8 @@ menu_result_t menu_settings()
             menu_result = menu_settings_display_brightness();
         } else if (option == 6) {
             menu_result = menu_settings_buzzer_volume();
+        } else if (option == 7) {
+            menu_result = menu_settings_menu_timeout();
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
@@ -581,6 +585,70 @@ menu_result_t menu_settings_buzzer_volume()
         osDelay(100);
         buzzer_stop();
         buzzer_set_volume(BUZZER_VOLUME_OFF);
+    }
+
+    return menu_result;
+}
+
+menu_result_t menu_settings_menu_timeout()
+{
+    menu_result_t menu_result = MENU_OK;
+
+    uint32_t setting = settings_get_menu_timeout();
+
+    uint8_t option;
+    switch (setting) {
+    case 30000:
+        option = 2;
+        break;
+    case 60000:
+        option = 3;
+        break;
+    case 120000:
+        option = 4;
+        break;
+    case 300000:
+        option = 5;
+        break;
+    case 0:
+    default:
+        option = 1;
+        break;
+    }
+
+    do {
+        option = display_selection_list(
+            "Menu Timeout", option,
+            "Disabled\n"
+            "30 seconds\n"
+            "1 minute\n"
+            "2 minutes\n"
+            "5 minutes");
+
+        if (option == 1) {
+            setting = 0;
+            break;
+        } else if (option == 2) {
+            setting = 30000;
+            break;
+        } else if (option == 3) {
+            setting = 60000;
+            break;
+        } else if (option == 4) {
+            setting = 120000;
+            break;
+        } else if (option == 5) {
+            setting = 300000;
+            break;
+        } else if (option == 0) {
+            menu_result = MENU_CANCEL;
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    if (menu_result == MENU_OK) {
+        settings_set_menu_timeout(setting);
     }
 
     return menu_result;

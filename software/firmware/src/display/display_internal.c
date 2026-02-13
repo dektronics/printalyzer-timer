@@ -8,6 +8,7 @@
 #include <string.h>
 #include "display.h"
 #include "keypad.h"
+#include "settings.h"
 #include "u8g2.h"
 #include "util.h"
 
@@ -43,7 +44,8 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
     if (params & DISPLAY_MENU_INPUT_POLL) {
         timeout = MENU_KEY_POLL_MS;
     } else {
-        timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0) ? -1 : MENU_TIMEOUT_MS;
+        const uint32_t config_timeout = settings_get_menu_timeout();
+        timeout = ((params & DISPLAY_MENU_TIMEOUT_DISABLED) != 0 || config_timeout == 0) ? -1 : (int)config_timeout;
     }
 
     keypad_event_t event;

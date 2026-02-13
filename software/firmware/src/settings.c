@@ -26,6 +26,7 @@ _Static_assert(CONTRAST_WHOLE_GRADE_COUNT == 7, "CONTRAST_WHOLE_GRADE_COUNT leng
 #define DEFAULT_EXPOSURE_TIME           15000
 #define DEFAULT_CONTRAST_GRADE          CONTRAST_GRADE_2
 #define DEFAULT_STEP_SIZE               EXPOSURE_ADJ_QUARTER
+#define DEFAULT_MENU_TIMEOUT            30000
 #define DEFAULT_ENLARGER_FOCUS_TIMEOUT  300000
 #define DEFAULT_DISPLAY_BRIGHTNESS      0x0F
 #define DEFAULT_LED_BRIGHTNESS          127
@@ -50,6 +51,7 @@ static osMutexId_t eeprom_i2c_mutex = NULL;
 static uint32_t setting_default_exposure_time = DEFAULT_EXPOSURE_TIME;
 static contrast_grade_t setting_default_contrast_grade = DEFAULT_CONTRAST_GRADE;
 static exposure_adjustment_increment_t setting_default_step_size = DEFAULT_STEP_SIZE;
+static uint32_t setting_menu_timeout = DEFAULT_MENU_TIMEOUT;
 static uint32_t setting_enlarger_focus_timeout = DEFAULT_ENLARGER_FOCUS_TIMEOUT;
 static uint8_t setting_display_brightness = DEFAULT_DISPLAY_BRIGHTNESS;
 static uint8_t setting_led_brightness = DEFAULT_LED_BRIGHTNESS;
@@ -83,7 +85,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define CONFIG_EXPOSURE_TIME             4
 #define CONFIG_CONTRAST_GRADE            8
 #define CONFIG_STEP_SIZE                 12
-/* RESERVED                              16*/
+#define CONFIG_MENU_TIMEOUT              16
 #define CONFIG_ENLARGER_FOCUS_TIMEOUT    20
 #define CONFIG_DISPLAY_BRIGHTNESS        24
 #define CONFIG_LED_BRIGHTNESS            28
@@ -366,6 +368,7 @@ HAL_StatusTypeDef settings_init_default_config()
     copy_from_u32(data + CONFIG_EXPOSURE_TIME,          DEFAULT_EXPOSURE_TIME);
     copy_from_u32(data + CONFIG_CONTRAST_GRADE,         DEFAULT_CONTRAST_GRADE);
     copy_from_u32(data + CONFIG_STEP_SIZE,              DEFAULT_STEP_SIZE);
+    copy_from_u32(data + CONFIG_MENU_TIMEOUT,           DEFAULT_MENU_TIMEOUT);
     copy_from_u32(data + CONFIG_ENLARGER_FOCUS_TIMEOUT, DEFAULT_ENLARGER_FOCUS_TIMEOUT);
     copy_from_u32(data + CONFIG_DISPLAY_BRIGHTNESS,     DEFAULT_DISPLAY_BRIGHTNESS);
     copy_from_u32(data + CONFIG_LED_BRIGHTNESS,         DEFAULT_LED_BRIGHTNESS);
@@ -399,6 +402,13 @@ void settings_init_parse_config_page(const uint8_t *data)
         setting_default_step_size = val;
     } else {
         setting_default_step_size = DEFAULT_STEP_SIZE;
+    }
+
+    val = copy_to_u32(data + CONFIG_MENU_TIMEOUT);
+    if (val <= (10 * 60000)) {
+        setting_menu_timeout = val;
+    } else {
+        setting_menu_timeout = DEFAULT_MENU_TIMEOUT;
     }
 
     val = copy_to_u32(data + CONFIG_ENLARGER_FOCUS_TIMEOUT);
@@ -582,6 +592,21 @@ void settings_set_default_step_size(exposure_adjustment_increment_t step_size)
         && step_size >= EXPOSURE_ADJ_TWELFTH && step_size <=  EXPOSURE_ADJ_WHOLE) {
         if (write_u32(PAGE_CONFIG + CONFIG_STEP_SIZE, step_size)) {
             setting_default_step_size = step_size;
+        }
+    }
+}
+
+uint32_t settings_get_menu_timeout()
+{
+    return setting_menu_timeout;
+}
+
+void settings_set_menu_timeout(uint32_t timeout)
+{
+    if (setting_menu_timeout != timeout
+        && timeout <= (10 * 60000)) {
+        if (write_u32(PAGE_CONFIG + CONFIG_MENU_TIMEOUT, timeout)) {
+            setting_menu_timeout = timeout;
         }
     }
 }

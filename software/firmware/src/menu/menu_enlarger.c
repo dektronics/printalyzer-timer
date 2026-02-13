@@ -810,6 +810,8 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
     menu_result_t menu_result = MENU_OK;
     uint8_t row = 0;
 
+    const uint32_t config_timeout = settings_get_menu_timeout();
+    const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
     const uint16_t max_val = enlarger_control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
     uint16_t green_val = enlarger_control->grade_values[grade].channel_green;
     uint16_t blue_val = enlarger_control->grade_values[grade].channel_blue;
@@ -836,7 +838,7 @@ menu_result_t menu_enlarger_config_control_contrast_entry_edit(enlarger_control_
         display_static_list(title_buf, buf);
 
         keypad_event_t keypad_event;
-        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, key_wait);
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
                 /* Increment active row with rollover */
@@ -901,6 +903,8 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
     menu_result_t menu_result = MENU_OK;
     uint8_t row = 0;
 
+    const uint32_t config_timeout = settings_get_menu_timeout();
+    const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
     const contrast_grade_t grade = CONTRAST_GRADE_2;
     const uint16_t max_val = enlarger_control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
     const bool has_white = enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
@@ -946,7 +950,7 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
         display_static_list(title_buf, buf);
 
         keypad_event_t keypad_event;
-        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, key_wait);
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE) || keypad_event.key == KEYPAD_ENCODER_CW) {
                 /* Increment active row with rollover */
@@ -999,6 +1003,9 @@ menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *
     menu_result_t menu_result = MENU_OK;
     bool enlarger_on = false;
 
+    const uint32_t config_timeout = settings_get_menu_timeout();
+    const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
+
     enlarger_control_set_state_off(enlarger_control, false);
 
     for (;;) {
@@ -1009,7 +1016,7 @@ menu_result_t menu_enlarger_config_control_test_relay(const enlarger_control_t *
         display_static_list("Enlarger Test", buf);
 
         keypad_event_t keypad_event;
-        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, key_wait);
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 enlarger_on = !enlarger_on;
@@ -1044,6 +1051,9 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
         enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGB
         || enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
     const bool has_contrast = enlarger_control->contrast_mode != ENLARGER_CONTRAST_MODE_WHITE;
+
+    const uint32_t config_timeout = settings_get_menu_timeout();
+    const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
 
     /* Make sure the DMX port is running and the frame is clear */
     if (dmx_get_port_state() == DMX_PORT_DISABLED) {
@@ -1091,7 +1101,7 @@ menu_result_t menu_enlarger_config_control_test_dmx(const enlarger_control_t *en
         display_static_list("Enlarger Test", buf);
 
         keypad_event_t keypad_event;
-        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, MENU_TIMEOUT_MS);
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, key_wait);
         if (ret == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
                 enlarger_on = !enlarger_on;

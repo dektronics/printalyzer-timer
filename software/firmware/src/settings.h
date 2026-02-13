@@ -87,6 +87,15 @@ exposure_adjustment_increment_t settings_get_default_step_size();
 void settings_set_default_step_size(exposure_adjustment_increment_t step_size);
 
 /**
+ * Menu timeout delay
+ *
+ * @return Timeout in milliseconds
+ */
+uint32_t settings_get_menu_timeout();
+
+void settings_set_menu_timeout(uint32_t timeout);
+
+/**
  * Enlarger timeout when in focus mode.
  *
  * @return Timeout in milliseconds
