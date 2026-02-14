@@ -62,9 +62,7 @@ menu_result_t menu_step_wedge()
         }
         offset += menu_build_padded_str_row(buf + offset, "Calibration", value_str);
 
-        sprintf(buf + offset,
-            "*** Save Changes ***\n"
-            "*** Select From List ***");
+        sprintf(buf + offset, "*** Select From List ***");
 
         option = display_selection_list("Step Wedge Properties", option, buf);
 
@@ -112,24 +110,6 @@ menu_result_t menu_step_wedge()
             }
         } else if (option == 5) {
             menu_result = menu_step_wedge_calibration(wedge);
-        } else if (option == 6) {
-            if (step_wedge_is_valid(wedge)) {
-                if (settings_set_step_wedge(wedge)) {
-                    log_i("Step wedge settings saved");
-                    break;
-                }
-            } else {
-                log_i("Step wedge properties not valid");
-                uint8_t msg_option = display_message(
-                        "Step Wedge Invalid",
-                        NULL,
-                        "Properties must describe a step\n"
-                        "wedge with patches that increase\n"
-                        "in density.", " OK ");
-                if (msg_option == UINT8_MAX) {
-                    menu_result = MENU_TIMEOUT;
-                }
-            }
         } else if (option == 7) {
             int index = menu_step_wedge_list_selection();
             if (index >= 0 && index < step_wedge_stock_count()) {
@@ -278,9 +258,7 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
                 step_wedge_get_density(wedge, i),
                 (is_calibrated ? ']' : '}'));
         }
-        sprintf(buf + offset,
-            "*** Accept Changes ***\n"
-            "*** Reset Values ***");
+        sprintf(buf + offset, "*** Reset Values ***");
 
         if (strlen(wedge->name) > 0) {
             option = display_selection_list(wedge->name, option, buf);
@@ -314,9 +292,6 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == wedge->step_count + 1) {
-            menu_result = MENU_SAVE;
-            break;
-        } else if (option == wedge->step_count + 2) {
             for (uint32_t i = 0; i < wedge->step_count; i++) {
                 wedge->step_density[i] = NAN;
             }
@@ -327,14 +302,10 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
 
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
-    if (menu_result != MENU_SAVE) {
+    if (menu_result == MENU_TIMEOUT) {
         for (uint32_t i = 0; i < wedge->step_count; i++) {
             wedge->step_density[i] = prev_density[i];
         }
-    }
-
-    if (menu_result == MENU_SAVE) {
-        menu_result = MENU_OK;
     }
 
     vPortFree(buf);
