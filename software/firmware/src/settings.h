@@ -169,6 +169,11 @@ bool settings_get_safelight_config(safelight_config_t *safelight_config);
 bool settings_set_safelight_config(const safelight_config_t *safelight_config);
 
 /**
+ * Check whether the two safelight configurations are equivalent.
+ */
+bool safelight_config_compare(const safelight_config_t *config1, const safelight_config_t *config2);
+
+/**
  * Get the name of the enlarger configuration saved at the specified index
  *
  * This function is intended to provide an more efficient way of building

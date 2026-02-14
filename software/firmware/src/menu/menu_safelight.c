@@ -19,6 +19,7 @@ menu_result_t menu_safelight_config()
     uint8_t option = 1;
     safelight_config_t safelight_config;
     bool config_changed = false;
+    const char *title = "Safelight Configuration";
     char buf[512];
 
     /* Load safelight configuration */
@@ -77,7 +78,7 @@ menu_result_t menu_safelight_config()
         }
         buf[offset - 1] = '\0';
 
-        option = display_selection_list("Safelight Configuration", option, buf);
+        option = display_selection_list(title, option, buf);
 
         if (option == 1) {
             menu_result = menu_settings_safelight_mode(&safelight_config);
@@ -140,13 +141,38 @@ menu_result_t menu_safelight_config()
                     config_changed = true;
                 }
             }
+        } else if (option == 0 && config_changed) {
+            /* Skip this code if the original config is invalid or unchanged */
+            safelight_config_t orig_config;
+            if (!settings_get_safelight_config(&orig_config)) {
+                break;
+            }
+            if (safelight_config_compare(&orig_config, &safelight_config)) {
+                break;
+            }
+
+            menu_result_t sub_result = menu_confirm_cancel(title);
+            if (sub_result == MENU_SAVE) {
+                menu_result = MENU_SAVE;
+            } else if (sub_result == MENU_OK || sub_result == MENU_TIMEOUT) {
+                menu_result = sub_result;
+                break;
+            } else if (sub_result == MENU_CANCEL) {
+                option = 1;
+            }
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         }
 
     } while (option > 0 && menu_result != MENU_TIMEOUT);
 
-    if (config_changed) {
+    if (menu_result == MENU_SAVE) {
+        if (safelight_config.control == SAFELIGHT_CONTROL_RELAY) {
+            /* If DMX isn't enabled, reset all DMX fields to their defaults */
+            safelight_config.dmx_address = 0;
+            safelight_config.dmx_wide_mode = false;
+            safelight_config.dmx_on_value = 255;
+        }
         settings_set_safelight_config(&safelight_config);
         illum_controller_refresh();
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);

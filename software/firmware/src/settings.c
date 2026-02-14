@@ -817,6 +817,40 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config)
     }
 }
 
+bool safelight_config_compare(const safelight_config_t *config1, const safelight_config_t *config2)
+{
+    /* Both are the same pointer */
+    if (config1 == config2) {
+        return true;
+    }
+
+    /* Both are null */
+    if (!config1 && !config2) {
+        return true;
+    }
+
+    /* One is null and the other is not */
+    if (!config1 || !config2) {
+        return false;
+    }
+
+    /* The modes or power control mechanisms are different */
+    if (config1->mode != config2->mode || config1->control != config2->control) {
+        return false;
+    }
+
+    /* If DMX control is enabled, then compare the DMX fields */
+    if (config1->control != SAFELIGHT_CONTROL_RELAY) {
+        if (config1->dmx_address != config2->dmx_address
+            || config1->dmx_wide_mode != config2->dmx_wide_mode
+            || config1->dmx_on_value != config2->dmx_on_value) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool settings_get_enlarger_config_name(char *name, uint8_t index)
 {
     if (!name || index >= MAX_ENLARGER_CONFIGS) { return false; }
