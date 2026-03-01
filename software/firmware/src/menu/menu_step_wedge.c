@@ -335,13 +335,13 @@ menu_result_t menu_step_wedge_show(const step_wedge_t *wedge)
         wedge->density_increment);
 
     if (cal_status == 1) {
-        offset += sprintf(buf + offset,
+        sprintf(buf + offset,
             "  Calibrated\n");
     } else if (cal_status == 2) {
-        offset += sprintf(buf + offset,
+        sprintf(buf + offset,
             "     Partial\n");
     } else {
-        offset += sprintf(buf + offset,
+        sprintf(buf + offset,
             "Uncalibrated\n");
     }
 
