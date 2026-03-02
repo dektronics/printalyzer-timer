@@ -595,11 +595,16 @@ osStatus_t meter_probe_control_start(meter_probe_handle_t *handle)
             log_d("UV calibration value: %d", handle->sensor_state.uv_calibration);
         }
 
-        /* Read the initial value of the DensiStick LED current potentiometer */
         if (handle->device_type == METER_PROBE_DEVICE_DENSISTICK) {
+            /* Read the initial value of the DensiStick LED current potentiometer */
             ret = i2c_receive(handle->hi2c, MCP4017_ADDRESS, &handle->stick_light_brightness, 1, HAL_MAX_DELAY);
             if (ret != HAL_OK) { break; }
             log_d("DensiStick LED brightness value: %d", handle->stick_light_brightness);
+
+            /* Make sure the DensiStick LED control defaults to a known state of off */
+            if (usbh_ft260_set_device_gpio_led(handle->device_handle, false) == osOK) {
+                handle->stick_light_enabled = false;
+            }
         }
 
         handle->probe_state = METER_PROBE_STATE_STARTED;

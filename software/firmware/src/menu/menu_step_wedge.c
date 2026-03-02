@@ -17,7 +17,15 @@
 static int calibration_status(const step_wedge_t *wedge);
 static int menu_step_wedge_list_selection();
 static menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge);
+static uint8_t menu_step_wedge_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data);
 static uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *user_data);
+
+typedef struct {
+    bool dens_enable;
+    uint8_t min_option;
+    uint8_t max_option;
+    uint16_t reading;
+} input_poll_params_t;
 
 menu_result_t menu_step_wedge()
 {
@@ -226,6 +234,8 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
     int option = 1;
     size_t offset = 0;
     char *buf = NULL;
+    input_poll_params_t poll_params = {0};
+
     buf = pvPortMalloc((wedge->step_count * (sizeof(char) * 33)) + 64);
     if (!buf) {
         return MENU_OK;
@@ -241,7 +251,19 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
         prev_density[i] = wedge->step_density[i];
     }
 
+    poll_params.min_option = 1;
+    poll_params.max_option = wedge->step_count;
+
     do {
+        if (usb_serial_is_attached()) {
+            if (!poll_params.dens_enable) {
+                poll_params.dens_enable = true;
+                usb_serial_clear_receive_buffer();
+            }
+        } else {
+            poll_params.dens_enable = false;
+        }
+
         offset = 0;
         for (uint32_t i = 0; i < wedge->step_count; i++) {
             bool is_calibrated;
@@ -261,35 +283,41 @@ menu_result_t menu_step_wedge_calibration(step_wedge_t *wedge)
         sprintf(buf + offset, "*** Reset Values ***");
 
         if (strlen(wedge->name) > 0) {
-            option = display_selection_list(wedge->name, option, buf);
+            option = display_selection_list_cb(wedge->name, option, buf,
+                menu_step_wedge_densitometer_input_poll_callback, &poll_params);
         } else {
-            option = display_selection_list("Step Wedge Calibration", option, buf);
+            option = display_selection_list_cb("Step Wedge Calibration", option, buf,
+                menu_step_wedge_densitometer_input_poll_callback, &poll_params);
         }
 
         if (option > 0 && option <= wedge->step_count) {
-            uint8_t patch_option;
-            char patch_title_buf[32];
-            char patch_buf[128];
-            sprintf(patch_title_buf, "Step %d", option);
-            sprintf(patch_buf,
-                "\nMeasured density at patch %d\n"
-                "of the step wedge.\n",
-                option);
-            uint16_t value_sel = lroundf(step_wedge_get_density(wedge, option - 1) * 100);
+            if (poll_params.reading != UINT16_MAX) {
+                wedge->step_density[option - 1] = (float)poll_params.reading / 100.0F;
+                option++;
+            } else {
+                uint8_t patch_option;
+                char patch_title_buf[32];
+                char patch_buf[128];
+                sprintf(patch_title_buf, "Step %d", option);
+                sprintf(patch_buf,
+                    "\nMeasured density at patch %d\n"
+                    "of the step wedge.\n",
+                    option);
+                uint16_t value_sel = lroundf(step_wedge_get_density(wedge, option - 1) * 100);
 
-            bool dens_enable = usb_serial_is_attached();
-            if (dens_enable) {
-                usb_serial_clear_receive_buffer();
-            }
+                if (poll_params.dens_enable) {
+                    usb_serial_clear_receive_buffer();
+                }
 
-            patch_option = display_input_value_f16_data_cb(
-                patch_title_buf, patch_buf,
-                "D=", &value_sel, 0, 999, 1, 2, "",
-                menu_step_wedge_densitometer_data_callback, &dens_enable);
-            if (patch_option == 1) {
-                wedge->step_density[option - 1] = (float)value_sel / 100.0F;
-            } else if (patch_option == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
+                patch_option = display_input_value_f16_data_cb(
+                    patch_title_buf, patch_buf,
+                    "D=", &value_sel, 0, 999, 1, 2, "",
+                    menu_step_wedge_densitometer_data_callback, &poll_params.dens_enable);
+                if (patch_option == 1) {
+                    wedge->step_density[option - 1] = (float)value_sel / 100.0F;
+                } else if (patch_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
             }
         } else if (option == wedge->step_count + 1) {
             for (uint32_t i = 0; i < wedge->step_count; i++) {
@@ -358,6 +386,26 @@ menu_result_t menu_step_wedge_show(const step_wedge_t *wedge)
     return menu_result;
 }
 
+uint8_t menu_step_wedge_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data)
+{
+    input_poll_params_t *params = (input_poll_params_t *)user_data;
+
+    /* Always capture reading to avoid data stuck in the buffer */
+    uint16_t reading = menu_step_wedge_densitometer_data_callback(event_action, &params->dens_enable);
+
+    if (current_pos >= params->min_option && current_pos <= params->max_option) {
+        params->reading = reading;
+    } else {
+        params->reading = UINT16_MAX;
+    }
+
+    if (params->reading != UINT16_MAX) {
+        event_action = U8X8_MSG_GPIO_MENU_SELECT;
+    }
+
+    return event_action;
+}
+
 uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *user_data)
 {
     bool dens_enable = *((bool *)user_data);
@@ -365,7 +413,7 @@ uint16_t menu_step_wedge_densitometer_data_callback(uint8_t event_action, void *
         densitometer_reading_t reading;
         if (densitometer_reading_poll(&reading) == DENSITOMETER_RESULT_OK) {
             if ((reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_TRANSMISSION)
-                && !isnan(reading.visual) && reading.visual > 0.0F) {
+                && !isnan(reading.visual) && (fpclassify(reading.visual) == FP_ZERO || reading.visual > 0.0F)) {
                 return lroundf(reading.visual * 100);
             }
         }

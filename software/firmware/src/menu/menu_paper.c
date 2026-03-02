@@ -21,7 +21,6 @@
 #include "menu_step_wedge.h"
 #include "exposure_state.h"
 #include "meter_probe.h"
-#include "util.h"
 
 typedef struct {
     step_wedge_t *wedge;
@@ -32,18 +31,26 @@ typedef struct {
 } wedge_calibration_params_t;
 
 typedef struct {
-    bool dens_enable;
-    bool stick_enable;
+    bool enable;
+    bool dens_ready;
+    bool stick_ready;
+    bool stick_enabled;
+    bool stick_idle_refresh;
+    uint8_t min_option;
+    uint8_t max_option;
+    uint8_t alt_option;
+    uint16_t reading;
 } menu_paper_callback_data_t;
 
 static menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_profile_t *profile, uint8_t index);
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
-static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade);
-static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density);
-static void menu_paper_densitometer_setup(menu_paper_callback_data_t *data);
-static void menu_paper_densitometer_shutdown(const menu_paper_callback_data_t *data);
+static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade, menu_paper_callback_data_t *dens_data);
+static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density, menu_paper_callback_data_t *dens_data);
+static void menu_paper_densitometer_check(menu_paper_callback_data_t *data);
+static uint8_t menu_paper_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data);
 static uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_data);
+static uint16_t menu_paper_densitometer_callback_impl(uint8_t event_action, menu_paper_callback_data_t *data, bool active);
 static menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibration_params_t *params);
 static menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, const wedge_calibration_params_t *params, paper_profile_grade_t *paper_grade);
 
@@ -212,6 +219,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
     bool profile_dirty;
+    menu_paper_callback_data_t dens_data = {0};
 
     if (index == UINT8_MAX) {
         sprintf(buf_title, "New Paper Profile");
@@ -220,6 +228,9 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
         sprintf(buf_title, "Paper Profile %d", index + 1);
         profile_dirty = false;
     }
+
+    dens_data.enable = true;
+    menu_paper_densitometer_check(&dens_data);
 
     do {
         size_t offset = 0;
@@ -246,7 +257,12 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             strcat(buf, "\n*** Delete Profile ***");
         }
 
-        option = display_selection_list(buf_title, option, buf);
+        dens_data.min_option = UINT8_MAX;
+        dens_data.max_option = UINT8_MAX;
+        dens_data.alt_option = 2;
+        dens_data.stick_idle_refresh = true;
+        option = display_selection_list_cb(buf_title, option, buf,
+            menu_paper_densitometer_input_poll_callback, &dens_data);
 
         if (option == 1) {
             if (display_input_text("Paper Profile Name", profile->name, PROFILE_NAME_LEN) > 0) {
@@ -256,25 +272,27 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             uint16_t value_sel = lroundf(profile->max_net_density * 100);
             uint16_t value_sel_prev = value_sel;
 
-            menu_paper_callback_data_t dens_data;
-            menu_paper_densitometer_setup(&dens_data);
-
-            if (display_input_value_f16_data_cb(
-                "Max Net Density",
-                "Maximum density (Dmax) of the\n"
-                "paper, measured relative to the\n"
-                "paper base (Dmin).\n",
-                "D=", &value_sel, 0, 999, 1, 2, "",
-                menu_paper_densitometer_data_callback, &dens_data) == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
-            } else {
-                if (value_sel != value_sel_prev) {
-                    profile->max_net_density = (float)value_sel / 100.0F;
+            if (dens_data.reading != UINT16_MAX) {
+                if (dens_data.reading != value_sel_prev) {
+                    profile->max_net_density = (float) dens_data.reading / 100.0F;
                     profile_dirty = true;
                 }
+            } else {
+                if (display_input_value_f16_data_cb(
+                        "Max Net Density",
+                        "Maximum density (Dmax) of the\n"
+                        "paper, measured relative to the\n"
+                        "paper base (Dmin).\n",
+                        "D=", &value_sel, 0, 999, 1, 2, "",
+                        menu_paper_densitometer_data_callback, &dens_data) == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    if (value_sel != value_sel_prev) {
+                        profile->max_net_density = (float) value_sel / 100.0F;
+                        profile_dirty = true;
+                    }
+                }
             }
-
-            menu_paper_densitometer_shutdown(&dens_data);
         } else if (option >= 3 && option <= 9) {
             contrast_grade_t grade;
             switch (option) {
@@ -303,7 +321,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 grade = CONTRAST_GRADE_2;
                 break;
             }
-            menu_result_t sub_result = menu_paper_profile_edit_grade(controller, profile, index, grade);
+            menu_result_t sub_result = menu_paper_profile_edit_grade(controller, profile, index, grade, &dens_data);
             if (sub_result == MENU_SAVE) {
                 profile_dirty = true;
             } else if (sub_result == MENU_TIMEOUT) {
@@ -336,6 +354,9 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
         }
 
     } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    dens_data.enable = false;
+    menu_paper_densitometer_check(&dens_data);
 
     return menu_result;
 }
@@ -386,7 +407,7 @@ bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t in
     }
 }
 
-menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade)
+menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade, menu_paper_callback_data_t *dens_data)
 {
     char buf_title[36];
     char buf[512];
@@ -413,6 +434,13 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     memcpy(&working_grade, &profile->grade[grade], sizeof(paper_profile_grade_t));
 
     float working_max_net_density = profile->max_net_density;
+
+    dens_data->min_option = UINT8_MAX;
+    dens_data->max_option = UINT8_MAX;
+    dens_data->alt_option = UINT8_MAX;
+    dens_data->stick_enabled = false;
+    dens_data->stick_idle_refresh = true;
+    menu_paper_densitometer_check(dens_data);
 
     do {
         if (working_grade.hm_lev100 <= working_grade.ht_lev100 || working_grade.hm_lev100 >= working_grade.hs_lev100) {
@@ -480,7 +508,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             }
         } else if (option == 4) {
             if (isnormal(working_max_net_density) && working_max_net_density > 0.0F) {
-                menu_result_t cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade, working_max_net_density);
+                menu_result_t cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade, working_max_net_density, dens_data);
                 if (cal_result == MENU_SAVE) {
                     /* If calibration results were accepted, move the cursor down for convenience */
                     option = 5;
@@ -521,7 +549,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     return menu_result;
 }
 
-menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density)
+menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density, menu_paper_callback_data_t *dens_data)
 {
     menu_result_t menu_result = MENU_OK;
     char *buf = NULL;
@@ -567,6 +595,11 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
     for (uint32_t i = 0; i < wedge->step_count; i++) {
         patch_density[i] = NAN;
     }
+
+    dens_data->min_option = 5;
+    dens_data->max_option = (5 + wedge->step_count) - 1;
+    dens_data->alt_option = 2;
+    dens_data->stick_idle_refresh = true;
 
     do {
         paper_dmax = paper_dmin + max_net_density;
@@ -620,29 +653,29 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         }
         sprintf(buf + offset, "*** Calculate Profile ***");
 
-        option = display_selection_list(title, option, buf);
+        option = display_selection_list_cb(title, option, buf,
+            menu_paper_densitometer_input_poll_callback, dens_data);
 
         if (option == 1) {
             menu_result = menu_step_wedge_show(wedge);
         } else if (option == 2) {
             uint16_t value_sel = lroundf(paper_dmin * 100);
 
-            menu_paper_callback_data_t dens_data;
-            menu_paper_densitometer_setup(&dens_data);
-
-            if (display_input_value_f16_data_cb(
-                "Paper Dmin (optional)",
-                "Minimum density of the paper,\n"
-                "used as an offset for the\n"
-                "step measurements.\n",
-                "D=", &value_sel, 0, 999, 1, 2, "",
-                menu_paper_densitometer_data_callback, &dens_data) == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
+            if (dens_data->reading != UINT16_MAX) {
+                paper_dmin = (float) dens_data->reading / 100.0F;
             } else {
-                paper_dmin = (float)value_sel / 100.0F;
+                if (display_input_value_f16_data_cb(
+                        "Paper Dmin (optional)",
+                        "Minimum density of the paper,\n"
+                        "used as an offset for the\n"
+                        "step measurements.\n",
+                        "D=", &value_sel, 0, 999, 1, 2, "",
+                        menu_paper_densitometer_data_callback, dens_data) == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                } else {
+                    paper_dmin = (float) value_sel / 100.0F;
+                }
             }
-
-            menu_paper_densitometer_shutdown(&dens_data);
         } else if (option == 3) {
             char msg_buf[256];
             sprintf(msg_buf,
@@ -672,50 +705,57 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         } else if (option >= 5 && option < 5 + wedge->step_count) {
             int step_index = option - 5;
 
-            uint8_t patch_option;
-            char patch_title_buf[32];
-            char patch_buf[128];
-            sprintf(patch_title_buf, "Step %d", step_index + 1);
-            sprintf(patch_buf,
-                "\nMeasured density at patch %d\n"
-                "of the exposed paper.\n",
-                step_index + 1);
-
             /* Constrain the input based on Dmin and Dmax */
             uint16_t min_value = lroundf(paper_dmin * 100);
             uint16_t max_value = lroundf(paper_dmax * 100);
 
-            uint16_t value_sel = 0;
-            if (isnormal(patch_density[step_index]) && patch_density[step_index] > 0.0F) {
-                value_sel = lroundf(patch_density[step_index] * 100);
-            }
-            if (value_sel < min_value) {
-                value_sel = min_value;
-            }
-            if (value_sel > max_value) {
-                value_sel = max_value;
-            }
-
-            menu_paper_callback_data_t dens_data;
-            menu_paper_densitometer_setup(&dens_data);
-
-            patch_option = display_input_value_f16_data_cb(
-                patch_title_buf, patch_buf,
-                "D=", &value_sel, min_value, max_value, 1, 2, "",
-                menu_paper_densitometer_data_callback, &dens_data);
-            if (patch_option == 1) {
-                if (value_sel <= min_value) {
+            if (dens_data->reading != UINT16_MAX) {
+                if (dens_data->reading <= min_value) {
                     patch_density[step_index] = paper_dmin;
-                } else if (value_sel >= max_value) {
+                } else if (dens_data->reading >= max_value) {
                     patch_density[step_index] = paper_dmax;
                 } else {
-                    patch_density[step_index] = (float)value_sel / 100.0F;
+                    patch_density[step_index] = (float)dens_data->reading / 100.0F;
                 }
-            } else if (patch_option == UINT8_MAX) {
-                menu_result = MENU_TIMEOUT;
-            }
 
-            menu_paper_densitometer_shutdown(&dens_data);
+                option++;
+            } else {
+                uint8_t patch_option;
+                char patch_title_buf[32];
+                char patch_buf[128];
+                sprintf(patch_title_buf, "Step %d", step_index + 1);
+                sprintf(patch_buf,
+                    "\nMeasured density at patch %d\n"
+                    "of the exposed paper.\n",
+                    step_index + 1);
+
+                uint16_t value_sel = 0;
+                if (isnormal(patch_density[step_index]) && patch_density[step_index] > 0.0F) {
+                    value_sel = lroundf(patch_density[step_index] * 100);
+                }
+                if (value_sel < min_value) {
+                    value_sel = min_value;
+                }
+                if (value_sel > max_value) {
+                    value_sel = max_value;
+                }
+
+                patch_option = display_input_value_f16_data_cb(
+                    patch_title_buf, patch_buf,
+                    "D=", &value_sel, min_value, max_value, 1, 2, "",
+                    menu_paper_densitometer_data_callback, dens_data);
+                if (patch_option == 1) {
+                    if (value_sel <= min_value) {
+                        patch_density[step_index] = paper_dmin;
+                    } else if (value_sel >= max_value) {
+                        patch_density[step_index] = paper_dmax;
+                    } else {
+                        patch_density[step_index] = (float)value_sel / 100.0F;
+                    }
+                } else if (patch_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
+            }
         } else if (option == 5 + wedge->step_count) {
             menu_result_t val_result;
             log_i("Calculate profile");
@@ -766,60 +806,132 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
     return menu_result;
 }
 
-void menu_paper_densitometer_setup(menu_paper_callback_data_t *data)
+void menu_paper_densitometer_check(menu_paper_callback_data_t *data)
 {
-    if (!data) { return; }
-
-    data->dens_enable = usb_serial_is_attached();
-    if (data->dens_enable) {
-        usb_serial_clear_receive_buffer();
-    }
-
     meter_probe_handle_t *handle = densistick_handle();
-    if (meter_probe_is_attached(handle) && !meter_probe_is_started(handle)) {
-        if (meter_probe_start(handle) == osOK) {
-            densistick_set_light_brightness(handle, 127);
-            densistick_set_light_enable(handle, true);
-            data->stick_enable = true;
+
+    if (data->enable) {
+        /* Enable serial-attached densitometer reading and clear the buffer */
+        if (usb_serial_is_attached()) {
+            if (!data->dens_ready) {
+                usb_serial_clear_receive_buffer();
+                data->dens_ready = true;
+            }
+        } else {
+            data->dens_ready = false;
         }
-    }
-}
 
-void menu_paper_densitometer_shutdown(const menu_paper_callback_data_t *data)
-{
-    if (!data) { return; }
+        /* Enable the DensiStick if it is attached and not started */
+        if (meter_probe_is_attached(handle)) {
+            if (!meter_probe_is_started(handle)) {
+                if (meter_probe_start(handle) == osOK) {
+                    data->stick_ready = true;
+                    data->stick_idle_refresh = true;
+                }
+            }
+        } else {
+            data->stick_ready = false;
+        }
 
-    if (data->dens_enable) {
-        usb_serial_clear_receive_buffer();
-    }
-
-    meter_probe_handle_t *handle = densistick_handle();
-    if (data->stick_enable) {
+        if (data->stick_ready && data->stick_idle_refresh) {
+            if (data->stick_enabled) {
+                if (densistick_get_light_brightness(handle) != 127) {
+                    densistick_set_light_brightness(handle, 127);
+                }
+                if (!densistick_get_light_enable(handle)) {
+                    densistick_set_light_enable(handle, true);
+                }
+            } else {
+                if (densistick_get_light_enable(handle)) {
+                    densistick_set_light_enable(handle, false);
+                }
+            }
+        }
+        data->stick_idle_refresh = false;
+    } else {
+        /* Disable all densitometer reading */
         if (meter_probe_is_started(handle)) {
             densistick_set_light_enable(handle, false);
             meter_probe_sensor_disable(handle);
             meter_probe_stop(handle);
         }
+        data->dens_ready = false;
+        data->stick_ready = false;
+        data->stick_enabled = false;
     }
+}
+
+uint8_t menu_paper_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data)
+{
+    menu_paper_callback_data_t *data = (menu_paper_callback_data_t *)user_data;
+
+    bool active;
+    if ((current_pos >= data->min_option && current_pos <= data->max_option) || current_pos == data->alt_option) {
+        active = true;
+    } else {
+        active = false;
+    }
+
+    /* Update DensiStick idle status if appropriate */
+    if (active) {
+        if (!data->stick_enabled) {
+            data->stick_enabled = true;
+            data->stick_idle_refresh = true;
+        }
+    } else {
+        if (data->stick_enabled) {
+            data->stick_enabled = false;
+            data->stick_idle_refresh = true;
+        }
+    }
+    menu_paper_densitometer_check(data);
+
+    /* Always capture reading to avoid data stuck in the buffer */
+    uint16_t reading = menu_paper_densitometer_callback_impl(event_action, data, active);
+
+    if (active) {
+        data->reading = reading;
+    } else {
+        data->reading = UINT16_MAX;
+    }
+
+    if (data->reading != UINT16_MAX) {
+        event_action = U8X8_MSG_GPIO_MENU_SELECT;
+    }
+
+    return event_action;
 }
 
 uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_data)
 {
     menu_paper_callback_data_t *data = (menu_paper_callback_data_t *)user_data;
-    if (data->dens_enable) {
+
+    if (!data->stick_enabled) {
+        data->stick_enabled = true;
+        data->stick_idle_refresh = true;
+    }
+    menu_paper_densitometer_check(data);
+
+    return menu_paper_densitometer_callback_impl(event_action, data, true);
+}
+
+uint16_t menu_paper_densitometer_callback_impl(uint8_t event_action, menu_paper_callback_data_t *data, bool active)
+{
+    if (data->dens_ready) {
         densitometer_reading_t reading;
         if (densitometer_reading_poll(&reading) == DENSITOMETER_RESULT_OK) {
-            if ((reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_REFLECTION)
+            if (active && (reading.mode == DENSITOMETER_MODE_UNKNOWN || reading.mode == DENSITOMETER_MODE_REFLECTION)
                 && !isnan(reading.visual) && reading.visual > 0.0F) {
                 return lroundf(reading.visual * 100);
             }
         }
     }
-    if (event_action == 5 /*U8X8_MSG_GPIO_MENU_STICK_BTN*/ && data->stick_enable) {
+    if (active && event_action == 5 /*U8X8_MSG_GPIO_MENU_STICK_BTN*/ && data->stick_ready) {
         meter_probe_result_t result = METER_READING_OK;
         float density = NAN;
         buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
         result = densistick_measure(densistick_handle(), &density, NULL);
+        data->stick_idle_refresh = true;
         buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
         if (result == METER_READING_OK) {
             return lroundf(density * 100);

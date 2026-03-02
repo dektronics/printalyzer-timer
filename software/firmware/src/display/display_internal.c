@@ -729,7 +729,8 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
 }
 
 uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl,
-    display_GetMenuEvent_t event_callback, display_menu_params_t params)
+    display_GetMenuEvent_t event_callback, display_menu_params_t params,
+    display_input_poll_callback_t input_poll_callback, void *user_data)
 {
     // Based off u8g2_UserInterfaceSelectionList() with changes to
     // support parameters for key event handling that allow for
@@ -795,6 +796,12 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
             } else {
                 event_action = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
                 event_keycode = 0;
+            }
+
+            if (input_poll_callback) {
+                osMutexRelease(display_mutex);
+                event_action = input_poll_callback(u8sl.current_pos + 1, event_action, user_data);
+                osMutexAcquire(display_mutex, portMAX_DELAY);
             }
 
             if (event_action == U8X8_MSG_GPIO_MENU_SELECT) {

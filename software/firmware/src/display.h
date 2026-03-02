@@ -121,6 +121,7 @@ typedef struct {
 } display_adjustment_exposure_elements_t;
 
 typedef void (*display_input_value_callback_t)(uint8_t value, void *user_data);
+typedef uint8_t (*display_input_poll_callback_t)(uint8_t current_pos, uint8_t event_action, void *user_data);
 typedef uint16_t (*display_data_source_callback_t)(uint8_t event_action, void *user_data);
 
 HAL_StatusTypeDef display_init(const u8g2_display_handle_t *display_handle);
@@ -179,6 +180,9 @@ void display_redraw_test_strip_timer(const display_exposure_timer_t *elements);
 void display_draw_edit_adjustment_elements(const display_edit_adjustment_elements_t *elements);
 
 uint8_t display_selection_list(const char *title, uint8_t start_pos, const char *list);
+
+uint8_t display_selection_list_cb(const char *title, uint8_t start_pos, const char *list,
+    display_input_poll_callback_t input_poll_callback, void *user_data);
 
 /**
  * Display a list of scrollable and selectable options.

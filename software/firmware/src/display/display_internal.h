@@ -52,7 +52,8 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
     display_input_value_callback_t callback, void *user_data);
 
 uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl,
-    display_GetMenuEvent_t event_callback, display_menu_params_t params);
+    display_GetMenuEvent_t event_callback, display_menu_params_t params,
+    display_input_poll_callback_t input_poll_callback, void *user_data);
 
 uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3, const char *buttons,
     display_GetMenuEvent_t event_callback, display_menu_params_t params);

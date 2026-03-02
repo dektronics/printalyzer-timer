@@ -1645,6 +1645,27 @@ uint8_t display_selection_list(const char *title, uint8_t start_pos, const char 
     return menu_event_timeout ? UINT8_MAX : option;
 }
 
+uint8_t display_selection_list_cb(const char *title, uint8_t start_pos, const char *list,
+    display_input_poll_callback_t input_poll_callback, void *user_data)
+{
+    osMutexAcquire(display_mutex, portMAX_DELAY);
+
+    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU;
+    if (input_poll_callback) {
+        params |= DISPLAY_MENU_INPUT_POLL;
+    }
+
+    display_prepare_menu_font();
+    keypad_clear_events();
+
+    uint16_t option = display_UserInterfaceSelectionListCB(&u8g2, title, start_pos, list,
+        display_GetMenuEvent, params, input_poll_callback, user_data);
+
+    osMutexRelease(display_mutex);
+
+    return option;
+}
+
 uint16_t display_selection_list_params(const char *title, uint8_t start_pos, const char *list,
     display_menu_params_t params)
 {
@@ -1654,7 +1675,7 @@ uint16_t display_selection_list_params(const char *title, uint8_t start_pos, con
     keypad_clear_events();
 
     uint16_t option = display_UserInterfaceSelectionListCB(&u8g2, title, start_pos, list,
-        display_GetMenuEvent, params);
+        display_GetMenuEvent, params, NULL, NULL);
 
     osMutexRelease(display_mutex);
 
