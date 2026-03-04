@@ -38,7 +38,7 @@
  * starting point that is close enough for step wedge exposures
  * when attempting to determine a paper's characteristic curve.
  */
-#define CALIBRATION_STRIP_PEV 220
+#define CALIBRATION_STRIP_PEV 150
 
 /**
  * Minimum exposure time that may be offered by calculation
