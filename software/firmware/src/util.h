@@ -18,8 +18,6 @@ typedef struct __display_main_calibration_elements_t display_main_calibration_el
 typedef struct __exposure_state_t exposure_state_t;
 typedef struct __enlarger_config_t enlarger_config_t;
 
-#define SAFELIGHT_OFF_DELAY pdMS_TO_TICKS(500)
-
 #ifndef MIN
 #define MIN(a, b)  (((a) < (b)) ? (a) : (b))
 #endif

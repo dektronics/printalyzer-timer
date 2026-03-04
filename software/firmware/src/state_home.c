@@ -640,7 +640,6 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
 
     do {
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
-        osDelay(SAFELIGHT_OFF_DELAY / 2);
 
         result = meter_probe_measure(meter_probe_handle(), &lux);
         if (result != METER_READING_OK) {
@@ -649,7 +648,14 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
 
     } while (0);
 
-    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    if (state_controller_is_enlarger_focus(controller)) {
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
+    } else {
+        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+    }
+
+    /* Give the beeps some spacing */
+    osDelay(pdMS_TO_TICKS(200));
 
     if (result == METER_READING_OK) {
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);

@@ -44,6 +44,8 @@ menu_result_t menu_safelight_config()
         }
         offset += menu_build_padded_str_row(buf + offset, "Safelight mode", val_str);
 
+        offset += menu_build_padded_format_row(buf + offset, "Turn off delay", "%dms", safelight_config.turn_off_delay);
+
         switch(safelight_config.control) {
         case SAFELIGHT_CONTROL_DMX:
             val_str = "DMX";
@@ -84,13 +86,25 @@ menu_result_t menu_safelight_config()
             menu_result = menu_settings_safelight_mode(&safelight_config);
             if (menu_result == MENU_OK) { config_changed = true; }
         } else if (option == 2) {
+            uint16_t value_sel = safelight_config.turn_off_delay;
+            if (display_input_value_u16(
+                    "Turn Off Delay",
+                    "Amount of time the safelights\n"
+                    "take to fully turn off.\n",
+                    "", &value_sel, 0, 10000, 5, "ms") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                safelight_config.turn_off_delay = value_sel;
+                config_changed = true;
+            }
+        } else if (option == 3) {
             if (safelight_config.control < SAFELIGHT_CONTROL_BOTH) {
                 safelight_config.control++;
             } else {
                 safelight_config.control = 0;
             }
             config_changed = true;
-        } else if (option == 3) {
+        } else if (option == 4) {
             uint16_t value_sel = safelight_config.dmx_address + 1;
             if (display_input_value_u16(
                 "DMX Address",
@@ -102,7 +116,7 @@ menu_result_t menu_safelight_config()
                 safelight_config.dmx_address = value_sel - 1;
                 config_changed = true;
             }
-        } else if (option == 4) {
+        } else if (option == 5) {
             if (safelight_config.dmx_wide_mode) {
                 safelight_config.dmx_wide_mode = false;
                 safelight_config.dmx_on_value = (safelight_config.dmx_on_value & 0xFF00) >> 8;
@@ -115,7 +129,7 @@ menu_result_t menu_safelight_config()
                 }
             }
             config_changed = true;
-        } else if (option == 5) {
+        } else if (option == 6) {
             if (safelight_config.dmx_wide_mode) {
                 uint16_t value_sel = safelight_config.dmx_on_value;
                 if (display_input_value_u16(
@@ -142,13 +156,12 @@ menu_result_t menu_safelight_config()
                 }
             }
         } else if (option == 0 && config_changed) {
-            /* Skip this code if the original config is invalid or unchanged */
+            /* Skip this code if the original config is valid and unchanged */
             safelight_config_t orig_config;
-            if (!settings_get_safelight_config(&orig_config)) {
-                break;
-            }
-            if (safelight_config_compare(&orig_config, &safelight_config)) {
-                break;
+            if (settings_get_safelight_config(&orig_config)) {
+                if (safelight_config_compare(&orig_config, &safelight_config)) {
+                    break;
+                }
             }
 
             menu_result_t sub_result = menu_confirm_cancel(title);

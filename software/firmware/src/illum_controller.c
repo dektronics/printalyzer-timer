@@ -77,64 +77,79 @@ void illum_controller_refresh()
     osMutexRelease(illum_mutex);
 }
 
+static bool mode_safelight_enabled(illum_safelight_t mode)
+{
+    const safelight_mode_t setting = illum_safelight_config.mode;
+    bool safelight_enabled = true;
+    if (setting == SAFELIGHT_MODE_OFF) {
+        safelight_enabled = false;
+    } else if (setting == SAFELIGHT_MODE_ON) {
+        switch (mode) {
+        case ILLUM_SAFELIGHT_HOME:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_FOCUS:
+            safelight_enabled = false;
+            break;
+        case ILLUM_SAFELIGHT_EXPOSURE:
+            safelight_enabled = false;
+
+            break;
+        case ILLUM_SAFELIGHT_MEASUREMENT:
+            safelight_enabled = false;
+            break;
+        default:
+            safelight_enabled = true;
+            break;
+        }
+    } else if (setting == SAFELIGHT_MODE_AUTO) {
+        switch (mode) {
+        case ILLUM_SAFELIGHT_HOME:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_FOCUS:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_EXPOSURE:
+            safelight_enabled = false;
+            break;
+        case ILLUM_SAFELIGHT_MEASUREMENT:
+            safelight_enabled = false;
+            break;
+        default:
+            safelight_enabled = true;
+            break;
+        }
+    }
+    return safelight_enabled;
+}
+
 void illum_controller_safelight_state(illum_safelight_t mode)
 {
+    bool safelight_prev_enabled;
+    bool safelight_enabled;
+    uint32_t turn_off_delay;
+
     osMutexAcquire(illum_mutex, portMAX_DELAY);
 
     if (illum_safelight != mode) {
         log_d("safelight_state: %d", mode);
-        illum_safelight = mode;
     }
 
-    if (!illum_blackout) {
-        const safelight_mode_t setting = illum_safelight_config.mode;
-        bool safelight_enabled = true;
-        if (setting == SAFELIGHT_MODE_OFF) {
-            safelight_enabled = false;
-        } else if (setting == SAFELIGHT_MODE_ON) {
-            switch (mode) {
-            case ILLUM_SAFELIGHT_HOME:
-                safelight_enabled = true;
-                break;
-            case ILLUM_SAFELIGHT_FOCUS:
-                safelight_enabled = false;
-                break;
-            case ILLUM_SAFELIGHT_EXPOSURE:
-                safelight_enabled = false;
-                break;
-            case ILLUM_SAFELIGHT_MEASUREMENT:
-                safelight_enabled = false;
-                break;
-            default:
-                safelight_enabled = true;
-                break;
-            }
-        } else if (setting == SAFELIGHT_MODE_AUTO) {
-            switch (mode) {
-            case ILLUM_SAFELIGHT_HOME:
-                safelight_enabled = true;
-                break;
-            case ILLUM_SAFELIGHT_FOCUS:
-                safelight_enabled = true;
-                break;
-            case ILLUM_SAFELIGHT_EXPOSURE:
-                safelight_enabled = false;
-                break;
-            case ILLUM_SAFELIGHT_MEASUREMENT:
-                safelight_enabled = false;
-                break;
-            default:
-                safelight_enabled = true;
-                break;
-            }
-        }
+    safelight_prev_enabled = !illum_blackout && mode_safelight_enabled(illum_safelight);
+    safelight_enabled = !illum_blackout && mode_safelight_enabled(mode);
+    turn_off_delay = illum_safelight_config.turn_off_delay;
+    illum_safelight = mode;
 
-        illum_controller_set_safelight(safelight_enabled);
-    } else {
-        illum_controller_set_safelight(false);
-    }
+    illum_controller_set_safelight(safelight_enabled);
 
     osMutexRelease(illum_mutex);
+
+    if (safelight_prev_enabled && !safelight_enabled
+        && (mode == ILLUM_SAFELIGHT_EXPOSURE || mode == ILLUM_SAFELIGHT_MEASUREMENT)
+        && turn_off_delay > 0) {
+        osDelay(turn_off_delay);
+    }
 }
 
 void illum_controller_set_safelight(bool enabled)

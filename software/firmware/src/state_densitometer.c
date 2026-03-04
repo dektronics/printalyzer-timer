@@ -287,7 +287,6 @@ bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_co
 
     do {
         illum_controller_safelight_state(ILLUM_SAFELIGHT_MEASUREMENT);
-        osDelay(SAFELIGHT_OFF_DELAY / 2);
 
         result = meter_probe_measure(meter_probe_handle(), &lux);
         if (result != METER_READING_OK) {

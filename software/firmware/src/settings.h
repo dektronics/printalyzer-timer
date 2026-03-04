@@ -36,6 +36,7 @@ typedef struct {
     uint16_t dmx_address;        /*!< DMX device address */
     bool dmx_wide_mode;          /*!< True for 16-bit mode, false for 8-bit mode */
     uint16_t dmx_on_value;       /*!< Brightness value for the on state */
+    uint32_t turn_off_delay;     /*!< Time (ms) it takes for the safelight to turn off */
 } safelight_config_t;
 
 typedef enum {

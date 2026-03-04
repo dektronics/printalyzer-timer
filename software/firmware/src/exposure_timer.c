@@ -166,7 +166,6 @@ HAL_StatusTypeDef exposure_timer_run()
         buzzer_set_frequency(500);
 
         illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
-        osDelay(SAFELIGHT_OFF_DELAY);
 
         log_i("Starting exposure timer");
 

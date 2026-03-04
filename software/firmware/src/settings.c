@@ -105,7 +105,7 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define PAGE_CONFIG2_SIZE                (256U)
 #define CONFIG2_VERSION                  0
 #define CONFIG2_SAFELIGHT_CONTROL        4
-#define CONFIG2_SAFELIGHT_CONTROL_SIZE   (8U)
+#define CONFIG2_SAFELIGHT_CONTROL_SIZE   (12U)
 
 /**
  * Enlarger configurations (4096B)
@@ -737,6 +737,7 @@ void settings_set_safelight_config_defaults(safelight_config_t *safelight_config
     safelight_config->dmx_address = 0;
     safelight_config->dmx_wide_mode = false;
     safelight_config->dmx_on_value = 255;
+    safelight_config->turn_off_delay = 500;
 }
 
 bool settings_validate_safelight_config(const safelight_config_t *safelight_config)
@@ -756,6 +757,9 @@ bool settings_validate_safelight_config(const safelight_config_t *safelight_conf
     if (!safelight_config->dmx_wide_mode && safelight_config->dmx_on_value > 0xFF) {
         return false;
     }
+    if (safelight_config->turn_off_delay > 10000) {
+        return false;
+    }
 
     return true;
 }
@@ -773,6 +777,7 @@ bool settings_load_safelight_config()
     setting_safelight_config.dmx_wide_mode = buf[3];
     setting_safelight_config.dmx_address = copy_to_u16(&buf[4]);
     setting_safelight_config.dmx_on_value = copy_to_u16(&buf[6]);
+    setting_safelight_config.turn_off_delay = copy_to_u32(&buf[8]);
 
     return true;
 }
@@ -804,6 +809,7 @@ bool settings_set_safelight_config(const safelight_config_t *safelight_config)
     buf[3] = safelight_config->dmx_wide_mode;
     copy_from_u16(&buf[4], safelight_config->dmx_address);
     copy_from_u16(&buf[6], safelight_config->dmx_on_value);
+    copy_from_u32(&buf[8], safelight_config->turn_off_delay);
 
     osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
     ret = m24m01_write_buffer(eeprom_i2c, PAGE_CONFIG2 + CONFIG2_SAFELIGHT_CONTROL, buf, sizeof(buf));
@@ -846,6 +852,11 @@ bool safelight_config_compare(const safelight_config_t *config1, const safelight
             || config1->dmx_on_value != config2->dmx_on_value) {
             return false;
         }
+    }
+
+    /* The turn off delay values are different */
+    if (config1->turn_off_delay != config2->turn_off_delay) {
+        return false;
     }
 
     return true;
