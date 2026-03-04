@@ -85,14 +85,27 @@ typedef struct {
     paper_profile_grade_t grade[CONTRAST_GRADE_MAX];
 
     /**
-     * Maximum net density (Dn) of the paper.
+     * Minimum reflection density (Dmin) of the paper.
      *
-     * This is the paper's maximum density value (Dmax), adjusted to be
-     * relative to the paper base density (Dmin). It is necessary to
-     * correctly place a contrast grade's 'hs_lev100' value on a density
-     * scale.
+     * The density of an unexposed area of processed printing paper,
+     * used as an offset for all profile calculations.
+     *
+     * If this value is set to zero, then the `paper_dmax` value must
+     * be relative to the paper base.
      */
-    float max_net_density;
+    float paper_dmin;
+
+    /**
+     * Maximum reflection density (Dmax) of the paper.
+     *
+     * The density of a maximally exposed area of processed printing paper,
+     * combined with `paper_dmin` to calculate the paper's
+     * maximum net density (Dn).
+     *
+     * The maximum net density is used to place a a contrast grade's
+     * 'hs_lev100' value on a density scale.
+     */
+    float paper_dmax;
 
 } paper_profile_t;
 
@@ -118,6 +131,13 @@ bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade);
  * Check whether the two enlarger profiles are equivalent.
  */
 bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_t *profile2);
+
+/**
+ * Get the max net density (Dn) for the paper profile.
+ *
+ * This is basically Dmin+Dmax, accounting for profile data variations.
+ */
+float paper_profile_max_net_density(const paper_profile_t *profile);
 
 /**
  * Update the values of any calculated paper profile members.

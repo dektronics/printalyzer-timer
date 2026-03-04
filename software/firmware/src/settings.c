@@ -167,7 +167,8 @@ static safelight_config_t setting_safelight_config = DEFAULT_SAFELIGHT_CONFIG;
 #define PAPER_PROFILE_GRADE5_HT          108
 #define PAPER_PROFILE_GRADE5_HM          112
 #define PAPER_PROFILE_GRADE5_HS          116
-#define PAPER_PROFILE_DNET               120
+#define PAPER_PROFILE_DMIN               120
+#define PAPER_PROFILE_DMAX               124
 
 /**
  * Step wedge profile (256B)
@@ -1186,9 +1187,14 @@ static void settings_paper_profile_parse_page(paper_profile_t *profile, const ui
     profile->grade[CONTRAST_GRADE_5].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HM);
     profile->grade[CONTRAST_GRADE_5].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HS);
 
-    profile->max_net_density = copy_to_f32(data + PAPER_PROFILE_DNET);
-    if (profile->max_net_density != NAN && (!isnormal(profile->max_net_density) || profile->max_net_density < 0.0F)) {
-        profile->max_net_density = NAN;
+    profile->paper_dmin = copy_to_f32(data + PAPER_PROFILE_DMIN);
+    if (!isnan(profile->paper_dmin) && (!isnormal(profile->paper_dmin) || profile->paper_dmin < 0.0F)) {
+        profile->paper_dmin = NAN;
+    }
+
+    profile->paper_dmax = copy_to_f32(data + PAPER_PROFILE_DMAX);
+    if (!isnan(profile->paper_dmax) && (!isnormal(profile->paper_dmax) || profile->paper_dmax < 0.0F)) {
+        profile->paper_dmax = NAN;
     }
 }
 
@@ -1245,7 +1251,8 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HM, profile->grade[CONTRAST_GRADE_5].hm_lev100);
     copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
 
-    copy_from_f32(data + PAPER_PROFILE_DNET, profile->max_net_density);
+    copy_from_f32(data + PAPER_PROFILE_DMIN, profile->paper_dmin);
+    copy_from_f32(data + PAPER_PROFILE_DMAX, profile->paper_dmax);
 }
 
 void settings_clear_paper_profile(uint8_t index)

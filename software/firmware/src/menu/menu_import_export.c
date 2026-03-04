@@ -985,11 +985,17 @@ bool parse_section_paper(const char *buf, size_t len, paper_profile_t *profile)
                 profile->name[31] = '\0';
             } else if (strncmp("grades", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONArray) {
                 parse_section_paper_grades(pair.value, pair.valueLength, profile);
-            } else if (strncmp("max_net_density", pair.key, pair.keyLength) == 0) {
+            } else if (strncmp("paper_dmin", pair.key, pair.keyLength) == 0) {
                 if (pair.jsonType == JSONNumber) {
-                    profile->max_net_density = json_parse_float(pair.value, pair.valueLength, NAN);
+                    profile->paper_dmin = json_parse_float(pair.value, pair.valueLength, NAN);
                 } else {
-                    profile->max_net_density = NAN;
+                    profile->paper_dmin = NAN;
+                }
+            } else if (strncmp("paper_dmax", pair.key, pair.keyLength) == 0) {
+                if (pair.jsonType == JSONNumber) {
+                    profile->paper_dmax = json_parse_float(pair.value, pair.valueLength, NAN);
+                } else {
+                    profile->paper_dmax = NAN;
                 }
             }
         }
@@ -1391,7 +1397,8 @@ bool write_section_papers(FIL *fp)
                 profile.grade[CONTRAST_WHOLE_GRADES[j]].hs_lev100);
         }
         f_printf(fp, "\n      ],\n");
-        json_write_float02(fp, 6, "max_net_density", profile.max_net_density, false);
+        json_write_float02(fp, 6, "paper_dmin", profile.paper_dmin, true);
+        json_write_float02(fp, 6, "paper_dmax", profile.paper_dmax, false);
         f_printf(fp, "\n    }");
     }
     if (i > 0) {

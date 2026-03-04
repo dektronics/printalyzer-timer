@@ -46,7 +46,7 @@ static menu_result_t menu_paper_profile_edit(state_controller_t *controller, pap
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade, menu_paper_callback_data_t *dens_data);
-static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density, menu_paper_callback_data_t *dens_data);
+static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data);
 static void menu_paper_densitometer_check(menu_paper_callback_data_t *data);
 static uint8_t menu_paper_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data);
 static uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_data);
@@ -237,10 +237,16 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
 
         offset = menu_build_padded_str_row(buf, "Name", profile->name);
 
-        if (isnormal(profile->max_net_density) && profile->max_net_density > 0.0F) {
-            offset += sprintf(buf + offset, "Max net density         [D=%01.2f]\n", profile->max_net_density);
+        if (is_valid_number(profile->paper_dmin)) {
+            offset += sprintf(buf + offset, "Paper Dmin              [D=%01.2f]\n", profile->paper_dmin);
         } else {
-            offset += sprintf(buf + offset, "Max net density         [------]\n");
+            offset += sprintf(buf + offset, "Paper Dmin              [------]\n");
+        }
+
+        if (isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F) {
+            offset += sprintf(buf + offset, "Paper Dmax              [D=%01.2f]\n", profile->paper_dmax);
+        } else {
+            offset += sprintf(buf + offset, "Paper Dmax              [------]\n");
         }
 
         offset += menu_paper_profile_edit_append_grade(buf + offset, profile, CONTRAST_GRADE_00);
@@ -257,9 +263,9 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             strcat(buf, "\n*** Delete Profile ***");
         }
 
-        dens_data.min_option = UINT8_MAX;
-        dens_data.max_option = UINT8_MAX;
-        dens_data.alt_option = 2;
+        dens_data.min_option = 2;
+        dens_data.max_option = 3;
+        dens_data.alt_option = UINT8_MAX;
         dens_data.stick_idle_refresh = true;
         option = display_selection_list_cb(buf_title, option, buf,
             menu_paper_densitometer_input_poll_callback, &dens_data);
@@ -269,52 +275,76 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 profile_dirty = true;
             }
         } else if (option == 2) {
-            uint16_t value_sel = lroundf(profile->max_net_density * 100);
+            uint16_t value_sel = lroundf(profile->paper_dmin * 100);
             uint16_t value_sel_prev = value_sel;
 
             if (dens_data.reading != UINT16_MAX) {
                 if (dens_data.reading != value_sel_prev) {
-                    profile->max_net_density = (float) dens_data.reading / 100.0F;
+                    profile->paper_dmin = (float) dens_data.reading / 100.0F;
                     profile_dirty = true;
                 }
             } else {
                 if (display_input_value_f16_data_cb(
-                        "Max Net Density",
-                        "Maximum density (Dmax) of the\n"
-                        "paper, measured relative to the\n"
-                        "paper base (Dmin).\n",
+                        "Paper Dmin",
+                        "Minimum density (Dmin) of the\n"
+                        "paper, otherwise known as the\n"
+                        "density of the paper base.\n",
                         "D=", &value_sel, 0, 999, 1, 2, "",
                         menu_paper_densitometer_data_callback, &dens_data) == UINT8_MAX) {
                     menu_result = MENU_TIMEOUT;
                 } else {
                     if (value_sel != value_sel_prev) {
-                        profile->max_net_density = (float) value_sel / 100.0F;
+                        profile->paper_dmin = (float) value_sel / 100.0F;
                         profile_dirty = true;
                     }
                 }
             }
-        } else if (option >= 3 && option <= 9) {
+        } else if (option == 3) {
+            uint16_t value_sel = lroundf(profile->paper_dmax * 100);
+            uint16_t value_sel_prev = value_sel;
+
+            if (dens_data.reading != UINT16_MAX) {
+                if (dens_data.reading != value_sel_prev) {
+                    profile->paper_dmax = (float) dens_data.reading / 100.0F;
+                    profile_dirty = true;
+                }
+            } else {
+                if (display_input_value_f16_data_cb(
+                        "Paper Dmax",
+                        "Maximum density (Dmax) of\n"
+                        "the paper.\n",
+                        "D=", &value_sel, 0, 999, 1, 2, "",
+                        menu_paper_densitometer_data_callback, &dens_data) == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                        } else {
+                            if (value_sel != value_sel_prev) {
+                                profile->paper_dmax = (float) value_sel / 100.0F;
+                                profile_dirty = true;
+                            }
+                        }
+            }
+        } else if (option >= 4 && option <= 10) {
             contrast_grade_t grade;
             switch (option) {
-            case 3:
+            case 4:
                 grade = CONTRAST_GRADE_00;
                 break;
-            case 4:
+            case 5:
                 grade = CONTRAST_GRADE_0;
                 break;
-            case 5:
+            case 6:
                 grade = CONTRAST_GRADE_1;
                 break;
-            case 6:
+            case 7:
                 grade = CONTRAST_GRADE_2;
                 break;
-            case 7:
+            case 8:
                 grade = CONTRAST_GRADE_3;
                 break;
-            case 8:
+            case 9:
                 grade = CONTRAST_GRADE_4;
                 break;
-            case 9:
+            case 10:
                 grade = CONTRAST_GRADE_5;
                 break;
             default:
@@ -327,11 +357,13 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             } else if (sub_result == MENU_TIMEOUT) {
                 menu_result = MENU_TIMEOUT;
             }
-        } else if (option == 10) {
+        } else if (option == 11) {
+            //FIXME Remove this in favor of dirty detection
+            //TODO Stop user if Dmin vs Dmax is invalid
             log_d("Save changes from profile editor");
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 11) {
+        } else if (option == 12) {
             log_d("Delete profile from profile editor");
             if (menu_paper_profile_delete_prompt(profile, index)) {
                 menu_result = MENU_DELETE;
@@ -433,8 +465,6 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     paper_profile_grade_t working_grade;
     memcpy(&working_grade, &profile->grade[grade], sizeof(paper_profile_grade_t));
 
-    float working_max_net_density = profile->max_net_density;
-
     dens_data->min_option = UINT8_MAX;
     dens_data->max_option = UINT8_MAX;
     dens_data->alt_option = UINT8_MAX;
@@ -507,22 +537,33 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 working_grade.hs_lev100 = working_grade.ht_lev100 + value_sel;
             }
         } else if (option == 4) {
-            if (isnormal(working_max_net_density) && working_max_net_density > 0.0F) {
-                menu_result_t cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade, working_max_net_density, dens_data);
+            if (!(isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F)) {
+                uint8_t msg_option = display_message(
+                    "Max Density Missing\n",
+                    NULL,
+                    "Cannot measure step wedge\n"
+                    "exposure without a paper max\n"
+                    "density value.", " OK ");
+                if (msg_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
+            } else if (!isnan(profile->paper_dmin) && profile->paper_dmin >= profile->paper_dmax) {
+                uint8_t msg_option = display_message(
+                    "Min Density Invalid\n",
+                    NULL,
+                    "Cannot measure step wedge\n"
+                    "exposure if Dmin greater\n"
+                    "than Dmax.", " OK ");
+                if (msg_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
+            } else {
+                menu_result_t cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade,
+                    profile->paper_dmin, profile->paper_dmax, dens_data);
                 if (cal_result == MENU_SAVE) {
                     /* If calibration results were accepted, move the cursor down for convenience */
                     option = 5;
                 } else if (cal_result == MENU_TIMEOUT) {
-                    menu_result = MENU_TIMEOUT;
-                }
-            } else {
-                uint8_t msg_option = display_message(
-                        "Max Net Density Missing\n",
-                        NULL,
-                        "Cannot measure step wedge\n"
-                        "exposure without a max net\n"
-                        "density value.", " OK ");
-                if (msg_option == UINT8_MAX) {
                     menu_result = MENU_TIMEOUT;
                 }
             }
@@ -537,7 +578,6 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 log_i("Accepting valid values");
             }
             memcpy(&profile->grade[grade], &working_grade, sizeof(paper_profile_grade_t));
-            profile->max_net_density = working_max_net_density;
             menu_result = MENU_SAVE;
             break;
         } else if (option == UINT8_MAX) {
@@ -549,16 +589,20 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     return menu_result;
 }
 
-menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float max_net_density, menu_paper_callback_data_t *dens_data)
+menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data)
 {
     menu_result_t menu_result = MENU_OK;
     char *buf = NULL;
     step_wedge_t *wedge = NULL;
     float *patch_density = NULL;
     uint8_t option = 1;
-    float paper_dmin = 0.0F;
-    float paper_dmax = 0.0F;
     uint32_t calibration_pev = 0;
+
+    const float display_dmin = paper_dmin;
+    const float display_dmax = paper_dmax;
+
+    if (!is_valid_number(paper_dmin)) { paper_dmin = 0.0F; }
+    if (!is_valid_number(paper_dmax)) { paper_dmax = 0.0F; }
 
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     calibration_pev = exposure_get_calibration_pev(exposure_state);
@@ -598,12 +642,10 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
 
     dens_data->min_option = 5;
     dens_data->max_option = (5 + wedge->step_count) - 1;
-    dens_data->alt_option = 2;
+    dens_data->alt_option = UINT8_MAX;
     dens_data->stick_idle_refresh = true;
 
     do {
-        paper_dmax = paper_dmin + max_net_density;
-
         size_t offset = 0;
         size_t name_len = MIN(strlen(wedge->name), 20);
 
@@ -616,14 +658,19 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         buf[offset++] = '\n';
         buf[offset] = '\0';
 
-        offset += sprintf(buf + offset,
-            "Paper Dmin              [D=%0.02f]\n",
-            paper_dmin);
+        if (isnormal(display_dmin) && display_dmin > 0.0F) {
+            offset += sprintf(buf + offset,
+                "Paper Dmin              {D=%0.02f}\n",
+                display_dmin);
+        } else {
+            offset += sprintf(buf + offset,
+                "Paper Dmin              {------}\n");
+        }
 
-        if (isnormal(paper_dmax) && paper_dmax > 0.0F) {
+        if (isnormal(display_dmax) && display_dmax > 0.0F) {
             offset += sprintf(buf + offset,
                 "Paper Dmax              {D=%0.02f}\n",
-                paper_dmax);
+                display_dmax);
         } else {
             offset += sprintf(buf + offset,
                 "Paper Dmax              {------}\n");
@@ -659,29 +706,25 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         if (option == 1) {
             menu_result = menu_step_wedge_show(wedge);
         } else if (option == 2) {
-            uint16_t value_sel = lroundf(paper_dmin * 100);
+            char msg_buf[256];
+            sprintf(msg_buf,
+                "Minimum density of the paper,\n"
+                "used as the lower bound for\n"
+                "measurements.\n"
+                "D=%0.02f\n",
+                paper_dmin);
 
-            if (dens_data->reading != UINT16_MAX) {
-                paper_dmin = (float) dens_data->reading / 100.0F;
-            } else {
-                if (display_input_value_f16_data_cb(
-                        "Paper Dmin (optional)",
-                        "Minimum density of the paper,\n"
-                        "used as an offset for the\n"
-                        "step measurements.\n",
-                        "D=", &value_sel, 0, 999, 1, 2, "",
-                        menu_paper_densitometer_data_callback, dens_data) == UINT8_MAX) {
-                    menu_result = MENU_TIMEOUT;
-                } else {
-                    paper_dmin = (float) value_sel / 100.0F;
-                }
+            uint8_t msg_option = display_message("-- Paper Dmin --", NULL,
+                msg_buf, " OK ");
+            if (msg_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
             }
         } else if (option == 3) {
             char msg_buf[256];
             sprintf(msg_buf,
                 "Maximum density of the paper,\n"
-                "based on Dmin and the paper\n"
-                "profile's max net density.\n"
+                "used as the upper bound for\n"
+                "measurements.\n"
                 "D=%0.02f\n",
                 paper_dmax);
 

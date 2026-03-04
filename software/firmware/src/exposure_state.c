@@ -897,7 +897,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
     uint32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
     uint32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
     uint32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
-    float d_net = state->paper_profile.max_net_density;
+    float d_net = paper_profile_max_net_density(&state->paper_profile);
 
     if (ht_lev100 > 0 && hm_lev100 > 0 && hs_lev100 > 0
         && ht_lev100 < hs_lev100

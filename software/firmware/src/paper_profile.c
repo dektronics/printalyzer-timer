@@ -25,7 +25,13 @@ bool paper_profile_is_valid(const paper_profile_t *profile)
         }
     }
 
-    if (!(isnan(profile->max_net_density) || (isnormal(profile->max_net_density) && profile->max_net_density >= 0.0F))) {
+    /* Dmax must be a value greater than zero */
+    if (!(isnan(profile->paper_dmax) || (isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F))) {
+        return false;
+    }
+
+    /* Dmin must be NAN or less than Dmax */
+    if (!isnan(profile->paper_dmin) && profile->paper_dmin >= profile->paper_dmax) {
         return false;
     }
 
@@ -105,7 +111,10 @@ bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_
     }
 
     /* Compare the floating point fields with a tight tolerance */
-    if (fabsf(profile1->max_net_density - profile2->max_net_density) > 0.0001F) {
+    if (!is_equal_numbers(profile1->paper_dmin, profile2->paper_dmin, 0.0001F)) {
+        return false;
+    }
+    if (!is_equal_numbers(profile1->paper_dmax, profile2->paper_dmax, 0.0001F)) {
         return false;
     }
 
@@ -119,6 +128,21 @@ bool paper_profile_compare(const paper_profile_t *profile1, const paper_profile_
     }
 
     return true;
+}
+
+float paper_profile_max_net_density(const paper_profile_t *profile)
+{
+    float result;
+
+    if (!profile || !is_valid_number(profile->paper_dmax)) { return NAN; }
+
+    result = profile->paper_dmax;
+
+    if (is_valid_number(profile->paper_dmin)) {
+        result += profile->paper_dmin;
+    }
+
+    return result;
 }
 
 void paper_profile_recalculate(paper_profile_t *profile)
