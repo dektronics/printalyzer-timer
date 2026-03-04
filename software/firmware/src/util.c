@@ -234,6 +234,18 @@ bool is_valid_number(float num)
     return isnormal(num) || fpclassify(num) == FP_ZERO;
 }
 
+bool is_equal_numbers(float num1, float num2, float max_rel_diff)
+{
+    const int class1 = fpclassify(num1);
+    const int class2 = fpclassify(num2);
+
+    if (class1 == class2 && (class1 == FP_NAN || class1 == FP_INFINITE || class1 == FP_ZERO)) {
+        return true;
+    }
+
+    return fabsf(num1 - num2) < max_rel_diff;
+}
+
 uint16_t conv_array_u16(const uint8_t *src)
 {
     return (uint16_t)(*src) << 8 | *(src + 1);

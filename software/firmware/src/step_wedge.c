@@ -192,22 +192,21 @@ bool step_wedge_compare(const step_wedge_t *wedge1, const step_wedge_t *wedge2)
     }
 
     /* Compare the fields */
-    if (fabsf(wedge1->base_density - wedge2->base_density) > 0.001F) {
+    if (!is_equal_numbers(wedge1->base_density, wedge2->base_density, 0.001F)) {
         return false;
     }
-    if (fabsf(wedge1->density_increment - wedge2->density_increment) > 0.001F) {
+
+    if (!is_equal_numbers(wedge1->density_increment, wedge2->density_increment, 0.001F)) {
         return false;
     }
+
     if (wedge1->step_count != wedge2->step_count) {
         return false;
     }
 
     /* Compare the step density list */
     for (size_t i = 0; i < wedge1->step_count; i++) {
-        if (is_valid_number(wedge1->step_density[i]) && is_valid_number(wedge2->step_density[i])
-            && fabsf(wedge1->step_density[i] - wedge2->step_density[i]) > 0.001F) {
-            return false;
-        } else if (fpclassify(wedge1->step_density[i]) != fpclassify(wedge2->step_density[i])) {
+        if (!is_equal_numbers(wedge1->step_density[i], wedge2->step_density[i], 0.001F)) {
             return false;
         }
     }

@@ -127,6 +127,11 @@ float interpolate(float x1, float y1, float x2, float y2, float x3, float y3, fl
 bool is_valid_number(float num);
 
 /**
+ * Check if the two provided floating point numbers are equal
+ */
+bool is_equal_numbers(float num1, float num2, float max_rel_diff);
+
+/**
  * Convert two adjacent 8-bit elements in an array into a 16-bit unsigned integer
  * @param src Pointer to the source array
  * @return Output value

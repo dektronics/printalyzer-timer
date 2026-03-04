@@ -118,7 +118,7 @@ menu_result_t menu_step_wedge()
             }
         } else if (option == 5) {
             menu_result = menu_step_wedge_calibration(wedge);
-        } else if (option == 7) {
+        } else if (option == 6) {
             int index = menu_step_wedge_list_selection();
             if (index >= 0 && index < step_wedge_stock_count()) {
                 log_i("Replacing with stock wedge: %d", index);
