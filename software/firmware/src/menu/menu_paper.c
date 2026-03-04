@@ -43,6 +43,7 @@ typedef struct {
 } menu_paper_callback_data_t;
 
 static menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_profile_t *profile, uint8_t index);
+static menu_result_t menu_paper_profile_check_save(paper_profile_t *profile);
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade, menu_paper_callback_data_t *dens_data);
@@ -358,10 +359,16 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 11) {
-            //FIXME Remove this in favor of dirty detection
-            //TODO Stop user if Dmin vs Dmax is invalid
             log_d("Save changes from profile editor");
-            menu_result = MENU_SAVE;
+
+            menu_result_t sub_result = menu_paper_profile_check_save(profile);
+            if (sub_result == MENU_CANCEL) {
+                option = 1;
+                continue;
+            } else {
+                menu_result = sub_result;
+            }
+
             break;
         } else if (option == 12) {
             log_d("Delete profile from profile editor");
@@ -371,6 +378,12 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
             }
         } else if (option == 0 && profile_dirty) {
             menu_result_t sub_result = menu_confirm_cancel(buf_title);
+
+            /* Do extra pre-save validation */
+            if (sub_result == MENU_SAVE) {
+                sub_result = menu_paper_profile_check_save(profile);
+            }
+
             if (sub_result == MENU_SAVE) {
                 menu_result = MENU_SAVE;
                 break;
@@ -389,6 +402,35 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
 
     dens_data.enable = false;
     menu_paper_densitometer_check(&dens_data);
+
+    return menu_result;
+}
+
+menu_result_t menu_paper_profile_check_save(paper_profile_t *profile)
+{
+    menu_result_t menu_result = MENU_CANCEL;
+
+    if (!(isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F)) {
+        uint8_t msg_option = display_message(
+            "Max Density Missing\n",
+            NULL,
+            "Cannot save a paper profile\n"
+            "without a Dmax value.", " OK ");
+        if (msg_option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } else if (!isnan(profile->paper_dmin) && profile->paper_dmin >= profile->paper_dmax) {
+        uint8_t msg_option = display_message(
+            "Min Density Invalid\n",
+            NULL,
+            "Cannot save a paper profile\n"
+            "if Dmin is greater than Dmax.", " OK ");
+        if (msg_option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+    } else {
+        menu_result = MENU_SAVE;
+    }
 
     return menu_result;
 }
