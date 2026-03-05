@@ -403,7 +403,8 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
 }
 
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *msg, const char *prefix, uint16_t *value,
-    uint16_t low, uint16_t high, uint8_t digits, const char *postfix)
+    uint16_t low, uint16_t high, uint8_t digits, const char *postfix,
+    uint8_t inc_small, uint8_t inc_large)
 {
     // Based off u8g2_UserInterfaceInputValue() with changes to
     // support 16-bit numbers.
@@ -436,18 +437,18 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
             } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
             } else if (event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
-                int8_t amount = (event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1;
+                int16_t amount = inc_small * ((event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1);
                 local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
-                local_value = value_adjust_with_rollover_u16(local_value, 10, low, high);
+                local_value = value_adjust_with_rollover_u16(local_value, inc_large, low, high);
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
-                int8_t amount = -1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1);
+                int16_t amount = inc_small * (-1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1));
                 local_value = value_adjust_with_rollover_u16(local_value, amount, low, high);
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_PREV) {
-                local_value = value_adjust_with_rollover_u16(local_value, -10, low, high);
+                local_value = value_adjust_with_rollover_u16(local_value, (int16_t)(-1 * inc_large), low, high);
                 break;
             }
         }

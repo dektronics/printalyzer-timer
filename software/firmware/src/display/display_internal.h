@@ -37,7 +37,8 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
     uint8_t low, uint8_t high, uint8_t digits, const char *postfix);
 
 uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, const char *msg, const char *prefix, uint16_t *value,
-    uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
+    uint16_t low, uint16_t high, uint8_t digits, const char *postfix,
+    uint8_t inc_small, uint8_t inc_large);
 
 uint8_t display_UserInterfaceInputValueF1_2(u8g2_t *u8g2, const char *title, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, char sep, const char *postfix);

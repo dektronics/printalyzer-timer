@@ -1832,11 +1832,19 @@ uint8_t display_input_value(const char *title, const char *msg, const char *pref
 uint8_t display_input_value_u16(const char *title, const char *msg, const char *prefix, uint16_t *value,
         uint16_t low, uint16_t high, uint8_t digits, const char *postfix)
 {
+    return display_input_value_u16_inc(title, msg, prefix, value, low, high, digits, postfix, 1, 10);
+}
+
+uint8_t display_input_value_u16_inc(const char *title, const char *msg, const char *prefix, uint16_t *value,
+        uint16_t low, uint16_t high, uint8_t digits, const char *postfix, uint8_t inc_small, uint8_t inc_large)
+{
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
     display_prepare_menu_font();
     keypad_clear_events();
-    uint8_t option = display_UserInterfaceInputValueU16(&u8g2, title, msg, prefix, value, low, high, digits, postfix);
+    uint8_t option = display_UserInterfaceInputValueU16(&u8g2,
+        title, msg, prefix, value, low, high, digits, postfix,
+        inc_small, inc_large);
 
     osMutexRelease(display_mutex);
 

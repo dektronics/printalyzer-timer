@@ -87,11 +87,11 @@ menu_result_t menu_safelight_config()
             if (menu_result == MENU_OK) { config_changed = true; }
         } else if (option == 2) {
             uint16_t value_sel = safelight_config.turn_off_delay;
-            if (display_input_value_u16(
+            if (display_input_value_u16_inc(
                     "Turn Off Delay",
                     "Amount of time the safelights\n"
                     "take to fully turn off.\n",
-                    "", &value_sel, 0, 10000, 5, "ms") == UINT8_MAX) {
+                    "", &value_sel, 0, 10000, 5, "ms", 10, 100) == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 safelight_config.turn_off_delay = value_sel;
