@@ -547,7 +547,8 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             "Speed point   (Dmin+0.60)  [%s]\n"
             "ISO Range                  [%s]\n"
             "*** Measure From Step Wedge ***\n"
-            "*** Accept Changes ***",
+            "*** Accept Changes ***\n"
+            "*** Reset Values ***",
             buf_ht, buf_hm, buf_isor);
 
         option = display_selection_list(buf_title, option, buf);
@@ -626,11 +627,11 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
             if (!paper_profile_grade_is_valid(&working_grade)) {
                 uint8_t msg_option = display_message(
-               "Invalid Grade Values\n",
-               NULL,
-               "Cannot accept invalid parameters\n"
+                    "Invalid Grade Values\n",
+                    NULL,
+                    "Cannot accept invalid parameters\n"
                     "for this paper grade.\n",
-             " OK ");
+                    " OK ");
                 if (msg_option == UINT8_MAX) {
                     return MENU_TIMEOUT;
                 }
@@ -639,6 +640,11 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 log_i("Accepting valid values");
             }
             memcpy(&profile->grade[grade], &working_grade, sizeof(paper_profile_grade_t));
+            menu_result = MENU_SAVE;
+            break;
+        } else if (option == 6) {
+            log_i("Clearing grade data");
+            memset(&profile->grade[grade], 0, sizeof(paper_profile_grade_t));
             menu_result = MENU_SAVE;
             break;
         } else if (option == UINT8_MAX) {
