@@ -284,6 +284,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                     profile->paper_dmin = (float) dens_data.reading / 100.0F;
                     profile_dirty = true;
                 }
+                option++;
             } else {
                 if (display_input_value_f16_data_cb(
                         "Paper Dmin",
@@ -309,6 +310,7 @@ menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_prof
                     profile->paper_dmax = (float) dens_data.reading / 100.0F;
                     profile_dirty = true;
                 }
+                option++;
             } else {
                 if (display_input_value_f16_data_cb(
                         "Paper Dmax",
