@@ -487,6 +487,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
 {
     char buf_title[36];
     char buf[512];
+    char buf_ht[11], buf_hm[11], buf_isor[11];
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
 
@@ -516,30 +517,38 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     dens_data->stick_idle_refresh = true;
     menu_paper_densitometer_check(dens_data);
 
-    do {
-        if (working_grade.hm_lev100 <= working_grade.ht_lev100 || working_grade.hm_lev100 >= working_grade.hs_lev100) {
-            working_grade.hm_lev100 = 0;
-        }
+    if (working_grade.hm_lev100 <= working_grade.ht_lev100 || working_grade.hm_lev100 >= working_grade.hs_lev100) {
+        working_grade.hm_lev100 = 0;
+    }
 
-        uint32_t iso_r = working_grade.hs_lev100 - working_grade.ht_lev100;
+    do {
+        const uint32_t iso_r = working_grade.hs_lev100 - working_grade.ht_lev100;
+
+        if (working_grade.ht_lev100 == 0) {
+            strcpy(buf_ht, "---");
+        } else {
+            sprintf(buf_ht, "%3lu", working_grade.ht_lev100);
+        }
 
         if (working_grade.hm_lev100 == 0) {
-            sprintf(buf,
-                "Base exposure (Dmin+0.04)  [%3lu]\n"
-                "Speed point   (Dmin+0.60)  [---]\n"
-                "ISO Range                  [%3lu]\n"
-                "*** Measure From Step Wedge ***\n"
-                "*** Accept Changes ***",
-                working_grade.ht_lev100, iso_r);
+            strcpy(buf_hm, "---");
         } else {
-            sprintf(buf,
-                "Base exposure (Dmin+0.04)  [%3lu]\n"
-                "Speed point   (Dmin+0.60)  [%3lu]\n"
-                "ISO Range                  [%3lu]\n"
-                "*** Measure From Step Wedge ***\n"
-                "*** Accept Changes ***",
-                working_grade.ht_lev100, working_grade.hm_lev100, iso_r);
+            sprintf(buf_hm, "%3lu", working_grade.hm_lev100);
         }
+
+        if (iso_r == 0) {
+            strcpy(buf_isor, "---");
+        } else {
+            sprintf(buf_isor, "%3lu", iso_r);
+        }
+
+        sprintf(buf,
+            "Base exposure (Dmin+0.04)  [%s]\n"
+            "Speed point   (Dmin+0.60)  [%s]\n"
+            "ISO Range                  [%s]\n"
+            "*** Measure From Step Wedge ***\n"
+            "*** Accept Changes ***",
+            buf_ht, buf_hm, buf_isor);
 
         option = display_selection_list(buf_title, option, buf);
 
@@ -616,8 +625,16 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 contrast_grade_str(grade),
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
             if (!paper_profile_grade_is_valid(&working_grade)) {
-                log_i("Clearing grade data because invalid values were accepted");
-                memset(&working_grade, 0, sizeof(paper_profile_grade_t));
+                uint8_t msg_option = display_message(
+               "Invalid Grade Values\n",
+               NULL,
+               "Cannot accept invalid parameters\n"
+                    "for this paper grade.\n",
+             " OK ");
+                if (msg_option == UINT8_MAX) {
+                    return MENU_TIMEOUT;
+                }
+                continue;
             } else {
                 log_i("Accepting valid values");
             }
