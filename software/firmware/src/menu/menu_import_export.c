@@ -640,6 +640,11 @@ bool import_section_safelight(const char *buf, size_t len)
                 if (num >= 0) {
                     config.mode = num;
                 }
+            } else if (strncmp("turn_off_delay", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
+                int num = json_parse_int(pair.value, pair.valueLength, 0);
+                if (num >= 0 && num <= 10000) {
+                    config.turn_off_delay = num;
+                }
             } else if (strncmp("control", pair.key, pair.keyLength) == 0 && pair.jsonType == JSONNumber) {
                 int num = json_parse_int(pair.value, pair.valueLength, -1);
                 if (num >= 0) {
@@ -1289,6 +1294,7 @@ bool write_section_safelight(FIL *fp)
     f_printf(fp, "  \"safelight\": {\n");
     json_write(fp, 4, "version", SAFELIGHT_EXPORT_VERSION, true);
     json_write(fp, 4, "mode", config.mode, true);
+    json_write(fp, 4, "turn_off_delay", config.turn_off_delay, true);
 
     if (config.control == SAFELIGHT_CONTROL_RELAY) {
         json_write(fp, 4, "control", config.control, false);
