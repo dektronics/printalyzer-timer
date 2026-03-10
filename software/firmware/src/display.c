@@ -145,16 +145,49 @@ static void display_save_screenshot_callback(const char *s)
 void display_save_screenshot()
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
-    static uint16_t image_index = 1;
 
     FRESULT res;
     FIL fp;
+    DIR dir;
+    FILINFO fno;
     bool file_open = false;
     char filename[32];
+    uint16_t highest_index = 0;
 
     do {
+        res = f_opendir(&dir, "/");
+        if (res != FR_OK) {
+            log_e("Error opening screenshot directory: %d", res);
+            break;
+        }
+
+        /* Find the next image file index */
+        for (;;) {
+            res = f_readdir(&dir, &fno);
+            if (fno.fname[0] == 0) { break; }
+            if (!(fno.fattrib & AM_DIR)) {
+                /* Ignore any filename that isn't the expected length */
+                if (strlen(fno.fname) != 12) { continue; }
+
+                /* Ignore any filename without the expected prefix */
+                if (strncmp(fno.fname, "img-", 4) != 0) { continue; }
+
+                /* Ignore any filename without the expected suffix */
+                if (strncmp(fno.fname + 8, ".xbm", 4) != 0) { continue; }
+
+                int num = strtol(fno.fname + 4, NULL, 10);
+                if (num > highest_index) {
+                    highest_index = num;
+                }
+            }
+        }
+        f_closedir(&dir);
+        if (res != FR_OK || highest_index >= 9998) {
+            break;
+        }
+
         memset(&fp, 0, sizeof(FIL));
-        sprintf(filename, "img-%04d.xbm", image_index % 10000);
+        sprintf(filename, "img-%04d.xbm", (highest_index + 1));
 
         res = f_open(&fp, filename, FA_WRITE | FA_CREATE_ALWAYS);
         if (res != FR_OK) {
@@ -168,7 +201,6 @@ void display_save_screenshot()
         screenshot_fp = NULL;
 
         log_d("Screenshot written to file: %s", filename);
-        image_index++;
     } while (0);
 
     if (file_open) {
