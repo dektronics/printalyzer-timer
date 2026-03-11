@@ -1094,7 +1094,9 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
     /* Find the min and max patch values so they can be validated */
     float patch_min = NAN;
     float patch_max = NAN;
+    float last_patch = NAN;
     uint32_t patch_count = 0;
+    bool valid_sequence = true;
     for (uint32_t i = 0; i < params->wedge->step_count; i++) {
         if (!is_valid_number(params->patch_density[i])) {
             continue;
@@ -1104,6 +1106,16 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
         }
         if (isnan(patch_max) || params->patch_density[i] > patch_max) {
             patch_max = params->patch_density[i];
+        }
+        /*
+         * Check measurement order to make sure it is descending.
+         * Repeated measurements can be equal, which will be handled in
+         * the interpolation code.
+         */
+        if (isnanf(last_patch) || params->patch_density[i] <= last_patch) {
+            last_patch = params->patch_density[i];
+        } else {
+            valid_sequence = false;
         }
         patch_count++;
     }
@@ -1139,17 +1151,13 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
         return MENU_CANCEL;
     }
 
-    /* Make sure the min value crosses Dmin+0.04 */
-    float patch_min_crossing = params->paper_dmin + 0.04F;
-    if (patch_min > patch_min_crossing) {
-        char buf[128];
-        sprintf(buf,
-            "Paper patch measurements must\n"
-            "go below D=%0.02f.\n",
-            patch_min_crossing);
+    if (!valid_sequence) {
         uint8_t msg_option = display_message(
                 "Invalid Measurements\n",
-                NULL, buf, " OK ");
+                NULL,
+                "Paper patch measurements must\n"
+                "be in descending order.\n",
+                " OK ");
         if (msg_option == UINT8_MAX) {
             return MENU_TIMEOUT;
         }
@@ -1157,23 +1165,36 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
         return MENU_CANCEL;
     }
 
-    /* Make sure the max value crosses Dnet*0.90 */
-    float paper_dnet = params->paper_dmax - params->paper_dmin;
-    float patch_max_crossing = params->paper_dmin + (paper_dnet * 0.90F);
-    if (patch_max < patch_max_crossing) {
+    /*
+     * Make sure the min value crosses Dmin+0.04 and
+     * the max value crosses Dnet*0.90.
+     * If the value range does not meet these requirements,
+     * we can still estimate the ends, but the user should
+     * be made aware.
+     */
+    const float patch_min_crossing = params->paper_dmin + 0.04F;
+    const float paper_dnet = params->paper_dmax - params->paper_dmin;
+    const float patch_max_crossing = params->paper_dmin + (paper_dnet * 0.90F);
+
+    if (patch_min > patch_min_crossing || patch_max < patch_max_crossing) {
         char buf[128];
         sprintf(buf,
-            "Paper patch measurements must\n"
-            "go above D=%0.02f.\n",
-            patch_max_crossing);
+            "Paper patch measurements do not\n"
+            "contain both D=%0.02f and D=%0.02f.\n"
+            "Missing end values will\n"
+            "be estimated.",
+            patch_min_crossing, patch_max_crossing);
+
         uint8_t msg_option = display_message(
-                "Invalid Measurements\n",
-                NULL, buf, " OK ");
-        if (msg_option == UINT8_MAX) {
+                "Insufficient Range\n",
+                NULL, buf, " OK \n Cancel ");
+        if (msg_option == 1) {
+            return MENU_OK;
+        } else if (msg_option == 2) {
+            return MENU_CANCEL;
+        } else if (msg_option == UINT8_MAX) {
             return MENU_TIMEOUT;
         }
-
-        return MENU_CANCEL;
     }
 
     return MENU_OK;
@@ -1184,6 +1205,13 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
     char buf[128];
     uint8_t msg_option = 0;
     size_t num_patches = 0;
+    float32_t pev_min = NAN;
+    float32_t pev_max = NAN;
+    float32_t patch_d_min = NAN;
+    float32_t patch_d_max = NAN;
+    bool has_predicted_range = false;
+    float32_t predicted_min = NAN;
+    float32_t predicted_max = NAN;
     size_t num_output = 0;
     int32_t Ht_lev100 = 0;
     int32_t Hm_lev100 = 0;
@@ -1243,35 +1271,110 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
 
         /* Apply wedge data to populate PEV and density values for each patch */
         uint32_t p = 0;
-        for (int i = params->wedge->step_count - 1; i >= 0; --i) {
+        for (int i = (int)params->wedge->step_count - 1; i >= 0; --i) {
             if (is_valid_number(params->patch_density[i])) {
-
-
-
+                /* Overwrite repeated values */
+                if (p > 0 && params->patch_density[i] == y_density_f32[p - 1]) {
+                    p--;
+                    num_patches--;
+                }
                 x_pev_f32[p] = roundf((float)params->calibration_pev - (step_wedge_get_density(params->wedge, i) * 100.0F));
+                y_density_f32[p] = params->patch_density[i];
 #if 0
                 log_i("[i=%lu,p=%lu] %0.02f = %lu - (%0.02f * 100)",
                     i, p,
                     x_pev_f32[p], params->calibration_pev, step_wedge_get_density(params->wedge, i));
 #endif
-                y_density_f32[p] = params->patch_density[i];
                 p++;
             }
         }
+        log_i("Using %d patches after removing duplicates", num_patches);
 
-        /* Initialize the cubic spline interpolation */
+        /* Declare the reference point density values */
+        const float32_t Ht_D = params->paper_dmin + 0.04F; /* paper base + 0.04 */
+        const float32_t Hm_D = params->paper_dmin + 0.60F; /* paper base + 0.60 */
+        const float32_t Hs_D = params->paper_dmin + ((params->paper_dmax - params->paper_dmin) * 0.90F); /* 90% of Dnet */
+
+        /* Calculate range of input values */
+        arm_min_f32(x_pev_f32, num_patches, &pev_min, NULL);
+        arm_max_f32(x_pev_f32, num_patches, &pev_max, NULL);
+        arm_min_f32(y_density_f32, num_patches, &patch_d_min, NULL);
+        arm_max_f32(y_density_f32, num_patches, &patch_d_max, NULL);
+
+        if (!is_valid_number(pev_min) || !is_valid_number(pev_max) || pev_min >= pev_max) {
+            log_w("Cannot find min/max of interpolation range");
+            break;
+        }
+
+        if (!is_valid_number(patch_d_min) || !is_valid_number(patch_d_max) || patch_d_min >= patch_d_max) {
+            log_w("Cannot find min/max of density range");
+            break;
+        }
+
+        if (patch_d_min > Ht_D || patch_d_max < Hs_D) {
+            log_i("Expanding range due to insufficient patch values");
+
+            /* Input X-axis containing the profile density values to find */
+            float32_t xq_density_f32[3] = {0};
+
+            /* Output Y-axis corresponding to the calculated PEV values */
+            float32_t yq_pev_f32[3] = {0};
+
+            float32_t yq_pev_min = NAN;
+            float32_t yq_pev_max = NAN;
+
+            /* Initialize the cubic spline interpolation (Density -> PEV) */
+            arm_spline_init_f32(&S, ARM_SPLINE_NATURAL,
+                y_density_f32, x_pev_f32, num_patches,
+                coeffs, temp_buffer);
+
+            xq_density_f32[0] = Ht_D;
+            xq_density_f32[1] = Hm_D;
+            xq_density_f32[2] = Hs_D;
+
+            arm_spline_f32(&S, xq_density_f32, yq_pev_f32, 3);
+
+            log_i("Predicted range:");
+            log_i("Ht: D=%0.02f, PEV=%f", Ht_D, yq_pev_f32[0]);
+            log_i("Hm: D=%0.02f, PEV=%f", Hm_D, yq_pev_f32[1]);
+            log_i("Hs: D=%0.02f, PEV=%f", Hs_D, yq_pev_f32[2]);
+
+            arm_min_f32(yq_pev_f32, 3, &yq_pev_min, NULL);
+            arm_max_f32(yq_pev_f32, 3, &yq_pev_max, NULL);
+
+            if (is_valid_number(yq_pev_min) && is_valid_number(yq_pev_max) && yq_pev_min < yq_pev_max) {
+                predicted_min = floorf(yq_pev_min);
+                predicted_max = ceilf(yq_pev_max);
+                has_predicted_range = true;
+                log_i("PEV min=%f, max=%f", lroundf(predicted_min), lroundf(predicted_max));
+            }
+        }
+
+        /* Initialize the cubic spline interpolation (PEV -> Density) */
         arm_spline_init_f32(&S, ARM_SPLINE_NATURAL,
             x_pev_f32, y_density_f32, num_patches,
             coeffs, temp_buffer);
 
-        num_output = abs(lroundf(x_pev_f32[num_patches - 1]) - lroundf(x_pev_f32[0]));
+        /* Expand the range based on predicted values, if necessary */
+        if (has_predicted_range) {
+            log_i("Expanding range based on predictions");
+            /* This adds a little buffer beyond the prediction range */
+            if (predicted_min < pev_min) {
+                pev_min = roundf(predicted_min) - 10.0F;
+            }
+            if (predicted_max > pev_max) {
+                pev_max = roundf(predicted_max) + 10.0F;
+            }
+        }
+
+        num_output = abs(lroundf(pev_max) - lroundf(pev_min));
         if (num_output > 500) {
             log_w("Interpolation range unusually large: %d", num_output);
             break;
         }
-        float min_xq = MIN(x_pev_f32[0], x_pev_f32[num_patches - 1]);
+        float min_xq = MIN(pev_min, pev_max);
         log_i("Interpolating curve from PEV=%ld to %ld (%d steps)",
-            lroundf(x_pev_f32[0]), lroundf(x_pev_f32[num_patches - 1]), num_output);
+            lroundf(pev_min), lroundf(pev_max), num_output);
 
         /* Allocate the arrays needed for interpolation results */
         xq_pev_f32 = pvPortMalloc(sizeof(float32_t) * num_output);
@@ -1287,11 +1390,6 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
 
         /* Run the cubic spline interpolation to get the characteristic curve */
         arm_spline_f32(&S, xq_pev_f32, yq_density_f32, num_output);
-
-        /* Declare the reference point density values */
-        const float32_t Ht_D = params->paper_dmin + 0.04F; /* paper base + 0.04 */
-        const float32_t Hm_D = params->paper_dmin + 0.60F; /* paper base + 0.60 */
-        const float32_t Hs_D = params->paper_dmin + ((params->paper_dmax - params->paper_dmin) * 0.90F); /* 90% of Dnet */
 
         /* Iterate across the output to find PEV values for each reference point */
         float32_t Ht_x = NAN;
