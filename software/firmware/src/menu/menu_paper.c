@@ -190,24 +190,26 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
 size_t menu_paper_profile_edit_append_grade(char *str, const paper_profile_t *profile, contrast_grade_t grade)
 {
     size_t offset;
-    bool valid = paper_profile_grade_is_valid(&profile->grade[grade]);
-    uint32_t iso_r = profile->grade[grade].hs_lev100 - profile->grade[grade].ht_lev100;
+    const bool valid = paper_profile_grade_is_valid(&profile->grade[grade]);
+    const uint32_t iso_r = profile->grade[grade].hs_lev100 - profile->grade[grade].ht_lev100;
     if (!valid) {
         offset = sprintf(str,
-            "Grade %-2s         [---][---][---]\n",
+            "Grade %-2s   [---][---][---][R---]\n",
             contrast_grade_str(grade));
     } else if (profile->grade[grade].hm_lev100 == 0) {
         offset = sprintf(str,
-            "Grade %-2s         [%3lu][---][%3lu]\n",
+            "Grade %-2s   [%3lu][---][%3lu][R%3lu]\n",
             contrast_grade_str(grade),
             profile->grade[grade].ht_lev100,
+            profile->grade[grade].hs_lev100,
             iso_r);
     } else {
         offset = sprintf(str,
-            "Grade %-2s         [%3lu][%3lu][%3lu]\n",
+            "Grade %-2s   [%3lu][%3lu][%3lu][R%3lu]\n",
             contrast_grade_str(grade),
             profile->grade[grade].ht_lev100,
             profile->grade[grade].hm_lev100,
+            profile->grade[grade].hs_lev100,
             iso_r);
     }
     return offset;
@@ -487,7 +489,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
 {
     char buf_title[36];
     char buf[512];
-    char buf_ht[11], buf_hm[11], buf_isor[11];
+    char buf_ht[11], buf_hm[11], buf_hs[11], buf_isor[11];
     menu_result_t menu_result = MENU_OK;
     uint8_t option = 1;
 
@@ -536,6 +538,12 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             sprintf(buf_hm, "%3lu", working_grade.hm_lev100);
         }
 
+        if (working_grade.hs_lev100 == 0) {
+            strcpy(buf_hs, "---");
+        } else {
+            sprintf(buf_hs, "%3lu", working_grade.hs_lev100);
+        }
+
         if (iso_r == 0) {
             strcpy(buf_isor, "---");
         } else {
@@ -545,11 +553,12 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         sprintf(buf,
             "Base exposure (Dmin+0.04)  [%s]\n"
             "Speed point   (Dmin+0.60)  [%s]\n"
+            "Dark exposure (90%% Dnet)   [%s]\n"
             "ISO Range                  [%s]\n"
             "*** Measure From Step Wedge ***\n"
             "*** Accept Changes ***\n"
             "*** Reset Values ***",
-            buf_ht, buf_hm, buf_isor);
+            buf_ht, buf_hm, buf_hs, buf_isor);
 
         option = display_selection_list(buf_title, option, buf);
 
@@ -564,7 +573,6 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 menu_result = MENU_TIMEOUT;
             } else {
                 working_grade.ht_lev100 = value_sel;
-                working_grade.hs_lev100 = working_grade.ht_lev100 + iso_r;
             }
         } else if (option == 2) {
             uint16_t value_sel = working_grade.hm_lev100;
@@ -579,6 +587,18 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 working_grade.hm_lev100 = value_sel;
             }
         } else if (option == 3) {
+            uint16_t value_sel = working_grade.hs_lev100;
+            if (display_input_value_u16(
+                    "Dark Exposure",
+                    "Paper exposure value necessary\n"
+                    "to achieve 90% of the paper's\n"
+                    "maximum net density.\n",
+                    "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                working_grade.hs_lev100 = value_sel;
+            }
+        } else if (option == 4) {
             uint16_t value_sel = iso_r;
             if (display_input_value_u16(
                 "ISO Range",
@@ -590,7 +610,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             } else {
                 working_grade.hs_lev100 = working_grade.ht_lev100 + value_sel;
             }
-        } else if (option == 4) {
+        } else if (option == 5) {
             if (!(isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F)) {
                 uint8_t msg_option = display_message(
                     "Max Density Missing\n",
@@ -621,7 +641,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                     menu_result = MENU_TIMEOUT;
                 }
             }
-        } else if (option == 5) {
+        } else if (option == 6) {
             log_i("Accept: Grade %s, ht_lev100=%lu, hm_lev100=%lu, hs_lev100=%lu",
                 contrast_grade_str(grade),
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
@@ -642,7 +662,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             memcpy(&profile->grade[grade], &working_grade, sizeof(paper_profile_grade_t));
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 6) {
+        } else if (option == 7) {
             log_i("Clearing grade data");
             memset(&profile->grade[grade], 0, sizeof(paper_profile_grade_t));
             menu_result = MENU_SAVE;
@@ -1499,12 +1519,14 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
             sprintf(buf,
                 "Base exp  [%3lu] \n"
                 "Speed pt  [%3lu] \n"
+                "Dark exp  [%3lu] \n"
                 "ISO Range [%3lu] ",
-                Ht_lev100, Hm_lev100, iso_r);
+                Ht_lev100, Hm_lev100, Hs_lev100, iso_r);
         } else {
             sprintf(buf,
                 "Base exp  [---] \n"
                 "Speed pt  [---] \n"
+                "Dark exp  [---] \n"
                 "ISO Range [%3lu] ",
                 iso_r);
         }
