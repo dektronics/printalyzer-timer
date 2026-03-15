@@ -131,4 +131,7 @@ float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
 float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
 uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch);
 
+const char *exposure_adjustment_increment_name(exposure_adjustment_increment_t increment);
+float exposure_adjustment_increment_value(exposure_adjustment_increment_t increment);
+
 #endif /* EXPOSURE_STATE_H */

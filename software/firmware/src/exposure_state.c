@@ -1046,3 +1046,43 @@ uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset)
         return 0;
     }
 }
+
+const char *exposure_adjustment_increment_name(exposure_adjustment_increment_t increment)
+{
+    switch (increment) {
+    case EXPOSURE_ADJ_WHOLE:
+        return "1";
+    case EXPOSURE_ADJ_HALF:
+        return "1/2";
+    case EXPOSURE_ADJ_THIRD:
+        return "1/3";
+    case EXPOSURE_ADJ_QUARTER:
+        return "1/4";
+    case EXPOSURE_ADJ_SIXTH:
+        return "1/6";
+    case EXPOSURE_ADJ_TWELFTH:
+        return "1/12";
+    default:
+        return "1/4";
+    }
+}
+
+float exposure_adjustment_increment_value(exposure_adjustment_increment_t increment)
+{
+    switch (increment) {
+    case EXPOSURE_ADJ_WHOLE:
+        return 1.0F;
+    case EXPOSURE_ADJ_HALF:
+        return 1.0F / 2.0F;
+    case EXPOSURE_ADJ_THIRD:
+        return 1.0F / 3.0F;
+    case EXPOSURE_ADJ_QUARTER:
+        return 1.0F / 4.0F;
+    case EXPOSURE_ADJ_SIXTH:
+        return 1.0F / 6.0F;
+    case EXPOSURE_ADJ_TWELFTH:
+        return 1.0F / 12.0F;
+    default:
+        return 1.0F / 4.0F;
+    }
+}

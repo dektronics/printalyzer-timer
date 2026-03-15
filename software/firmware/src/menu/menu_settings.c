@@ -251,12 +251,23 @@ menu_result_t menu_settings_default_exposure()
 
 menu_result_t menu_settings_default_step_size()
 {
-    menu_result_t menu_result = MENU_OK;
+    menu_result_t menu_result;
 
     exposure_adjustment_increment_t setting = settings_get_default_step_size();
+    menu_result = menu_settings_test_strip_step_size("Default Step Size", &setting);
+    if (menu_result == MENU_OK) {
+        settings_set_default_step_size(setting);
+    }
+
+    return menu_result;
+}
+
+menu_result_t menu_settings_test_strip_step_size(const char *title, exposure_adjustment_increment_t *setting)
+{
+    menu_result_t menu_result = MENU_OK;
 
     uint8_t option;
-    switch (setting) {
+    switch (*setting) {
     case EXPOSURE_ADJ_WHOLE:
         option = 1;
         break;
@@ -282,7 +293,7 @@ menu_result_t menu_settings_default_step_size()
 
     do {
         option = display_selection_list(
-            "Default Step Size", option,
+            title, option,
             "1 stop\n"
             "1/2 stop\n"
             "1/3 stop\n"
@@ -291,22 +302,22 @@ menu_result_t menu_settings_default_step_size()
             "1/12 stop");
 
         if (option == 1) {
-            setting = EXPOSURE_ADJ_WHOLE;
+            *setting = EXPOSURE_ADJ_WHOLE;
             break;
         } else if (option == 2) {
-            setting = EXPOSURE_ADJ_HALF;
+            *setting = EXPOSURE_ADJ_HALF;
             break;
         } else if (option == 3) {
-            setting = EXPOSURE_ADJ_THIRD;
+            *setting = EXPOSURE_ADJ_THIRD;
             break;
         } else if (option == 4) {
-            setting = EXPOSURE_ADJ_QUARTER;
+            *setting = EXPOSURE_ADJ_QUARTER;
             break;
         } else if (option == 5) {
-            setting = EXPOSURE_ADJ_SIXTH;
+            *setting = EXPOSURE_ADJ_SIXTH;
             break;
         } else if (option == 6) {
-            setting = EXPOSURE_ADJ_TWELFTH;
+            *setting = EXPOSURE_ADJ_TWELFTH;
             break;
         } else if (option == 0) {
             menu_result = MENU_CANCEL;
@@ -314,10 +325,6 @@ menu_result_t menu_settings_default_step_size()
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
-
-    if (menu_result == MENU_OK) {
-        settings_set_default_step_size(setting);
-    }
 
     return menu_result;
 }

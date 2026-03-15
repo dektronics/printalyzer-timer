@@ -19,6 +19,7 @@
 #include "densitometer.h"
 #include "step_wedge.h"
 #include "menu_step_wedge.h"
+#include "menu_settings.h"
 #include "exposure_state.h"
 #include "meter_probe.h"
 
@@ -29,6 +30,16 @@ typedef struct {
     uint32_t calibration_pev;
     float *patch_density;
 } wedge_calibration_params_t;
+
+typedef struct {
+    uint8_t paper_param; /* 0 = Dmin+0.04, 1 = Dmin+0.60, 2 = 90% Dnet */
+    float paper_dmin;
+    float paper_dmax;
+    uint32_t calibration_pev;
+    uint8_t patch_count;
+    float patch_increment;
+    float *patch_density;
+} strip_calibration_params_t;
 
 typedef struct {
     bool enable;
@@ -42,18 +53,25 @@ typedef struct {
     uint16_t reading;
 } menu_paper_callback_data_t;
 
+static const char *PAPER_PARAM_NAMES[] = {
+    "Dmin+0.04", "Dmin+0.60", "90% Dnet"
+};
+
 static menu_result_t menu_paper_profile_edit(state_controller_t *controller, paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_check_save(paper_profile_t *profile);
 static void menu_paper_delete_profile(uint8_t index, size_t profile_count);
 static bool menu_paper_profile_delete_prompt(const paper_profile_t *profile, uint8_t index);
 static menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, paper_profile_t *profile, uint8_t index, contrast_grade_t grade, menu_paper_callback_data_t *dens_data);
 static menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data);
+static menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data);
 static void menu_paper_densitometer_check(menu_paper_callback_data_t *data);
 static uint8_t menu_paper_densitometer_input_poll_callback(uint8_t current_pos, uint8_t event_action, void *user_data);
 static uint16_t menu_paper_densitometer_data_callback(uint8_t event_action, void *user_data);
 static uint16_t menu_paper_densitometer_callback_impl(uint8_t event_action, menu_paper_callback_data_t *data, bool active);
 static menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibration_params_t *params);
 static menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, const wedge_calibration_params_t *params, paper_profile_grade_t *paper_grade);
+static menu_result_t menu_paper_profile_calibrate_test_strip_validate(const strip_calibration_params_t *params);
+static menu_result_t menu_paper_profile_calibrate_test_strip_calculate(const char *title, const strip_calibration_params_t *params, paper_profile_grade_t *paper_grade);
 
 menu_result_t menu_paper_profiles(state_controller_t *controller)
 {
@@ -551,14 +569,18 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         }
 
         sprintf(buf,
-            "Base exposure (Dmin+0.04)  [%s]\n"
-            "Speed point   (Dmin+0.60)  [%s]\n"
-            "Dark exposure (90%% Dnet)   [%s]\n"
+            "Base exposure (%s)  [%s]\n"
+            "Speed point   (%s)  [%s]\n"
+            "Dark exposure (%s)   [%s]\n"
             "ISO Range                  [%s]\n"
             "*** Measure From Step Wedge ***\n"
+            "*** Measure From Test Strip ***\n"
             "*** Accept Changes ***\n"
             "*** Reset Values ***",
-            buf_ht, buf_hm, buf_hs, buf_isor);
+            PAPER_PARAM_NAMES[0], buf_ht,
+            PAPER_PARAM_NAMES[1], buf_hm,
+            PAPER_PARAM_NAMES[2], buf_hs,
+            buf_isor);
 
         option = display_selection_list(buf_title, option, buf);
 
@@ -610,7 +632,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             } else {
                 working_grade.hs_lev100 = working_grade.ht_lev100 + value_sel;
             }
-        } else if (option == 5) {
+        } else if (option == 5 || option == 6) {
             if (!(isnormal(profile->paper_dmax) && profile->paper_dmax > 0.0F)) {
                 uint8_t msg_option = display_message(
                     "Max Density Missing\n",
@@ -632,16 +654,26 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                     menu_result = MENU_TIMEOUT;
                 }
             } else {
-                menu_result_t cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade,
-                    profile->paper_dmin, profile->paper_dmax, dens_data);
+                menu_result_t cal_result;
+                if (option == 5) {
+                    cal_result = menu_paper_profile_calibrate_grade(controller, buf_title, &working_grade,
+                        profile->paper_dmin, profile->paper_dmax, dens_data);
+                } else {
+                    cal_result = menu_paper_profile_calibrate_test_strip(controller, buf_title, &working_grade,
+                        profile->paper_dmin, profile->paper_dmax, dens_data);
+                }
                 if (cal_result == MENU_SAVE) {
-                    /* If calibration results were accepted, move the cursor down for convenience */
-                    option = 5;
+                    /* If calibration results were accepted, move the cursor for convenience */
+                    if (option == 5) {
+                        option = 7;
+                    } else {
+                        option = 1;
+                    }
                 } else if (cal_result == MENU_TIMEOUT) {
                     menu_result = MENU_TIMEOUT;
                 }
             }
-        } else if (option == 6) {
+        } else if (option == 7) {
             log_i("Accept: Grade %s, ht_lev100=%lu, hm_lev100=%lu, hs_lev100=%lu",
                 contrast_grade_str(grade),
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
@@ -662,7 +694,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             memcpy(&profile->grade[grade], &working_grade, sizeof(paper_profile_grade_t));
             menu_result = MENU_SAVE;
             break;
-        } else if (option == 7) {
+        } else if (option == 8) {
             log_i("Clearing grade data");
             memset(&profile->grade[grade], 0, sizeof(paper_profile_grade_t));
             menu_result = MENU_SAVE;
@@ -936,6 +968,336 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
     return menu_result;
 }
 
+menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data)
+{
+    const int MAX_STEPS = 7;
+    menu_result_t menu_result = MENU_OK;
+    char *buf = NULL;
+    uint8_t paper_param = 0;
+    float *patch_density = NULL;
+    uint8_t option = 1;
+    uint32_t calibration_pev = 0;
+    uint8_t patch_count;
+    exposure_adjustment_increment_t patch_increment;
+
+    const float display_dmin = paper_dmin;
+    const float display_dmax = paper_dmax;
+
+    if (!is_valid_number(paper_dmin)) { paper_dmin = 0.0F; }
+    if (!is_valid_number(paper_dmax)) { paper_dmax = 0.0F; }
+
+    const exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    calibration_pev = exposure_get_calibration_pev(exposure_state);
+    if (calibration_pev > 999) {
+        calibration_pev = 0;
+    }
+
+    switch (settings_get_teststrip_patches()) {
+    case TESTSTRIP_PATCHES_5:
+        patch_count = 5;
+        break;
+    case TESTSTRIP_PATCHES_7:
+    default:
+        patch_count = 7;
+        break;
+    }
+
+    patch_increment = exposure_adj_increment_get(exposure_state);
+
+    /* Allocate an array for the patch density measurements */
+    patch_density = pvPortMalloc(sizeof(float) * MAX_STEPS);
+    if (!patch_density) {
+        return MENU_OK;
+    }
+
+    /* Allocate a buffer for the menu text */
+    buf = pvPortMalloc((MAX_STEPS * (sizeof(char) * 33)) + (7 * 33));
+    if (!buf) {
+        vPortFree(patch_density);
+        return MENU_OK;
+    }
+
+    /* Initialize the array of patch density measurements */
+    for (uint32_t i = 0; i < MAX_STEPS; i++) {
+        patch_density[i] = NAN;
+    }
+
+    dens_data->min_option = 7;
+    dens_data->max_option = (7 + patch_count) - 1;
+    dens_data->alt_option = UINT8_MAX;
+    dens_data->stick_idle_refresh = true;
+
+    do {
+        size_t offset = 0;
+        const char *patch_increment_name;
+        float patch_increment_value;
+
+        offset += menu_build_padded_str_row(buf + offset, "Profile parameter", PAPER_PARAM_NAMES[paper_param]);
+
+        if (isnormal(display_dmin) && display_dmin > 0.0F) {
+            offset += sprintf(buf + offset,
+                "Paper Dmin              {D=%0.02f}\n",
+                display_dmin);
+        } else {
+            offset += sprintf(buf + offset,
+                "Paper Dmin              {------}\n");
+        }
+
+        if (isnormal(display_dmax) && display_dmax > 0.0F) {
+            offset += sprintf(buf + offset,
+                "Paper Dmax              {D=%0.02f}\n",
+                display_dmax);
+        } else {
+            offset += sprintf(buf + offset,
+                "Paper Dmax              {------}\n");
+        }
+
+        offset += menu_build_padded_format_row(buf + offset, "Test Strip Size", "%d patches", patch_count);
+
+        patch_increment_name = exposure_adjustment_increment_name(patch_increment);
+        patch_increment_value = exposure_adjustment_increment_value(patch_increment);
+        offset += menu_build_padded_format_row(buf + offset, "Exposure Increment", "%s stop", patch_increment_name);
+
+        if (calibration_pev > 0) {
+            offset += sprintf(buf + offset,
+                "Center Exposure Value      [%3lu]\n", calibration_pev);
+        } else {
+            offset += sprintf(buf + offset,
+                "Center Exposure Value      [---]\n");
+        }
+
+        for (uint8_t i = 0; i < patch_count; i++) {
+            char prefix;
+            const uint8_t num = abs(i - (patch_count / 2));
+            if (i < (patch_count / 2)) {
+                prefix = '-';
+            } else if (i > (patch_count / 2)) {
+                prefix = '+';
+            } else {
+                prefix = ' ';
+            }
+
+            if (is_valid_number(patch_density[i]) && patch_density[i] >= paper_dmin) {
+                offset += sprintf(buf + offset,
+                    "Patch %c%d                [D=%0.02f]\n",
+                    prefix, num, patch_density[i]);
+            } else {
+                offset += sprintf(buf + offset,
+                    "Patch %c%d                [------]\n",
+                    prefix, num);
+            }
+        }
+
+        sprintf(buf + offset, "*** Calculate Exp Point ***");
+
+        option = display_selection_list_cb(title, option, buf,
+            menu_paper_densitometer_input_poll_callback, dens_data);
+
+        if (option == 1) {
+            char list_buf[256];
+            sprintf(list_buf,
+                "Base exposure (%s)\n"
+                "Speed point   (%s)\n"
+                "Dark exposure (%s) ",
+                PAPER_PARAM_NAMES[0], PAPER_PARAM_NAMES[1], PAPER_PARAM_NAMES[2]);
+
+            uint8_t sub_option = display_selection_list("Parameter to Measure", paper_param + 1, list_buf);
+            if (sub_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else if (sub_option != 0) {
+                paper_param = sub_option - 1;
+            }
+        } else if (option == 2) {
+            char msg_buf[256];
+            sprintf(msg_buf,
+                "Minimum density of the paper,\n"
+                "used as the lower bound for\n"
+                "measurements.\n"
+                "D=%0.02f\n",
+                paper_dmin);
+
+            uint8_t msg_option = display_message("-- Paper Dmin --", NULL,
+                msg_buf, " OK ");
+            if (msg_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else if (option == 3) {
+            char msg_buf[256];
+            sprintf(msg_buf,
+                "Maximum density of the paper,\n"
+                "used as the upper bound for\n"
+                "measurements.\n"
+                "D=%0.02f\n",
+                paper_dmax);
+
+            uint8_t msg_option = display_message("-- Paper Dmax --", NULL,
+                msg_buf, " OK ");
+            if (msg_option == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else if (option == 4) {
+            if (patch_count == 5) {
+                /* Shift all readings down by one and NAN the start and end */
+                patch_density[5] = patch_density[4];
+                patch_density[4] = patch_density[3];
+                patch_density[3] = patch_density[2];
+                patch_density[2] = patch_density[1];
+                patch_density[1] = patch_density[0];
+                patch_density[0] = NAN;
+                patch_density[6] = NAN;
+                patch_count = 7;
+            } else { /* patch_count == 7 */
+                /* Shift all readings up by one and NAN the end */
+                patch_density[0] = patch_density[1];
+                patch_density[1] = patch_density[2];
+                patch_density[2] = patch_density[3];
+                patch_density[3] = patch_density[4];
+                patch_density[4] = patch_density[5];
+                patch_density[5] = NAN;
+                patch_density[6] = NAN;
+                patch_count = 5;
+            }
+        } else if (option == 5) {
+            if (menu_settings_test_strip_step_size("Exposure Increment", &patch_increment) == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+            }
+        } else if (option == 6) {
+            uint16_t value_sel = calibration_pev;
+            if (display_input_value_u16(
+                "Center Exposure Value",
+                "Paper exposure value used for\n"
+                "the center of the test strip\n"
+                "being measured.\n",
+                "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                menu_result = MENU_TIMEOUT;
+            } else {
+                calibration_pev = value_sel;
+            }
+        } else if (option >= 7 && option < 7 + patch_count) {
+            int patch_index = option - 7;
+
+            /* Constrain the input based on Dmin and Dmax */
+            uint16_t min_value = lroundf(paper_dmin * 100);
+            uint16_t max_value = lroundf(paper_dmax * 100);
+
+            if (dens_data->reading != UINT16_MAX) {
+                if (dens_data->reading <= min_value) {
+                    patch_density[patch_index] = paper_dmin;
+                } else if (dens_data->reading >= max_value) {
+                    patch_density[patch_index] = paper_dmax;
+                } else {
+                    patch_density[patch_index] = (float)dens_data->reading / 100.0F;
+                }
+
+                option++;
+            } else {
+                uint8_t patch_option;
+                char patch_title_buf[32];
+                char patch_buf[128];
+
+                char num_prefix;
+                const uint8_t num = abs(patch_index - (patch_count / 2));
+                if (patch_index < (patch_count / 2)) {
+                    num_prefix = '-';
+                } else if (patch_index > (patch_count / 2)) {
+                    num_prefix = '+';
+                } else {
+                    num_prefix = ' ';
+                }
+
+                if (num_prefix == ' ') {
+                    sprintf(patch_title_buf, "Center Patch");
+                    sprintf(patch_buf,
+                        "\nMeasured density at the\n"
+                        "center patch of the exposed\n"
+                        "test strip.\n");
+                } else {
+                    sprintf(patch_title_buf, "Patch %c%d", num_prefix, num);
+                    sprintf(patch_buf,
+                        "\nMeasured density at the\n"
+                        "%c%d patch of the exposed\n"
+                        "test strip.\n",
+                        num_prefix, num);
+                }
+
+                uint16_t value_sel = 0;
+                if (isnormal(patch_density[patch_index]) && patch_density[patch_index] > 0.0F) {
+                    value_sel = lroundf(patch_density[patch_index] * 100);
+                }
+                if (value_sel < min_value) {
+                    value_sel = min_value;
+                }
+                if (value_sel > max_value) {
+                    value_sel = max_value;
+                }
+
+                patch_option = display_input_value_f16_data_cb(
+                    patch_title_buf, patch_buf,
+                    "D=", &value_sel, min_value, max_value, 1, 2, "",
+                    menu_paper_densitometer_data_callback, dens_data);
+                if (patch_option == 1) {
+                    if (value_sel <= min_value) {
+                        patch_density[patch_index] = paper_dmin;
+                    } else if (value_sel >= max_value) {
+                        patch_density[patch_index] = paper_dmax;
+                    } else {
+                        patch_density[patch_index] = (float)value_sel / 100.0F;
+                    }
+                } else if (patch_option == UINT8_MAX) {
+                    menu_result = MENU_TIMEOUT;
+                }
+            }
+        } else if (option == 7 + patch_count) {
+            menu_result_t val_result;
+            log_i("Calculate profile");
+
+            /* Collect the calibration parameters */
+            strip_calibration_params_t params = {
+                .paper_param = paper_param,
+                .paper_dmin = paper_dmin,
+                .paper_dmax = paper_dmax,
+                .calibration_pev = calibration_pev,
+                .patch_count = patch_count,
+                .patch_increment = patch_increment_value,
+                .patch_density = patch_density
+            };
+
+            /* Validate the parameters */
+            val_result = menu_paper_profile_calibrate_test_strip_validate(&params);
+            if (val_result == MENU_CANCEL) {
+                log_i("Validation failed");
+                continue;
+            } else if (val_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+                break;
+            }
+            log_i("Calibration parameters validated");
+
+            /* Calculate the profile */
+            val_result = menu_paper_profile_calibrate_test_strip_calculate(title, &params, paper_grade);
+            if (val_result == MENU_OK || val_result == MENU_SAVE) {
+                log_i("Calculation accepted");
+                menu_result = MENU_SAVE;
+                break;
+            } else if (val_result == MENU_CANCEL) {
+                log_i("Calculation failed");
+                continue;
+            } else if (val_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+                break;
+            }
+        } else if (option == UINT8_MAX) {
+            menu_result = MENU_TIMEOUT;
+        }
+
+    } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    vPortFree(buf);
+    vPortFree(patch_density);
+
+    return menu_result;
+}
+
 void menu_paper_densitometer_check(menu_paper_callback_data_t *data)
 {
     meter_probe_handle_t *handle = densistick_handle();
@@ -1202,7 +1564,7 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
             "Paper patch measurements do not\n"
             "contain both D=%0.02f and D=%0.02f.\n"
             "Missing end values will\n"
-            "be estimated.",
+            "be extrapolated.",
             patch_min_crossing, patch_max_crossing);
 
         uint8_t msg_option = display_message(
@@ -1578,5 +1940,341 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
     } else {
         log_i("Calibration parameters rejected");
         return MENU_CANCEL;
+    }
+}
+
+static float paper_param_density_value(const strip_calibration_params_t *params)
+{
+    switch (params->paper_param) {
+    case 0:
+        return params->paper_dmin + 0.04F;
+    case 1:
+        return params->paper_dmin + 0.60F;
+    case 2:
+        return params->paper_dmin + ((params->paper_dmax - params->paper_dmin) * 0.90F);
+    default:
+        return NAN;
+    }
+}
+
+menu_result_t menu_paper_profile_calibrate_test_strip_validate(const strip_calibration_params_t *params)
+{
+    /* Validate arguments that should never be in question */
+    if (!params || !params->patch_density || params->patch_count < 3
+        || !is_valid_number(params->patch_increment) || params->patch_increment <= 0.0F) {
+        return MENU_CANCEL;
+    }
+
+    /* Validate the PEV, Dmin, and Dmax values */
+    if (!(is_valid_number(params->paper_dmin) && is_valid_number(params->paper_dmax)
+        && (params->paper_dmin < params->paper_dmax)
+        && (params->calibration_pev > 0) && (params->calibration_pev <= 999))) {
+        uint8_t msg_option = display_message(
+                "Invalid Properties\n",
+                NULL,
+                "Test strip measurement\n"
+                "properties are not valid.\n",
+                " OK ");
+        if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        }
+
+        return MENU_CANCEL;
+    }
+
+    /* Find the min and max patch values so they can be validated */
+    float patch_min = NAN;
+    float patch_max = NAN;
+    float last_patch = NAN;
+    uint32_t patch_count = 0;
+    bool valid_sequence = true;
+    for (uint32_t i = 0; i < params->patch_count; i++) {
+        if (!is_valid_number(params->patch_density[i])) {
+            continue;
+        }
+        if (isnan(patch_min) || params->patch_density[i] < patch_min) {
+            patch_min = params->patch_density[i];
+        }
+        if (isnan(patch_max) || params->patch_density[i] > patch_max) {
+            patch_max = params->patch_density[i];
+        }
+        /*
+         * Check measurement order to make sure it is ascending.
+         * Repeated measurements can be equal, which will be handled in
+         * the interpolation code.
+         */
+        if (isnanf(last_patch) || params->patch_density[i] >= last_patch) {
+            last_patch = params->patch_density[i];
+        } else {
+            valid_sequence = false;
+        }
+        patch_count++;
+    }
+
+    /* Make sure we actually found min and max patch values */
+    if (!is_valid_number(patch_min) || !is_valid_number(patch_max)
+        || fabsf(patch_max - patch_min) < 0.01F) {
+        uint8_t msg_option = display_message(
+                "Invalid Measurements\n",
+                NULL,
+                "Test strip measurements are\n"
+                "missing or invalid.\n",
+                " OK ");
+        if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        }
+
+        return MENU_CANCEL;
+    }
+
+    /* Make sure we have enough patches */
+    if (patch_count < 2) {
+        uint8_t msg_option = display_message(
+                "Invalid Measurements\n",
+                NULL,
+                "Must have at least two"
+                "test strip measurements.\n",
+                " OK ");
+        if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        }
+
+        return MENU_CANCEL;
+    }
+
+    if (!valid_sequence) {
+        uint8_t msg_option = display_message(
+                "Invalid Measurements\n",
+                NULL,
+                "Test strip measurements must\n"
+                "be in ascending order.\n",
+                " OK ");
+        if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        }
+
+        return MENU_CANCEL;
+    }
+
+    /*
+     * Make sure patch densities cross one of the three
+     * values necessary to define the paper grade profile.
+     */
+    const float param_density = paper_param_density_value(params);
+    const bool crosses_param = patch_min <= param_density && param_density <= patch_max;
+
+    if (!crosses_param) {
+        char buf[128];
+        uint8_t msg_option;
+
+        if ((param_density < patch_min && patch_min - param_density > 0.60F)
+            || (param_density > patch_max && param_density - patch_max > 0.60F)) {
+            sprintf(buf,
+                "Test strip range is too far\n"
+                "from %s (D=%0.02f).\n"
+                "Value cannot be be extrapolated.",
+                PAPER_PARAM_NAMES[params->paper_param], param_density);
+            msg_option = display_message(
+                "Insufficient Range\n",
+                NULL, buf, " OK ");
+            if (msg_option == 1) { msg_option = 2; }
+        } else {
+            sprintf(buf,
+                "Test strip range does not\n"
+                "contain %s (D=%0.02f).\n"
+                "Value will be extrapolated.",
+                PAPER_PARAM_NAMES[params->paper_param], param_density);
+            msg_option = display_message(
+                "Insufficient Range\n",
+                NULL, buf, " OK \n Cancel ");
+        }
+
+        if (msg_option == 1) {
+            return MENU_OK;
+        } else if (msg_option == 2) {
+            return MENU_CANCEL;
+        } else if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        }
+    }
+
+    return MENU_OK;
+}
+
+menu_result_t menu_paper_profile_calibrate_test_strip_calculate(const char *title, const strip_calibration_params_t *params, paper_profile_grade_t *paper_grade)
+{
+    uint8_t msg_option = 0;
+    size_t num_patches = 0;
+    float32_t pev_min = NAN;
+    float32_t pev_max = NAN;
+    float32_t patch_d_min = NAN;
+    float32_t patch_d_max = NAN;
+    int32_t H_lev100 = 0;
+
+    /* Validate arguments that should never be in question */
+    if (!params || !params->patch_density || params->patch_count < 3
+        || !is_valid_number(params->patch_increment) || params->patch_increment <= 0.0F) {
+        return MENU_CANCEL;
+    }
+
+    /* Count the number of patches with valid data */
+    for (uint32_t i = 0; i < params->patch_count; i++) {
+        if (is_valid_number(params->patch_density[i])) {
+            num_patches++;
+        }
+    }
+    log_i("Found %d patches with valid measurements", num_patches);
+
+    /* X-axis is the measured density values from the test strip */
+    float32_t *x_density_f32 = NULL;
+
+    /* Y-axis is the calculated PEV values for the test strip exposure */
+    float32_t *y_pev_f32 = NULL;
+
+    /* Coefficients array used for the interpolation */
+    float32_t *coeffs = NULL;
+
+    /* Buffer array used for the interpolation */
+    float32_t *temp_buffer = NULL;
+
+    /* Output X-axis is the density value being calculated */
+    float32_t xq_density_f32 = NAN;
+
+    /* Output Y-axis is the PEV value corresponding to that density value */
+    float32_t yq_pev_f32 = NAN;
+
+    do {
+        arm_spline_instance_f32 S;
+
+        /* Allocate the arrays needed for the cubic spline interpolation */
+        x_density_f32 = pvPortMalloc(sizeof(float32_t) * num_patches);
+        if (!x_density_f32) { break; }
+
+        y_pev_f32 = pvPortMalloc(sizeof(float32_t) * num_patches);
+        if (!y_pev_f32) { break; }
+
+        coeffs = pvPortMalloc(sizeof(float32_t) * (3 * (num_patches - 1))); /* 3*(n-1) */
+        if (!coeffs) { break; }
+
+        temp_buffer = pvPortMalloc(sizeof(float32_t) * (num_patches + num_patches - 1)); /* n+n-1 */
+        if (!temp_buffer) { break; }
+
+        /* Apply wedge data to populate PEV and density values for each patch */
+
+        const float base_lux_secs = powf(10.0F, (float)params->calibration_pev / 100.0F);
+
+        uint32_t p = 0;
+        for (uint8_t i = 0; i < params->patch_count; i++) {
+            if (is_valid_number(params->patch_density[i])) {
+                if (params->paper_param == 0 || params->paper_param == 1) {
+                    /* Base and speed points use higher values in case of repeat */
+                    if (p > 0 && params->patch_density[i] == x_density_f32[p - 1]) {
+                        p--;
+                        num_patches--;
+                    }
+                } else if (params->paper_param == 2) {
+                    /* Dark point uses lower values in case of repeat */
+                    if (p > 0 && params->patch_density[i] == x_density_f32[p - 1]) {
+                        num_patches--;
+                        continue;
+                    }
+                }
+
+                const int pev_offset = i - (params->patch_count / 2);
+                const float patch_lux_secs = base_lux_secs * powf(2.0F, (float)pev_offset * params->patch_increment);
+                const float patch_pev = log10f(patch_lux_secs) * 100;
+
+                x_density_f32[p] = params->patch_density[i];
+                y_pev_f32[p] = roundf(patch_pev);
+#if 0
+                log_i("[i=%lu,p=%lu] D=%0.02f, PEV=%d",
+                    i, p, x_density_f32[p], (int)y_pev_f32[p]);
+#endif
+                p++;
+            }
+        }
+        log_i("Using %d patches of the test strip", num_patches);
+
+        /* Calculate range of input values */
+        arm_min_f32(x_density_f32, num_patches, &patch_d_min, NULL);
+        arm_max_f32(x_density_f32, num_patches, &patch_d_max, NULL);
+        arm_min_f32(y_pev_f32, num_patches, &pev_min, NULL);
+        arm_max_f32(y_pev_f32, num_patches, &pev_max, NULL);
+
+        if (!is_valid_number(pev_min) || !is_valid_number(pev_max) || pev_min >= pev_max) {
+            log_w("Cannot find min/max of interpolation range");
+            break;
+        }
+
+        if (!is_valid_number(patch_d_min) || !is_valid_number(patch_d_max) || patch_d_min >= patch_d_max) {
+            log_w("Cannot find min/max of density range");
+            break;
+        }
+
+        /* Initialize the cubic spline interpolation (Density -> PEV) */
+        arm_spline_init_f32(&S, ARM_SPLINE_NATURAL,
+            x_density_f32, y_pev_f32, num_patches,
+            coeffs, temp_buffer);
+
+        xq_density_f32 = paper_param_density_value(params);
+
+        /* Run the cubic spline interpolation to get the characteristic curve */
+        arm_spline_f32(&S, &xq_density_f32, &yq_pev_f32, 1);
+
+        /* Assign the result, keeping signs */
+        H_lev100 = lroundf(yq_pev_f32);
+
+        /* Log the results */
+        log_i("H(%s): PEV=%ld, D=%0.02f", PAPER_PARAM_NAMES[params->paper_param], H_lev100, xq_density_f32);
+
+    } while (0);
+
+    /* Free dynamically allocated arrays */
+    vPortFree(x_density_f32);
+    vPortFree(y_pev_f32);
+    vPortFree(coeffs);
+    vPortFree(temp_buffer);
+
+    if (H_lev100 <= 0) {
+        msg_option = display_message(
+            "Calculation Error\n",
+            NULL,
+            "Unable to calculate the\n"
+            "paper exposure point.\n",
+            " OK ");
+        if (msg_option == UINT8_MAX) {
+            return MENU_TIMEOUT;
+        } else {
+            return MENU_CANCEL;
+        }
+    }
+
+    char buf[192];
+    sprintf(buf,
+        "\nExposure value for %s\n"
+        "(D=%0.02f) has been calculated\n"
+        "from the test strip to be %ld.",
+        PAPER_PARAM_NAMES[params->paper_param],
+        paper_param_density_value(params),
+        H_lev100);
+
+    msg_option = display_message(
+        title,
+        NULL, buf, " OK \n Cancel ");
+    if (msg_option == 1) {
+        if (params->paper_param == 0) {
+            paper_grade->ht_lev100 = H_lev100;
+        } else if (params->paper_param == 1) {
+            paper_grade->hm_lev100 = H_lev100;
+        } else if (params->paper_param == 2) {
+            paper_grade->hs_lev100 = H_lev100;
+        }
+        return MENU_OK;
+    } else if (msg_option == 2) {
+        return MENU_CANCEL;
+    } else if (msg_option == UINT8_MAX) {
+        return MENU_TIMEOUT;
+    } else {
+        return MENU_OK;
     }
 }
