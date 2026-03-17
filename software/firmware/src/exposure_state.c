@@ -894,31 +894,33 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
     }
 
     /* Collect the relevant log exposure values from the paper profile */
-    uint32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
-    uint32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
-    uint32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
-    float d_net = paper_profile_max_net_density(&state->paper_profile);
+    const uint32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
+    const uint32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
+    const uint32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
+    const float d_min = state->paper_profile.paper_dmin;
+    const float d_net = paper_profile_max_net_density(&state->paper_profile);
 
     if (ht_lev100 > 0 && hm_lev100 > 0 && hs_lev100 > 0
         && ht_lev100 < hs_lev100
         && ht_lev100 <  hm_lev100 && hm_lev100 < hs_lev100
-        && isnormal(d_net) && d_net > 0) {
+        && isnormal(d_min) && d_min > 0.0F
+        && isnormal(d_net) && d_net > 0.0F) {
         /*
          * We have all the relevant fields, with valid relationships, to
          * interpolate the full tone curve.
          */
         log_d("Tone graph using full T+M+S+Dnet interpolation");
 
-        float d_ht = 0.04F;
-        float d_hm = 0.60F;
-        float d_hs = 0.90F * d_net;
-        float d_range = d_hs - d_ht;
+        const float d_ht = d_min + 0.04F;
+        const float d_hm = d_min + 0.60F;
+        const float d_hs = d_min + (0.90F * d_net);
+        const float d_range = d_hs - d_ht;
 
-        float d_inc = d_range / (TONE_GRAPH_MARKS_SIZE - 1);
+        const float d_inc = d_range / (TONE_GRAPH_MARKS_SIZE - 1);
         float d_mark = d_ht;
 
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
-            tone_graph_marks[i] = interpolate(d_ht, ht_lev100, d_hm, hm_lev100, d_hs, hs_lev100, d_mark);
+            tone_graph_marks[i] = interpolate(d_ht, (float)ht_lev100, d_hm, (float)hm_lev100, d_hs, (float)hs_lev100, d_mark);
             d_mark += d_inc;
         }
 
@@ -929,9 +931,9 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
          */
         log_d("Tone graph using simple T+M ISO(R) line");
 
-        uint32_t iso_r = hs_lev100 - ht_lev100;
+        const uint32_t iso_r = hs_lev100 - ht_lev100;
 
-        float mark_increment = (float)iso_r / (TONE_GRAPH_MARKS_SIZE - 1);
+        const float mark_increment = (float)iso_r / (TONE_GRAPH_MARKS_SIZE - 1);
         float mark_value = (float)ht_lev100;
 
         for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
@@ -1016,16 +1018,31 @@ uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading, const flo
     /* Calculate the log-exposure value for the next reading */
     float lev_value = log10f(lux_reading * adjusted_time) * 100.0F;
 
-    if (lev_value < tone_graph_marks[0]) {
+    /* Add a half-mark buffer on either end before indicating overflow */
+    const float lower_bound = tone_graph_marks[0] - ((tone_graph_marks[1] - tone_graph_marks[0]) / 2.0F);
+    const float upper_bound = tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1] +
+        ((tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 2] - tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) / 2.0F);
+
+    if (lev_value < lower_bound) {
         /* Check whether to set the lower-bound mark */
         result |= 0x00000001UL;
-    } else if (lev_value >= tone_graph_marks[TONE_GRAPH_MARKS_SIZE - 1]) {
+    } else if (lev_value >= upper_bound) {
         /* Check whether to set the upper-bound mark */
         result |= 0x00010000UL;
     } else {
         /* Check which marks of the main graph to set */
-        for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE + 1; j++) {
-            if (lev_value >= tone_graph_marks[j] && lev_value < tone_graph_marks[j + 1]) {
+        for (size_t j = 0; j < TONE_GRAPH_MARKS_SIZE - 1; j++) {
+            float mark_lower_bound = tone_graph_marks[j];
+            float mark_upper_bound = tone_graph_marks[j + 1];
+
+            if (j == 0) {
+                mark_lower_bound = lower_bound;
+            } else if (j == TONE_GRAPH_MARKS_SIZE - 2) {
+                /* Add upper buffer */
+                mark_upper_bound = upper_bound;
+            }
+
+            if (lev_value >= mark_lower_bound && lev_value < mark_upper_bound) {
                 result |= (1UL << (j + 1));
                 break;
             }
