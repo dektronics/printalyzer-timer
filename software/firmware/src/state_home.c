@@ -584,14 +584,13 @@ void state_home_select_paper_profile(state_controller_t *controller)
                 i + 1);
         }
         offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
-        if (i < profile_count) {
+        if (i < profile_count - 1) {
             buf[offset++] = '\n';
             buf[offset] = '\0';
         }
     }
 
     do {
-
         option = display_selection_list("Paper Profiles", option, buf);
         if (option > 0 && option <= profile_count) {
             exposure_set_active_paper_profile_index(exposure_state, option - 1);
