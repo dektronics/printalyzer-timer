@@ -62,6 +62,8 @@ typedef struct {
 
 typedef struct {
     state_t base;
+    exposure_adjustment_increment_t working_value;
+    bool value_accepted;
 } state_home_change_time_increment_t;
 
 typedef struct {
@@ -110,10 +112,14 @@ static state_home_t state_home_data = {
     .dens_reading_type = 0
 };
 
+static void state_home_change_time_increment_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller);
+static void state_home_change_time_increment_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_home_change_time_increment_t state_home_change_time_increment_data = {
     .base = {
-        .state_process = state_home_change_time_increment_process
+        .state_entry = state_home_change_time_increment_entry,
+        .state_process = state_home_change_time_increment_process,
+        .state_exit = state_home_change_time_increment_exit
     }
 };
 
@@ -724,28 +730,52 @@ state_t *state_home_change_time_increment()
     return (state_t *)&state_home_change_time_increment_data;
 }
 
-bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller)
+void state_home_change_time_increment_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
+    state_home_change_time_increment_t *state = (state_home_change_time_increment_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
 
+    state->working_value = exposure_adj_increment_get(exposure_state);
+    state->value_accepted = false;
+}
+
+bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller)
+{
+    state_home_change_time_increment_t *state = (state_home_change_time_increment_t *)state_base;
+
     // Draw current stop increment
-    uint8_t stop_inc_den = exposure_adj_increment_get_denominator(exposure_state);
+    const uint8_t stop_inc_den = exposure_adjustment_increment_denominator(state->working_value);
     display_draw_stop_increment(stop_inc_den);
 
     // Handle the next keypad event
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-            exposure_adj_increment_increase(exposure_state);
+            state->working_value = exposure_adjustment_increment_next(state->working_value);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-            exposure_adj_increment_decrease(exposure_state);
+            state->working_value = exposure_adjustment_increment_prev(state->working_value);
+        } else if ((keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {
+            state->value_accepted = true;
+            state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
                    || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+            state->value_accepted = false;
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
         return true;
     } else {
         return false;
+    }
+}
+
+void state_home_change_time_increment_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
+{
+    state_home_change_time_increment_t *state = (state_home_change_time_increment_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    if (state->value_accepted) {
+        exposure_adj_increment_set(exposure_state, state->working_value);
     }
 }
 

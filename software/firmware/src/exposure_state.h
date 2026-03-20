@@ -115,9 +115,8 @@ void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_p
 void exposure_calibration_pev_increase(exposure_state_t *state);
 void exposure_calibration_pev_decrease(exposure_state_t *state);
 
-int exposure_adj_increment_get(const exposure_state_t *state);
-void exposure_adj_increment_increase(exposure_state_t *state);
-void exposure_adj_increment_decrease(exposure_state_t *state);
+exposure_adjustment_increment_t exposure_adj_increment_get(const exposure_state_t *state);
+void exposure_adj_increment_set(exposure_state_t *state, exposure_adjustment_increment_t increment);
 uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state);
 
 int exposure_burn_dodge_count(const exposure_state_t *state);
@@ -133,5 +132,8 @@ uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int pa
 
 const char *exposure_adjustment_increment_name(exposure_adjustment_increment_t increment);
 float exposure_adjustment_increment_value(exposure_adjustment_increment_t increment);
+exposure_adjustment_increment_t exposure_adjustment_increment_next(exposure_adjustment_increment_t increment);
+exposure_adjustment_increment_t exposure_adjustment_increment_prev(exposure_adjustment_increment_t increment);
+uint8_t exposure_adjustment_increment_denominator(exposure_adjustment_increment_t increment);
 
 #endif /* EXPOSURE_STATE_H */

@@ -64,7 +64,7 @@ typedef struct __exposure_state_t {
     float adjusted_time;
     float min_exposure_time;
     int adjustment_value;
-    int adjustment_increment;
+    exposure_adjustment_increment_t adjustment_increment;
     float lux_readings[MAX_LUX_READINGS];
     int lux_reading_count;
     float dens_reading_base;
@@ -416,7 +416,7 @@ void exposure_adj_increase(exposure_state_t *state)
     /* Prevent adjusted times beyond 999 seconds */
     if (state->adjusted_time >= 999.0f) { return; }
 
-    state->adjustment_value += state->adjustment_increment;
+    state->adjustment_value += (int)state->adjustment_increment;
     exposure_recalculate(state);
 }
 
@@ -430,7 +430,7 @@ void exposure_adj_decrease(exposure_state_t *state)
     /* Prevent adjusted times below 0.01 seconds */
     if (state->adjusted_time <= 0.01f) { return; }
 
-    state->adjustment_value -= state->adjustment_increment;
+    state->adjustment_value -= (int)state->adjustment_increment;
     exposure_recalculate(state);
 }
 
@@ -683,10 +683,28 @@ void exposure_calibration_pev_decrease(exposure_state_t *state)
     }
 }
 
-int exposure_adj_increment_get(const exposure_state_t *state)
+exposure_adjustment_increment_t exposure_adj_increment_get(const exposure_state_t *state)
 {
     if (!state) { return 0; }
     return state->adjustment_increment;
+}
+
+void exposure_adj_increment_set(exposure_state_t *state, exposure_adjustment_increment_t increment)
+{
+    if (!state) { return; }
+
+    switch (increment) {
+    case EXPOSURE_ADJ_TWELFTH:
+    case EXPOSURE_ADJ_SIXTH:
+    case EXPOSURE_ADJ_QUARTER:
+    case EXPOSURE_ADJ_THIRD:
+    case EXPOSURE_ADJ_HALF:
+    case EXPOSURE_ADJ_WHOLE:
+        state->adjustment_increment = increment;
+        break;
+    default:
+        break;
+    }
 }
 
 void exposure_adj_increment_increase(exposure_state_t *state)
@@ -742,23 +760,7 @@ void exposure_adj_increment_decrease(exposure_state_t *state)
 uint8_t exposure_adj_increment_get_denominator(const exposure_state_t *state)
 {
     if (!state) { return 0; }
-
-    switch (state->adjustment_increment) {
-    case EXPOSURE_ADJ_TWELFTH:
-        return 12;
-    case EXPOSURE_ADJ_SIXTH:
-        return 6;
-    case EXPOSURE_ADJ_QUARTER:
-        return 4;
-    case EXPOSURE_ADJ_THIRD:
-        return 3;
-    case EXPOSURE_ADJ_HALF:
-        return 2;
-    case EXPOSURE_ADJ_WHOLE:
-        return 1;
-    default:
-        return 0;
-    }
+    return exposure_adjustment_increment_denominator(state->adjustment_increment);
 }
 
 int exposure_burn_dodge_count(const exposure_state_t *state)
@@ -839,8 +841,8 @@ float exposure_get_test_strip_time_complete(const exposure_state_t *state, int p
 {
     if (!state) { return NAN; }
 
-    int patch_adjustment = state->adjustment_increment * patch;
-    float patch_stops = patch_adjustment / 12.0f;
+    int patch_adjustment = (int)state->adjustment_increment * patch;
+    float patch_stops = (float)patch_adjustment / 12.0f;
     float patch_time = state->adjusted_time * powf(2.0f, patch_stops);
     return patch_time;
 }
@@ -862,7 +864,7 @@ uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int pa
 
 void exposure_recalculate(exposure_state_t *state)
 {
-    float stops = state->adjustment_value / 12.0f;
+    float stops = (float)state->adjustment_value / 12.0f;
     state->adjusted_time = state->base_time * powf(2.0f, stops);
 
     if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
@@ -1101,5 +1103,61 @@ float exposure_adjustment_increment_value(exposure_adjustment_increment_t increm
         return 1.0F / 12.0F;
     default:
         return 1.0F / 4.0F;
+    }
+}
+
+exposure_adjustment_increment_t exposure_adjustment_increment_next(exposure_adjustment_increment_t increment)
+{
+    switch (increment) {
+    case EXPOSURE_ADJ_SIXTH:
+        return EXPOSURE_ADJ_TWELFTH;
+    case EXPOSURE_ADJ_QUARTER:
+        return EXPOSURE_ADJ_SIXTH;
+    case EXPOSURE_ADJ_THIRD:
+        return EXPOSURE_ADJ_QUARTER;
+    case EXPOSURE_ADJ_HALF:
+        return EXPOSURE_ADJ_THIRD;
+    case EXPOSURE_ADJ_WHOLE:
+        return EXPOSURE_ADJ_HALF;
+    default:
+        return increment;
+    }
+}
+
+exposure_adjustment_increment_t exposure_adjustment_increment_prev(exposure_adjustment_increment_t increment)
+{
+    switch (increment) {
+    case EXPOSURE_ADJ_TWELFTH:
+        return EXPOSURE_ADJ_SIXTH;
+    case EXPOSURE_ADJ_SIXTH:
+        return EXPOSURE_ADJ_QUARTER;
+    case EXPOSURE_ADJ_QUARTER:
+        return EXPOSURE_ADJ_THIRD;
+    case EXPOSURE_ADJ_THIRD:
+        return EXPOSURE_ADJ_HALF;
+    case EXPOSURE_ADJ_HALF:
+        return EXPOSURE_ADJ_WHOLE;
+    default:
+        return increment;
+    }
+}
+
+uint8_t exposure_adjustment_increment_denominator(exposure_adjustment_increment_t increment)
+{
+    switch (increment) {
+    case EXPOSURE_ADJ_TWELFTH:
+        return 12;
+    case EXPOSURE_ADJ_SIXTH:
+        return 6;
+    case EXPOSURE_ADJ_QUARTER:
+        return 4;
+    case EXPOSURE_ADJ_THIRD:
+        return 3;
+    case EXPOSURE_ADJ_HALF:
+        return 2;
+    case EXPOSURE_ADJ_WHOLE:
+        return 1;
+    default:
+        return 0;
     }
 }
