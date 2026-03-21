@@ -5,7 +5,7 @@
 #ifndef DENSITOMETER_H
 #define DENSITOMETER_H
 
-#include <stdint.h>
+#include <stdbool.h>
 
 typedef enum {
     DENSITOMETER_MODE_UNKNOWN = 0U,
@@ -21,31 +21,64 @@ typedef struct {
     float blue;
 } densitometer_reading_t;
 
-typedef enum {
-    DENSITOMETER_RESULT_OK = 0U,
-    DENSITOMETER_RESULT_INVALID,
-    DENSITOMETER_RESULT_TIMEOUT,
-    DENSITOMETER_RESULT_NOT_CONNECTED,
-    DENSITOMETER_RESULT_UNKNOWN
-} densitometer_result_t;
+/**
+ * Enable receiving densitometer readings.
+ *
+ * This function does the necessary setup for receiving densitometer readings,
+ * and is designed so that it can be called repeatedly without undesired
+ * behavior.
+ *
+ * If the mode is set to transmission, then only remote densitometers will be
+ * enabled. Received readings may be of either the transmission or unknown types.
+ *
+ * If the mode is set to reflection, then both remote densitometers and the
+ * DensiStick will be enabled. Received readings may be of either the reflection
+ * or unknown types.
+ *
+ * If the mode is set to unknown, then both remote densitometers and the DensiStick
+ * will be enabled, and received readings may be of any type.
+ *
+ * @param mode The types of readings to enable.
+ */
+void densitometer_enable(densitometer_mode_t mode);
 
 /**
- * Poll for a densitometer reading from an attached USB serial device.
+ * Enable or disable the densitometer idle light.
  *
- * This is a very simple implementation, and is intended for read-only
- * usage together with a UI loop that may also check for key events.
- * It is designed to detect any supported data format, so it does not
- * depend on device-specific configuration.
- *
- * Since this function is stateless, while the USB serial code very much
- * is not, it is advisable to clear the serial receive buffer prior
- * to entering into the loop where this function is called.
- *
- * @param reading Latest reading, if one was received.
- * @return 'DENSITOMETER_RESULT_OK' if a reading was received,
- *         otherwise an appropriate error code
+ * This currently only works with the DensiStick, and is for use in cases where we
+ * want to turn the light on and off without actually having to disable or re-enable
+ * the device.
  */
-densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading);
+void densitometer_idle_light(bool enabled);
+
+/**
+ * Disable receiving densitometer readings.
+ */
+void densitometer_disable();
+
+/**
+ * Explicitly take a densitometer reading from the DensiStick.
+ *
+ * This function is necessary because DensiStick readings happen in response to
+ * button presses that are controlled from outside of this module.
+ */
+void densitometer_take_reading();
+
+/**
+ * Clear any previous readings or buffered remote data.
+ */
+void densitometer_clear_reading();
+
+/**
+ * Get the most recent densitometer reading.
+ *
+ * This will return the most recent DensiStick reading, if available, and then
+ * poll for a recent remote densitometer reading. Readings that don't match the
+ * enabled types will not be returned.
+ *
+ * @return True if a reading was returned, false otherwise.
+ */
+bool densitometer_get_reading(densitometer_reading_t *reading);
 
 /**
  * Log the provided reading for debugging purposes

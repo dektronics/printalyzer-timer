@@ -6,389 +6,167 @@
 #include <ctype.h>
 
 #include "usb_host.h"
+#include "dens_remote.h"
+#include "meter_probe.h"
+#include "buzzer.h"
 
 #define LOG_TAG "densitometer"
 #include <elog.h>
 
-static void densitometer_clear_reading(densitometer_reading_t *reading);
-static densitometer_result_t densitometer_parse_reading(densitometer_reading_t *reading, const char *line);
-static densitometer_result_t densitometer_parse_reading_heiland(densitometer_reading_t *reading, const char *line, size_t len);
-static densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *reading, const char *line, size_t len);
-static densitometer_result_t densitometer_parse_reading_tobias(densitometer_reading_t *reading, const char *line, size_t len);
-static densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t *reading, const char *line, size_t len);
+static bool dens_enable = false;
+static densitometer_mode_t dens_mode = DENSITOMETER_MODE_UNKNOWN;
 
-void densitometer_clear_reading(densitometer_reading_t *reading)
+static bool dens_remote_ready = false;
+static bool densistick_ready = false;
+static bool densistick_idle_light_enabled = false;
+
+static bool has_densistick_reading = false;
+static densitometer_reading_t last_densistick_reading = {0};
+
+static void densitometer_stick_set_idle_light();
+
+void densitometer_enable(densitometer_mode_t mode)
 {
-    if (reading) {
-        reading->mode = DENSITOMETER_MODE_UNKNOWN;
-        reading->visual = NAN;
-        reading->red = NAN;
-        reading->green = NAN;
-        reading->blue = NAN;
-    }
-}
+    meter_probe_handle_t *handle = densistick_handle();
 
-densitometer_result_t densitometer_parse_reading(densitometer_reading_t *reading, const char *line)
-{
-    // First pass at parsing to log messages, planning to
-    // simply handle all possible formats to avoid needing device
-    // selection/detection except for advanced control features
-
-    size_t len = strlen(line);
-
-    /*
-     * Decide which format we are parsing based on a few easy-to-check
-     * characters in their respective strings. Since the Heiland format
-     * is far more rigid, and has a similar prefix as some X-Rite readings,
-     * it is easier to check for it first to avoid misidentification.
-     */
-    if (len == 7
-        && (line[0] == 'T' || line[0] == 'R' || line[0] == '0')
-        && (line[1] == '+' || line[1] == '-')
-        && (line[6] == 'D' || line[6] == 'Z' || line[6] == '%')) {
-        return densitometer_parse_reading_heiland(reading, line, len);
-    }
-    else if (len >= 4 &&
-        (line[0] == 'V' || line[0] == 'R' || line[0] == 'G' || line[0] == 'B' ||
-        line[0] == 'v' || line[0] == 'r' || line[0] == 'g' || line[0] == 'b' ||
-        line[0] == 'p' || line[0] == 'c' || line[0] == 'm' || line[0] == 'y' ||
-        line[0] == 'P' || line[0] == 'C' || line[0] == 'M' || line[0] == 'Y')
-        && ((line[1] == '-' && line[2] >= '0' && line[2] <= '9')
-            || (line[1] >= '0' && line[1] <= '9'))) {
-        return densitometer_parse_reading_xrite(reading, line, len);
-    }
-    else if ((len >= 11 && strncmp(line, "Den", 3) == 0) || (len >= 12 && strncmp(line, " Den", 4) == 0)) {
-        return densitometer_parse_reading_tobias(reading, line, len);
-    }
-    else {
-        return densitometer_parse_reading_fallback(reading, line, len);
-    }
-}
-
-densitometer_result_t densitometer_parse_reading_heiland(densitometer_reading_t *reading, const char *line, size_t len)
-{
-    /*
-     * Heiland TRD-2 Data Format
-     *
-     *  Index | Values  | Description
-     * -------+---------+---------------------------------------
-     *      0 | T/R/0   | Transmission/Reflection/StandBy
-     *      1 | +/-     | Sign
-     *      2 | 0...9/. | Value MSB
-     *      3 | 0...9/. | Value
-     *      4 | 0...9/. | Value
-     *      5 | 0...9/. | Value LSB
-     *      6 | D/Z/%   | Density/Zone/Percentage of dot area
-     *      7 | <CR>    | End of string
-     *
-     * Examples:
-     * "T+1.53D<cr>", "R-0.05D<cr>", "T+.278D<cr>", "0+....D<cr>"
-     */
-
-    char num_buf[6];
-
-    /* Parse the reading mode */
-    densitometer_mode_t mode = DENSITOMETER_MODE_UNKNOWN;
-    if (line[0] == 'T') {
-        mode = DENSITOMETER_MODE_TRANSMISSION;
-    } else if (line[0] == 'R') {
-        mode = DENSITOMETER_MODE_REFLECTION;
+    /* Enable serial-attached densitometer reading and clear the buffer */
+    if (usb_serial_is_attached()) {
+        if (!dens_remote_ready) {
+            usb_serial_clear_receive_buffer();
+            dens_remote_ready = true;
+        }
     } else {
-        return DENSITOMETER_RESULT_INVALID;
+        dens_remote_ready = false;
     }
 
-    /* Make sure we are only reading density */
-    if (line[6] != 'D') {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-
-    /* Copy the numeric portion to a separate buffer for parsing */
-    strncpy(num_buf, line + 1, 5);
-    num_buf[5] = '\0';
-
-    /* Parse and validate the number */
-    float val = strtof(num_buf, NULL);
-    if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-
-    /* Clean up zero values */
-    if (fabsf(val) < 0.001F) {
-        val = 0.0F;
-    }
-
-    densitometer_clear_reading(reading);
-    reading->mode = mode;
-    reading->visual = val;
-    return DENSITOMETER_RESULT_OK;
-}
-
-densitometer_result_t densitometer_parse_reading_xrite(densitometer_reading_t *reading, const char *line, size_t len)
-{
-    /*
-     * X-Rite 810 Data Format
-     *
-     * All on one line:
-     * VX.XX<sp>RX.XX<sp>GX.XX<sp>BX.XX<sp>
-     *
-     * Separate lines:
-     * VX.XX<cr>
-     * RX.XX<cr>
-     * GX.XX<cr>
-     * BX.XX<cr>
-     *
-     * Two decimal-point formats:
-     * VX.XX or VXXX
-     *
-     * AIDm:
-     * T: p000, R: P000
-     * T: c004 m008 y000, R: C033 M030 Y033
-     *
-     * AIDa:
-     * T: v000, R: P030
-     * T: r003 g007 b000, R: C033 M030 Y033
-     *
-     */
-
-    densitometer_reading_t working_reading;
-    densitometer_clear_reading(&working_reading);
-
-    const char *p = line;
-    char *q = NULL;
-    char *r = NULL;
-    do {
-        char prefix = *p;
-        p++;
-        float val = strtof(p, &q);
-
-        /* Check if a valid number was parsed */
-        if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
-            break;
-        }
-
-        /* Check if an implied decimal point needs to be added */
-        r = strchr(p, '.');
-        if (!r || r >= q) {
-            val /= 100.0f;
-        }
-
-        /* Clean up zero values */
-        if (fabsf(val) < 0.001F) {
-            val = 0.0F;
-        }
-
-        /* Figure out the reading mode, if indicated by the prefix */
-        if (working_reading.mode == DENSITOMETER_MODE_UNKNOWN) {
-            switch (prefix) {
-            case 'p':
-            case 'c':
-            case 'm':
-            case 'y':
-            case 'v':
-            case 'r':
-            case 'g':
-            case 'b':
-                working_reading.mode = DENSITOMETER_MODE_TRANSMISSION;
-                break;
-            case 'P':
-            case 'C':
-            case 'M':
-            case 'Y':
-                working_reading.mode = DENSITOMETER_MODE_REFLECTION;
-                break;
-            default:
-                break;
-            }
-        }
-
-        /* Assign the reading value based on the prefix */
-        switch (prefix) {
-        case 'p':
-        case 'P':
-        case 'v':
-        case 'V':
-            working_reading.visual = val;
-            break;
-        case 'c':
-        case 'C':
-        case 'r':
-        case 'R':
-            working_reading.red = val;
-            break;
-        case 'm':
-        case 'M':
-        case 'g':
-        case 'G':
-            working_reading.green = val;
-            break;
-        case 'y':
-        case 'Y':
-        case 'b':
-        case 'B':
-            working_reading.blue = val;
-            break;
-        default:
-            break;
-        }
-
-        if (q) {
-            p = q;
-            if (*p == ' ') {
-                p++;
+    /* Enable the DensiStick if it is attached and not started */
+    if (mode == DENSITOMETER_MODE_REFLECTION || mode == DENSITOMETER_MODE_UNKNOWN) {
+        if (meter_probe_is_attached(handle)) {
+            if (!meter_probe_is_started(handle)) {
+                if (meter_probe_start(handle) == osOK) {
+                    densistick_ready = true;
+                }
             }
         } else {
-            break;
+            densistick_ready = false;
         }
-    } while (p && *p != '\0');
-
-    if (!isnan(working_reading.visual)
-        || !isnan(working_reading.red)
-        || !isnan(working_reading.green)
-        || !isnan(working_reading.blue)) {
-        memcpy(reading, &working_reading, sizeof(densitometer_reading_t));
-        return DENSITOMETER_RESULT_OK;
     } else {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-}
-
-densitometer_result_t densitometer_parse_reading_tobias(densitometer_reading_t *reading, const char *line, size_t len)
-{
-    /*
-     * Tobias TBX Data Format
-     *
-     * <sp>DenXY +#.##, 0.00, 0.00, 0.00, 0.00<cr><lf>
-     *
-     * X - Channel:
-     *   A - White (Visual)
-     *   B - Red
-     *   C - Green
-     *   D - Blue
-     *
-     * Y - Format:
-     *   A - Normal   <X>A <ReadD>, 0.00, 0.00, 0.00, 0.00
-     *   R - Relative <X>R <RelD>, <RefD>, <ReadD>, 0.00, 0.00
-     *
-     * Examples:
-     * " DenAA +1.47, 0.00, 0.00, 0.00, 0.00<cr><lf>"
-     * " DenAR +0.31, +1.44, +1.75, 0.00, 0.00<cr><lf>"
-     */
-
-    const char *p = line;
-    char channel = ' ';
-    float val = NAN;
-
-    /* Swallow the leading space */
-    if (*p == ' ') { p++; }
-
-    /* Validate the prefix */
-    if (strncmp(p, "Den", 3) != 0) {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-    p += 3;
-
-    /* Collect the channel and format */
-    channel = *p;
-    /* Ignoring format and only collecting the relative value */
-    p += 2;
-
-    /* Parse the next number */
-    val = strtof(p, NULL);
-
-    /* Validate the number */
-    if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-
-    /* Clean up zero values */
-    if (fabsf(val) < 0.001F) {
-        val = 0.0F;
-    }
-
-    densitometer_clear_reading(reading);
-    reading->mode = DENSITOMETER_MODE_UNKNOWN;
-    switch (channel) {
-    case 'B':
-        reading->red = val;
-        break;
-    case 'C':
-        reading->green = val;
-        break;
-    case 'D':
-        reading->blue = val;
-        break;
-    case 'A':
-    default:
-        reading->visual = val;
-        break;
-    }
-
-    return DENSITOMETER_RESULT_OK;
-}
-
-densitometer_result_t densitometer_parse_reading_fallback(densitometer_reading_t *reading, const char *line, size_t len)
-{
-    /*
-     * Fallback parser
-     *
-     * This parser simply looks for the first number in the result, attempts
-     * to interpret it, and returns it if it looks like it could be a density
-     * reading.
-     */
-
-    const char *p = line;
-
-    /* Advance until the first digit, sign, or decimal point */
-    while (*p != '\0') {
-        if (isdigit((unsigned char)(*p)) || *p == '-' || *p == '+' || *p == '.') {
-            break;
+        if (meter_probe_is_started(handle)) {
+            densistick_set_light_enable(handle, false);
+            meter_probe_sensor_disable(handle);
+            meter_probe_stop(handle);
         }
-        p++;
+        densistick_ready = false;
     }
 
-    /* Parse the current position as a number */
-    float val = strtof(p, NULL);
-
-    /* Validate the number */
-    if (!isnormal(val) && fpclassify(val) != FP_ZERO) {
-        return DENSITOMETER_RESULT_INVALID;
+    if (densistick_ready) {
+        densitometer_stick_set_idle_light();
     }
 
-    /* Permissively range check the number */
-    if (fabsf(val) > 6.0F) {
-        return DENSITOMETER_RESULT_INVALID;
-    }
-
-    /* Clean up zero values */
-    if (fabsf(val) < 0.001F) {
-        val = 0.0F;
-    }
-
-    /* Return as a visual channel reading */
-    densitometer_clear_reading(reading);
-    reading->mode = DENSITOMETER_MODE_UNKNOWN;
-    reading->visual = val;
-
-    return DENSITOMETER_RESULT_OK;
+    dens_enable = true;
+    dens_mode = mode;
 }
 
-densitometer_result_t densitometer_reading_poll(densitometer_reading_t *reading)
+void densitometer_idle_light(bool enabled)
 {
-    char line_buf[64];
-
-    if (!reading) {
-        return DENSITOMETER_RESULT_INVALID;
+    densistick_idle_light_enabled = enabled;
+    if (densistick_ready) {
+        densitometer_stick_set_idle_light();
     }
+}
 
-    if (!usb_serial_is_attached()) {
-        return DENSITOMETER_RESULT_NOT_CONNECTED;
+void densitometer_disable()
+{
+    dens_enable = false;
+    dens_mode = DENSITOMETER_MODE_UNKNOWN;
+    dens_remote_ready = false;
+    has_densistick_reading = false;
+
+    meter_probe_handle_t *handle = densistick_handle();
+    if (meter_probe_is_started(handle)) {
+        densistick_set_light_enable(handle, false);
+        meter_probe_sensor_disable(handle);
+        meter_probe_stop(handle);
     }
+    densistick_ready = false;
+    densistick_idle_light_enabled = true;
+}
 
-    if (usb_serial_receive_line((uint8_t *)line_buf, sizeof(line_buf)) == osOK) {
-        return densitometer_parse_reading(reading, line_buf);
+void densitometer_take_reading()
+{
+    if (dens_enable && densistick_ready) {
+        meter_probe_handle_t *handle = densistick_handle();
+        meter_probe_result_t result = METER_READING_OK;
+        float density = NAN;
+        buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
+        result = densistick_measure(handle, &density, NULL);
+        buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
+        if (result == METER_READING_OK) {
+            last_densistick_reading.mode = DENSITOMETER_MODE_REFLECTION;
+            last_densistick_reading.visual = density;
+            has_densistick_reading = true;
+        } else {
+            buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
+        }
+
+        densitometer_stick_set_idle_light();
+    }
+}
+
+void densitometer_stick_set_idle_light()
+{
+    meter_probe_handle_t *handle = densistick_handle();
+
+    if (densistick_idle_light_enabled) {
+        if (densistick_get_light_brightness(handle) != 127) {
+            densistick_set_light_brightness(handle, 127);
+        }
+        if (!densistick_get_light_enable(handle)) {
+            densistick_set_light_enable(handle, true);
+        }
     } else {
-        return DENSITOMETER_RESULT_TIMEOUT;
+        if (densistick_get_light_enable(handle)) {
+            densistick_set_light_enable(handle, false);
+        }
     }
+}
+
+void densitometer_clear_reading()
+{
+    if (dens_remote_ready) {
+        usb_serial_clear_receive_buffer();
+    }
+    if (has_densistick_reading) {
+        has_densistick_reading = false;
+    }
+}
+
+bool densitometer_get_reading(densitometer_reading_t *reading)
+{
+    if (!dens_enable) { return false; }
+
+    if (has_densistick_reading) {
+        if (reading) {
+            memcpy(reading, &last_densistick_reading, sizeof(densitometer_reading_t));
+        }
+        has_densistick_reading = false;
+        return true;
+    }
+
+    if (dens_remote_ready) {
+        densitometer_reading_t remote_reading;
+        if (dens_remote_reading_poll(&remote_reading) == DENS_REMOTE_RESULT_OK) {
+            if (reading && (dens_mode == DENSITOMETER_MODE_UNKNOWN
+                || remote_reading.mode == DENSITOMETER_MODE_UNKNOWN
+                || remote_reading.mode == dens_mode)) {
+                memcpy(reading, &remote_reading, sizeof(densitometer_reading_t));
+                buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 void densitometer_log_reading(const densitometer_reading_t *reading)

@@ -18,8 +18,7 @@
 #include "relay.h"
 #include "settings.h"
 #include "illum_controller.h"
-#include "enlarger_control.h"
-#include "densitometer.h"
+#include "dens_remote.h"
 #include "usb_host.h"
 #include "dmx.h"
 #include "util.h"
@@ -638,7 +637,7 @@ menu_result_t diagnostics_dmx512()
 menu_result_t diagnostics_densitometer()
 {
     char buf[512];
-    densitometer_result_t dens_result = DENSITOMETER_RESULT_UNKNOWN;
+    dens_remote_result_t dens_result = DENS_REMOTE_RESULT_UNKNOWN;
     densitometer_reading_t reading;
     bool has_reading = false;
 
@@ -681,8 +680,8 @@ menu_result_t diagnostics_densitometer()
             }
         }
 
-        dens_result = densitometer_reading_poll(&reading);
-        if (dens_result == DENSITOMETER_RESULT_OK) {
+        dens_result = dens_remote_reading_poll(&reading);
+        if (dens_result == DENS_REMOTE_RESULT_OK) {
             densitometer_log_reading(&reading);
             has_reading = true;
         }

@@ -11,7 +11,6 @@
 #include "illum_controller.h"
 #include "meter_probe.h"
 #include "buzzer.h"
-#include "usb_host.h"
 #include "densitometer.h"
 #include "util.h"
 
@@ -30,8 +29,6 @@ typedef enum {
 
 typedef struct {
     state_t base;
-    bool enable_densistick;
-    bool enable_densistick_idle_light;
     bool display_dirty;
     uint8_t selected_mode;
     float probe_reading_base;
@@ -42,9 +39,7 @@ typedef struct {
 static void state_densitometer_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_densitometer_process(state_t *state_base, state_controller_t *controller);
 static void state_densitometer_check_meter_probe(state_densitometer_t *state, const state_controller_t *controller);
-static void state_densitometer_check_densistick(state_densitometer_t *state);
 static bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_controller_t *controller);
-static bool state_densitometer_take_densistick_reading(state_densitometer_t *state, state_controller_t *controller);
 static float state_densitometer_probe_relative_density(state_densitometer_t *state);
 static void state_densitometer_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
 static state_densitometer_t state_densitometer_data = {
@@ -54,8 +49,6 @@ static state_densitometer_t state_densitometer_data = {
         .state_exit = state_densitometer_exit
     },
     .display_dirty = true,
-    .enable_densistick = false,
-    .enable_densistick_idle_light = false,
     .selected_mode = 0,
     .probe_reading_base = NAN,
     .probe_reading_current = NAN,
@@ -100,30 +93,29 @@ void state_densitometer_entry(state_t *state_base, state_controller_t *controlle
     }
 
     if (state->selected_mode == 0) {
-        state->enable_densistick_idle_light = false;
+        densitometer_idle_light(false);
     } else {
-        state->enable_densistick_idle_light = true;
+        densitometer_idle_light(true);
     }
 
-    usb_serial_clear_receive_buffer();
+//XXX    densitometer_enable(DENSITOMETER_MODE_UNKNOWN);
 }
 
 bool state_densitometer_process(state_t *state_base, state_controller_t *controller)
 {
     state_densitometer_t *state = (state_densitometer_t *)state_base;
-    densitometer_result_t dens_result = DENSITOMETER_RESULT_UNKNOWN;
     densitometer_reading_t reading;
 
     state_densitometer_check_meter_probe(state, controller);
-    state_densitometer_check_densistick(state);
+    densitometer_enable(DENSITOMETER_MODE_UNKNOWN);
 
-    dens_result = densitometer_reading_poll(&reading);
-    if (dens_result == DENSITOMETER_RESULT_OK) {
+    if (densitometer_get_reading(&reading)) {
         densitometer_log_reading(&reading);
         /* Only accept "visual" readings since this screen cannot currently display color readings */
         if (is_valid_number(reading.visual)) {
             memcpy(&state->dens_reading, &reading, sizeof(densitometer_reading_t));
             state->selected_mode = 1;
+            densitometer_idle_light(true);
             state->display_dirty = true;
         }
     }
@@ -170,16 +162,13 @@ bool state_densitometer_process(state_t *state_base, state_controller_t *control
         } else if (keypad_action.action_id == ACTION_PREV_TYPE) {
             if (state->selected_mode == 1) {
                 state->selected_mode = 0;
-                state->enable_densistick_idle_light = false;
-                state_densitometer_check_densistick(state);
+                densitometer_idle_light(false);
                 state->display_dirty = true;
             }
         } else if (keypad_action.action_id == ACTION_NEXT_TYPE) {
             if (state->selected_mode == 0) {
                 state->selected_mode = 1;
-                state->enable_densistick = true;
-                state->enable_densistick_idle_light = true;
-                state_densitometer_check_densistick(state);
+                densitometer_idle_light(true);
                 state->display_dirty = true;
             }
         } else if (keypad_action.action_id == ACTION_MENU) {
@@ -202,18 +191,8 @@ bool state_densitometer_process(state_t *state_base, state_controller_t *control
                 state->display_dirty = true;
             }
         } else if (keypad_action.action_id == ACTION_TAKE_STICK_READING) {
-            if (!state->enable_densistick) {
-                state->enable_densistick = true;
-            }
-            state_densitometer_check_densistick(state);
-            if (meter_probe_is_started(densistick_handle())) {
-                if (state_densitometer_take_densistick_reading(state, controller)) {
-                    state->selected_mode = 1;
-                    state->enable_densistick_idle_light = true;
-                }
-                state_densitometer_check_densistick(state);
-                state->display_dirty = true;
-            }
+            densitometer_take_reading();
+            state->display_dirty = true;
         }
         return true;
     } else {
@@ -241,35 +220,6 @@ void state_densitometer_check_meter_probe(state_densitometer_t *state, const sta
         }
     } else {
         if (meter_probe_is_started(handle)) {
-            meter_probe_sensor_disable(handle);
-            meter_probe_stop(handle);
-        }
-    }
-}
-
-void state_densitometer_check_densistick(state_densitometer_t *state)
-{
-    meter_probe_handle_t *handle = densistick_handle();
-
-    if (state->enable_densistick) {
-        if (meter_probe_is_attached(handle) && !meter_probe_is_started(handle)) {
-            meter_probe_start(handle);
-        }
-        if (state->enable_densistick_idle_light) {
-            if (densistick_get_light_brightness(handle) != 127) {
-                densistick_set_light_brightness(handle, 127);
-            }
-            if (!densistick_get_light_enable(handle)) {
-                densistick_set_light_enable(handle, true);
-            }
-        } else {
-            if (densistick_get_light_enable(handle)) {
-                densistick_set_light_enable(handle, false);
-            }
-        }
-    } else {
-        if (meter_probe_is_started(handle)) {
-            densistick_set_light_enable(handle, false);
             meter_probe_sensor_disable(handle);
             meter_probe_stop(handle);
         }
@@ -326,34 +276,6 @@ bool state_densitometer_take_probe_reading(state_densitometer_t *state, state_co
     return success;
 }
 
-bool state_densitometer_take_densistick_reading(state_densitometer_t *state, state_controller_t *controller)
-{
-    meter_probe_result_t result = METER_READING_OK;
-    float density = NAN;
-    bool success = false;
-
-    display_draw_mode_text("Measuring");
-    buzzer_sequence(BUZZER_SEQUENCE_STICK_START);
-
-    result = densistick_measure(densistick_handle(), &density, NULL);
-    if (result == METER_READING_OK) {
-        buzzer_sequence(BUZZER_SEQUENCE_STICK_SUCCESS);
-        state->dens_reading.mode = DENSITOMETER_MODE_REFLECTION;
-        state->dens_reading.visual = density;
-        success = true;
-    } else if (result == METER_READING_TIMEOUT) {
-        display_draw_mode_text("Timeout");
-        buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
-        osDelay(pdMS_TO_TICKS(2000));
-    } else  {
-        display_draw_mode_text("Reading Error");
-        buzzer_sequence(BUZZER_SEQUENCE_PROBE_ERROR);
-        osDelay(pdMS_TO_TICKS(2000));
-    }
-
-    return success;
-}
-
 float state_densitometer_probe_relative_density(state_densitometer_t *state)
 {
     float result;
@@ -391,7 +313,6 @@ void state_densitometer_exit(state_t *state_base, state_controller_t *controller
         state_densitometer_check_meter_probe(state, controller);
     }
 
-    state->enable_densistick = false;
-    state->enable_densistick_idle_light = false;
-    state_densitometer_check_densistick(state);
+    densitometer_idle_light(false);
+    densitometer_disable();
 }
