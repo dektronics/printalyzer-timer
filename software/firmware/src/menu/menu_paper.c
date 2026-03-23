@@ -574,7 +574,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             uint16_t value_sel = working_grade.ht_lev100;
             if (display_input_value_u16(
                 "Base Exposure",
-                "Paper exposure value necessary\n"
+                "Print exposure value necessary\n"
                 "to achieve a density of D=0.04\n"
                 "above the paper base (Dmin).\n",
                 "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
@@ -586,7 +586,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             uint16_t value_sel = working_grade.hm_lev100;
             if (display_input_value_u16(
                 "Speed Point (optional)",
-                "Paper exposure value necessary\n"
+                "Print exposure value necessary\n"
                 "to achieve a density of D=0.60\n"
                 "above the paper base (Dmin).\n",
                 "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
@@ -598,7 +598,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             uint16_t value_sel = working_grade.hs_lev100;
             if (display_input_value_u16(
                     "Dark Exposure",
-                    "Paper exposure value necessary\n"
+                    "Print exposure value necessary\n"
                     "to achieve 90% of the paper's\n"
                     "maximum net density.\n",
                     "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
@@ -610,7 +610,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             uint16_t value_sel = iso_r;
             if (display_input_value_u16(
                 "ISO Range",
-                "Paper exposure range between the\n"
+                "Print exposure range between the\n"
                 "base exposure and an exposure\n"
                 "that achieves 90% of Dnet\n",
                 "", &value_sel, 1, 999, 3, "") == UINT8_MAX) {
@@ -782,10 +782,10 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
 
         if (calibration_pev > 0) {
             offset += sprintf(buf + offset,
-                "Paper Exposure Value       [%3lu]\n", calibration_pev);
+                "Print Exposure Value       [%3lu]\n", calibration_pev);
         } else {
             offset += sprintf(buf + offset,
-                "Paper Exposure Value       [---]\n");
+                "Print Exposure Value       [---]\n");
         }
 
         for (uint32_t i = 0; i < wedge->step_count; i++) {
@@ -840,8 +840,8 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
         } else if (option == 4) {
             uint16_t value_sel = calibration_pev;
             if (display_input_value_u16(
-                "Paper Exposure Value",
-                "Paper exposure value used for\n"
+                "Print Exposure Value",
+                "Print exposure value used for\n"
                 "the step wedge exposure being\n"
                 "measured.\n",
                 "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
@@ -1151,7 +1151,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *contro
             uint16_t value_sel = calibration_pev;
             if (display_input_value_u16(
                 "Center Exposure Value",
-                "Paper exposure value used for\n"
+                "Print exposure value used for\n"
                 "the center of the test strip\n"
                 "being measured.\n",
                 "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
@@ -2135,7 +2135,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip_calculate(const char *titl
             "Calculation Error\n",
             NULL,
             "Unable to calculate the\n"
-            "paper exposure point.\n",
+            "print exposure point.\n",
             " OK ");
         if (msg_option == UINT8_MAX) {
             return MENU_TIMEOUT;

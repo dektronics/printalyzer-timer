@@ -47,7 +47,7 @@ typedef struct {
  * Profile used to define the characteristic curve of a printing paper.
  *
  * The values used in this profile shall be known throughout the system
- * as "Paper Exposure Values" (PEV) and are a form of logarithmic exposure
+ * as "Print Exposure Values" (PEV) and are a form of logarithmic exposure
  * value that is defined as follows:
  *   PEV = log10(H) * 100
  * where H is the exposure, measured in lux-seconds, required to produce

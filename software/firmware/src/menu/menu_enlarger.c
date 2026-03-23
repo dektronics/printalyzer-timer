@@ -724,7 +724,7 @@ menu_result_t menu_enlarger_config_control_edit(enlarger_control_t *enlarger_con
             const char *msg =
                 "Brightness when the enlarger's\n"
                 "white light is turned on\n"
-                "for paper exposure.\n";
+                "for print exposure.\n";
             if (enlarger_control->dmx_wide_mode) {
                 uint16_t value_sel = enlarger_control->grade_values[CONTRAST_GRADE_2].channel_white;
                 if (display_input_value_u16(
