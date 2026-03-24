@@ -83,6 +83,7 @@ typedef struct __display_main_calibration_elements_t {
     char *cal_title1;
     char *cal_title2;
     uint16_t cal_value;
+    display_main_printing_bw_t bw;
     display_exposure_timer_t time_elements;
     bool time_too_short;
 } display_main_calibration_elements_t;
@@ -146,6 +147,7 @@ void display_draw_stop_increment(uint8_t increment_den);
 void display_draw_mode_text(const char *text);
 void display_draw_exposure_adj(int value, uint32_t tone_graph);
 void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t tone_graph);
+void display_draw_pev_adj(uint32_t value);
 void display_draw_exposure_timer(const display_exposure_timer_t *elements, const display_exposure_timer_t *prev_elements);
 
 /**

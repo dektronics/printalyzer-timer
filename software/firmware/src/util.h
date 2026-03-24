@@ -43,7 +43,8 @@ void convert_density_to_display_densitometer(display_main_densitometer_elements_
 /**
  * Convert the current exposure state into calibration mode display elements.
  */
-void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements, const exposure_state_t *exposure);
+void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements,
+    const exposure_state_t *exposure, const enlarger_config_t *enlarger);
 
 /**
  * Populate display timer elements with a fresh time value.

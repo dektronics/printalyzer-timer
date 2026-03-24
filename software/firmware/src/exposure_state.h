@@ -28,11 +28,6 @@ typedef enum {
     EXPOSURE_ADJ_WHOLE = 12
 } exposure_adjustment_increment_t;
 
-typedef enum {
-    EXPOSURE_PEV_PRESET_BASE = 0,
-    EXPOSURE_PEV_PRESET_STRIP
-} exposure_pev_preset_t;
-
 typedef struct __exposure_adjustment_t {
     contrast_grade_t contrast_grade;
     int8_t numerator;
@@ -67,6 +62,7 @@ void exposure_clear_active_paper_profile(exposure_state_t *state);
 uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux);
 uint32_t exposure_get_meter_reading_tone(const exposure_state_t *state, float lux);
 float exposure_get_lowest_meter_reading(exposure_state_t *state);
+bool exposure_has_meter_readings(const exposure_state_t *state);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
 /*
@@ -90,8 +86,6 @@ uint32_t exposure_get_adjusted_tone_graph(const exposure_state_t *state, int adj
 uint32_t exposure_get_absolute_tone_graph(const exposure_state_t *state, float exposure_time);
 uint32_t exposure_get_burn_dodge_tone_graph(const exposure_state_t *state, const exposure_burn_dodge_t *burn_dodge);
 
-uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
-
 void exposure_adj_increase(exposure_state_t *state);
 void exposure_adj_decrease(exposure_state_t *state);
 int exposure_adj_get(const exposure_state_t *state);
@@ -110,10 +104,10 @@ void exposure_channel_decrease(exposure_state_t *state, int index, uint8_t amoun
 bool exposure_get_channel_wide_mode(const exposure_state_t *state);
 void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode);
 
-exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state);
-void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_preset_t preset);
-void exposure_calibration_pev_increase(exposure_state_t *state);
-void exposure_calibration_pev_decrease(exposure_state_t *state);
+uint32_t exposure_get_calibration_target_pev(const exposure_state_t *state);
+void exposure_set_calibration_target_pev(exposure_state_t *state, uint32_t pev);
+uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
+void exposure_set_calibration_pev(exposure_state_t *state, uint32_t pev);
 
 exposure_adjustment_increment_t exposure_adj_increment_get(const exposure_state_t *state);
 void exposure_adj_increment_set(exposure_state_t *state, exposure_adjustment_increment_t increment);

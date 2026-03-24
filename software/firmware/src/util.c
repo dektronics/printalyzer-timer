@@ -87,17 +87,31 @@ void convert_density_to_display_densitometer(display_main_densitometer_elements_
     }
 }
 
-void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements, const exposure_state_t *exposure)
+void convert_exposure_to_display_calibration(display_main_calibration_elements_t *elements,
+    const exposure_state_t *exposure, const enlarger_config_t *enlarger)
 {
     elements->cal_title1 = "Print";
     elements->cal_title2 = "Exposure";
-    elements->cal_value = exposure_get_calibration_pev(exposure);
 
-    float exposure_time = exposure_get_exposure_time(exposure);
-    convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
+    elements->bw.contrast_grade = exposure_get_contrast_grade(exposure);
+    elements->bw.contrast_note = contrast_filter_grade_str(
+        (enlarger->control.dmx_control ? CONTRAST_FILTER_REGULAR : enlarger->contrast_filter),
+        exposure_get_contrast_grade(exposure));
 
-    float min_exposure_time = exposure_get_min_exposure_time(exposure);
-    elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
+    if (exposure_has_meter_readings(exposure)) {
+        elements->cal_value = exposure_get_calibration_pev(exposure);
+        float exposure_time = exposure_get_exposure_time(exposure);
+        convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
+
+        float min_exposure_time = exposure_get_min_exposure_time(exposure);
+        elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
+    } else {
+        elements->cal_value = exposure_get_calibration_target_pev(exposure);
+        elements->time_elements.time_seconds = UINT16_MAX;
+        elements->time_elements.time_milliseconds = UINT16_MAX;
+        elements->time_elements.fraction_digits = UINT8_MAX;
+        elements->time_too_short = false;
+    }
 }
 
 void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time)

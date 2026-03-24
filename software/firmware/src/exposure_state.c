@@ -69,8 +69,8 @@ typedef struct __exposure_state_t {
     int lux_reading_count;
     float dens_reading_base;
     float dens_reading_current;
+    uint32_t calibration_pev_target;
     uint32_t calibration_pev;
-    exposure_pev_preset_t calibration_pev_preset;
     int paper_profile_index;
     paper_profile_t paper_profile;
     float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
@@ -91,7 +91,6 @@ static uint32_t exposure_calculate_tone_graph_impl(const exposure_state_t *state
     const float *tone_graph_marks, float adjusted_time);
 static uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading,
     const float *tone_graph_marks, float adjusted_time);
-static uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset);
 
 exposure_state_t *exposure_state_create()
 {
@@ -150,8 +149,8 @@ void exposure_state_defaults(exposure_state_t *state)
     state->lux_reading_count = 0;
     state->dens_reading_base = NAN;
     state->dens_reading_current = NAN;
+    state->calibration_pev_target = CALIBRATION_BASE_PEV;
     state->calibration_pev = 0;
-    state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
 
     for (size_t i = 0; i < 3; i++) {
         state->channel_values[i] = state->channel_default_values[i];
@@ -199,7 +198,7 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
                 exposure_burn_dodge_delete_all(state);
             }
 
-            state->calibration_pev_preset = EXPOSURE_PEV_PRESET_BASE;
+            state->calibration_pev_target = CALIBRATION_BASE_PEV;
         }
     }
 }
@@ -305,11 +304,19 @@ uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux)
         }
         exposure_recalculate_base_time(state);
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
-        float updated_base_time = exposure_base_time_for_calibration_pev(lux, exposure_pev_for_preset(state->calibration_pev_preset));
+        float updated_base_time;
+        if (state->lux_reading_count > 0) {
+            /* If this is an updated reading, use the current PEV */
+            updated_base_time = exposure_base_time_for_calibration_pev(lux, state->calibration_pev);
+        } else {
+            /* If this is a fresh reading, use the PEV target */
+            updated_base_time = exposure_base_time_for_calibration_pev(lux, state->calibration_pev_target);
+        }
+
         if (isnormal(updated_base_time) && updated_base_time > 0) {
             state->base_time = updated_base_time;
         } else {
-            state->base_time = settings_get_default_exposure_time() / 1000.0F;
+            state->base_time = (float)settings_get_default_exposure_time() / 1000.0F;
         }
         state->adjustment_value = 0;
 
@@ -350,6 +357,12 @@ float exposure_get_lowest_meter_reading(exposure_state_t *state)
         }
     }
     return lowest_lux;
+}
+
+bool exposure_has_meter_readings(const exposure_state_t *state)
+{
+    if (!state) { return false; }
+    return state->lux_reading_count > 0;
 }
 
 void exposure_clear_meter_readings(exposure_state_t *state)
@@ -398,12 +411,6 @@ uint32_t exposure_get_burn_dodge_tone_graph(const exposure_state_t *state, const
         float adjusted_time = state->adjusted_time * powf(2.0f, stops);
         return exposure_calculate_tone_graph(state, adjusted_time);
     }
-}
-
-uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
-{
-    if (!state) { return 0; }
-    return state->calibration_pev;
 }
 
 void exposure_adj_increase(exposure_state_t *state)
@@ -493,8 +500,10 @@ void exposure_contrast_increase(exposure_state_t *state)
 
     if (state->contrast_grade < CONTRAST_GRADE_5) {
         state->contrast_grade++;
-        exposure_recalculate_tone_graph_marks(state);
-        exposure_recalculate_base_time(state);
+        if (state->mode != EXPOSURE_MODE_CALIBRATION) {
+            exposure_recalculate_tone_graph_marks(state);
+            exposure_recalculate_base_time(state);
+        }
         exposure_recalculate(state);
     }
 }
@@ -505,8 +514,10 @@ void exposure_contrast_decrease(exposure_state_t *state)
 
     if (state->contrast_grade > CONTRAST_GRADE_00) {
         state->contrast_grade--;
-        exposure_recalculate_tone_graph_marks(state);
-        exposure_recalculate_base_time(state);
+        if (state->mode != EXPOSURE_MODE_CALIBRATION) {
+            exposure_recalculate_tone_graph_marks(state);
+            exposure_recalculate_base_time(state);
+        }
         exposure_recalculate(state);
     }
 }
@@ -620,65 +631,53 @@ void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode)
 
 }
 
-exposure_pev_preset_t exposure_calibration_pev_get_preset(const exposure_state_t *state)
+uint32_t exposure_get_calibration_target_pev(const exposure_state_t *state)
 {
-    if (!state) { return EXPOSURE_PEV_PRESET_BASE; }
-    return state->calibration_pev_preset;
+    if (!state) { return 0; }
+    return state->calibration_pev_target;
 }
 
-void exposure_calibration_pev_set_preset(exposure_state_t *state, exposure_pev_preset_t preset)
+void exposure_set_calibration_target_pev(exposure_state_t *state, uint32_t pev)
 {
     if (!state) { return; }
 
     if (state->mode == EXPOSURE_MODE_CALIBRATION
         && state->lux_reading_count > 0
         && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0
-        && preset != state->calibration_pev_preset
-        && preset >= EXPOSURE_PEV_PRESET_BASE && preset <= EXPOSURE_PEV_PRESET_STRIP) {
-        state->calibration_pev_preset = preset;
-        float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], exposure_pev_for_preset(state->calibration_pev_preset));
+        && pev != state->calibration_pev_target) {
+        state->calibration_pev_target = pev;
+        float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0],
+            state->calibration_pev_target);
         if (isnormal(updated_base_time) && updated_base_time > 0) {
             state->base_time = updated_base_time;
         } else {
-            state->base_time = settings_get_default_exposure_time() / 1000.0F;
+            state->base_time = (float) settings_get_default_exposure_time() / 1000.0F;
         }
         state->adjustment_value = 0;
         exposure_recalculate(state);
+    } else {
+        state->calibration_pev_target = pev;
     }
 }
 
-void exposure_calibration_pev_increase(exposure_state_t *state)
+uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
+{
+    if (!state) { return 0; }
+    return state->calibration_pev;
+}
+
+void exposure_set_calibration_pev(exposure_state_t *state, uint32_t pev)
 {
     if (!state) { return; }
 
     if (state->mode == EXPOSURE_MODE_CALIBRATION
         && state->lux_reading_count > 0
         && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
-        if (state->calibration_pev < 999) {
-            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], state->calibration_pev + 1);
-            if (isnormal(updated_base_time) && updated_base_time <= 999) {
-                state->base_time = updated_base_time;
-                state->adjustment_value = 0;
-                exposure_recalculate(state);
-            }
-        }
-    }
-}
-
-void exposure_calibration_pev_decrease(exposure_state_t *state)
-{
-    if (!state) { return; }
-
-    if (state->mode == EXPOSURE_MODE_CALIBRATION
-        && state->lux_reading_count > 0
-        && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
-        if (state->calibration_pev > 0) {
-            float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], state->calibration_pev - 1);
-            if (isnormal(updated_base_time) && updated_base_time > 0) {
-                state->base_time = updated_base_time;
-                state->adjustment_value = 0;
-                exposure_recalculate(state);
-            }
+        float updated_base_time = exposure_base_time_for_calibration_pev(state->lux_readings[0], pev);
+        if (isnormal(updated_base_time) && updated_base_time <= 999) {
+            state->base_time = updated_base_time;
+            state->adjustment_value = 0;
+            exposure_recalculate(state);
         }
     }
 }
@@ -1052,18 +1051,6 @@ uint32_t exposure_calculate_tone_graph_element_impl(float lux_reading, const flo
     }
 
     return result;
-}
-
-uint32_t exposure_pev_for_preset(exposure_pev_preset_t preset)
-{
-    switch (preset) {
-    case EXPOSURE_PEV_PRESET_BASE:
-        return CALIBRATION_BASE_PEV;
-    case EXPOSURE_PEV_PRESET_STRIP:
-        return CALIBRATION_STRIP_PEV;
-    default:
-        return 0;
-    }
 }
 
 const char *exposure_adjustment_increment_name(exposure_adjustment_increment_t increment)

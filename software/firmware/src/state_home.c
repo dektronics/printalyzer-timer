@@ -4,7 +4,7 @@
 #include <cmsis_os.h>
 #include <string.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
 
 #define LOG_TAG "state_home"
 #include <elog.h>
@@ -87,6 +87,12 @@ typedef struct {
     bool value_accepted;
 } state_home_adjust_absolute_t;
 
+typedef struct {
+    state_t base;
+    uint32_t working_value;
+    bool value_accepted;
+} state_home_adjust_pev_t;
+
 static void state_home_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
 static bool state_home_process(state_t *state_base, state_controller_t *controller);
 static bool state_home_process_printing(state_home_t *state, state_controller_t *controller);
@@ -157,6 +163,19 @@ static state_home_adjust_absolute_t state_home_adjust_absolute_data = {
         .state_entry = state_home_adjust_absolute_entry,
         .state_process = state_home_adjust_absolute_process,
         .state_exit = state_home_adjust_absolute_exit
+    },
+    .working_value = 0,
+    .value_accepted = false
+};
+
+static void state_home_adjust_pev_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param);
+static bool state_home_adjust_pev_process(state_t *state_base, state_controller_t *controller);
+static void state_home_adjust_pev_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state);
+static state_home_adjust_pev_t state_home_adjust_pev_data = {
+    .base = {
+        .state_entry = state_home_adjust_pev_entry,
+        .state_process = state_home_adjust_pev_process,
+        .state_exit = state_home_adjust_pev_exit
     },
     .working_value = 0,
     .value_accepted = false
@@ -457,11 +476,12 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
 bool state_home_process_calibration(state_home_t *state, state_controller_t *controller)
 {
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+    const enlarger_config_t *enlarger = state_controller_get_enlarger_config(controller);
 
     /* Draw current exposure state */
     if (state->display_dirty) {
         display_main_calibration_elements_t main_elements;
-        convert_exposure_to_display_calibration(&main_elements, exposure_state);
+        convert_exposure_to_display_calibration(&main_elements, exposure_state, enlarger);
         display_draw_main_elements_calibration(&main_elements);
 
         state->display_dirty = false;
@@ -475,7 +495,9 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
         } else if (keypad_action.action_id == ACTION_CHANGE_MODE) {
             state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
         } else if (keypad_action.action_id == ACTION_TIMER) {
-            state_controller_set_next_state(controller, STATE_TIMER, 0);
+            if (exposure_has_meter_readings(exposure_state)) {
+                state_controller_set_next_state(controller, STATE_TIMER, 0);
+            }
         } else if (keypad_action.action_id == ACTION_FOCUS) {
             if (!state_controller_is_enlarger_focus(controller)) {
                 log_i("Focus mode enabled");
@@ -491,39 +513,58 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
                 state_controller_set_enable_meter_probe(controller, false);
             }
         } else if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
-            exposure_adj_increase(exposure_state);
+            if (exposure_has_meter_readings(exposure_state)) {
+                exposure_adj_increase(exposure_state);
+            } else {
+                uint16_t working_value = exposure_get_calibration_target_pev(exposure_state);
+                working_value = value_adjust_with_rollover_u16(working_value, 10, 0, 999);
+                exposure_set_calibration_target_pev(exposure_state, working_value);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_DEC_EXPOSURE) {
-            exposure_adj_decrease(exposure_state);
+            if (exposure_has_meter_readings(exposure_state)) {
+                exposure_adj_decrease(exposure_state);
+            } else {
+                uint16_t working_value = exposure_get_calibration_target_pev(exposure_state);
+                working_value = value_adjust_with_rollover_u16(working_value, -10, 0, 999);
+                exposure_set_calibration_target_pev(exposure_state, working_value);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_INC_CONTRAST) {
-            exposure_calibration_pev_increase(exposure_state);
+            exposure_contrast_increase(exposure_state);
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_DEC_CONTRAST) {
-            exposure_calibration_pev_decrease(exposure_state);
+            exposure_contrast_decrease(exposure_state);
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_EDIT_ADJUSTMENT) {
-            exposure_pev_preset_t preset = exposure_calibration_pev_get_preset(exposure_state);
-            if (preset == EXPOSURE_PEV_PRESET_BASE) {
-                exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_STRIP);
-            } else if (preset == EXPOSURE_PEV_PRESET_STRIP) {
-                exposure_calibration_pev_set_preset(exposure_state, EXPOSURE_PEV_PRESET_BASE);
+            if (exposure_has_meter_readings(exposure_state)) {
+                state_controller_set_next_state(controller, STATE_HOME_ADJUST_PEV, 0);
             }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_TEST_STRIP) {
-            state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+            if (exposure_has_meter_readings(exposure_state)) {
+                state_controller_set_next_state(controller, STATE_TEST_STRIP, 0);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_ADJUST_FINE) {
-            state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
+            if (exposure_has_meter_readings(exposure_state)) {
+                state_controller_set_next_state(controller, STATE_HOME_ADJUST_FINE, 0);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_ADJUST_ABSOLUTE) {
-            state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
+            if (exposure_has_meter_readings(exposure_state)) {
+                state_controller_set_next_state(controller, STATE_HOME_ADJUST_ABSOLUTE, 0);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_MENU) {
             state_controller_set_next_state(controller, STATE_MENU, 0);
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_CLEAR_READINGS) {
-            exposure_clear_meter_readings(exposure_state);
+            if (exposure_has_meter_readings(exposure_state)) {
+                exposure_clear_meter_readings(exposure_state);
+            } else {
+                exposure_set_calibration_target_pev(exposure_state, 30);
+            }
             state->display_dirty = true;
         } else if (keypad_action.action_id == ACTION_SET_DEFAULTS) {
             exposure_clear_meter_readings(exposure_state);
@@ -709,6 +750,7 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
     if (next_state != STATE_HOME_CHANGE_TIME_INCREMENT
         && next_state != STATE_HOME_ADJUST_FINE
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
+        && next_state != STATE_HOME_ADJUST_PEV
         && next_state != STATE_EDIT_ADJUSTMENT
         && next_state != STATE_LIST_ADJUSTMENTS) {
         if (state_controller_is_enlarger_focus(controller)) {
@@ -743,11 +785,11 @@ bool state_home_change_time_increment_process(state_t *state_base, state_control
 {
     state_home_change_time_increment_t *state = (state_home_change_time_increment_t *)state_base;
 
-    // Draw current stop increment
+    /* Draw current stop increment */
     const uint8_t stop_inc_den = exposure_adjustment_increment_denominator(state->working_value);
     display_draw_stop_increment(stop_inc_den);
 
-    // Handle the next keypad event
+    /* Handle the next keypad event */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
@@ -906,11 +948,17 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
 {
     state_home_adjust_fine_t *state = (state_home_adjust_fine_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
-    uint32_t tone_graph = exposure_get_adjusted_tone_graph(exposure_state, state->working_value);
+
+    uint32_t tone_graph;
+    if (exposure_get_mode(exposure_state) != EXPOSURE_MODE_CALIBRATION) {
+        tone_graph = exposure_get_adjusted_tone_graph(exposure_state, state->working_value);
+    } else {
+        tone_graph = 0;
+    }
 
     display_draw_exposure_adj(state->working_value, tone_graph);
 
-    // Handle the next keypad event
+    /* Handle the next keypad event */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_event.key == KEYPAD_ENCODER_CW) {
@@ -921,7 +969,25 @@ bool state_home_adjust_fine_process(state_t *state_base, state_controller_t *con
             if (state->working_value >= state->min_value) {
                 state->working_value = MAX(state->working_value - keypad_event.count, state->min_value);
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+            if (state->working_value <= state->max_value) {
+                state->working_value = MIN(state->working_value + 1, state->max_value);
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+            if (state->working_value >= state->min_value) {
+                state->working_value = MAX(state->working_value - 1, state->min_value);
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+            if (state->working_value <= state->max_value) {
+                state->working_value = MIN(state->working_value + exposure_adj_increment_get(exposure_state), state->max_value);
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+            if (state->working_value >= state->min_value) {
+                state->working_value = MAX(state->working_value - exposure_adj_increment_get(exposure_state), state->min_value);
+            }
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)
+                   || (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {
             state->value_accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
@@ -963,14 +1029,20 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
 {
     state_home_adjust_absolute_t *state = (state_home_adjust_absolute_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
-    uint32_t tone_graph = exposure_get_absolute_tone_graph(exposure_state, state->working_value / 1000.0f);
+
+    uint32_t tone_graph;
+    if (exposure_get_mode(exposure_state) != EXPOSURE_MODE_CALIBRATION) {
+        tone_graph = exposure_get_absolute_tone_graph(exposure_state, (float)state->working_value / 1000.0f);
+    } else {
+        tone_graph = 0;
+    }
 
     display_exposure_timer_t elements;
     convert_exposure_to_display_timer(&elements, state->working_value);
 
     display_draw_timer_adj(&elements, tone_graph);
 
-    // Handle the next keypad event
+    /* Handle the next keypad event */
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_event.key == KEYPAD_ENCODER_CW) {
@@ -1023,7 +1095,9 @@ bool state_home_adjust_absolute_process(state_t *state_base, state_controller_t 
                 state->working_value -= 10000;
                 if (state->working_value < 100000) { state->working_value = 100000; }
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)) {
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)
+                   || (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {
             state->value_accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
         } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
@@ -1044,6 +1118,67 @@ void state_home_adjust_absolute_exit(state_t *state_base, state_controller_t *co
 
     if (state->value_accepted) {
         exposure_set_base_time(exposure_state, state->working_value / 1000.0f);
+    }
+}
+
+state_t *state_home_adjust_pev()
+{
+    return (state_t *)&state_home_adjust_pev_data;
+}
+
+void state_home_adjust_pev_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
+{
+    state_home_adjust_pev_t *state = (state_home_adjust_pev_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    state->working_value = exposure_get_calibration_pev(exposure_state);
+    state->value_accepted = false;
+}
+
+bool state_home_adjust_pev_process(state_t *state_base, state_controller_t *controller)
+{
+    state_home_adjust_pev_t *state = (state_home_adjust_pev_t *)state_base;
+
+    display_draw_pev_adj(state->working_value);
+
+    /* Handle the next keypad event */
+    keypad_event_t keypad_event;
+    if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
+        if (keypad_event.key == KEYPAD_ENCODER_CW) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, keypad_event.count, 0, 999);
+        } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, (int16_t)(-1 * keypad_event.count), 0, 999);
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, 1, 0, 999);
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, -1, 0, 999);
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, 10, 0, 999);
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+            state->working_value = value_adjust_with_rollover_u16(state->working_value, -10, 0, 999);
+        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)
+                   || (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {
+            state->value_accepted = true;
+            state_controller_set_next_state(controller, STATE_HOME, 0);
+        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
+                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+            state_controller_set_next_state(controller, STATE_HOME, 0);
+        }
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
+void state_home_adjust_pev_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
+{
+    state_home_adjust_pev_t *state = (state_home_adjust_pev_t *)state_base;
+    exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
+
+    if (state->value_accepted) {
+        exposure_set_calibration_pev(exposure_state, state->working_value);
     }
 }
 

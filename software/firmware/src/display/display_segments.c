@@ -14,21 +14,328 @@ typedef enum {
     seg_g = 0x40
 } display_seg_t;
 
+typedef struct {
+    display_seg_t segment;
+    u8g2_uint_t line_count;
+    const u8g2_uint_t *line_data;
+} segment_data_t;
+
+typedef struct {
+    u8g2_uint_t width;
+    u8g2_uint_t height;
+    segment_data_t segment_data[7];
+} segment_digit_data_t;
+
+#pragma region DIGIT_FULL_SEG
+static const u8g2_uint_t DIGIT_FULL_SEG_A_DATA[] = {
+    1, 0, 28, 0,
+    2, 1, 27, 1,
+    3, 2, 26, 2,
+    4, 3, 25, 3,
+    5, 4, 24, 4
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_B_DATA[] = {
+    25, 5, 25, 25,
+    26, 4, 26, 26,
+    27, 3, 27, 27,
+    28, 2, 28, 26,
+    29, 1, 29, 25
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_C_DATA[] = {
+    25, 31, 25, 50,
+    26, 30, 26, 51,
+    27, 29, 27, 52,
+    28, 30, 28, 53,
+    29, 31, 29, 54
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_D_DATA[] = {
+    5, 51, 24, 51,
+    4, 52, 25, 52,
+    3, 53, 26, 53,
+    2, 54, 27, 54,
+    1, 55, 28, 55
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_E_DATA[] = {
+    0, 31, 0, 54,
+    1, 30, 1, 53,
+    2, 29, 2, 52,
+    3, 30, 3, 51,
+    4, 31, 4, 50
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_F_DATA[] = {
+    0, 1, 0, 25,
+    1, 2, 1, 26,
+    2, 3, 2, 27,
+    3, 4, 3, 26,
+    4, 5, 4, 25
+};
+static const u8g2_uint_t DIGIT_FULL_SEG_G_DATA[] = {
+    5, 26, 24, 26,
+    4, 27, 25, 27,
+    3, 28, 26, 28,
+    4, 29, 25, 29,
+    5, 30, 24, 30
+};
+
+static const segment_digit_data_t DIGIT_FULL_DATA = {
+    30, 56, {
+        {seg_a, 5, DIGIT_FULL_SEG_A_DATA},
+        {seg_b, 5, DIGIT_FULL_SEG_B_DATA},
+        {seg_c, 5, DIGIT_FULL_SEG_C_DATA},
+        {seg_d, 5, DIGIT_FULL_SEG_D_DATA},
+        {seg_e, 5, DIGIT_FULL_SEG_E_DATA},
+        {seg_f, 5, DIGIT_FULL_SEG_F_DATA},
+        {seg_g, 5, DIGIT_FULL_SEG_G_DATA}
+    }
+};
+#pragma endregion
+
+#pragma region DIGIT_NARROW_SEG
+static const u8g2_uint_t DIGIT_NARROW_SEG_A_DATA[] = {
+    1, 0, 20, 0,
+    2, 1, 19, 1,
+    3, 2, 18, 2,
+    4, 3, 17, 3,
+    5, 4, 16, 4
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_B_DATA[] = {
+    17, 5, 17, 25,
+    18, 4, 18, 26,
+    19, 3, 19, 27,
+    20, 2, 20, 26,
+    21, 1, 21, 25
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_C_DATA[] = {
+    17, 31, 17, 50,
+    18, 30, 18, 51,
+    19, 29, 19, 52,
+    20, 30, 20, 53,
+    21, 31, 21, 54
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_D_DATA[] = {
+    5, 51, 16, 51,
+    4, 52, 17, 52,
+    3, 53, 18, 53,
+    2, 54, 19, 54,
+    1, 55, 20, 55
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_E_DATA[] = {
+    0, 31, 0, 54,
+    1, 30, 1, 53,
+    2, 29, 2, 52,
+    3, 30, 3, 51,
+    4, 31, 4, 50
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_F_DATA[] = {
+    0, 1, 0, 25,
+    1, 2, 1, 26,
+    2, 3, 2, 27,
+    3, 4, 3, 26,
+    4, 5, 4, 25
+};
+static const u8g2_uint_t DIGIT_NARROW_SEG_G_DATA[] = {
+    5, 26, 16, 26,
+    4, 27, 17, 27,
+    3, 28, 18, 28,
+    4, 29, 17, 29,
+    5, 30, 16, 30
+};
+
+static const segment_digit_data_t DIGIT_NARROW_DATA = {
+    22, 56, {
+        {seg_a, 5, DIGIT_NARROW_SEG_A_DATA},
+        {seg_b, 5, DIGIT_NARROW_SEG_B_DATA},
+        {seg_c, 5, DIGIT_NARROW_SEG_C_DATA},
+        {seg_d, 5, DIGIT_NARROW_SEG_D_DATA},
+        {seg_e, 5, DIGIT_NARROW_SEG_E_DATA},
+        {seg_f, 5, DIGIT_NARROW_SEG_F_DATA},
+        {seg_g, 5, DIGIT_NARROW_SEG_G_DATA}
+    }
+};
+#pragma endregion
+
+#pragma region DIGIT_MEDIUM_SEG
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_A_DATA[] = {
+    1, 0, 16, 0,
+    2, 1, 15, 1,
+    3, 2, 14, 2
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_B_DATA[] = {
+    15, 3, 15, 16,
+    16, 2, 16, 17,
+    17, 1, 17, 16
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_C_DATA[] = {
+    15, 20, 15, 33,
+    16, 19, 16, 34,
+    17, 20, 17, 35
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_D_DATA[] = {
+    3, 34, 14, 34,
+    2, 35, 15, 35,
+    1, 36, 16, 36
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_E_DATA[] = {
+    0, 20, 0, 35,
+    1, 19, 1, 34,
+    2, 20, 2, 33
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_F_DATA[] = {
+    0, 1, 0, 16,
+    1, 2, 1, 17,
+    2, 3, 2, 16
+};
+static const u8g2_uint_t DIGIT_MEDIUM_SEG_G_DATA[] = {
+    3, 17, 14, 17,
+    2, 18, 15, 18,
+    3, 19, 14, 19
+};
+
+static const segment_digit_data_t DIGIT_MEDIUM_DATA = {
+    18, 37, {
+        {seg_a, 3, DIGIT_MEDIUM_SEG_A_DATA},
+        {seg_b, 3, DIGIT_MEDIUM_SEG_B_DATA},
+        {seg_c, 3, DIGIT_MEDIUM_SEG_C_DATA},
+        {seg_d, 3, DIGIT_MEDIUM_SEG_D_DATA},
+        {seg_e, 3, DIGIT_MEDIUM_SEG_E_DATA},
+        {seg_f, 3, DIGIT_MEDIUM_SEG_F_DATA},
+        {seg_g, 3, DIGIT_MEDIUM_SEG_G_DATA}
+    }
+};
+#pragma endregion
+
+#pragma region DIGIT_TINY_SEG
+static const u8g2_uint_t DIGIT_TINY_SEG_A_DATA[] = {
+    1, 0, 12, 0,
+    2, 1, 11, 1,
+    3, 2, 10, 2
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_B_DATA[] = {
+    11, 3, 11, 10,
+    12, 2, 12, 11,
+    13, 1, 13, 10
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_C_DATA[] = {
+    11, 14, 11, 21,
+    12, 13, 12, 22,
+    13, 14, 13, 23
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_D_DATA[] = {
+    3, 22, 10, 22,
+    2, 23, 11, 23,
+    1, 24, 12, 24
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_E_DATA[] = {
+    0, 14, 0, 23,
+    1, 13, 1, 22,
+    2, 14, 2, 21
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_F_DATA[] = {
+    0, 1, 0, 10,
+    1, 2, 1, 11,
+    2, 3, 2, 10
+};
+static const u8g2_uint_t DIGIT_TINY_SEG_G_DATA[] = {
+    3, 11, 10, 11,
+    2, 12, 11, 12,
+    3, 13, 10, 13
+};
+
+static const segment_digit_data_t DIGIT_TINY_DATA = {
+    14, 25, {
+        {seg_a, 3, DIGIT_TINY_SEG_A_DATA},
+        {seg_b, 3, DIGIT_TINY_SEG_B_DATA},
+        {seg_c, 3, DIGIT_TINY_SEG_C_DATA},
+        {seg_d, 3, DIGIT_TINY_SEG_D_DATA},
+        {seg_e, 3, DIGIT_TINY_SEG_E_DATA},
+        {seg_f, 3, DIGIT_TINY_SEG_F_DATA},
+        {seg_g, 3, DIGIT_TINY_SEG_G_DATA}
+    }
+};
+#pragma endregion
+
+#pragma region DIGIT_VERY_TINY_SEG
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_A_DATA[] = {
+    1, 0, 7, 0,
+    2, 1, 6, 1
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_B_DATA[] = {
+    7, 2, 7, 6,
+    8, 1, 8, 7
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_C_DATA[] = {
+    7, 10, 7, 14,
+    8, 9, 8, 15
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_D_DATA[] = {
+    2, 15, 6, 15,
+    1, 16, 7, 16
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_E_DATA[] = {
+    0, 9, 0, 15,
+    1, 10, 1, 14
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_F_DATA[] = {
+    0, 1, 0, 7,
+    1, 2, 1, 6
+};
+static const u8g2_uint_t DIGIT_VERY_TINY_SEG_G_DATA[] = {
+    2, 7, 6, 7,
+    1, 8, 7, 8,
+    2, 9, 6, 9
+};
+
+static const segment_digit_data_t DIGIT_VERY_TINY_DATA = {
+    9, 17, {
+        {seg_a, 2, DIGIT_VERY_TINY_SEG_A_DATA},
+        {seg_b, 2, DIGIT_VERY_TINY_SEG_B_DATA},
+        {seg_c, 2, DIGIT_VERY_TINY_SEG_C_DATA},
+        {seg_d, 2, DIGIT_VERY_TINY_SEG_D_DATA},
+        {seg_e, 2, DIGIT_VERY_TINY_SEG_E_DATA},
+        {seg_f, 2, DIGIT_VERY_TINY_SEG_F_DATA},
+        {seg_g, 3, DIGIT_VERY_TINY_SEG_G_DATA}
+    }
+};
+#pragma endregion
+
+static const segment_digit_data_t DIGIT_LIST[] = {
+    DIGIT_FULL_DATA,
+    DIGIT_NARROW_DATA,
+    DIGIT_MEDIUM_DATA,
+    DIGIT_TINY_DATA,
+    DIGIT_VERY_TINY_DATA
+};
+
 static void display_draw_tdigit_fraction_part(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t value);
 static void display_draw_tdigit_fraction_divider(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t max_value);
 
-typedef void (*display_draw_segment_func)(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
+static void display_draw_digit_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y,
+    const segment_digit_data_t *seg_digit_data, uint8_t digit);
+static void display_draw_segments_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y,
+    const segment_digit_data_t *seg_digit_data, display_seg_t segments);
 
-static void display_draw_digit_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit,
-    display_draw_segment_func draw_func);
-static void display_draw_segment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
-static void display_draw_msegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
-static void display_draw_tsegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
-static void display_draw_vtsegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments);
+void display_digit_draw(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_digit_t digit_size, uint8_t digit)
+{
+    if (digit_size >= DIGIT_MAX) { return; }
+    display_draw_digit_impl(u8g2, x, y, &DIGIT_LIST[digit_size], digit);
+}
+
+u8g2_uint_t display_digit_width(display_digit_t digit_size)
+{
+    if (digit_size >= DIGIT_MAX) { return 0; }
+    return DIGIT_LIST[digit_size].width;
+}
+
+u8g2_uint_t display_digit_height(display_digit_t digit_size)
+{
+    if (digit_size >= DIGIT_MAX) { return 0; }
+    return DIGIT_LIST[digit_size].height;
+}
+
 
 void display_draw_digit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
-    display_draw_digit_impl(u8g2, x, y, digit, display_draw_segment);
+    display_digit_draw(u8g2, x, y, DIGIT_FULL, digit);
 }
 
 void display_draw_digit_sign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool positive)
@@ -50,7 +357,7 @@ void display_draw_digit_sign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool po
 
 void display_draw_digit_letter_d(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y)
 {
-    display_draw_segment(u8g2, x, y, seg_a | seg_b | seg_c| seg_d);
+    display_draw_segments_impl(u8g2, x, y, &DIGIT_FULL_DATA, seg_a | seg_b | seg_c| seg_d);
 
     u8g2_DrawLine(u8g2, x + 12, y + 6, x + 12, y + 25);
     u8g2_DrawLine(u8g2, x + 13, y + 6, x + 13, y + 26);
@@ -65,14 +372,19 @@ void display_draw_digit_letter_d(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y)
     u8g2_DrawLine(u8g2, x + 16, y + 31, x + 16, y + 49);
 }
 
+void display_draw_ndigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
+{
+    display_digit_draw(u8g2, x, y, DIGIT_NARROW, digit);
+}
+
 void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
-    display_draw_digit_impl(u8g2, x, y, digit, display_draw_msegment);
+    display_digit_draw(u8g2, x, y, DIGIT_MEDIUM, digit);
 }
 
 void display_draw_tdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
-    display_draw_digit_impl(u8g2, x, y, digit, display_draw_tsegment);
+    display_digit_draw(u8g2, x, y, DIGIT_TINY, digit);
 }
 
 void display_draw_tdigit_fraction(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t num, uint8_t den)
@@ -130,11 +442,11 @@ void display_draw_tdigit_fraction_divider(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint
 
 void display_draw_vtdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
-    display_draw_digit_impl(u8g2, x, y, digit, display_draw_vtsegment);
+    display_digit_draw(u8g2, x, y, DIGIT_VERY_TINY, digit);
 }
 
-void display_draw_digit_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit,
-    display_draw_segment_func draw_func)
+void display_draw_digit_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y,
+    const segment_digit_data_t *seg_digit_data, uint8_t digit)
 {
     display_seg_t segments = 0;
     switch(digit) {
@@ -168,184 +480,27 @@ void display_draw_digit_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t
     case 9:
         segments = seg_a | seg_b | seg_c | seg_d | seg_f | seg_g;
         break;
+    case UINT8_MAX:
+        segments = seg_g;
+        break;
     default:
         break;
     }
-    draw_func(u8g2, x, y, segments);
+
+    display_draw_segments_impl(u8g2, x, y, seg_digit_data, segments);
 }
 
-/**
- * Draw a segments of a digit on a 30x56 pixel grid
- */
-void display_draw_segment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments)
+void display_draw_segments_impl(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y,
+    const segment_digit_data_t *seg_digit_data, display_seg_t segments)
 {
-    if ((segments & seg_a) != 0) {
-        u8g2_DrawLine(u8g2, x + 1, y + 0, x + 28, y + 0);
-        u8g2_DrawLine(u8g2, x + 2, y + 1, x + 27, y + 1);
-        u8g2_DrawLine(u8g2, x + 3, y + 2, x + 26, y + 2);
-        u8g2_DrawLine(u8g2, x + 4, y + 3, x + 25, y + 3);
-        u8g2_DrawLine(u8g2, x + 5, y + 4, x + 24, y + 4);
-    }
-    if ((segments & seg_b) != 0) {
-        u8g2_DrawLine(u8g2, x + 25, y + 5, x + 25, y + 25);
-        u8g2_DrawLine(u8g2, x + 26, y + 4, x + 26, y + 26);
-        u8g2_DrawLine(u8g2, x + 27, y + 3, x + 27, y + 27);
-        u8g2_DrawLine(u8g2, x + 28, y + 2, x + 28, y + 26);
-        u8g2_DrawLine(u8g2, x + 29, y + 1, x + 29, y + 25);
-    }
-    if ((segments & seg_c) != 0) {
-        u8g2_DrawLine(u8g2, x + 25, y + 31, x + 25, y + 50);
-        u8g2_DrawLine(u8g2, x + 26, y + 30, x + 26, y + 51);
-        u8g2_DrawLine(u8g2, x + 27, y + 29, x + 27, y + 52);
-        u8g2_DrawLine(u8g2, x + 28, y + 30, x + 28, y + 53);
-        u8g2_DrawLine(u8g2, x + 29, y + 31, x + 29, y + 54);
-    }
-    if ((segments & seg_d) != 0) {
-        u8g2_DrawLine(u8g2, x + 5, y + 51, x + 24, y + 51);
-        u8g2_DrawLine(u8g2, x + 4, y + 52, x + 25, y + 52);
-        u8g2_DrawLine(u8g2, x + 3, y + 53, x + 26, y + 53);
-        u8g2_DrawLine(u8g2, x + 2, y + 54, x + 27, y + 54);
-        u8g2_DrawLine(u8g2, x + 1, y + 55, x + 28, y + 55);
-    }
-    if ((segments & seg_e) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 31, x + 0, y + 54);
-        u8g2_DrawLine(u8g2, x + 1, y + 30, x + 1, y + 53);
-        u8g2_DrawLine(u8g2, x + 2, y + 29, x + 2, y + 52);
-        u8g2_DrawLine(u8g2, x + 3, y + 30, x + 3, y + 51);
-        u8g2_DrawLine(u8g2, x + 4, y + 31, x + 4, y + 50);
-    }
-    if ((segments & seg_f) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 1, x + 0, y + 25);
-        u8g2_DrawLine(u8g2, x + 1, y + 2, x + 1, y + 26);
-        u8g2_DrawLine(u8g2, x + 2, y + 3, x + 2, y + 27);
-        u8g2_DrawLine(u8g2, x + 3, y + 4, x + 3, y + 26);
-        u8g2_DrawLine(u8g2, x + 4, y + 5, x + 4, y + 25);
-    }
-    if ((segments & seg_g) != 0) {
-        u8g2_DrawLine(u8g2, x + 5, y + 26, x + 24, y + 26);
-        u8g2_DrawLine(u8g2, x + 4, y + 27, x + 25, y + 27);
-        u8g2_DrawLine(u8g2, x + 3, y + 28, x + 26, y + 28);
-        u8g2_DrawLine(u8g2, x + 4, y + 29, x + 25, y + 29);
-        u8g2_DrawLine(u8g2, x + 5, y + 30, x + 24, y + 30);
-    }
-}
+    for (u8g2_uint_t i = 0; i < 7; i++) {
+        if ((seg_digit_data->segment_data[i].segment & segments) != 0) {
+            for (u8g2_uint_t j = 0; j < seg_digit_data->segment_data[i].line_count * 4; j += 4) {
+                u8g2_DrawLine(u8g2,
+                    x + seg_digit_data->segment_data[i].line_data[j], y + seg_digit_data->segment_data[i].line_data[j + 1],
+                    x + seg_digit_data->segment_data[i].line_data[j + 2], y + seg_digit_data->segment_data[i].line_data[j + 3]);
+            }
 
-/**
- * Draw a segments of a digit on a 18x37 pixel grid
- */
-void display_draw_msegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments)
-{
-    if ((segments & seg_a) != 0) {
-        u8g2_DrawLine(u8g2, x + 1, y + 0, x + 16, y + 0);
-        u8g2_DrawLine(u8g2, x + 2, y + 1, x + 15, y + 1);
-        u8g2_DrawLine(u8g2, x + 3, y + 2, x + 14, y + 2);
-    }
-    if ((segments & seg_b) != 0) {
-        u8g2_DrawLine(u8g2, x + 15, y + 3, x + 15, y + 16);
-        u8g2_DrawLine(u8g2, x + 16, y + 2, x + 16, y + 17);
-        u8g2_DrawLine(u8g2, x + 17, y + 1, x + 17, y + 16);
-    }
-    if ((segments & seg_c) != 0) {
-        u8g2_DrawLine(u8g2, x + 15, y + 20, x + 15, y + 33);
-        u8g2_DrawLine(u8g2, x + 16, y + 19, x + 16, y + 34);
-        u8g2_DrawLine(u8g2, x + 17, y + 20, x + 17, y + 35);
-    }
-    if ((segments & seg_d) != 0) {
-        u8g2_DrawLine(u8g2, x + 3, y + 34, x + 14, y + 34);
-        u8g2_DrawLine(u8g2, x + 2, y + 35, x + 15, y + 35);
-        u8g2_DrawLine(u8g2, x + 1, y + 36, x + 16, y + 36);
-    }
-    if ((segments & seg_e) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 20, x + 0, y + 35);
-        u8g2_DrawLine(u8g2, x + 1, y + 19, x + 1, y + 34);
-        u8g2_DrawLine(u8g2, x + 2, y + 20, x + 2, y + 33);
-    }
-    if ((segments & seg_f) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 1, x + 0, y + 16);
-        u8g2_DrawLine(u8g2, x + 1, y + 2, x + 1, y + 17);
-        u8g2_DrawLine(u8g2, x + 2, y + 3, x + 2, y + 16);
-    }
-    if ((segments & seg_g) != 0) {
-        u8g2_DrawLine(u8g2, x + 3, y + 17, x + 14, y + 17);
-        u8g2_DrawLine(u8g2, x + 2, y + 18, x + 15, y + 18);
-        u8g2_DrawLine(u8g2, x + 3, y + 19, x + 14, y + 19);
-    }
-}
-
-/**
- * Draw a segments of a digit on a 14x25 pixel grid
- */
-void display_draw_tsegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments)
-{
-    if ((segments & seg_a) != 0) {
-        u8g2_DrawLine(u8g2, x + 1, y + 0, x + 12, y + 0);
-        u8g2_DrawLine(u8g2, x + 2, y + 1, x + 11, y + 1);
-        u8g2_DrawLine(u8g2, x + 3, y + 2, x + 10, y + 2);
-    }
-    if ((segments & seg_b) != 0) {
-        u8g2_DrawLine(u8g2, x + 11, y + 3, x + 11, y + 10);
-        u8g2_DrawLine(u8g2, x + 12, y + 2, x + 12, y + 11);
-        u8g2_DrawLine(u8g2, x + 13, y + 1, x + 13, y + 10);
-    }
-    if ((segments & seg_c) != 0) {
-        u8g2_DrawLine(u8g2, x + 11, y + 14, x + 11, y + 21);
-        u8g2_DrawLine(u8g2, x + 12, y + 13, x + 12, y + 22);
-        u8g2_DrawLine(u8g2, x + 13, y + 14, x + 13, y + 23);
-    }
-    if ((segments & seg_d) != 0) {
-        u8g2_DrawLine(u8g2, x + 3, y + 22, x + 10, y + 22);
-        u8g2_DrawLine(u8g2, x + 2, y + 23, x + 11, y + 23);
-        u8g2_DrawLine(u8g2, x + 1, y + 24, x + 12, y + 24);
-    }
-    if ((segments & seg_e) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 14, x + 0, y + 23);
-        u8g2_DrawLine(u8g2, x + 1, y + 13, x + 1, y + 22);
-        u8g2_DrawLine(u8g2, x + 2, y + 14, x + 2, y + 21);
-    }
-    if ((segments & seg_f) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 1, x + 0, y + 10);
-        u8g2_DrawLine(u8g2, x + 1, y + 2, x + 1, y + 11);
-        u8g2_DrawLine(u8g2, x + 2, y + 3, x + 2, y + 10);
-    }
-    if ((segments & seg_g) != 0) {
-        u8g2_DrawLine(u8g2, x + 3, y + 11, x + 10, y + 11);
-        u8g2_DrawLine(u8g2, x + 2, y + 12, x + 11, y + 12);
-        u8g2_DrawLine(u8g2, x + 3, y + 13, x + 10, y + 13);
-    }
-}
-
-/**
- * Draw a segments of a digit on a 9x17 pixel grid
- */
-void display_draw_vtsegment(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, display_seg_t segments)
-{
-    if ((segments & seg_a) != 0) {
-        u8g2_DrawLine(u8g2, x + 1, y + 0, x + 7, y + 0);
-        u8g2_DrawLine(u8g2, x + 2, y + 1, x + 6, y + 1);
-    }
-    if ((segments & seg_b) != 0) {
-        u8g2_DrawLine(u8g2, x + 7, y + 2, x + 7, y + 6);
-        u8g2_DrawLine(u8g2, x + 8, y + 1, x + 8, y + 7);
-    }
-    if ((segments & seg_c) != 0) {
-        u8g2_DrawLine(u8g2, x + 7, y + 10, x + 7, y + 14);
-        u8g2_DrawLine(u8g2, x + 8, y + 9, x + 8, y + 15);
-    }
-    if ((segments & seg_d) != 0) {
-        u8g2_DrawLine(u8g2, x + 2, y + 15, x + 6, y + 15);
-        u8g2_DrawLine(u8g2, x + 1, y + 16, x + 7, y + 16);
-    }
-    if ((segments & seg_e) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 9, x + 0, y + 15);
-        u8g2_DrawLine(u8g2, x + 1, y + 10, x + 1, y + 14);
-    }
-    if ((segments & seg_f) != 0) {
-        u8g2_DrawLine(u8g2, x + 0, y + 1, x + 0, y + 7);
-        u8g2_DrawLine(u8g2, x + 1, y + 2, x + 1, y + 6);
-    }
-    if ((segments & seg_g) != 0) {
-        u8g2_DrawLine(u8g2, x + 2, y + 7, x + 6, y + 7);
-        u8g2_DrawLine(u8g2, x + 1, y + 8, x + 7, y + 8);
-        u8g2_DrawLine(u8g2, x + 2, y + 9, x + 6, y + 9);
+        }
     }
 }
