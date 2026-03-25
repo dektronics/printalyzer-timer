@@ -752,7 +752,8 @@ void state_home_exit(state_t *state_base, state_controller_t *controller, state_
         && next_state != STATE_HOME_ADJUST_ABSOLUTE
         && next_state != STATE_HOME_ADJUST_PEV
         && next_state != STATE_EDIT_ADJUSTMENT
-        && next_state != STATE_LIST_ADJUSTMENTS) {
+        && next_state != STATE_LIST_ADJUSTMENTS
+        && next_state != STATE_HOME_CHANGE_MODE) {
         if (state_controller_is_enlarger_focus(controller)) {
             log_i("Focus mode disabled due to state change");
             illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);

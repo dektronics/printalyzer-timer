@@ -97,8 +97,6 @@ void state_densitometer_entry(state_t *state_base, state_controller_t *controlle
     } else {
         densitometer_idle_light(true);
     }
-
-//XXX    densitometer_enable(DENSITOMETER_MODE_UNKNOWN);
 }
 
 bool state_densitometer_process(state_t *state_base, state_controller_t *controller)
@@ -304,13 +302,15 @@ void state_densitometer_exit(state_t *state_base, state_controller_t *controller
 {
     state_densitometer_t *state = (state_densitometer_t *)state_base;
 
-    if (state_controller_is_enlarger_focus(controller)) {
-        log_i("Focus mode disabled due to state change");
-        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
-        state_controller_set_enlarger_focus(controller, false);
-        state_controller_stop_focus_timeout(controller);
-        state_controller_set_enable_meter_probe(controller, false);
-        state_densitometer_check_meter_probe(state, controller);
+    if (next_state != STATE_HOME_CHANGE_MODE) {
+        if (state_controller_is_enlarger_focus(controller)) {
+            log_i("Focus mode disabled due to state change");
+            illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+            state_controller_set_enlarger_focus(controller, false);
+            state_controller_stop_focus_timeout(controller);
+            state_controller_set_enable_meter_probe(controller, false);
+            state_densitometer_check_meter_probe(state, controller);
+        }
     }
 
     densitometer_idle_light(false);
