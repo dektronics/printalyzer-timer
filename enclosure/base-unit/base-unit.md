@@ -32,14 +32,15 @@ The "base" is the bottom half where the power board is installed, and the
 Basic mechanical design files are provided, but the artwork is not published.
 
 The provided files are as follows:
-* `base-unit.step` - Complete enclosure model
-* `base-flat.dxf` - Flat pattern for the "base"
-* `cover-flat.dxf` - Flat pattern for the "cover"
+* `enclosure-full.step` - Complete enclosure model
+* `enclosure-base-flat.dxf` - Flat pattern for the "base"
+* `enclosure-cover-flat.dxf` - Flat pattern for the "cover"
 * `design-drawings.pdf` - Basic design drawings
 
 Base fabrication notes:
 * Material: Galvanized sheet SGCC, 1.2mm thickness
 * Contains 2 blind threaded standoffs, M3x0.5, 8mm length (PEM BSO-M3-8ZI)
+* Contains 1 self-clinching threaded stud, M3x12mm (PEM FH-M3-12ZI)
 * Contains 6 self-clinching nuts, M4x0.7 (PEM S-M4-1ZI)
 * All blind standoffs must be inserted before powder coating, so that they are difficult to see from the outside of the finished product.
 * Powder coat exterior surfaces only. Do not powder coat interior surfaces or the fold-up tabs with the self-clinching nuts.
@@ -65,6 +66,8 @@ long as it has the same specifications.
     M3 x 0.5mm Thread, 8mm Long
   * **98688A112 (Qty. 4)** - General Purpose Zinc-Plated Steel Washer for M3 Screw
   * **93925A417 (Qty. 4)** - Zinc-Plated Internal-Tooth Washer for M3 Screw
+  * **90768A107 (Qty. 1)** - Side-Mount External Retaining Ring for 7mm ID
+  * **97985A113 (Qty. 1)** - Zinc-Plated Steel External-Tooth Lock Washer for M7 Screw
 
 * Mounting OLED display module to "main-board" PCB
   * **90657A106 (Qty. 4)** - Zinc-Plated Steel Narrow Cheese Head Slotted Screw,
@@ -184,10 +187,3 @@ _If there is not good electrical conductivity between the boards and the enclosu
   * The current preferred material for this purpose is Rosco E-Color #106.
 * Thin transparent material to sandwich the rubylith between, for mounting
   and scratch protection.
-* `encoder-spacer`
-  * A spacer to sit on the encoder shaft, to provide a snug fit between the
-    top of the encoder and the interior face of the enclosure.
-  * Can also use an M7 washer stack here, though getting the right height
-    may be difficult.
-  * This model is intended to be 3D printed using a flexible material,
-    such as TPU95.
