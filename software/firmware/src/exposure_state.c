@@ -164,6 +164,17 @@ exposure_mode_t exposure_get_mode(const exposure_state_t *state)
     return state->mode;
 }
 
+static bool exposure_is_printing_mode(exposure_mode_t mode)
+{
+    switch (mode) {
+    case EXPOSURE_MODE_PRINTING_BW:
+    case EXPOSURE_MODE_PRINTING_COLOR:
+        return true;
+    default:
+        return false;
+    }
+}
+
 void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
 {
     if (!state) { return; }
@@ -176,28 +187,37 @@ void exposure_set_mode(exposure_state_t *state, exposure_mode_t mode)
     }
 
     if (state->mode != mode) {
-        if (mode == EXPOSURE_MODE_PRINTING_BW || mode == EXPOSURE_MODE_PRINTING_COLOR) {
+        const bool from_printing_mode = exposure_is_printing_mode(state->mode);
+        const bool to_printing_mode = exposure_is_printing_mode(mode);
+
+        if (to_printing_mode) {
             state->last_printing_mode = mode;
         }
 
         state->mode = mode;
 
-        if (state->mode == EXPOSURE_MODE_PRINTING_BW || state->mode == EXPOSURE_MODE_PRINTING_COLOR) {
-            /* Reset the base exposure and light readings if entering printing or densitometer mode */
-            state->base_time = settings_get_default_exposure_time() / 1000.0f;
+        /* Reset the base exposure and light readings if entering printing or a non-printing mode */
+        if ((!from_printing_mode && to_printing_mode) || !to_printing_mode) {
+            state->base_time = (float)settings_get_default_exposure_time() / 1000.0f;
             state->adjusted_time = state->base_time;
             state->adjustment_value = 0;
+            exposure_clear_meter_readings(state);
+        }
 
-            for (int i = 0; i < MAX_LUX_READINGS; i++) {
-                state->lux_readings[i] = NAN;
-            }
-            state->lux_reading_count = 0;
-        } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
-            /* Clear any burn/dodge adjustments if entering calibration mode */
+        /* Clear meter readings if switching between printing modes or to a non-printing mode */
+        if ((from_printing_mode && to_printing_mode) || !to_printing_mode) {
+            exposure_clear_meter_readings(state);
+        }
+
+        /* Clear any burn/dodge adjustments if entering a non-printing mode */
+        if (!to_printing_mode) {
             if (state->burn_dodge_count > 0) {
                 exposure_burn_dodge_delete_all(state);
             }
+        }
 
+        /* Reset the PEV target if entering calibration mode */
+        if (state->mode == EXPOSURE_MODE_CALIBRATION) {
             state->calibration_pev_target = CALIBRATION_BASE_PEV;
         }
     }
@@ -357,6 +377,19 @@ float exposure_get_lowest_meter_reading(exposure_state_t *state)
         }
     }
     return lowest_lux;
+}
+
+float exposure_get_highest_meter_reading(exposure_state_t *state)
+{
+    if (!state) { return NAN; }
+
+    float highest_lux = NAN;
+    for (int i = 0; i < state->lux_reading_count; i++) {
+        if (isnan(highest_lux) || state->lux_readings[i] > highest_lux) {
+            highest_lux = state->lux_readings[i];
+        }
+    }
+    return highest_lux;
 }
 
 bool exposure_has_meter_readings(const exposure_state_t *state)
@@ -875,6 +908,7 @@ void exposure_recalculate(exposure_state_t *state)
         } else {
             state->calibration_pev = 0;
         }
+        state->tone_graph = 0;
     }
 }
 

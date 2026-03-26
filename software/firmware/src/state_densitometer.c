@@ -85,11 +85,18 @@ void state_densitometer_entry(state_t *state_base, state_controller_t *controlle
     keypad_action_add(KEYPAD_DENSISTICK, ACTION_TAKE_STICK_READING, 0, false);
     keypad_action_add_combo(KEYPAD_INC_CONTRAST, KEYPAD_DEC_CONTRAST, ACTION_CHANGE_MODE);
 
-    /* Select the lowest light reading, if available, and make it the base value */
-    if (isnan(state->probe_reading_base)) {
-        float lowest_lux = exposure_get_lowest_meter_reading(exposure_state);
-        state->probe_reading_base = lowest_lux;
-        state->probe_reading_current = NAN;
+    /* Initialize the screen with the range metered from the printing mode, if available */
+    const float highest_lux = exposure_get_highest_meter_reading(exposure_state);
+    const float lowest_lux = exposure_get_lowest_meter_reading(exposure_state);
+    if (!isnan(highest_lux)) {
+        state->probe_reading_base = highest_lux;
+        if (!isnan(lowest_lux) && lowest_lux < highest_lux) {
+            state->probe_reading_current = lowest_lux;
+        } else {
+            state->probe_reading_current = NAN;
+        }
+    } else {
+        state->probe_reading_base = NAN;
     }
 
     if (state->selected_mode == 0) {

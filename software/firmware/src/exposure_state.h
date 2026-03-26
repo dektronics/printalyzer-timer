@@ -62,6 +62,7 @@ void exposure_clear_active_paper_profile(exposure_state_t *state);
 uint32_t exposure_add_meter_reading(exposure_state_t *state, float lux);
 uint32_t exposure_get_meter_reading_tone(const exposure_state_t *state, float lux);
 float exposure_get_lowest_meter_reading(exposure_state_t *state);
+float exposure_get_highest_meter_reading(exposure_state_t *state);
 bool exposure_has_meter_readings(const exposure_state_t *state);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
