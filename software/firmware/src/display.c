@@ -1675,7 +1675,7 @@ uint8_t display_selection_list(const char *title, uint8_t start_pos, const char 
 
     display_prepare_menu_font();
     keypad_clear_events();
-    uint8_t option = u8g2_UserInterfaceSelectionList(&u8g2, title, start_pos, list);
+    uint8_t option = display_UserInterfaceSelectionList(&u8g2, title, start_pos, list);
 
     osMutexRelease(display_mutex);
 

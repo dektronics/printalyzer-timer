@@ -29,6 +29,7 @@ uint8_t u8g2_draw_button_line(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_
 
 static void display_DrawSelectionList(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, const char *s, u8g2_uint_t list_width);
 static u8g2_uint_t display_draw_selection_list_line(u8g2_t *u8g2, u8sl_t *u8sl, u8g2_uint_t y, uint8_t idx, const char *s, u8g2_uint_t list_width);
+static void display_draw_selection_list_arrows(u8g2_t *u8g2, const u8sl_t *u8sl);
 
 uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
 {
@@ -729,6 +730,77 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
     }
 }
 
+uint8_t display_UserInterfaceSelectionList(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl)
+{
+    // Based off u8g2_UserInterfaceSelectionList() with changes to
+    // add UI treatments to indicate more list items
+
+    u8sl_t u8sl;
+    u8g2_uint_t yy;
+
+    uint8_t event;
+
+    u8g2_uint_t line_height = u8g2_GetAscent(u8g2) - u8g2_GetDescent(u8g2) + MY_BORDER_SIZE;
+
+    uint8_t title_lines = u8x8_GetStringLineCnt(title);
+    uint8_t display_lines;
+
+
+    if (start_pos > 0) {
+        start_pos--;
+    }
+
+    if (title_lines > 0) {
+        display_lines = (u8g2_GetDisplayHeight(u8g2) - 3) / line_height;
+        u8sl.visible = display_lines;
+        u8sl.visible -= title_lines;
+    } else {
+        display_lines = u8g2_GetDisplayHeight(u8g2) / line_height;
+        u8sl.visible = display_lines;
+    }
+
+    u8sl.total = u8x8_GetStringLineCnt(sl);
+    u8sl.first_pos = 0;
+    u8sl.current_pos = start_pos;
+
+    if (u8sl.current_pos >= u8sl.total) {
+        u8sl.current_pos = u8sl.total - 1;
+    }
+    if (u8sl.first_pos + u8sl.visible <= u8sl.current_pos) {
+        u8sl.first_pos = u8sl.current_pos - u8sl.visible + 1;
+    }
+
+    u8g2_SetFontPosBaseline(u8g2);
+
+    for (;;) {
+        u8g2_ClearBuffer(u8g2);
+        yy = u8g2_GetAscent(u8g2);
+        if (title_lines > 0) {
+            yy += u8g2_DrawUTF8Lines(u8g2, 0, yy, u8g2_GetDisplayWidth(u8g2), line_height, title);
+            u8g2_DrawHLine(u8g2, 0, yy - line_height - u8g2_GetDescent(u8g2) + 1, u8g2_GetDisplayWidth(u8g2));
+            yy += 3;
+        }
+        u8g2_DrawSelectionList(u8g2, &u8sl, yy, sl);
+        display_draw_selection_list_arrows(u8g2, &u8sl);
+        u8g2_SendBuffer(u8g2);
+
+        for (;;) {
+            event = u8x8_GetMenuEvent(u8g2_GetU8x8(u8g2));
+            if (event == U8X8_MSG_GPIO_MENU_SELECT)
+                return u8sl.current_pos + 1; /* +1, issue 112 */
+            else if (event == U8X8_MSG_GPIO_MENU_HOME)
+                return 0; /* issue 112: return 0 instead of start_pos */
+            else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN) {
+                u8sl_Next(&u8sl);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP) {
+                u8sl_Prev(&u8sl);
+                break;
+            }
+        }
+    }
+}
+
 uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, uint8_t start_pos, const char *sl,
     display_GetMenuEvent_t event_callback, display_menu_params_t params,
     display_input_poll_callback_t input_poll_callback, void *user_data)
@@ -781,6 +853,7 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
             yy += 3;
         }
         u8g2_DrawSelectionList(u8g2, &u8sl, yy, sl);
+        display_draw_selection_list_arrows(u8g2, &u8sl);
         u8g2_SendBuffer(u8g2);
 
         for(;;) {
@@ -931,4 +1004,39 @@ uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const c
 uint8_t display_DrawButtonLine(u8g2_t *u8g2, u8g2_uint_t y, u8g2_uint_t w, uint8_t cursor, const char *s)
 {
     return u8g2_draw_button_line(u8g2, y, w, cursor, s);
+}
+
+static void display_draw_selection_list_arrows(u8g2_t *u8g2, const u8sl_t *u8sl)
+{
+    /*
+     * Draw the list UI treatments to indicate more list items.
+     * The size and positioning of these elements is very specific
+     * to the amount of space left over at the bottom of a list
+     * when using the font we're currently using for all our list
+     * menus. If that font is changed, these numbers may need to
+     * be adjusted.
+     */
+
+    if (u8sl->visible >= u8sl->total) { return; }
+
+    const bool up_arrow = u8sl->first_pos > 0;
+    const bool down_arrow = u8sl->first_pos < (u8sl->total - u8sl->visible);
+
+    u8g2_uint_t x = u8g2_GetDisplayWidth(u8g2) - 9;
+    u8g2_uint_t y = u8g2_GetDisplayHeight(u8g2) - 5;
+
+    if (up_arrow) {
+        if (down_arrow) { x -= 8; }
+        u8g2_DrawPixel(u8g2, x + 3, y);
+        u8g2_DrawLine(u8g2, x + 2, y + 1, x + 4, y + 1);
+        u8g2_DrawLine(u8g2, x + 1, y + 2, x + 5, y + 2);
+        u8g2_DrawLine(u8g2, x, y + 3, x + 6, y + 3);
+        if (down_arrow) { x += 8; }
+    }
+    if (down_arrow) {
+        u8g2_DrawLine(u8g2, x, y, x + 6, y);
+        u8g2_DrawLine(u8g2, x + 1, y + 1, x + 5, y + 1);
+        u8g2_DrawLine(u8g2, x + 2, y + 2, x + 4, y + 2);
+        u8g2_DrawPixel(u8g2, x + 3, y + 3);
+    }
 }
