@@ -29,7 +29,7 @@ typedef enum : uint8_t {
     SAFELIGHT_CONTROL_BOTH       /*!< Safelight power is controlled by both relay and DMX */
 } safelight_control_t;
 
-typedef struct {
+typedef struct __safelight_config_t {
     safelight_mode_t mode;       /*!< Safelight operation mode */
     safelight_control_t control; /*!< Set power control method */
     uint16_t dmx_address;        /*!< DMX device address */

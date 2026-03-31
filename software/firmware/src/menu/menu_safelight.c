@@ -9,9 +9,12 @@
 #include "display.h"
 #include "illum_controller.h"
 #include "settings.h"
-#include "util.h"
+#include "safelight_calibration.h"
+#include "keypad.h"
 
+static const char *safelight_control_str(safelight_control_t control);
 static menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config);
+static menu_result_t menu_safelight_config_control_test(const safelight_config_t *safelight_config);
 
 menu_result_t menu_safelight_config()
 {
@@ -30,6 +33,8 @@ menu_result_t menu_safelight_config()
     do {
         size_t offset = 0;
         const char *val_str;
+        const bool dmx_options = safelight_config.control == SAFELIGHT_CONTROL_DMX || safelight_config.control == SAFELIGHT_CONTROL_BOTH;
+
         switch(safelight_config.mode) {
         case SAFELIGHT_MODE_OFF:
             val_str = "Off";
@@ -46,21 +51,9 @@ menu_result_t menu_safelight_config()
 
         offset += menu_build_padded_format_row(buf + offset, "Turn off delay", "%dms", safelight_config.turn_off_delay);
 
-        switch(safelight_config.control) {
-        case SAFELIGHT_CONTROL_DMX:
-            val_str = "DMX";
-            break;
-        case SAFELIGHT_CONTROL_BOTH:
-            val_str = "Relay+DMX";
-            break;
-        case SAFELIGHT_CONTROL_RELAY:
-        default:
-            val_str = "Relay";
-            break;
-        }
-        offset += menu_build_padded_str_row(buf + offset, "Power control", val_str);
+        offset += menu_build_padded_str_row(buf + offset, "Power control", safelight_control_str(safelight_config.control));
 
-        if (safelight_config.control == SAFELIGHT_CONTROL_DMX || safelight_config.control == SAFELIGHT_CONTROL_BOTH) {
+        if (dmx_options) {
             offset += sprintf(buf + offset, "DMX address                [%3d]\n",
                 safelight_config.dmx_address + 1);
 
@@ -78,7 +71,9 @@ menu_result_t menu_safelight_config()
                 offset += menu_build_padded_format_row(buf + offset, val_str, "%3d", (uint8_t)safelight_config.dmx_on_value);
             }
         }
-        buf[offset - 1] = '\0';
+
+        offset += sprintf(buf + offset, "*** Test Safelights ***\n");
+        sprintf(buf + offset, "*** Measure Off Delay ***");
 
         option = display_selection_list(title, option, buf);
 
@@ -104,7 +99,7 @@ menu_result_t menu_safelight_config()
                 safelight_config.control = 0;
             }
             config_changed = true;
-        } else if (option == 4) {
+        } else if (dmx_options && option == 4) {
             uint16_t value_sel = safelight_config.dmx_address + 1;
             if (display_input_value_u16(
                 "DMX Address",
@@ -116,7 +111,7 @@ menu_result_t menu_safelight_config()
                 safelight_config.dmx_address = value_sel - 1;
                 config_changed = true;
             }
-        } else if (option == 5) {
+        } else if (dmx_options && option == 5) {
             if (safelight_config.dmx_wide_mode) {
                 safelight_config.dmx_wide_mode = false;
                 safelight_config.dmx_on_value = (safelight_config.dmx_on_value & 0xFF00) >> 8;
@@ -129,7 +124,7 @@ menu_result_t menu_safelight_config()
                 }
             }
             config_changed = true;
-        } else if (option == 6) {
+        } else if (dmx_options && option == 6) {
             if (safelight_config.dmx_wide_mode) {
                 uint16_t value_sel = safelight_config.dmx_on_value;
                 if (display_input_value_u16(
@@ -138,10 +133,10 @@ menu_result_t menu_safelight_config()
                     "safelights are turned on.\n",
                     "", &value_sel, 0, 65535, 5, " / 65535") == UINT8_MAX) {
                     menu_result = MENU_TIMEOUT;
-                } else {
-                    safelight_config.dmx_on_value = value_sel;
-                    config_changed = true;
-                }
+                    } else {
+                        safelight_config.dmx_on_value = value_sel;
+                        config_changed = true;
+                    }
             } else {
                 uint8_t value_sel = safelight_config.dmx_on_value;
                 if (display_input_value(
@@ -150,10 +145,27 @@ menu_result_t menu_safelight_config()
                     "safelights are turned on.\n",
                     "", &value_sel, 0, 255, 3, " / 255") == UINT8_MAX) {
                     menu_result = MENU_TIMEOUT;
-                } else {
-                    safelight_config.dmx_on_value = value_sel;
-                    config_changed = true;
-                }
+                    } else {
+                        safelight_config.dmx_on_value = value_sel;
+                        config_changed = true;
+                    }
+            }
+        } else if (option == (dmx_options ? 7 : 4)) {
+            /* Test Safelights */
+            menu_result_t sub_result = menu_safelight_config_control_test(&safelight_config);
+            if (sub_result == MENU_OK) {
+                config_changed = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+                break;
+            }
+        } else if (option == (dmx_options ? 8 : 5)) {
+            menu_result_t sub_result = menu_safelight_calibration(&safelight_config);
+            if (sub_result == MENU_OK) {
+                config_changed = true;
+            } else if (sub_result == MENU_TIMEOUT) {
+                menu_result = MENU_TIMEOUT;
+                break;
             }
         } else if (option == 0 && config_changed) {
             /* Skip this code if the original config is valid and unchanged */
@@ -187,11 +199,25 @@ menu_result_t menu_safelight_config()
             safelight_config.dmx_on_value = 255;
         }
         settings_set_safelight_config(&safelight_config);
-        illum_controller_refresh();
-        illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
     }
 
+    illum_controller_refresh();
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+
     return menu_result;
+}
+
+const char *safelight_control_str(safelight_control_t control)
+{
+    switch(control) {
+    case SAFELIGHT_CONTROL_DMX:
+        return "DMX";
+    case SAFELIGHT_CONTROL_BOTH:
+        return "Relay+DMX";
+    case SAFELIGHT_CONTROL_RELAY:
+    default:
+        return "Relay";
+    }
 }
 
 menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
@@ -234,6 +260,49 @@ menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
             menu_result = MENU_TIMEOUT;
         }
     } while (option > 0 && menu_result != MENU_TIMEOUT);
+
+    return menu_result;
+}
+
+menu_result_t menu_safelight_config_control_test(const safelight_config_t *safelight_config)
+{
+    char buf[256];
+    menu_result_t menu_result = MENU_OK;
+    bool safelight_on = false;
+
+    const uint32_t config_timeout = settings_get_menu_timeout();
+    const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
+
+    menu_safelight_test_enable(safelight_config, true);
+
+    for (;;) {
+        sprintf(buf,
+            "\n\n"
+            "%s control [%s]",
+            safelight_control_str(safelight_config->control),
+            safelight_on ? "**" : "  ");
+        display_static_list("Safelight Test", buf);
+
+        keypad_event_t keypad_event;
+        HAL_StatusTypeDef ret = keypad_wait_for_event(&keypad_event, key_wait);
+        if (ret == HAL_OK) {
+            if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOCUS)) {
+                safelight_on = !safelight_on;
+                menu_safelight_test_toggle(safelight_config, safelight_on);
+            } else if (keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed) {
+                break;
+            }
+
+        } else if (ret == HAL_TIMEOUT) {
+            menu_result = MENU_TIMEOUT;
+            break;
+        }
+    }
+
+    menu_safelight_test_enable(safelight_config, false);
+
+    illum_controller_refresh();
+    illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
     return menu_result;
 }
