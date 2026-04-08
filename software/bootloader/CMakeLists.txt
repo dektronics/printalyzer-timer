@@ -180,10 +180,12 @@ target_link_libraries(${EXECUTABLE} PRIVATE
 
     -T"${MCU_LINKER_SCRIPT}"
     ${CPU_PARAMETERS}
+    ${RUNTIME_LIBRARY_SYSCALLS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--gc-sections
+    -static
+    ${RUNTIME_LIBRARY}
     ${CHERRYUSB_LDFLAGS}
-    ${RUNTIME_LIBRARY_SYSCALLS}
     -Wl,--start-group
     -lc
     -lm

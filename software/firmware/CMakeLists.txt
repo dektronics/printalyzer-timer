@@ -168,6 +168,10 @@ target_compile_options(${EXECUTABLE} PRIVATE
         -Wsuggest-override>
 )
 
+target_link_options(${EXECUTABLE} PRIVATE
+    -u _printf_float
+)
+
 target_link_libraries(${EXECUTABLE} PRIVATE
     cmsis
     hal
@@ -180,10 +184,11 @@ target_link_libraries(${EXECUTABLE} PRIVATE
 
     -T"${MCU_LINKER_SCRIPT}"
     ${CPU_PARAMETERS}
+    ${RUNTIME_LIBRARY_SYSCALLS}
     -Wl,-Map=${CMAKE_PROJECT_NAME}.map
     -Wl,--gc-sections
-    ${RUNTIME_LIBRARY_SYSCALLS}
-    -u _printf_float
+    -static
+    ${RUNTIME_LIBRARY}
     -Wl,--start-group
     -lc
     -lm
