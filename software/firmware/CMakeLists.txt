@@ -35,6 +35,7 @@ set(CXX_FLAGS
     -fno-threadsafe-statics
 )
 add_compile_options(
+    -std=gnu23
     -fdata-sections
     -ffunction-sections
     ${RUNTIME_LIBRARY}

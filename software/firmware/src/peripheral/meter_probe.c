@@ -21,7 +21,7 @@
 #include "util.h"
 
 /* I2C address of the digital potentiometer used to control DensiStick light intensity */
-static const uint8_t MCP4017_ADDRESS = 0x2F; /* Use 7-bit address */
+static constexpr uint8_t MCP4017_ADDRESS = 0x2F; /* Use 7-bit address */
 
 /*
  * Size of an ALS reading in the TSL2585 FIFO, when using our

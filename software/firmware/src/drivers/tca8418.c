@@ -6,7 +6,7 @@
 #include <elog.h>
 
 /* I2C device address */
-static const uint8_t TCA8418_ADDRESS = 0x34 << 1;
+static constexpr uint8_t TCA8418_ADDRESS = 0x34 << 1;
 
 /* Registers */
 #define TCA8418_CFG            0x01

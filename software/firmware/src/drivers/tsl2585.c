@@ -11,7 +11,7 @@
 #include <string.h>
 
 /* I2C device address */
-static const uint8_t TSL2585_ADDRESS = 0x39; // Use 7-bit address
+static constexpr uint8_t TSL2585_ADDRESS = 0x39; // Use 7-bit address
 
 /*
  * Photodiode numbering:

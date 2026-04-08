@@ -5,7 +5,7 @@
 
 #include <string.h>
 
-static const uint8_t AW9523_ADDRESS = 0x5B << 1;
+static constexpr uint8_t AW9523_ADDRESS = 0x5B << 1;
 
 /* Registers */
 #define AW9523_INPUT_P0     0x00

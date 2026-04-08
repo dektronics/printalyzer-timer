@@ -27,8 +27,8 @@ static const osMutexAttr_t display_mutex_attributes = {
 static uint8_t display_contrast = 0x9F;
 static uint8_t display_brightness = 0x0F;
 
-static const u8g2_uint_t COUNTER_TIME_X = 217;
-static const u8g2_uint_t COUNTER_TIME_Y = 8;
+static constexpr u8g2_uint_t COUNTER_TIME_X = 217;
+static constexpr u8g2_uint_t COUNTER_TIME_Y = 8;
 
 static void display_set_freq(uint8_t value);
 

@@ -9,7 +9,7 @@
 #include "util.h"
 
 /* I2C device memory address */
-static const uint8_t M24C08_ADDRESS = 0x50;
+static constexpr uint8_t M24C08_ADDRESS = 0x50;
 
 HAL_StatusTypeDef m24c08_read_byte(i2c_handle_t *hi2c, uint16_t address, uint8_t *data)
 {

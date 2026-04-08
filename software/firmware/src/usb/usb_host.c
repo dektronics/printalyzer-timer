@@ -27,7 +27,7 @@ extern SMBUS_HandleTypeDef hsmbus2;
 
 extern void Error_Handler(void);
 
-static const uint8_t USB2422_ADDRESS = 0x2C << 1;
+static constexpr uint8_t USB2422_ADDRESS = 0x2C << 1;
 
 /* Mutex to synchronize attach and detach event handling */
 static osMutexId_t usb_attach_mutex;

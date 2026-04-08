@@ -8,7 +8,7 @@
 #include "util.h"
 
 /* I2C device base address */
-static const uint8_t M24M01_ADDRESS = 0x50 << 1;
+static constexpr uint8_t M24M01_ADDRESS = 0x50 << 1;
 
 #define DEVICE_ADDRESS(x) (M24M01_ADDRESS | (uint8_t)((x & 0x10000) >> 15))
 #define MEMORY_ADDRESS(x) ((uint16_t)(x & 0xFFFF))
