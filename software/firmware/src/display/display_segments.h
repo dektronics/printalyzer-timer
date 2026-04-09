@@ -9,7 +9,7 @@
  * on the display, in a variety of sizes.
  */
 
-typedef enum {
+typedef enum : uint8_t {
     DIGIT_FULL = 0, /*!< 30x56 pixel digit */
     DIGIT_NARROW,   /*!< 22x56 pixel digit */
     DIGIT_MEDIUM,   /*!< 18x37 pixel digit */

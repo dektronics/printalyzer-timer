@@ -1,13 +1,13 @@
 #ifndef STATE_CONTROLLER_H
 #define STATE_CONTROLLER_H
 
-#include <stdbool.h>
+#include <stdint.h>
 #include "enlarger_config.h"
 #include "exposure_state.h"
 
 #define STATE_KEYPAD_WAIT 200
 
-typedef enum {
+typedef enum : uint8_t {
     STATE_HOME = 0,
     STATE_HOME_CHANGE_TIME_INCREMENT,
     STATE_HOME_CHANGE_MODE,

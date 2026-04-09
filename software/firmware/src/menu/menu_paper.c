@@ -132,8 +132,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
             menu_result = MENU_CANCEL;
             break;
         } else if (option - 1 == profile_count) {
-            paper_profile_t working_profile;
-            memset(&working_profile, 0, sizeof(paper_profile_t));
+            paper_profile_t working_profile = {0};
 
             uint8_t add_option = display_selection_list("Add New Profile", 1,
                 "*** Add Profile Manually ***\n"
@@ -957,7 +956,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
 
 menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *controller, const char *title, paper_profile_grade_t *paper_grade, float paper_dmin, float paper_dmax, menu_paper_callback_data_t *dens_data)
 {
-    const int MAX_STEPS = 7;
+    constexpr int MAX_STEPS = 7;
     menu_result_t menu_result = MENU_OK;
     char *buf = NULL;
     uint8_t paper_param = 0;

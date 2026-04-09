@@ -14,7 +14,7 @@
 #include "densitometer.h"
 #include "util.h"
 
-typedef enum {
+typedef enum : uint8_t {
     ACTION_NONE = 0,
     ACTION_TIMER,
     ACTION_FOCUS,

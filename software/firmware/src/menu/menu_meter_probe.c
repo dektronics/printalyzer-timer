@@ -543,7 +543,7 @@ menu_result_t meter_probe_diagnostics(const char *title, meter_probe_handle_t *h
     uint32_t elapsed_tick_buf[10] = {0};
     bool elapsed_tick_buf_full = false;
     size_t elapsed_tick_buf_pos = 0;
-    const size_t elapsed_tick_buf_len = sizeof(elapsed_tick_buf) / sizeof(uint32_t);
+    constexpr size_t elapsed_tick_buf_len = sizeof(elapsed_tick_buf) / sizeof(uint32_t);
     float atime;
     uint32_t expected_reading_time;
     const bool is_stick = (handle == densistick_handle()) ? true : false;

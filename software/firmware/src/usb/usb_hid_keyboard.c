@@ -70,7 +70,7 @@ static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_ti
 static int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
 
-static const uint8_t keyboard_keys[] = {
+static constexpr uint8_t keyboard_keys[] = {
     '\0',  '`',  '1',  '2',  '3',  '4',  '5',  '6',
     '7',  '8',  '9',  '0',  '-',  '=',  '\0', '\r',
     '\t',  'q',  'w',  'e',  'r',  't',  'y',  'u',
@@ -91,7 +91,7 @@ static const uint8_t keyboard_keys[] = {
     '\0', '\0', '\0', '\0'
 };
 
-static const uint8_t keyboard_shift_keys[] = {
+static constexpr uint8_t keyboard_shift_keys[] = {
     '\0', '~',  '!',  '@',  '#',  '$',  '%',  '^',  '&',  '*',  '(',  ')',
     '_',  '+',  '\0', '\0', '\0', 'Q',  'W',  'E',  'R',  'T',  'Y',  'U',
     'I',  'O',  'P',  '{',  '}',  '|',  '\0', 'A',  'S',  'D',  'F',  'G',

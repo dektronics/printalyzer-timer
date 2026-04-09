@@ -8,7 +8,6 @@
 #include <stm32f4xx_hal.h>
 #include <cmsis_os.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include "buzzer.h"
 #include "exposure_state.h"
 #include "enlarger_config.h"
@@ -18,13 +17,13 @@
 #define MAX_ENLARGER_CONFIGS 16
 #define MAX_PAPER_PROFILES 16
 
-typedef enum {
+typedef enum : uint8_t {
     SAFELIGHT_MODE_OFF = 0, /*!< Safelight is always off */
     SAFELIGHT_MODE_ON,      /*!< Safelight is off when the enlarger is on */
     SAFELIGHT_MODE_AUTO     /*!< Safelight is off during metering and printing */
 } safelight_mode_t;
 
-typedef enum {
+typedef enum : uint8_t {
     SAFELIGHT_CONTROL_RELAY = 0, /*!< Safelight power is relay controlled */
     SAFELIGHT_CONTROL_DMX,       /*!< Safelight power is DMX controlled */
     SAFELIGHT_CONTROL_BOTH       /*!< Safelight power is controlled by both relay and DMX */
@@ -39,12 +38,12 @@ typedef struct {
     uint32_t turn_off_delay;     /*!< Time (ms) it takes for the safelight to turn off */
 } safelight_config_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TESTSTRIP_MODE_INCREMENTAL = 0,
     TESTSTRIP_MODE_SEPARATE
 } teststrip_mode_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TESTSTRIP_PATCHES_7 = 0,
     TESTSTRIP_PATCHES_5
 } teststrip_patches_t;
@@ -60,7 +59,7 @@ HAL_StatusTypeDef settings_init(I2C_HandleTypeDef *hi2c, osMutexId_t i2c_mutex);
 /**
  * Clear the settings store to factory blank
  *
- * @param Pointer to a handle for the I2C peripheral used by the EEPROM
+ * @param hi2c Pointer to a handle for the I2C peripheral used by the EEPROM
  */
 HAL_StatusTypeDef settings_clear(I2C_HandleTypeDef *hi2c);
 
@@ -202,7 +201,7 @@ bool settings_get_enlarger_config_dmx_control(bool *dmx_control, uint8_t index);
 /**
  * Get the enlarger configuration saved at the specified index
  *
- * @param profile Pointer to the configuration struct to load data into
+ * @param config Pointer to the configuration struct to load data into
  * @param index An index value from 0 to 15
  * @return True if the configuration was successfully loaded, false if no valid
  *         configuration was found at the specified index.
@@ -212,7 +211,7 @@ bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index);
 /**
  * Save an enlarger configuration at the specified index
  *
- * @param profile Pointer to the configuration struct to save data from
+ * @param config Pointer to the configuration struct to save data from
  * @param index An index value from 0 to 15
  * @return True if the configuration was successfully saved
  */

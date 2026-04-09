@@ -14,7 +14,7 @@
  * Key codes 105..114 are for Column GPI key events
  * Key codes 200..255 are injected from other sources
  */
-typedef enum {
+typedef enum : uint8_t {
     KEYPAD_START = 105,
     KEYPAD_FOCUS = 106,
     KEYPAD_INC_EXPOSURE = 107,

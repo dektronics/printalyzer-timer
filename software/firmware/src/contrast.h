@@ -1,13 +1,13 @@
 #ifndef CONTRAST_H
 #define CONTRAST_H
 
-#include <stddef.h>
+#include <stdint.h>
 
 /**
  * Enumerated contrast grades used for exposure settings
  * and paper profiles.
  */
-typedef enum {
+typedef enum : uint8_t {
     CONTRAST_GRADE_00 = 0,
     CONTRAST_GRADE_0,
     CONTRAST_GRADE_0_HALF,
@@ -30,7 +30,7 @@ extern const contrast_grade_t CONTRAST_WHOLE_GRADES[];
  * Different types of contrast filters that can be used for
  * contrast grade filtration.
  */
-typedef enum {
+typedef enum : uint8_t {
     CONTRAST_FILTER_REGULAR = 0,
     CONTRAST_FILTER_DURST_170M,
     CONTRAST_FILTER_DURST_130M,

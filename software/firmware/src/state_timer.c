@@ -105,7 +105,7 @@ bool state_timer_main_exposure(exposure_state_t *exposure_state, const enlarger_
 
     log_i("Starting exposure timer for %ldms", exposure_time_ms);
 
-    display_draw_exposure_timer(&elements, 0);
+    display_draw_exposure_timer(&elements, nullptr);
 
     HAL_StatusTypeDef ret = exposure_timer_run();
     if (ret == HAL_TIMEOUT) {

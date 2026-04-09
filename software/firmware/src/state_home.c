@@ -24,7 +24,7 @@
 
 #define LIVE_TONE_TIMEOUT pdMS_TO_TICKS(2000)
 
-typedef enum {
+typedef enum : uint8_t {
     ACTION_NONE = 0,
     ACTION_TIMER,
     ACTION_FOCUS,

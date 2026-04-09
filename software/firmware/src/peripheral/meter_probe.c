@@ -203,22 +203,22 @@ static meter_probe_handle_t probe_handle = {0};
 static meter_probe_handle_t stick_handle = {0};
 
 /* TSL2520 and TSL2521: Only enable Clear photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
+static constexpr tsl2585_modulator_t sensor_tsl2521_phd_mod_vis[] = {
     TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD_NONE
 };
 
 /* TSL2522: Only enable Photopic photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_tsl2522_phd_mod_vis[] = {
+static constexpr tsl2585_modulator_t sensor_tsl2522_phd_mod_vis[] = {
     TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD0, TSL2585_MOD_NONE
 };
 
 /* TSL2585: Only enable Photopic photodiodes on modulator 0 */
-static const tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
+static constexpr tsl2585_modulator_t sensor_tsl2585_phd_mod_vis[] = {
     TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD0
 };
 
 /* TCS3410: Only enable Clear photodiode on modulator 0 */
-static const tsl2585_modulator_t sensor_tcs3410_phd_mod_vis[] = {
+static constexpr tsl2585_modulator_t sensor_tcs3410_phd_mod_vis[] = {
     TSL2585_MOD_NONE, TSL2585_MOD0, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE, TSL2585_MOD_NONE
 };
 
@@ -348,7 +348,7 @@ bool task_meter_probe_run_init(meter_probe_handle_t *handle, const meter_probe_i
     return true;
 }
 
-void task_meter_probe_run_loop(meter_probe_handle_t *handle)
+[[noreturn]] void task_meter_probe_run_loop(meter_probe_handle_t *handle)
 {
     meter_probe_control_event_t control_event;
 
@@ -419,7 +419,6 @@ void task_meter_probe_run_loop(meter_probe_handle_t *handle)
             }
         }
     }
-
 }
 
 void usb_meter_probe_event_callback(ft260_device_t *device, ft260_device_event_t event_type, uint32_t ticks, void *user_data)
@@ -1381,7 +1380,7 @@ osStatus_t densistick_set_light_enable(meter_probe_handle_t *handle, bool enable
 
 osStatus_t meter_probe_control_set_light_enable(meter_probe_handle_t *handle, bool enable)
 {
-    osStatus_t ret = HAL_OK;
+    osStatus_t ret;
 
     log_d("meter_probe_control_set_light_enable: %d", enable);
 
@@ -1501,7 +1500,7 @@ osStatus_t meter_probe_sensor_get_next_reading(meter_probe_handle_t *handle, met
 meter_probe_result_t meter_probe_measure(meter_probe_handle_t *handle, float *lux)
 {
     meter_probe_result_t result = METER_READING_OK;
-    const int max_count = 10;
+    constexpr int max_count = 10;
     osStatus_t ret = osOK;
     meter_probe_sensor_reading_t reading;
     int count = 0;
@@ -1945,7 +1944,7 @@ HAL_StatusTypeDef sensor_control_read_fifo(meter_probe_handle_t *handle, tsl2585
     tsl2585_fifo_status_t fifo_status;
     uint8_t data[FIFO_ALS_ENTRY_SIZE];
     uint8_t counter = 0;
-    const uint8_t data_size = FIFO_ALS_ENTRY_SIZE;
+    constexpr uint8_t data_size = FIFO_ALS_ENTRY_SIZE;
 
     do {
         ret = tsl2585_get_fifo_status(handle->hi2c, &fifo_status);

@@ -3,8 +3,9 @@
 
 #include <stm32f4xx_hal.h>
 #include <cmsis_os.h>
+#include <stdint.h>
 
-typedef enum {
+typedef enum : uint16_t {
     LED_START_LOWER = 0x0100,
     LED_START_UPPER = 0x0004,
     LED_FOCUS_LOWER = 0x0200,

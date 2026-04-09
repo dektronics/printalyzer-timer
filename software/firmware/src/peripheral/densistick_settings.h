@@ -8,7 +8,7 @@
 
 typedef struct i2c_handle_t i2c_handle_t;
 
-typedef enum {
+typedef enum : uint8_t {
     DENSISTICK_TYPE_UNKNOWN = 0,
     DENSISTICK_TYPE_BASELINE = 1
 } densistick_type_t;

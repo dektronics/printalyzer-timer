@@ -2,27 +2,27 @@
 #define EXPOSURE_TIMER_H
 
 #include <stm32f4xx_hal.h>
-#include <stdbool.h>
+#include <stdint.h>
 #include "enlarger_config.h"
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_TIMER_START_TONE_NONE = 0,
     EXPOSURE_TIMER_START_TONE_COUNTDOWN
 } exposure_timer_start_tone_t;
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_TIMER_END_TONE_NONE = 0,
     EXPOSURE_TIMER_END_TONE_SHORT,
     EXPOSURE_TIMER_END_TONE_REGULAR
 } exposure_timer_end_tone_t;
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_TIMER_RATE_10_MS,
     EXPOSURE_TIMER_RATE_100_MS,
     EXPOSURE_TIMER_RATE_1_SEC
 } exposure_timer_callback_rate_t;
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_TIMER_STATE_NONE = 0,
     EXPOSURE_TIMER_STATE_START = 1,
     EXPOSURE_TIMER_STATE_TICK = 2,

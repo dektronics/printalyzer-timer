@@ -8,7 +8,7 @@
 
 typedef struct i2c_handle_t i2c_handle_t;
 
-typedef enum {
+typedef enum : uint8_t {
     METER_PROBE_TYPE_UNKNOWN = 0,
     METER_PROBE_TYPE_BASELINE = 1
 } meter_probe_type_t;

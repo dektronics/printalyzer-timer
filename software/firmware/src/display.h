@@ -1,12 +1,12 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#include <stdbool.h>
+#include <stdint.h>
 #include "stm32f4xx_hal.h"
 #include "u8g2_stm32_hal.h"
 #include "contrast.h"
 
-typedef enum {
+typedef enum : uint16_t {
     DISPLAY_MENU_ACCEPT_MENU = 0x0001,
     DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT = 0x0002,
     DISPLAY_MENU_ACCEPT_TEST_STRIP = 0x0004,
@@ -18,7 +18,7 @@ typedef enum {
     DISPLAY_MENU_INPUT_POLL = 0x0400
 } display_menu_params_t;
 
-typedef enum {
+typedef enum : uint8_t {
     DISPLAY_PATCHES_5,
     DISPLAY_PATCHES_7
 } display_patches_t;

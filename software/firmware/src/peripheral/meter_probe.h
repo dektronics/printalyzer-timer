@@ -12,7 +12,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <cmsis_os.h>
 
 #include "tsl2585.h"
@@ -28,7 +27,7 @@ typedef struct {
     tsl2585_sensor_type_t sensor_type;
 } meter_probe_device_info_t;
 
-typedef enum {
+typedef enum : uint8_t {
     METER_READING_OK = 0,
     METER_READING_LOW,
     METER_READING_HIGH,
@@ -36,7 +35,7 @@ typedef enum {
     METER_READING_FAIL
 } meter_probe_result_t;
 
-typedef enum {
+typedef enum : uint8_t {
     METER_SENSOR_RESULT_INVALID = 0,
     METER_SENSOR_RESULT_VALID,
     METER_SENSOR_RESULT_SATURATED_ANALOG,

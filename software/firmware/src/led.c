@@ -16,7 +16,7 @@ static osMutexId_t led_i2c_mutex = NULL;
 static bool led_initialized = false;
 static uint8_t led_state[12];
 
-static const uint16_t led_map[] = {
+static constexpr uint16_t led_map[] = {
     LED_START_LOWER, LED_FOCUS_LOWER, LED_INC_EXPOSURE, LED_DEC_EXPOSURE,
     LED_INC_CONTRAST, LED_DEC_CONTRAST,
     LED_TEST_STRIP, LED_ADD_ADJUSTMENT, LED_CANCEL, LED_MENU,

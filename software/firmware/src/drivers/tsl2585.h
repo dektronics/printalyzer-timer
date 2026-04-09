@@ -11,7 +11,7 @@
 #define TSL2585_H
 
 #include "stm32f4xx_hal.h"
-#include <stdbool.h>
+#include <stdint.h>
 
 typedef struct i2c_handle_t i2c_handle_t;
 
@@ -26,7 +26,7 @@ typedef struct i2c_handle_t i2c_handle_t;
  * - The configuration of photodiodes
  * - Whether or not flicker detection is supported
  */
-typedef enum {
+typedef enum : uint8_t {
     SENSOR_TYPE_UNKNOWN = 0,
     SENSOR_TYPE_TSL2585,
     SENSOR_TYPE_TSL2520,
@@ -44,14 +44,14 @@ typedef enum {
  * MOD1 |    x    |    x    |    x    |    x    |    x    |
  * MOD2 |    x    |   ---   |   ---   |   ---   |    x    |
  */
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_MOD_NONE = 0x00,
     TSL2585_MOD0 = 0x01,
     TSL2585_MOD1 = 0x02,
     TSL2585_MOD2 = 0x04
 } tsl2585_modulator_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_STEP0 = 0x01,
     TSL2585_STEP1 = 0x02,
     TSL2585_STEP2 = 0x04,
@@ -72,7 +72,7 @@ typedef enum {
  * PHD_4 | UV-A     | Clear   | Clear   | Photopic | Blue    |
  * PHD_5 | Photopic | IR      | IR      | IR       | Red     |
  */
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_PHD_0 = 0,
     TSL2585_PHD_1,
     TSL2585_PHD_2,
@@ -82,7 +82,7 @@ typedef enum {
     TSL2585_PHD_MAX
 } tsl2585_photodiode_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_GAIN_0_5X  = 0,
     TSL2585_GAIN_1X    = 1,
     TSL2585_GAIN_2X    = 2,
@@ -106,13 +106,13 @@ typedef struct {
     uint16_t level;
 } tsl2585_fifo_status_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_ALS_FIFO_16BIT = 0x00,
     TSL2585_ALS_FIFO_24BIT = 0x01,
     TSL2585_ALS_FIFO_32BIT = 0x03
 } tsl2585_als_fifo_data_format_t;
 
-typedef enum {
+typedef enum : uint8_t {
     TSL2585_TRIGGER_OFF      = 0x00, /*!< Off */
     TSL2585_TRIGGER_NORMAL   = 0x01, /*!< 2.844ms * WTIME */
     TSL2585_TRIGGER_LONG     = 0x02, /*!< 45.511ms * WTIME */

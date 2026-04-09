@@ -3,9 +3,9 @@
 
 #include "stm32f4xx_hal.h"
 #include <cmsis_os.h>
-#include <stdbool.h>
+#include <stdint.h>
 
-typedef enum {
+typedef enum : uint8_t {
     DMX_PORT_DISABLED = 0,        /*!< Port is not enabled */
     DMX_PORT_ENABLED_IDLE,        /*!< Port line drivers are enabled, but nothing is being sent */
     DMX_PORT_ENABLED_TRANSMITTING,/*!< Port is enabled and sending DMX frames */

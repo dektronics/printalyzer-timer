@@ -2,18 +2,17 @@
 #define USB_METER_PROBE_H
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <cmsis_os.h>
 
 #define FT260_SERIAL_SIZE 32
 
-typedef enum {
+typedef enum : uint8_t {
     FT260_DEFAULT = 0,
     FT260_METER_PROBE,
     FT260_DENSISTICK
 } ft260_device_type_t;
 
-typedef enum {
+typedef enum : uint8_t {
     FT260_EVENT_ATTACH = 0,
     FT260_EVENT_DETACH,
     FT260_EVENT_INTERRUPT,

@@ -6,6 +6,7 @@
 #define PAM8904E_H
 
 #include "stm32f4xx_hal.h"
+#include <stdint.h>
 
 typedef struct __pam8904e_handle_t {
     GPIO_TypeDef *en1_gpio_port;
@@ -16,7 +17,7 @@ typedef struct __pam8904e_handle_t {
     uint32_t din_tim_channel;
 } pam8904e_handle_t;
 
-typedef enum {
+typedef enum : uint8_t {
     PAM8904E_GAIN_SHUTDOWN = 0,
     PAM8904E_GAIN_1X = 1,
     PAM8904E_GAIN_2X = 2,

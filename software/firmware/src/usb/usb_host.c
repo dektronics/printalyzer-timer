@@ -85,7 +85,7 @@ bool usb_host_init()
 
     /* Create the timer used to act as a watchdog on the SOF event */
     sof_watchdog_timer = xTimerCreate(
-        "sof_watchdog", SOF_WATCHDOG_PERIOD, pdTRUE, (void *)0,
+        "sof_watchdog", SOF_WATCHDOG_PERIOD, pdTRUE, nullptr,
         sof_watchdog_timer_callback);
     if (!sof_watchdog_timer) {
         log_e("Unable to create SOF watchdog timer");
@@ -183,7 +183,7 @@ bool usb_hub_init()
     }
 
     /* Enable pin-swap on all ports */
-    static const uint8_t USB2422_PRTSP = 0x07;
+    static constexpr uint8_t USB2422_PRTSP = 0x07;
     ret = smbus_master_block_write(&hsmbus2, USB2422_ADDRESS, 0xFA, &USB2422_PRTSP, 1);
     if (ret != HAL_OK) {
         return false;
@@ -199,7 +199,7 @@ bool usb_hub_init()
 
     /* Finish configuration and trigger USB_ATTACH */
     log_d("Triggering USB attach");
-    static const uint8_t USB2422_STCD = 0x01;
+    static constexpr uint8_t USB2422_STCD = 0x01;
     ret = smbus_master_block_write(&hsmbus2, USB2422_ADDRESS, 0xFF, &USB2422_STCD, 1);
     if (ret != HAL_OK) {
         sof_watchdog_state = SOF_WATCHDOG_INIT;

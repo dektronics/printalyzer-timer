@@ -8,17 +8,16 @@
 #define ENLARGER_CONFIG_H
 
 #include <stdint.h>
-#include <stdbool.h>
 #include "contrast.h"
 #include "util.h"
 
-typedef enum {
+typedef enum : uint8_t {
     ENLARGER_CHANNEL_SET_WHITE = 0, /*!< One white channel */
     ENLARGER_CHANNEL_SET_RGB,       /*!< Three channels for RGB */
     ENLARGER_CHANNEL_SET_RGBW       /*!< Four channels for RGBW */
 } enlarger_channel_set_t;
 
-typedef enum {
+typedef enum : uint8_t {
     ENLARGER_CONTRAST_MODE_WHITE = 0, /*!< Always emit white light and expect external contrast filters */
     ENLARGER_CONTRAST_MODE_GREEN_BLUE /*!< Use configured per-grade Green+Blue combinations */
 } enlarger_contrast_mode_t;

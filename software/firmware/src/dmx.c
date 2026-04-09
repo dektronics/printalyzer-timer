@@ -3,7 +3,6 @@
 #include "stm32f4xx_hal.h"
 
 #include <cmsis_os.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define LOG_TAG "dmx"
@@ -157,7 +156,7 @@ void task_dmx_run(void *argument)
     dmx_task_loop();
 }
 
-void dmx_task_loop()
+[[noreturn]] void dmx_task_loop()
 {
     dmx_control_event_t control_event;
     osStatus_t ret;

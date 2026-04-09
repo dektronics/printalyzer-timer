@@ -19,7 +19,7 @@
  * may not differ under all configurations. This is intended to capture
  * the totality of possibilities.
  */
-typedef enum {
+typedef enum : uint8_t {
     ENLARGER_CONTROL_STATE_OFF = 0, /*!< Enlarger is turned off */
     ENLARGER_CONTROL_STATE_FOCUS,   /*!< Enlarger is in white-light focus mode */
     ENLARGER_CONTROL_STATE_SAFE,    /*!< Enlarger is in red-light safe mode */

@@ -905,7 +905,7 @@ menu_result_t menu_enlarger_config_control_exposure_entry_edit(enlarger_control_
 
     const uint32_t config_timeout = settings_get_menu_timeout();
     const int key_wait = (config_timeout == 0) ? -1 : (int)config_timeout;
-    const contrast_grade_t grade = CONTRAST_GRADE_2;
+    constexpr contrast_grade_t grade = CONTRAST_GRADE_2;
     const uint16_t max_val = enlarger_control->dmx_wide_mode ? UINT16_MAX : UINT8_MAX;
     const bool has_white = enlarger_control->channel_set == ENLARGER_CHANNEL_SET_RGBW;
     uint16_t row_val[] = {

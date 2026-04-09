@@ -12,14 +12,14 @@
 
 #define EXPOSURE_BURN_DODGE_MAX 9
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_MODE_PRINTING_BW = 0,
     EXPOSURE_MODE_PRINTING_COLOR,
     EXPOSURE_MODE_DENSITOMETER,
     EXPOSURE_MODE_CALIBRATION
 } exposure_mode_t;
 
-typedef enum {
+typedef enum : uint8_t {
     EXPOSURE_ADJ_TWELFTH = 1,
     EXPOSURE_ADJ_SIXTH = 2,
     EXPOSURE_ADJ_QUARTER = 3,

@@ -318,10 +318,8 @@ HAL_StatusTypeDef settings_write_header()
 {
     log_i("Write settings header");
     HAL_StatusTypeDef ret;
-    uint8_t data[PAGE_HEADER_SIZE];
+    uint8_t data[PAGE_HEADER_SIZE] = {0};
 
-    /* Fill the page with the magic bytes and version header */
-    memset(data, 0, sizeof(data));
     memcpy(data, "PRINTALYZER\0", 12);
     copy_from_u32(&data[HEADER_START - PAGE_HEADER], HEADER_VERSION);
 
@@ -870,8 +868,7 @@ bool settings_get_enlarger_config_name(char *name, uint8_t index)
     log_i("Load enlarger config name: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[4 + PROFILE_NAME_LEN];
-    memset(data, 0, sizeof(data));
+    uint8_t data[4 + PROFILE_NAME_LEN] = {0};
 
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
@@ -949,8 +946,7 @@ bool settings_get_enlarger_config(enlarger_config_t *config, uint8_t index)
     log_i("Load enlarger config: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
@@ -1027,8 +1023,7 @@ bool settings_set_enlarger_config(const enlarger_config_t *config, uint8_t index
 
     log_i("Save enlarger config: %d", index);
 
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     settings_enlarger_config_populate_page(config, data);
 
@@ -1121,8 +1116,7 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
     log_i("Load paper profile: %d", index);
 
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
@@ -1204,8 +1198,7 @@ bool settings_set_paper_profile(const paper_profile_t *profile, uint8_t index)
 
     log_i("Save paper profile: %d", index);
 
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     settings_paper_profile_populate_page(profile, data);
 
@@ -1295,8 +1288,7 @@ bool settings_get_step_wedge(step_wedge_t **wedge)
     log_i("Load step wedge");
 
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     do {
         osMutexAcquire(eeprom_i2c_mutex, portMAX_DELAY);
@@ -1364,8 +1356,7 @@ bool settings_set_step_wedge(const step_wedge_t *wedge)
 
     log_i("Save step wedge");
 
-    uint8_t data[PAGE_SIZE];
-    memset(data, 0, sizeof(data));
+    uint8_t data[PAGE_SIZE] = {0};
 
     settings_step_wedge_populate_page(wedge, data);
 
@@ -1393,9 +1384,8 @@ void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
 bool settings_set_bootloader_firmware(const char *dev_serial, uint32_t checksum, const char *file_path)
 {
     HAL_StatusTypeDef ret = HAL_OK;
-    uint8_t data[PAGE_SIZE];
+    uint8_t data[PAGE_SIZE] = {0};
 
-    memset(data, 0x00, PAGE_SIZE);
     data[BOOTLOADER_COMMAND] = 0xBB;
 
     strncpy((char *)(data + BOOTLOADER_FW_DEVICE), dev_serial, 21);

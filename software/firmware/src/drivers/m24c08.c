@@ -59,7 +59,7 @@ HAL_StatusTypeDef m24c08_write_byte(i2c_handle_t *hi2c, uint16_t address, uint8_
         log_e("i2c_mem_write error: %d", ret);
     }
 
-    while(i2c_is_device_ready(hi2c, M24C08_ADDRESS, HAL_MAX_DELAY) != HAL_OK);
+    while(i2c_is_device_ready(hi2c, M24C08_ADDRESS, HAL_MAX_DELAY) != HAL_OK) {}
 
     return ret;
 }
@@ -123,7 +123,7 @@ HAL_StatusTypeDef m24c08_write_page(i2c_handle_t *hi2c, uint16_t address, const 
     }
 
     //TODO Need to prevent this loop from running infinitely under unrecoverable errors
-    while(i2c_is_device_ready(hi2c, M24C08_ADDRESS, HAL_MAX_DELAY) != HAL_OK);
+    while(i2c_is_device_ready(hi2c, M24C08_ADDRESS, HAL_MAX_DELAY) != HAL_OK) {}
 
     return ret;
 }

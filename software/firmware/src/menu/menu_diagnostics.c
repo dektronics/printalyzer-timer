@@ -70,8 +70,7 @@ menu_result_t diagnostics_keypad()
     char buf[512];
 
     bool keypad_pressed = false;
-    keypad_event_t keypad_event;
-    memset(&keypad_event, 0, sizeof(keypad_event_t));
+    keypad_event_t keypad_event = {0};
 
     for (;;) {
         sprintf(buf,

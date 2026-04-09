@@ -1579,7 +1579,7 @@ const char* tsl2585_gain_str(tsl2585_gain_t gain)
     }
 }
 
-static const float TSL2585_GAIN_VAL[] = {
+static constexpr float TSL2585_GAIN_VAL[] = {
     0.5F, 1.0F, 2.0F, 4.0F, 8.0F, 16.0F, 32.0F, 64.0F,
     128.0F, 256.0F, 512.0F, 1024.0F, 2048.0F, 4096.0F
 };

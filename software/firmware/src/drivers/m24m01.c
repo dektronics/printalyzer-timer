@@ -76,7 +76,7 @@ HAL_StatusTypeDef m24m01_write_byte(I2C_HandleTypeDef *hi2c, uint32_t address, u
         log_e("HAL_I2C_Mem_Write error: %d", ret);
     }
 
-    while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK);
+    while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK) {}
 
     return ret;
 }
@@ -141,7 +141,7 @@ HAL_StatusTypeDef m24m01_write_page(I2C_HandleTypeDef *hi2c, uint32_t address, c
         log_e("HAL_I2C_Mem_Write error: %d", ret);
     }
 
-    while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK);
+    while(HAL_I2C_IsDeviceReady(hi2c, device_addr, 1, HAL_MAX_DELAY) != HAL_OK) {}
 
     return ret;
 }

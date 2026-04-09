@@ -244,7 +244,7 @@ void task_keypad_run(void *argument)
 
     /* Create the timer to handle key repeat events */
     button_repeat_timer = xTimerCreate(
-        "keypad_repeat", 1, pdFALSE, (void *)0,
+        "keypad_repeat", 1, pdFALSE, nullptr,
         keypad_button_repeat_timer_callback);
     if (!button_repeat_timer) {
         log_e("Unable to create repeat timer");
@@ -274,7 +274,7 @@ void task_keypad_run(void *argument)
     keypad_task_loop();
 }
 
-void keypad_task_loop()
+[[noreturn]] void keypad_task_loop()
 {
     keypad_raw_event_t raw_event;
     for (;;) {

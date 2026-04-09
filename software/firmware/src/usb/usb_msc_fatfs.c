@@ -98,7 +98,7 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
     handle->mounted = true;
 
     /* Do some initial operations to make sure the volume works */
-    fres = f_getlabel((TCHAR const*)handle->usbh_path, handle->label, 0);
+    fres = f_getlabel((TCHAR const*)handle->usbh_path, handle->label, nullptr);
     if (fres == FR_OK) {
         log_i("Drive label: \"%s\"", handle->label);
     }
@@ -216,7 +216,7 @@ DSTATUS fatfs_diskio_initialize(BYTE pdrv)
 
 /**
  * Gets disk status
- * @param lun logical unit id
+ * @param pdrv physical drive number
  * @return Operation status
  */
 DSTATUS fatfs_diskio_status(BYTE pdrv)

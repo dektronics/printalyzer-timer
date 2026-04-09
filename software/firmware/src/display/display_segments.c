@@ -4,7 +4,7 @@
 #include "u8g2.h"
 #include "util.h"
 
-typedef enum {
+typedef enum : uint8_t {
     seg_a = 0x01,
     seg_b = 0x02,
     seg_c = 0x04,

@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #define LOG_TAG "exposure_timer"
 #include <elog.h>
@@ -17,11 +16,11 @@
 #include "settings.h"
 #include "util.h"
 
-static TIM_HandleTypeDef *timer_htim = 0;
+static TIM_HandleTypeDef *timer_htim = nullptr;
 static exposure_timer_config_t timer_config = {0};
 static enlarger_control_t enlarger_control = {0};
 
-static TaskHandle_t timer_task_handle = 0;
+static TaskHandle_t timer_task_handle = nullptr;
 static bool enlarger_activated = false;
 static bool enlarger_deactivated = false;
 static bool enlarger_deactivate_pending = false;

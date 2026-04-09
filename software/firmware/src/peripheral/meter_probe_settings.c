@@ -258,7 +258,7 @@ HAL_StatusTypeDef meter_probe_settings_set_target(const peripheral_settings_hand
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LUX_SLOPE) + 4];
-    const size_t offset = CAL_TSL2585_TARGET_LUX_SLOPE;
+    constexpr size_t offset = CAL_TSL2585_TARGET_LUX_SLOPE;
     uint32_t version;
     uint32_t crc;
 

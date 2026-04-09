@@ -3,8 +3,10 @@
 
 #include "densitometer.h"
 
-typedef enum {
-    DENS_REMOTE_RESULT_OK = 0U,
+#include <stdint.h>
+
+typedef enum : uint8_t {
+    DENS_REMOTE_RESULT_OK = 0,
     DENS_REMOTE_RESULT_INVALID,
     DENS_REMOTE_RESULT_TIMEOUT,
     DENS_REMOTE_RESULT_NOT_CONNECTED,

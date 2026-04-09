@@ -5,7 +5,7 @@
 
 #include "state_controller.h"
 
-typedef enum {
+typedef enum : uint8_t {
     MENU_OK = 0,
     MENU_CANCEL = 1,
     MENU_SAVE = 3,

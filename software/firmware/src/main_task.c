@@ -162,7 +162,7 @@ bool task_main_is_running()
 void main_task_run(void *argument)
 {
     UNUSED(argument);
-    const uint8_t task_count = sizeof(task_list) / sizeof(task_params_t);
+    constexpr uint8_t task_count = sizeof(task_list) / sizeof(task_params_t);
     uint32_t logo_ticks = 0;
 
     log_d("main_task start");

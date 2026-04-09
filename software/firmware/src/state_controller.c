@@ -86,7 +86,7 @@ void state_controller_init()
     state_map[STATE_MENU] = &state_menu_data;
 }
 
-void state_controller_loop()
+[[noreturn]] void state_controller_loop()
 {
     state_t *state = NULL;
     for (;;) {

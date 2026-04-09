@@ -267,7 +267,7 @@ HAL_StatusTypeDef densistick_settings_set_target(const peripheral_settings_handl
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[(CAL_TSL2585_TARGET_CRC - CAL_TSL2585_TARGET_LO_DENSITY) + 4];
-    const size_t offset = CAL_TSL2585_TARGET_LO_DENSITY;
+    constexpr size_t offset = CAL_TSL2585_TARGET_LO_DENSITY;
     uint32_t version;
     uint32_t crc;
 

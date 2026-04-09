@@ -198,7 +198,7 @@ validate_result_t validate_selected_file(const char *filename, app_descriptor_t 
             bytes_to_read = MIN(sizeof(buf), bytes_remaining);
             res = f_read(&fp, buf, bytes_to_read, &bytes_read);
             if (res == FR_OK) {
-                /* This check should never fail, but safer to do it anyways */
+                /* This check should never fail, but safer to do it anyway */
                 if ((bytes_read % 4) != 0) {
                     log_w("Bytes read are not word aligned");
                     result = VALIDATE_FILE_READ_ERROR;

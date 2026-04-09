@@ -149,8 +149,8 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         .adj_title2 = buf_adj_title2,
         .base_title1 = "Base Exposure",
         .base_title2 = buf_base_title2,
-        .tip_up = state->working_value.numerator == 0 ? "Burn" : 0,
-        .tip_down = (state->working_value.numerator == 0 && state->working_index == 0) ? "Dodge" : 0,
+        .tip_up = state->working_value.numerator == 0 ? "Burn" : nullptr,
+        .tip_down = (state->working_value.numerator == 0 && state->working_index == 0) ? "Dodge" : nullptr,
         .adj_num = state->working_value.numerator,
         .adj_den = state->working_value.denominator,
         .time_too_short = time_too_short
