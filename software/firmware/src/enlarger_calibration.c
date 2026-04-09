@@ -515,12 +515,12 @@ calibration_result_t calibration_build_timing_profile(const enlarger_control_t *
 
     meter_probe_handle_t *handle = meter_probe_handle();
 
-    uint16_t rising_threshold = stats_off->max;
+    uint32_t rising_threshold = stats_off->max;
     if (rising_threshold < 2) {
         rising_threshold = 2;
     }
 
-    uint16_t falling_threshold = lroundf(stats_off->mean + stats_off->stddev);
+    uint32_t falling_threshold = lroundf(stats_off->mean + stats_off->stddev);
     if (falling_threshold < 2) {
         falling_threshold = 2;
     }
