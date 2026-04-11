@@ -1687,7 +1687,7 @@ uint8_t display_selection_list_cb(const char *title, uint8_t start_pos, const ch
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
-    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU;
+    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER;
     if (input_poll_callback) {
         params |= DISPLAY_MENU_INPUT_POLL;
     }
@@ -1774,7 +1774,7 @@ uint8_t display_message_graph(const char *title, const char *list, const char *b
 
         for(;;) {
             uint16_t event;
-            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
 
             if (event_result == UINT16_MAX) {
                 result = UINT8_MAX;
@@ -1789,13 +1789,13 @@ uint8_t display_message_graph(const char *title, const char *list, const char *b
             } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
                 result = 0;
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN) {
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
                 cursor++;
                 if (cursor >= button_cnt) {
                     cursor = 0;
                 }
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP) {
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
                 if (cursor == 0) {
                     cursor = button_cnt;
                 }
@@ -1830,7 +1830,7 @@ uint8_t display_message(const char *title1, const char *title2, const char *titl
 
     display_prepare_menu_font();
     keypad_clear_events();
-    uint8_t option = u8g2_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons);
+    uint8_t option = display_UserInterfaceMessage(&u8g2, title1, title2, title3, buttons);
 
     osMutexRelease(display_mutex);
 
@@ -1911,7 +1911,7 @@ uint8_t display_input_value_f16(const char *title, const char *msg, const char *
     keypad_clear_events();
 
     uint8_t option = display_UserInterfaceInputValueF16(&u8g2, title, msg, prefix, value, low, high, wdigits, fdigits, postfix,
-        display_GetMenuEvent, DISPLAY_MENU_ACCEPT_MENU, NULL, NULL);
+        display_GetMenuEvent, DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER, NULL, NULL);
 
     osMutexRelease(display_mutex);
 
@@ -1924,7 +1924,7 @@ uint8_t display_input_value_f16_data_cb(const char *title, const char *msg, cons
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
-    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU;
+    display_menu_params_t params = DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER;
     if (data_callback) {
         params |= DISPLAY_MENU_INPUT_POLL;
     }
@@ -2078,11 +2078,11 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
         u8g2_SendBuffer(&u8g2);
 
         uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2),
-            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT | DISPLAY_MENU_INPUT_ASCII);
+            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT | DISPLAY_MENU_INPUT_ASCII);
         uint8_t event_action = (uint8_t)(event_result & 0x00FF);
         uint8_t event_keycode = (uint8_t)((event_result & 0xFF00) >> 8);
 
-        if (event_action == U8X8_MSG_GPIO_MENU_SELECT && event_keycode == KEYPAD_ADD_ADJUSTMENT) {
+        if (event_action == U8X8_MSG_GPIO_MENU_SELECT && (event_keycode == KEYPAD_ADD_ADJUSTMENT || event_keycode == KEYPAD_ENCODER)) {
             if (ch == 0xFD) {
                 if (cursor > 0) {
                     cursor--;
@@ -2114,16 +2114,26 @@ uint8_t display_input_text(const char *title, char *text, size_t text_len)
         else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
             break;
         }
-        else if (event_action == U8X8_MSG_GPIO_MENU_NEXT) {
-            col = (col >= 24) ? 0 : col + 1;
-            if (row == 3 && col >= 19 && col < 22) {
-                col = 22;
+        else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+            if (event_action == U8X8_MSG_GPIO_MENU_VALUE_INC && col >= 24) {
+                col = 0;
+                row = (row >= 3) ? 0 : row + 1;
+            } else {
+                col = (col >= 24) ? 0 : col + 1;
+                if (row == 3 && col >= 19 && col < 22) {
+                    col = 22;
+                }
             }
         }
-        else if (event_action == U8X8_MSG_GPIO_MENU_PREV) {
-            col = (col == 0) ? 24 : col - 1;
-            if (row == 3 && col >= 19 && col < 22) {
-                col = 18;
+        else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+            if (event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC && col == 0) {
+                col = 24;
+                row = (row == 0) ? 3 : row - 1;
+            } else {
+                col = (col == 0) ? 24 : col - 1;
+                if (row == 3 && col >= 19 && col < 22) {
+                    col = 18;
+                }
             }
         }
         else if (event_action == U8X8_MSG_GPIO_MENU_DOWN) {
@@ -2162,7 +2172,7 @@ uint8_t u8x8_GetMenuEvent(u8x8_t *u8x8)
     // same name, due to its declaration with the "weak" pragma.
     menu_event_timeout = false;
 
-    uint16_t result = display_GetMenuEvent(u8x8, DISPLAY_MENU_ACCEPT_MENU);
+    uint16_t result = display_GetMenuEvent(u8x8, DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
 
     if (result == UINT16_MAX) {
         menu_event_timeout = true;

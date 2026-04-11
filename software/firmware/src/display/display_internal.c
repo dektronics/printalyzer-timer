@@ -375,7 +375,7 @@ uint8_t display_UserInterfaceInputValue(u8g2_t *u8g2, const char *title, const c
         display_input_value_render(&state, u8g2, u8x8_u8toa(local_value, digits));
 
         for (;;) {
-            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
             if (event_result == UINT16_MAX) {
                 menu_event_timeout = true;
                 event = U8X8_MSG_GPIO_MENU_HOME;
@@ -422,7 +422,7 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
         display_input_value_render(&state, u8g2, display_u16toa(local_value, digits));
 
         for(;;) {
-            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
             if (event_result == UINT16_MAX) {
                 menu_event_timeout = true;
                 event = U8X8_MSG_GPIO_MENU_HOME;
@@ -544,7 +544,7 @@ uint8_t display_UserInterfaceInputValueF1_2(u8g2_t *u8g2, const char *title, con
         u8g2_SendBuffer(u8g2);
 
         for(;;) {
-            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
             if (event_result == UINT16_MAX) {
                 menu_event_timeout = true;
                 event = U8X8_MSG_GPIO_MENU_HOME;
@@ -630,7 +630,7 @@ uint8_t display_UserInterfaceInputValueF16(u8g2_t *u8g2, const char *title, cons
                 event_action = (uint8_t)(result & 0x00FF);
                 count = (uint8_t)((result & 0xFF00) >> 8);
             } else {
-                uint16_t result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+                uint16_t result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
                 if (result == UINT16_MAX) {
                     menu_event_timeout = true;
                     event_action = U8X8_MSG_GPIO_MENU_HOME;
@@ -692,7 +692,7 @@ uint8_t display_UserInterfaceInputValueCB(u8g2_t *u8g2, const char *title, const
         display_input_value_render(&state, u8g2, u8x8_u8toa(local_value, digits));
 
         for(;;) {
-            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU);
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
             if (event_result == UINT16_MAX) {
                 menu_event_timeout = true;
                 event = U8X8_MSG_GPIO_MENU_HOME;
@@ -790,10 +790,10 @@ uint8_t display_UserInterfaceSelectionList(u8g2_t *u8g2, const char *title, uint
                 return u8sl.current_pos + 1; /* +1, issue 112 */
             else if (event == U8X8_MSG_GPIO_MENU_HOME)
                 return 0; /* issue 112: return 0 instead of start_pos */
-            else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN) {
+            else if (event == U8X8_MSG_GPIO_MENU_NEXT || event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
                 u8sl_Next(&u8sl);
                 break;
-            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP) {
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV || event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
                 u8sl_Prev(&u8sl);
                 break;
             }
@@ -884,16 +884,23 @@ uint16_t display_UserInterfaceSelectionListCB(u8g2_t *u8g2, const char *title, u
             else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
             }
-            else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_DOWN) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_DOWN || event_action == U8X8_MSG_GPIO_MENU_VALUE_INC) {
                 u8sl_Next(&u8sl);
                 break;
             }
-            else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_UP) {
+            else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_UP || event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
                 u8sl_Prev(&u8sl);
                 break;
             }
         }
     }
+}
+
+uint8_t display_UserInterfaceMessage(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3,
+    const char *buttons)
+{
+    return display_UserInterfaceMessageCB(u8g2, title1, title2, title3, buttons,
+        display_GetMenuEvent, DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
 }
 
 uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const char *title2, const char *title3,
@@ -982,13 +989,13 @@ uint8_t display_UserInterfaceMessageCB(u8g2_t *u8g2, const char *title1, const c
                 return cursor + 1;
             } else if (event_action == U8X8_MSG_GPIO_MENU_HOME) {
                 return 0;
-            } else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_DOWN) {
+            } else if (event_action == U8X8_MSG_GPIO_MENU_NEXT || event_action == U8X8_MSG_GPIO_MENU_DOWN || event_action == U8X8_MSG_GPIO_MENU_VALUE_INC) {
                 cursor++;
                 if (cursor >= button_cnt) {
                     cursor = 0;
                 }
                 break;
-            } else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_UP) {
+            } else if (event_action == U8X8_MSG_GPIO_MENU_PREV || event_action == U8X8_MSG_GPIO_MENU_UP || event_action == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
                 if (cursor == 0) {
                     cursor = button_cnt;
                 }
