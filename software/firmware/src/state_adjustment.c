@@ -344,7 +344,7 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
 
     uint16_t result = display_selection_list_params("Burn/Dodge Adjustments",
         starting_pos, buf,
-        DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
+        DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
     uint8_t option = (uint8_t)(result & 0x00FF);
     keypad_key_t option_key = (uint8_t)((result & 0xFF00) >> 8);
 
@@ -352,12 +352,12 @@ bool state_list_adjustments_process(state_t *state_base, state_controller_t *con
         state_controller_set_next_state(controller, STATE_HOME, 0);
         return false;
     } else if (option > 0) {
-        if (option_key == KEYPAD_MENU) {
-            bool result = state_list_adjustments_delete_prompt(exposure_state, option - 1);
-            if (!result || exposure_burn_dodge_count(exposure_state) == 0) {
+        if (option_key == KEYPAD_MENU || option_key == KEYPAD_ENCODER) {
+            const bool prompt_result = state_list_adjustments_delete_prompt(exposure_state, option - 1);
+            if (!prompt_result || exposure_burn_dodge_count(exposure_state) == 0) {
                 state_controller_set_next_state(controller, STATE_HOME, 0);
             }
-            return result;
+            return prompt_result;
         } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
             state_controller_set_next_state(controller, STATE_EDIT_ADJUSTMENT, option - 1);
         }

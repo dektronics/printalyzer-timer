@@ -94,7 +94,7 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
         }
 
         uint16_t result = display_selection_list_params("Enlarger Configurations", option, buf,
-            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
+            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
         option = (uint8_t)(result & 0x00FF);
         keypad_key_t option_key = (uint8_t)((result & 0xFF00) >> 8);
 
@@ -121,7 +121,7 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
         } else {
             /* Edit existing configuration */
             uint8_t config_index = option - 1;
-            if (option_key == KEYPAD_MENU) {
+            if (option_key == KEYPAD_MENU || option_key == KEYPAD_ENCODER) {
                 enlarger_config_t working_config;
 
                 if (!settings_get_enlarger_config(&working_config, config_index)) {

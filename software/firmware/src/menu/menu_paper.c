@@ -124,7 +124,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
         }
 
         uint16_t result = display_selection_list_params("Paper Profiles", option, buf,
-            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
+            DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER | DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT);
         option = (uint8_t)(result & 0x00FF);
         keypad_key_t option_key = (uint8_t)((result & 0xFF00) >> 8);
 
@@ -162,7 +162,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
         } else if (option == UINT8_MAX) {
             menu_result = MENU_TIMEOUT;
         } else {
-            if (option_key == KEYPAD_MENU) {
+            if (option_key == KEYPAD_MENU || option_key == KEYPAD_ENCODER) {
                 paper_profile_t working_profile;
                 memcpy(&working_profile, &profile_list[option - 1], sizeof(paper_profile_t));
                 menu_result = menu_paper_profile_edit(controller, &working_profile, option - 1);
