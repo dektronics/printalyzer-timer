@@ -67,6 +67,7 @@ static const osSemaphoreAttr_t task_start_semaphore_attributes = {
 #define TASK_MAIN_STACK_SIZE        (8192U)
 #define TASK_GPIO_STACK_SIZE        (2048U)
 #define TASK_KEYPAD_STACK_SIZE      (2048U)
+#define TASK_BUZZER_STACK_SIZE      (1024U)
 #define TASK_DMX_STACK_SIZE         (2048U)
 #define TASK_METER_PROBE_STACK_SIZE (2048U)
 
@@ -92,6 +93,14 @@ static task_params_t task_list[] = {
         .task_attrs = {
             .name = "keypad",
             .stack_size = TASK_KEYPAD_STACK_SIZE,
+            .priority = osPriorityNormal
+        }
+    },
+    {
+        .task_func = task_buzzer_run,
+        .task_attrs = {
+            .name = "buzzer",
+            .stack_size = TASK_BUZZER_STACK_SIZE,
             .priority = osPriorityNormal
         }
     },
@@ -250,12 +259,7 @@ void main_task_run(void *argument)
     }
 
     /* Startup beep */
-    buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
-    buzzer_set_volume(settings_get_buzzer_volume());
-    buzzer_start();
-    osDelay(100);
-    buzzer_stop();
-    buzzer_set_volume(BUZZER_VOLUME_OFF);
+    buzzer_beep(PAM8904E_FREQ_DEFAULT, 100);
 
     log_i("Startup complete");
     osDelayUntil(logo_ticks + 750);

@@ -585,13 +585,8 @@ menu_result_t menu_settings_buzzer_volume()
 
     if (menu_result == MENU_OK) {
         settings_set_buzzer_volume(setting);
-
-        buzzer_set_frequency(PAM8904E_FREQ_DEFAULT);
-        buzzer_set_volume(setting);
-        buzzer_start();
-        osDelay(100);
-        buzzer_stop();
-        buzzer_set_volume(BUZZER_VOLUME_OFF);
+        buzzer_reset_volume();
+        buzzer_beep(PAM8904E_FREQ_DEFAULT, 100);
     }
 
     return menu_result;

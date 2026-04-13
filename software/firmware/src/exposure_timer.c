@@ -123,36 +123,25 @@ HAL_StatusTypeDef exposure_timer_run()
     enlarger_on_event_ticks = 0;
     enlarger_off_event_ticks = 0;
 
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    uint16_t current_frequency = buzzer_get_frequency();
-    buzzer_set_volume(settings_get_buzzer_volume());
+    buzzer_reset_volume();
 
     if (timer_config.start_tone == EXPOSURE_TIMER_START_TONE_COUNTDOWN) {
         do {
-            buzzer_set_frequency(2000);
-            buzzer_start();
-            osDelay(pdMS_TO_TICKS(50));
-            buzzer_stop();
+            buzzer_beep_blocking(2000, 50);
             osDelay(pdMS_TO_TICKS(950));
             if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
                 timer_cancel_request = true;
                 break;
             }
 
-            buzzer_set_frequency(1500);
-            buzzer_start();
-            osDelay(pdMS_TO_TICKS(50));
-            buzzer_stop();
+            buzzer_beep_blocking(1500, 50);
             osDelay(pdMS_TO_TICKS(950));
             if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
                 timer_cancel_request = true;
                 break;
             }
 
-            buzzer_set_frequency(500);
-            buzzer_start();
-            osDelay(pdMS_TO_TICKS(50));
-            buzzer_stop();
+            buzzer_beep_blocking(500, 50);
             osDelay(pdMS_TO_TICKS(950));
             if (!timer_config.timer_callback(EXPOSURE_TIMER_STATE_NONE, UINT32_MAX, timer_config.user_data)) {
                 timer_cancel_request = true;
@@ -162,6 +151,7 @@ HAL_StatusTypeDef exposure_timer_run()
     }
 
     if (!timer_cancel_request) {
+        buzzer_task_enable(false);
         buzzer_set_frequency(500);
 
         illum_controller_safelight_state(ILLUM_SAFELIGHT_EXPOSURE);
@@ -207,6 +197,7 @@ HAL_StatusTypeDef exposure_timer_run()
 
         log_i("Exposure timer complete");
 
+        buzzer_task_enable(true);
         illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
 
         log_d("Actual enlarger on/off time: %lums",
@@ -214,39 +205,16 @@ HAL_StatusTypeDef exposure_timer_run()
 
         /* Handling the completion beep outside the ISR for simplicity. */
         if (timer_cancel_request) {
-            buzzer_set_frequency(1000);
-            buzzer_start();
-            osDelay(pdMS_TO_TICKS(100));
-            buzzer_stop();
-            osDelay(pdMS_TO_TICKS(100));
-            buzzer_start();
-            osDelay(pdMS_TO_TICKS(100));
-            buzzer_stop();
+            buzzer_sequence_blocking(BUZZER_SEQUENCE_ABORT_EXPOSURE);
         } else {
             if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_SHORT) {
-                buzzer_set_frequency(1000);
-                buzzer_start();
-                osDelay(pdMS_TO_TICKS(50));
-                buzzer_set_frequency(2000);
-                osDelay(pdMS_TO_TICKS(50));
-                buzzer_set_frequency(1500);
-                osDelay(pdMS_TO_TICKS(50));
-                buzzer_stop();
+                buzzer_sequence_blocking(BUZZER_SEQUENCE_EXPOSURE_END_SHORT);
             } else if (timer_config.end_tone == EXPOSURE_TIMER_END_TONE_REGULAR) {
-                buzzer_set_frequency(1000);
-                buzzer_start();
-                osDelay(pdMS_TO_TICKS(120));
-                buzzer_set_frequency(2000);
-                osDelay(pdMS_TO_TICKS(120));
-                buzzer_set_frequency(1500);
-                osDelay(pdMS_TO_TICKS(120));
-                buzzer_stop();
+                buzzer_sequence_blocking(BUZZER_SEQUENCE_EXPOSURE_END_REGULAR);
             }
         }
         osDelay(pdMS_TO_TICKS(500));
     }
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
 
     return timer_cancel_request ? HAL_TIMEOUT : HAL_OK;
 }

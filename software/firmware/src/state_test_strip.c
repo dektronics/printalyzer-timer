@@ -21,8 +21,6 @@
 
 typedef struct {
     state_t base;
-    buzzer_volume_t current_volume;
-    uint16_t current_frequency;
     teststrip_patches_t teststrip_patches;
     teststrip_mode_t teststrip_mode;
     int exposure_patch_min;
@@ -55,8 +53,6 @@ void state_test_strip_entry(state_t *state_base, state_controller_t *controller,
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
 
-    state->current_volume = buzzer_get_volume();
-    state->current_frequency = buzzer_get_frequency();
     state->teststrip_patches = settings_get_teststrip_patches();
     state->teststrip_mode = settings_get_teststrip_mode();
     state->exposure_patch_min = 0;
@@ -199,23 +195,9 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
 
     /* Abort if the test strip can't be created */
     if (canceled) {
-        buzzer_volume_t current_volume = buzzer_get_volume();
-        uint16_t current_frequency = buzzer_get_frequency();
-        buzzer_set_volume(settings_get_buzzer_volume());
-
         /* This is the same beep sequence as an aborted exposure */
-        buzzer_set_frequency(1000);
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_start();
-        osDelay(pdMS_TO_TICKS(100));
-        buzzer_stop();
+        buzzer_sequence_blocking(BUZZER_SEQUENCE_ABORT_EXPOSURE);
         osDelay(pdMS_TO_TICKS(450));
-
-        buzzer_set_volume(current_volume);
-        buzzer_set_frequency(current_frequency);
 
         state_controller_set_next_state(controller, STATE_HOME, 0);
         return true;
@@ -319,11 +301,6 @@ bool state_test_strip_countdown(const exposure_state_t *exposure_state, const en
 
 void state_test_strip_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
-    state_test_strip_t *state = (state_test_strip_t *)state_base;
-
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
     enlarger_control_set_state_off(&enlarger_config->control, false);
-
-    buzzer_set_volume(state->current_volume);
-    buzzer_set_frequency(state->current_frequency);
 }

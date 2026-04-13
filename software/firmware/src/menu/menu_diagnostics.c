@@ -260,18 +260,13 @@ menu_result_t diagnostics_led()
 
 menu_result_t diagnostics_buzzer()
 {
-    buzzer_volume_t current_volume = buzzer_get_volume();
-    uint16_t current_frequency = buzzer_get_frequency();
-
     char buf[256];
 
     uint16_t freq = 500;
-    bool freq_changed = false;
     buzzer_volume_t volume = settings_get_buzzer_volume();
     bool volume_changed = false;
     uint32_t duration = 200;
 
-    buzzer_set_frequency(freq);
     buzzer_set_volume(volume);
 
     for (;;) {
@@ -288,18 +283,14 @@ menu_result_t diagnostics_buzzer()
         keypad_event_t keypad_event;
         if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
             if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)) {
-                buzzer_start();
-                osDelay(pdMS_TO_TICKS(duration));
-                buzzer_stop();
+                buzzer_beep(freq, duration);
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
                 if (freq > 200) {
                     freq -= 100;
-                    freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
                 if (freq < 5000) {
                     freq += 100;
-                    freq_changed = true;
                 }
             } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
                 if (volume < BUZZER_VOLUME_HIGH) {
@@ -326,10 +317,6 @@ menu_result_t diagnostics_buzzer()
                 break;
             }
 
-            if (freq_changed) {
-                buzzer_set_frequency(freq);
-                freq_changed = false;
-            }
             if (volume_changed) {
                 buzzer_set_volume(volume);
                 volume_changed = false;
@@ -337,8 +324,7 @@ menu_result_t diagnostics_buzzer()
         }
     }
 
-    buzzer_set_volume(current_volume);
-    buzzer_set_frequency(current_frequency);
+    buzzer_reset_volume();
     return MENU_OK;
 }
 
