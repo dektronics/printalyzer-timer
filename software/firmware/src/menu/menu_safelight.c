@@ -40,11 +40,11 @@ menu_result_t menu_safelight_config()
             val_str = "Off";
             break;
         case SAFELIGHT_MODE_ON:
-            val_str = "On";
+            val_str = "Enlarger";
             break;
         case SAFELIGHT_MODE_AUTO:
         default:
-            val_str = "Auto";
+            val_str = "Meter/Print";
             break;
         }
         offset += menu_build_padded_str_row(buf + offset, "Safelight mode", val_str);
@@ -241,9 +241,9 @@ menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
     do {
         option = display_selection_list(
             "Safelight Mode", option,
-            "Off\n"
-            "On\n"
-            "Auto");
+            "Safelight always off\n"
+            "Off when the enlarger is on\n"
+            "Off for metering and printing");
 
         if (option == 1) {
             safelight_config->mode = SAFELIGHT_MODE_OFF;
