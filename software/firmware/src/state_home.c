@@ -205,9 +205,9 @@ void state_home_entry(state_t *state_base, state_controller_t *controller, state
 
     /* Configure keypad actions */
     keypad_action_clear();
-    keypad_action_add(KEYPAD_START, ACTION_TIMER, 0, true);
-    keypad_action_add(KEYPAD_FOOTSWITCH, ACTION_TIMER, 0, true);
-    keypad_action_add(KEYPAD_FOCUS, ACTION_FOCUS, 0, true);
+    keypad_action_add(KEYPAD_START, ACTION_TIMER, 0, false);
+    keypad_action_add(KEYPAD_FOOTSWITCH, ACTION_TIMER, 0, false);
+    keypad_action_add(KEYPAD_FOCUS, ACTION_FOCUS, 0, false);
     keypad_action_add(KEYPAD_INC_EXPOSURE, ACTION_INC_EXPOSURE, 0, true);
     keypad_action_add(KEYPAD_DEC_EXPOSURE, ACTION_DEC_EXPOSURE, 0, true);
     keypad_action_add(KEYPAD_INC_CONTRAST, ACTION_INC_CONTRAST, 0, true);
