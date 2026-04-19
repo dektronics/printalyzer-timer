@@ -706,7 +706,11 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     if (result == METER_READING_OK) {
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);
         updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
-        log_i("Measured PEV=%ld (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
+        if (exposure_get_mode(exposure_state) == EXPOSURE_MODE_CALIBRATION) {
+            log_i("Measured PEV=%ld (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
+        } else {
+            log_i("Measured Lux=%f", lux);
+        }
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
