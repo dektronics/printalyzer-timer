@@ -2,11 +2,12 @@
 #define PAPER_PROFILE_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "exposure_state.h"
 #include "contrast.h"
 #include "util.h"
+
+#define PAPER_PEV_MIN (-99L)
+#define PAPER_PEV_MAX (999L)
 
 /**
  * Profile values for a specific contrast grade of a printing paper.
@@ -15,7 +16,7 @@ typedef struct {
     /**
      * Log exposure value (x100) at Dmin + 0.04
      */
-    uint32_t ht_lev100;
+    int32_t ht_lev100;
 
     /**
      * Log exposure value (x100) at Dmin + 0.60
@@ -26,7 +27,7 @@ typedef struct {
      * It is optional, and should be omitted if not known with some accuracy
      * relative to the 'ht_lev100' value.
      */
-    uint32_t hm_lev100;
+    int32_t hm_lev100;
 
     /**
      * Log exposure value (x100) at 0.90 * Dn
@@ -39,7 +40,7 @@ typedef struct {
      * value and the value of 'ht_lev100'.
      *
      */
-    uint32_t hs_lev100;
+    int32_t hs_lev100;
 
 } paper_profile_grade_t;
 
@@ -148,6 +149,16 @@ float paper_profile_max_net_density(const paper_profile_t *profile);
 void paper_profile_recalculate(paper_profile_t *profile);
 
 /**
+ * Initialize an empty paper profile
+ */
+void paper_profile_clear(paper_profile_t *profile);
+
+/**
+ * Initialize an empty contrast grade profile
+ */
+void paper_profile_grade_clear(paper_profile_grade_t *profile_grade);
+
+/**
  * Set the paper profile to a series of default values.
  *
  * These values should only be used as a fallback when no saved paper
@@ -156,5 +167,15 @@ void paper_profile_recalculate(paper_profile_t *profile);
  * Ilford MGIV RC paper profile should look like.
  */
 void paper_profile_set_defaults(paper_profile_t *profile);
+
+/**
+ * Check if the PEV is empty.
+ */
+bool pev_is_empty(int32_t pev);
+
+/**
+ * Check if the PEV is within the allowable range.
+ */
+bool pev_in_range(int32_t pev);
 
 #endif /* PAPER_PROFILE_H */

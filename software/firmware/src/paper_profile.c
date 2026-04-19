@@ -44,9 +44,9 @@ bool paper_profile_grade_is_empty(const paper_profile_grade_t *profile_grade)
         return true;
     }
 
-    if (profile_grade->ht_lev100 == 0
-        && profile_grade->hm_lev100 == 0
-        && profile_grade->hs_lev100 == 0) {
+    if (pev_is_empty(profile_grade->ht_lev100)
+        && pev_is_empty(profile_grade->hm_lev100)
+        && pev_is_empty(profile_grade->hs_lev100)) {
         return true;
     }
 
@@ -59,15 +59,13 @@ bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade)
         return false;
     }
 
-    /* All values must be within a sensible maximum */
-    if (profile_grade->ht_lev100 > 999
-        || profile_grade->hm_lev100 > 999
-        || profile_grade->hs_lev100 > 999) {
+    /* Ht and Hs values must be within a sensible range */
+    if (!pev_in_range(profile_grade->ht_lev100) || !pev_in_range(profile_grade->hs_lev100)) {
         return false;
     }
 
-    /* Ht and Hs values must be non-zero */
-    if (profile_grade->ht_lev100 == 0 || profile_grade->hs_lev100 == 0) {
+    /* Hm must be empty or within a sensible range */
+    if (!pev_is_empty(profile_grade->hm_lev100) && !pev_in_range(profile_grade->hm_lev100)) {
         return false;
     }
 
@@ -77,7 +75,7 @@ bool paper_profile_grade_is_valid(const paper_profile_grade_t *profile_grade)
     }
 
     /* If Hm is defined, it must be between Ht and Hs */
-    if (profile_grade->hm_lev100 > 0 &&
+    if (!pev_is_empty(profile_grade->hm_lev100) &&
         (profile_grade->hm_lev100 <= profile_grade->ht_lev100
         || profile_grade->hm_lev100 >= profile_grade->hs_lev100)) {
         return false;
@@ -197,11 +195,10 @@ void paper_profile_calculate_midpoint_grade(
     const paper_profile_grade_t *grade_b)
 {
     /* Clear the mid-grade profile so we start fresh. */
-    memset(mid_grade, 0, sizeof(paper_profile_grade_t));
+    paper_profile_grade_clear(mid_grade);
 
     /* Do not proceed if the adjacent grades are not valid */
     if (!paper_profile_grade_is_valid(grade_a) || !paper_profile_grade_is_valid(grade_b)) {
-        memset(mid_grade, 0, sizeof(paper_profile_grade_t));
         return;
     }
 
@@ -212,7 +209,7 @@ void paper_profile_calculate_midpoint_grade(
     mid_grade->hs_lev100 = lroundf(((float)grade_a->hs_lev100 + (float)grade_b->hs_lev100) / 2.0F);
 
     /* Set Hm to the midpoint between grades A and B if Hm is available for both grades */
-    if (grade_a->hm_lev100 > 0 && grade_b->hm_lev100 > 0) {
+    if (!pev_is_empty(grade_a->hm_lev100) && !pev_is_empty(grade_b->hm_lev100)) {
         mid_grade->hm_lev100 = lroundf(((float)grade_a->hm_lev100 + (float)grade_b->hm_lev100) / 2.0F);
     }
 
@@ -220,7 +217,7 @@ void paper_profile_calculate_midpoint_grade(
 
     /* Final check to make sure some rounding error didn't produce an invalid profile */
     if (!paper_profile_grade_is_valid(mid_grade)) {
-        memset(mid_grade, 0, sizeof(paper_profile_grade_t));
+        paper_profile_grade_clear(mid_grade);
     }
 }
 
@@ -234,11 +231,10 @@ static void paper_profile_calculate_midpoint_grade_exposure_a(
     const paper_profile_grade_t *grade_b)
 {
     /* Clear the mid-grade profile so we start fresh. */
-    memset(mid_grade, 0, sizeof(paper_profile_grade_t));
+    paper_profile_grade_clear(mid_grade);
 
     /* Do not proceed if the adjacent grades are not valid */
     if (!paper_profile_grade_is_valid(grade_a) || !paper_profile_grade_is_valid(grade_b)) {
-        memset(mid_grade, 0, sizeof(paper_profile_grade_t));
         return;
     }
 
@@ -246,53 +242,76 @@ static void paper_profile_calculate_midpoint_grade_exposure_a(
     mid_grade->ht_lev100 = lroundf(((float)grade_a->ht_lev100 + (float)grade_b->ht_lev100) / 2.0F);
 
     /* Set Hs to the midpoint contrast between grades A and B, offset by Ht of grade A. */
-    float contrast_a = grade_a->hs_lev100 - grade_a->ht_lev100;
-    float contrast_b = grade_b->hs_lev100 - grade_b->ht_lev100;
+    float contrast_a = (float)(grade_a->hs_lev100 - grade_a->ht_lev100);
+    float contrast_b = (float)(grade_b->hs_lev100 - grade_b->ht_lev100);
     mid_grade->hs_lev100 = mid_grade->ht_lev100 + lroundf((contrast_a + contrast_b) / 2.0F);
 
     /* Set Hm to the same value as grade A, if available */
-    if (grade_a->hm_lev100 > 0) {
+    if (!pev_is_empty(grade_a->hm_lev100)) {
         mid_grade->hm_lev100 = grade_a->hm_lev100;
     }
 
     /* Final check to make sure some rounding error didn't produce an invalid profile */
     if (!paper_profile_grade_is_valid(mid_grade)) {
-        memset(mid_grade, 0, sizeof(paper_profile_grade_t));
+        paper_profile_grade_clear(mid_grade);
     }
+}
+
+void paper_profile_clear(paper_profile_t *profile)
+{
+    memset(profile, 0, sizeof(paper_profile_t));
+
+    for (size_t i = 0; i < CONTRAST_GRADE_MAX; i++) {
+        paper_profile_grade_clear(&profile->grade[i]);
+    }
+
+    profile->paper_dmin = NAN;
+    profile->paper_dmax = NAN;
+}
+
+void paper_profile_grade_clear(paper_profile_grade_t *profile_grade)
+{
+    memset(profile_grade, 0, sizeof(paper_profile_grade_t));
+    profile_grade->ht_lev100 = INT32_MAX;
+    profile_grade->hm_lev100 = INT32_MAX;
+    profile_grade->hs_lev100 = INT32_MAX;
 }
 
 void paper_profile_set_defaults(paper_profile_t *profile)
 {
-    memset(profile, 0, sizeof(paper_profile_t));
+    paper_profile_clear(profile);
     strcpy(profile->name, "Default");
 
     profile->grade[CONTRAST_GRADE_00].ht_lev100 = 14;
-    profile->grade[CONTRAST_GRADE_00].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_00].hs_lev100 = 193;
 
     profile->grade[CONTRAST_GRADE_0].ht_lev100 = 19;
-    profile->grade[CONTRAST_GRADE_0].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_0].hs_lev100 = 163;
 
     profile->grade[CONTRAST_GRADE_1].ht_lev100 = 24;
-    profile->grade[CONTRAST_GRADE_1].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_1].hs_lev100 = 156;
 
     profile->grade[CONTRAST_GRADE_2].ht_lev100 = 27;
-    profile->grade[CONTRAST_GRADE_2].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_2].hs_lev100 = 136;
 
     profile->grade[CONTRAST_GRADE_3].ht_lev100 = 34;
-    profile->grade[CONTRAST_GRADE_3].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_3].hs_lev100 = 123;
 
     profile->grade[CONTRAST_GRADE_4].ht_lev100 = 74;
-    profile->grade[CONTRAST_GRADE_4].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_4].hs_lev100 = 139;
 
     profile->grade[CONTRAST_GRADE_5].ht_lev100 = 95;
-    profile->grade[CONTRAST_GRADE_5].hm_lev100 = 0;
     profile->grade[CONTRAST_GRADE_5].hs_lev100 = 142;
 
     paper_profile_recalculate(profile);
+}
+
+bool pev_is_empty(int32_t pev)
+{
+    return pev == INT32_MAX || pev == INT32_MIN;
+}
+
+bool pev_in_range(int32_t pev)
+{
+    return pev >= PAPER_PEV_MIN && pev <= PAPER_PEV_MAX;
 }

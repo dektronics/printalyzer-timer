@@ -929,13 +929,13 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
     }
 
     /* Collect the relevant log exposure values from the paper profile */
-    const uint32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
-    const uint32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
-    const uint32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
+    const int32_t ht_lev100 = state->paper_profile.grade[contrast_grade].ht_lev100;
+    const int32_t hm_lev100 = state->paper_profile.grade[contrast_grade].hm_lev100;
+    const int32_t hs_lev100 = state->paper_profile.grade[contrast_grade].hs_lev100;
     const float d_min = state->paper_profile.paper_dmin;
     const float d_net = paper_profile_max_net_density(&state->paper_profile);
 
-    if (ht_lev100 > 0 && hm_lev100 > 0 && hs_lev100 > 0
+    if (pev_in_range(ht_lev100) && pev_in_range(hm_lev100) && pev_in_range(hs_lev100)
         && ht_lev100 < hs_lev100
         && ht_lev100 <  hm_lev100 && hm_lev100 < hs_lev100
         && isnormal(d_min) && d_min > 0.0F
@@ -959,14 +959,14 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
             d_mark += d_inc;
         }
 
-    } else if (ht_lev100 > 0 && hs_lev100 > 0 && ht_lev100 < hs_lev100) {
+    } else if (pev_in_range(ht_lev100) && pev_in_range(hs_lev100) && ht_lev100 < hs_lev100) {
         /*
          * We just have the minimum number of relevant fields, so do a linear
          * graph of the ISO Range.
          */
         log_d("Tone graph using simple T+M ISO(R) line");
 
-        const uint32_t iso_r = hs_lev100 - ht_lev100;
+        const int32_t iso_r = hs_lev100 - ht_lev100;
 
         const float mark_increment = (float)iso_r / (TONE_GRAPH_MARKS_SIZE - 1);
         float mark_value = (float)ht_lev100;
@@ -986,7 +986,7 @@ void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, c
 void exposure_recalculate_base_time(exposure_state_t *state)
 {
     /* Make sure there is a usable Ht value in the active profile */
-    if (state->paper_profile.grade[state->contrast_grade].ht_lev100 == 0) {
+    if (!pev_in_range(state->paper_profile.grade[state->contrast_grade].ht_lev100)) {
         return;
     }
 
@@ -1004,7 +1004,7 @@ void exposure_recalculate_base_time(exposure_state_t *state)
     }
 
     /* Find the target exposure time */
-    float ht_lev100 = state->paper_profile.grade[state->contrast_grade].ht_lev100;
+    float ht_lev100 = (float)state->paper_profile.grade[state->contrast_grade].ht_lev100;
     float target_time = powf(10, ht_lev100 / 100.0F) / lux_value;
 
     /* Adjust exposure time if it is too low */
