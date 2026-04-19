@@ -264,6 +264,20 @@ const char *display_u16toa(uint16_t v, uint8_t d)
     return buf;
 }
 
+const char *display_s16toa(int16_t v, uint8_t d)
+{
+    // Based off u8x8_u16toa with changes to use whitespace padding
+    static char buf[7];
+    if (d > 5) {
+        d = 5;
+    }
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+    snprintf(buf, sizeof(buf), "%*d", d, v);
+#pragma GCC diagnostic pop
+    return buf;
+}
+
 static uint8_t uint_pow(uint8_t base, uint8_t exp)
 {
     uint8_t result = 1;
@@ -450,6 +464,59 @@ uint8_t display_UserInterfaceInputValueU16(u8g2_t *u8g2, const char *title, cons
                 break;
             } else if (event == U8X8_MSG_GPIO_MENU_PREV) {
                 local_value = value_adjust_with_rollover_u16(local_value, (int16_t)(-1 * inc_large), low, high);
+                break;
+            }
+        }
+    }
+}
+
+uint8_t display_UserInterfaceInputValueS16(u8g2_t *u8g2, const char *title, const char *msg, const char *prefix, int16_t *value,
+    int16_t low, int16_t high, uint8_t digits, const char *postfix,
+    uint8_t inc_small, uint8_t inc_large)
+{
+    // Based off u8g2_UserInterfaceInputValue() with changes to
+    // support signed 16-bit numbers.
+
+    display_input_value_state_t state;
+    int16_t local_value = *value;
+    uint8_t event;
+    uint8_t count;
+
+    display_input_value_setup(&state, u8g2, title, msg, prefix, digits, postfix);
+
+    /* Event loop */
+    for(;;) {
+        display_input_value_render(&state, u8g2, display_s16toa(local_value, digits));
+
+        for(;;) {
+            uint16_t event_result = display_GetMenuEvent(u8g2_GetU8x8(&u8g2), DISPLAY_MENU_ACCEPT_MENU | DISPLAY_MENU_ACCEPT_ENCODER);
+            if (event_result == UINT16_MAX) {
+                menu_event_timeout = true;
+                event = U8X8_MSG_GPIO_MENU_HOME;
+                count = 0;
+            } else {
+                event = (uint8_t)(event_result & 0x00FF);
+                count = (uint8_t)((event_result & 0xFF00) >> 8);
+            }
+
+            if (event == U8X8_MSG_GPIO_MENU_SELECT) {
+                *value = local_value;
+                return 1;
+            } else if (event == U8X8_MSG_GPIO_MENU_HOME) {
+                return 0;
+            } else if (event == U8X8_MSG_GPIO_MENU_UP || event == U8X8_MSG_GPIO_MENU_VALUE_INC) {
+                int16_t amount = inc_small * ((event == U8X8_MSG_GPIO_MENU_VALUE_INC) ? count : 1);
+                local_value = value_adjust_with_rollover_s16(local_value, amount, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_NEXT) {
+                local_value = value_adjust_with_rollover_s16(local_value, inc_large, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_DOWN || event == U8X8_MSG_GPIO_MENU_VALUE_DEC) {
+                int16_t amount = inc_small * (-1 * ((event == U8X8_MSG_GPIO_MENU_VALUE_DEC) ? count : 1));
+                local_value = value_adjust_with_rollover_s16(local_value, amount, low, high);
+                break;
+            } else if (event == U8X8_MSG_GPIO_MENU_PREV) {
+                local_value = value_adjust_with_rollover_s16(local_value, (int16_t)(-1 * inc_large), low, high);
                 break;
             }
         }

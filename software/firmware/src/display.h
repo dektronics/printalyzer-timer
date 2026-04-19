@@ -228,6 +228,10 @@ uint8_t display_input_value_u16(const char *title, const char *msg, const char *
         uint16_t low, uint16_t high, uint8_t digits, const char *postfix);
 uint8_t display_input_value_u16_inc(const char *title, const char *msg, const char *prefix, uint16_t *value,
         uint16_t low, uint16_t high, uint8_t digits, const char *postfix, uint8_t inc_small, uint8_t inc_large);
+uint8_t display_input_value_s16(const char *title, const char *msg, const char *prefix, int16_t *value,
+        int16_t low, int16_t high, uint8_t digits, const char *postfix);
+uint8_t display_input_value_s16_inc(const char *title, const char *msg, const char *prefix, int16_t *value,
+        int16_t low, int16_t high, uint8_t digits, const char *postfix, uint8_t inc_small, uint8_t inc_large);
 uint8_t display_input_value_f1_2(const char *title, const char *prefix, uint16_t *value,
     uint16_t low, uint16_t high, char sep, const char *postfix);
 uint8_t display_input_value_f16(const char *title, const char *msg, const char *prefix, uint16_t *value,

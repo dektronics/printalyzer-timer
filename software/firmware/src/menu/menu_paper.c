@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <math.h>
 #include <arm_math.h>
 
@@ -205,16 +204,16 @@ size_t menu_paper_profile_edit_append_grade(char *str, const paper_profile_t *pr
         offset = sprintf(str,
             "Grade %-2s   [---][---][---][R---]\n",
             contrast_grade_str(grade));
-    } else if (profile->grade[grade].hm_lev100 == 0) {
+    } else if (!pev_in_range(profile->grade[grade].hm_lev100)) {
         offset = sprintf(str,
-            "Grade %-2s   [%3lu][---][%3lu][R%3lu]\n",
+            "Grade %-2s   [%3ld][---][%3ld][R%3lu]\n",
             contrast_grade_str(grade),
             profile->grade[grade].ht_lev100,
             profile->grade[grade].hs_lev100,
             iso_r);
     } else {
         offset = sprintf(str,
-            "Grade %-2s   [%3lu][%3lu][%3lu][R%3lu]\n",
+            "Grade %-2s   [%3ld][%3ld][%3ld][R%3lu]\n",
             contrast_grade_str(grade),
             profile->grade[grade].ht_lev100,
             profile->grade[grade].hm_lev100,
@@ -523,28 +522,31 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
     dens_data->alt_option = UINT8_MAX;
 
     if (working_grade.hm_lev100 <= working_grade.ht_lev100 || working_grade.hm_lev100 >= working_grade.hs_lev100) {
-        working_grade.hm_lev100 = 0;
+        working_grade.hm_lev100 = INT32_MAX;
     }
 
     do {
-        const uint32_t iso_r = working_grade.hs_lev100 - working_grade.ht_lev100;
+        const uint32_t iso_r =
+            pev_in_range(working_grade.hs_lev100) && pev_in_range(working_grade.ht_lev100)
+                ? (working_grade.hs_lev100 - working_grade.ht_lev100)
+                : 0;
 
-        if (working_grade.ht_lev100 == 0) {
+        if (!pev_in_range(working_grade.ht_lev100)) {
             strcpy(buf_ht, "---");
         } else {
-            sprintf(buf_ht, "%3lu", working_grade.ht_lev100);
+            sprintf(buf_ht, "%3ld", working_grade.ht_lev100);
         }
 
-        if (working_grade.hm_lev100 == 0) {
+        if (!pev_in_range(working_grade.hm_lev100)) {
             strcpy(buf_hm, "---");
         } else {
-            sprintf(buf_hm, "%3lu", working_grade.hm_lev100);
+            sprintf(buf_hm, "%3ld", working_grade.hm_lev100);
         }
 
-        if (working_grade.hs_lev100 == 0) {
+        if (!pev_in_range(working_grade.hs_lev100)) {
             strcpy(buf_hs, "---");
         } else {
-            sprintf(buf_hs, "%3lu", working_grade.hs_lev100);
+            sprintf(buf_hs, "%3ld", working_grade.hs_lev100);
         }
 
         if (iso_r == 0) {
@@ -570,37 +572,37 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
         option = display_selection_list(buf_title, option, buf);
 
         if (option == 1) {
-            uint16_t value_sel = working_grade.ht_lev100;
-            if (display_input_value_u16(
+            int16_t value_sel = pev_in_range(working_grade.ht_lev100) ? working_grade.ht_lev100 : 0;
+            if (display_input_value_s16(
                 "Base Exposure",
                 "Print exposure value necessary\n"
                 "to achieve a density of D=0.04\n"
                 "above the paper base (Dmin).\n",
-                "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                "", &value_sel, PAPER_PEV_MIN, PAPER_PEV_MAX, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 working_grade.ht_lev100 = value_sel;
             }
         } else if (option == 2) {
-            uint16_t value_sel = working_grade.hm_lev100;
-            if (display_input_value_u16(
+            int16_t value_sel = pev_in_range(working_grade.hm_lev100) ? working_grade.hm_lev100 : 0;
+            if (display_input_value_s16(
                 "Speed Point (optional)",
                 "Print exposure value necessary\n"
                 "to achieve a density of D=0.60\n"
                 "above the paper base (Dmin).\n",
-                "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                "", &value_sel, PAPER_PEV_MIN, PAPER_PEV_MAX, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 working_grade.hm_lev100 = value_sel;
             }
         } else if (option == 3) {
-            uint16_t value_sel = working_grade.hs_lev100;
-            if (display_input_value_u16(
+            int16_t value_sel = pev_in_range(working_grade.hs_lev100) ? working_grade.hs_lev100 : 0;
+            if (display_input_value_s16(
                     "Dark Exposure",
                     "Print exposure value necessary\n"
                     "to achieve 90% of the paper's\n"
                     "maximum net density.\n",
-                    "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                    "", &value_sel, PAPER_PEV_MIN, PAPER_PEV_MAX, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 working_grade.hs_lev100 = value_sel;
@@ -659,7 +661,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
                 }
             }
         } else if (option == 7) {
-            log_i("Accept: Grade %s, ht_lev100=%lu, hm_lev100=%lu, hs_lev100=%lu",
+            log_i("Accept: Grade %s, ht_lev100=%ld, hm_lev100=%ld, hs_lev100=%ld",
                 contrast_grade_str(grade),
                 working_grade.ht_lev100, working_grade.hm_lev100, working_grade.hs_lev100);
             if (!paper_profile_grade_is_valid(&working_grade)) {
@@ -681,7 +683,7 @@ menu_result_t menu_paper_profile_edit_grade(state_controller_t *controller, pape
             break;
         } else if (option == 8) {
             log_i("Clearing grade data");
-            memset(&profile->grade[grade], 0, sizeof(paper_profile_grade_t));
+            paper_profile_grade_clear(&profile->grade[grade]);
             menu_result = MENU_SAVE;
             break;
         } else if (option == UINT8_MAX) {
