@@ -88,10 +88,10 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
                 result = ((uint16_t)event.count << 8) | U8X8_MSG_GPIO_MENU_VALUE_DEC;
                 break;
             case KEYPAD_METER_PROBE:
-                result = U8X8_MSG_GPIO_MENU_PROBE_BTN;
+                result = !event.repeated ? U8X8_MSG_GPIO_MENU_PROBE_BTN : 0;
                 break;
             case KEYPAD_DENSISTICK:
-                result = U8X8_MSG_GPIO_MENU_STICK_BTN;
+                result = !event.repeated ? U8X8_MSG_GPIO_MENU_STICK_BTN : 0;
                 break;
             default:
                 break;
