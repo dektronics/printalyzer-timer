@@ -24,7 +24,7 @@ typedef struct {
     step_wedge_t *wedge;
     float paper_dmin;
     float paper_dmax;
-    uint32_t calibration_pev;
+    int32_t calibration_pev;
     float *patch_density;
 } wedge_calibration_params_t;
 
@@ -32,7 +32,7 @@ typedef struct {
     uint8_t paper_param; /* 0 = Dmin+0.04, 1 = Dmin+0.60, 2 = 90% Dnet */
     float paper_dmin;
     float paper_dmax;
-    uint32_t calibration_pev;
+    int32_t calibration_pev;
     uint8_t patch_count;
     float patch_increment;
     float *patch_density;
@@ -702,7 +702,7 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
     step_wedge_t *wedge = NULL;
     float *patch_density = NULL;
     uint8_t option = 1;
-    uint32_t calibration_pev = 0;
+    int32_t calibration_pev = 0;
 
     const float display_dmin = paper_dmin;
     const float display_dmax = paper_dmax;
@@ -712,9 +712,6 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
 
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     calibration_pev = exposure_get_calibration_pev(exposure_state);
-    if (calibration_pev > 999) {
-        calibration_pev = 0;
-    }
 
     /* Load step wedge configuration */
     if (!settings_get_step_wedge(&wedge)) {
@@ -781,9 +778,9 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 "Paper Dmax              {------}\n");
         }
 
-        if (calibration_pev > 0) {
+        if (pev_in_range(calibration_pev)) {
             offset += sprintf(buf + offset,
-                "Print Exposure Value       [%3lu]\n", calibration_pev);
+                "Print Exposure Value       [%3ld]\n", calibration_pev);
         } else {
             offset += sprintf(buf + offset,
                 "Print Exposure Value       [---]\n");
@@ -839,13 +836,13 @@ menu_result_t menu_paper_profile_calibrate_grade(state_controller_t *controller,
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 4) {
-            uint16_t value_sel = calibration_pev;
-            if (display_input_value_u16(
+            int16_t value_sel = pev_in_range(calibration_pev) ? calibration_pev : 0;
+            if (display_input_value_s16(
                 "Print Exposure Value",
                 "Print exposure value used for\n"
                 "the step wedge exposure being\n"
                 "measured.\n",
-                "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                "", &value_sel, PAPER_PEV_MIN, PAPER_PEV_MAX, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 calibration_pev = value_sel;
@@ -964,7 +961,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *contro
     uint8_t paper_param = 0;
     float *patch_density = NULL;
     uint8_t option = 1;
-    uint32_t calibration_pev = 0;
+    int32_t calibration_pev = 0;
     uint8_t patch_count;
     exposure_adjustment_increment_t patch_increment;
 
@@ -976,9 +973,6 @@ menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *contro
 
     const exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     calibration_pev = exposure_get_calibration_pev(exposure_state);
-    if (calibration_pev > 999) {
-        calibration_pev = 0;
-    }
 
     switch (settings_get_teststrip_patches()) {
     case TESTSTRIP_PATCHES_5:
@@ -1045,9 +1039,9 @@ menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *contro
         patch_increment_value = exposure_adjustment_increment_value(patch_increment);
         offset += menu_build_padded_format_row(buf + offset, "Exposure Increment", "%s stop", patch_increment_name);
 
-        if (calibration_pev > 0) {
+        if (pev_in_range(calibration_pev)) {
             offset += sprintf(buf + offset,
-                "Center Exposure Value      [%3lu]\n", calibration_pev);
+                "Center Exposure Value      [%3ld]\n", calibration_pev);
         } else {
             offset += sprintf(buf + offset,
                 "Center Exposure Value      [---]\n");
@@ -1149,13 +1143,13 @@ menu_result_t menu_paper_profile_calibrate_test_strip(state_controller_t *contro
                 menu_result = MENU_TIMEOUT;
             }
         } else if (option == 6) {
-            uint16_t value_sel = calibration_pev;
-            if (display_input_value_u16(
+            int16_t value_sel = pev_in_range(calibration_pev) ? calibration_pev : 0;
+            if (display_input_value_s16(
                 "Center Exposure Value",
                 "Print exposure value used for\n"
                 "the center of the test strip\n"
                 "being measured.\n",
-                "", &value_sel, 0, 999, 3, "") == UINT8_MAX) {
+                "", &value_sel, PAPER_PEV_MIN, PAPER_PEV_MAX, 3, "") == UINT8_MAX) {
                 menu_result = MENU_TIMEOUT;
             } else {
                 calibration_pev = value_sel;
@@ -1355,7 +1349,7 @@ menu_result_t menu_paper_profile_calibrate_grade_validate(const wedge_calibratio
     /* Validate the PEV, Dmin, and Dmax values */
     if (!(is_valid_number(params->paper_dmin) && is_valid_number(params->paper_dmax)
         && (params->paper_dmin < params->paper_dmax)
-        && (params->calibration_pev > 0) && (params->calibration_pev <= 999))) {
+        && pev_in_range(params->calibration_pev))) {
         uint8_t msg_option = display_message(
                 "Invalid Properties\n",
                 NULL,
@@ -1663,7 +1657,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
 
         /* Fill the interpolation output X-value array */
         for (uint32_t i = 0; i < num_output; i++) {
-            xq_pev_f32[i] = min_xq + i;
+            xq_pev_f32[i] = min_xq + (float)i;
         }
 
         /* Run the cubic spline interpolation to get the characteristic curve */
@@ -1692,10 +1686,11 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         }
 
         /* Assign the results, keeping signs */
-        Ht_lev100 = lroundf(Ht_x);
-        Hm_lev100 = lroundf(Hm_x);
-        Hs_lev100 = lroundf(Hs_x);
-        iso_r = abs(lroundf(Hs_lev100 - Ht_lev100));
+        Ht_lev100 = isnanf(Ht_x) ? INT32_MAX : lroundf(Ht_x);
+        Hm_lev100 = isnanf(Hm_x) ? INT32_MAX : lroundf(Hm_x);
+        Hs_lev100 = isnanf(Hs_x) ? INT32_MAX : lroundf(Hs_x);
+
+        iso_r = abs(Hs_lev100 - Ht_lev100);
 
         /* Log the results */
         log_i("Ht: PEV=%ld, D=%0.02f (%0.02f)", Ht_lev100, Ht_y, Ht_D);
@@ -1704,12 +1699,9 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         log_i("ISO(R) = %ld", iso_r);
 
         /*
-         * Sanity check the numbers and abort if wildly out of range.
-         * Unlike the regular profile validation, we don't reject negative
-         * values here. If the values go negative, we can still use the
-         * calculated ISO(R) even if everything else is not usable.
+         * Sanity check the numbers and abort if wildly out of range
          */
-        if (Ht_lev100 > 999 && Hm_lev100 > 999 && Hs_lev100 > 999) {
+        if (!pev_in_range(Ht_lev100) || !pev_in_range(Hm_lev100) || !pev_in_range(Hs_lev100)) {
             return false;
         }
         if (Ht_lev100 >= Hs_lev100) {
@@ -1741,7 +1733,7 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         /* Fill the interpolation display graph output X-value array */
         float xq_increment = (float)num_output / (float)num_graph;
         for (uint32_t i = 0; i < num_graph; i++) {
-            xq_pev_f32[i] = min_xq + (i * xq_increment);
+            xq_pev_f32[i] = min_xq + ((float)i * xq_increment);
         }
 
         /* Run the cubic spline interpolation to get the display graph curve */
@@ -1773,21 +1765,12 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
         log_i("Showing results display graph");
 
         /* Format the message text */
-        if (Ht_lev100 > 0 && Hm_lev100 > 0 && Hs_lev100 > 0) {
-            sprintf(buf,
-                "Base exp  [%3lu] \n"
-                "Speed pt  [%3lu] \n"
-                "Dark exp  [%3lu] \n"
-                "ISO Range [%3lu] ",
-                Ht_lev100, Hm_lev100, Hs_lev100, iso_r);
-        } else {
-            sprintf(buf,
-                "Base exp  [---] \n"
-                "Speed pt  [---] \n"
-                "Dark exp  [---] \n"
-                "ISO Range [%3lu] ",
-                iso_r);
-        }
+        sprintf(buf,
+            "Base exp  [%3ld] \n"
+            "Speed pt  [%3ld] \n"
+            "Dark exp  [%3ld] \n"
+            "ISO Range [%3lu] ",
+            Ht_lev100, Hm_lev100, Hs_lev100, iso_r);
 
         calculation_completed = true;
 
@@ -1820,15 +1803,10 @@ menu_result_t menu_paper_profile_calibrate_grade_calculate(const char *title, co
     }
 
     if (msg_option == 1) {
-        if (Ht_lev100 > 0 && Hm_lev100 > 0 && Hs_lev100 > 0) {
-            log_i("Updating all grade values");
-            paper_grade->ht_lev100 = Ht_lev100;
-            paper_grade->hm_lev100 = Hm_lev100;
-            paper_grade->hs_lev100 = Hs_lev100;
-        } else {
-            log_i("Updating only ISO(R) due to low PEV numbers");
-            paper_grade->hs_lev100 = paper_grade->ht_lev100 + iso_r;
-        }
+        log_i("Updating all grade values");
+        paper_grade->ht_lev100 = Ht_lev100;
+        paper_grade->hm_lev100 = Hm_lev100;
+        paper_grade->hs_lev100 = Hs_lev100;
         log_i("Calibration parameters updated");
         return MENU_OK;
     } else if (msg_option == UINT8_MAX) {
@@ -1864,7 +1842,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip_validate(const strip_calib
     /* Validate the PEV, Dmin, and Dmax values */
     if (!(is_valid_number(params->paper_dmin) && is_valid_number(params->paper_dmax)
         && (params->paper_dmin < params->paper_dmax)
-        && (params->calibration_pev > 0) && (params->calibration_pev <= 999))) {
+        && pev_in_range(params->calibration_pev))) {
         uint8_t msg_option = display_message(
                 "Invalid Properties\n",
                 NULL,
@@ -2118,7 +2096,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip_calculate(const char *titl
         arm_spline_f32(&S, &xq_density_f32, &yq_pev_f32, 1);
 
         /* Assign the result, keeping signs */
-        H_lev100 = lroundf(yq_pev_f32);
+        H_lev100 = isnanf(yq_pev_f32) ? INT32_MAX : lroundf(yq_pev_f32);
 
         /* Log the results */
         log_i("H(%s): PEV=%ld, D=%0.02f", PAPER_PARAM_NAMES[params->paper_param], H_lev100, xq_density_f32);
@@ -2131,7 +2109,7 @@ menu_result_t menu_paper_profile_calibrate_test_strip_calculate(const char *titl
     vPortFree(coeffs);
     vPortFree(temp_buffer);
 
-    if (H_lev100 <= 0) {
+    if (!pev_in_range(H_lev100)) {
         msg_option = display_message(
             "Calculation Error\n",
             NULL,
