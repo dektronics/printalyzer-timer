@@ -234,6 +234,8 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                 } else {
                     state_controller_set_next_state(controller, STATE_HOME, 0);
                 }
+            } else if (exposure_burn_dodge_count(exposure_state) > 0) {
+                state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
             }
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_MENU)) {
             if (state->working_value.numerator != 0) {
@@ -247,7 +249,11 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
         } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
                    || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
             state->value_accepted = false;
-            state_controller_set_next_state(controller, STATE_HOME, 0);
+            if (state->from_list) {
+                state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, state->working_index);
+            } else {
+                state_controller_set_next_state(controller, STATE_HOME, 0);
+            }
         }
     }
 
