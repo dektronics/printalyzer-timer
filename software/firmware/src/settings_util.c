@@ -20,6 +20,22 @@ uint32_t copy_to_u32(const uint8_t *buf)
         | (uint32_t)buf[3];
 }
 
+void copy_from_s32(uint8_t *buf, int32_t val)
+{
+    buf[0] = (val >> 24) & 0xFF;
+    buf[1] = (val >> 16) & 0xFF;
+    buf[2] = (val >> 8) & 0xFF;
+    buf[3] = val & 0xFF;
+}
+
+int32_t copy_to_s32(const uint8_t *buf)
+{
+    return (int32_t)buf[0] << 24
+        | (int32_t)buf[1] << 16
+        | (int32_t)buf[2] << 8
+        | (int32_t)buf[3];
+}
+
 void copy_from_f32(uint8_t *buf, float val)
 {
     uint32_t int_val;

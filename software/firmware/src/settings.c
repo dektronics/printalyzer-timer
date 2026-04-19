@@ -40,7 +40,7 @@ _Static_assert(CONTRAST_WHOLE_GRADE_COUNT == 7, "CONTRAST_WHOLE_GRADE_COUNT leng
 #define DEFAULT_SAFELIGHT_CONFIG        { SAFELIGHT_MODE_AUTO, SAFELIGHT_CONTROL_RELAY, 0, false, 255 }
 
 #define LATEST_ENLARGER_CONFIG_VERSION  1
-#define LATEST_PAPER_PROFILE_VERSION    1
+#define LATEST_PAPER_PROFILE_VERSION    2
 #define LATEST_STEP_WEDGE_VERSION       1
 
 /* Handle to I2C peripheral used by the EEPROM */
@@ -220,7 +220,7 @@ static bool settings_load_safelight_config();
 
 static void settings_enlarger_config_parse_page(enlarger_config_t *config, const uint8_t *data);
 static void settings_enlarger_config_populate_page(const enlarger_config_t *config, uint8_t *data);
-static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data);
+static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data, uint32_t version);
 static void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_t *data);
 static void settings_step_wedge_parse_page(step_wedge_t **wedge, const uint8_t *data);
 static void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data);
@@ -1138,7 +1138,7 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
             break;
         }
 
-        settings_paper_profile_parse_page(profile, data);
+        settings_paper_profile_parse_page(profile, data, profile_version);
         paper_profile_recalculate(profile);
 
     } while (0);
@@ -1146,40 +1146,91 @@ bool settings_get_paper_profile(paper_profile_t *profile, uint8_t index)
     return (ret == HAL_OK);
 }
 
-static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data)
+static void settings_paper_profile_parse_page(paper_profile_t *profile, const uint8_t *data, uint32_t version)
 {
-    memset(profile, 0, sizeof(paper_profile_t));
+    paper_profile_clear(profile);
 
     strncpy(profile->name, (const char *)(data + PAPER_PROFILE_NAME), PROFILE_NAME_LEN);
     profile->name[PROFILE_NAME_LEN - 1] = '\0';
 
-    profile->grade[CONTRAST_GRADE_00].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HT);
-    profile->grade[CONTRAST_GRADE_00].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HM);
-    profile->grade[CONTRAST_GRADE_00].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE00_HS);
+    if (version == 1) {
+        /*
+         * Parse as Version 1, which uses unsigned values and a 0 to
+         * represent empty fields.
+         * Need to convert these to signed values that use INT32_MAX
+         * to represent empty.
+         */
+        profile->grade[CONTRAST_GRADE_00].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE00_HT);
+        profile->grade[CONTRAST_GRADE_00].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE00_HM);
+        profile->grade[CONTRAST_GRADE_00].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE00_HS);
 
-    profile->grade[CONTRAST_GRADE_0].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HT);
-    profile->grade[CONTRAST_GRADE_0].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HM);
-    profile->grade[CONTRAST_GRADE_0].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE0_HS);
+        profile->grade[CONTRAST_GRADE_0].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE0_HT);
+        profile->grade[CONTRAST_GRADE_0].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE0_HM);
+        profile->grade[CONTRAST_GRADE_0].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE0_HS);
 
-    profile->grade[CONTRAST_GRADE_1].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HT);
-    profile->grade[CONTRAST_GRADE_1].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HM);
-    profile->grade[CONTRAST_GRADE_1].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE1_HS);
+        profile->grade[CONTRAST_GRADE_1].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE1_HT);
+        profile->grade[CONTRAST_GRADE_1].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE1_HM);
+        profile->grade[CONTRAST_GRADE_1].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE1_HS);
 
-    profile->grade[CONTRAST_GRADE_2].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HT);
-    profile->grade[CONTRAST_GRADE_2].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HM);
-    profile->grade[CONTRAST_GRADE_2].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE2_HS);
+        profile->grade[CONTRAST_GRADE_2].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE2_HT);
+        profile->grade[CONTRAST_GRADE_2].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE2_HM);
+        profile->grade[CONTRAST_GRADE_2].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE2_HS);
 
-    profile->grade[CONTRAST_GRADE_3].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HT);
-    profile->grade[CONTRAST_GRADE_3].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HM);
-    profile->grade[CONTRAST_GRADE_3].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE3_HS);
+        profile->grade[CONTRAST_GRADE_3].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE3_HT);
+        profile->grade[CONTRAST_GRADE_3].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE3_HM);
+        profile->grade[CONTRAST_GRADE_3].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE3_HS);
 
-    profile->grade[CONTRAST_GRADE_4].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HT);
-    profile->grade[CONTRAST_GRADE_4].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HM);
-    profile->grade[CONTRAST_GRADE_4].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE4_HS);
+        profile->grade[CONTRAST_GRADE_4].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE4_HT);
+        profile->grade[CONTRAST_GRADE_4].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE4_HM);
+        profile->grade[CONTRAST_GRADE_4].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE4_HS);
 
-    profile->grade[CONTRAST_GRADE_5].ht_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HT);
-    profile->grade[CONTRAST_GRADE_5].hm_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HM);
-    profile->grade[CONTRAST_GRADE_5].hs_lev100 = copy_to_u32(data + PAPER_PROFILE_GRADE5_HS);
+        profile->grade[CONTRAST_GRADE_5].ht_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE5_HT);
+        profile->grade[CONTRAST_GRADE_5].hm_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE5_HM);
+        profile->grade[CONTRAST_GRADE_5].hs_lev100 = (int32_t)copy_to_u32(data + PAPER_PROFILE_GRADE5_HS);
+
+        for (size_t i = 0; i < CONTRAST_WHOLE_GRADE_COUNT; i++) {
+            const size_t index = CONTRAST_WHOLE_GRADES[i];
+            if (profile->grade[index].ht_lev100 == 0) {
+                profile->grade[index].ht_lev100 = INT32_MAX;
+            }
+            if (profile->grade[index].hm_lev100 == 0) {
+                profile->grade[index].hm_lev100 = INT32_MAX;
+            }
+            if (profile->grade[index].hs_lev100 == 0) {
+                profile->grade[index].hs_lev100 = INT32_MAX;
+            }
+        }
+
+    } else {
+        /* Parse as Version 2 */
+        profile->grade[CONTRAST_GRADE_00].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE00_HT);
+        profile->grade[CONTRAST_GRADE_00].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE00_HM);
+        profile->grade[CONTRAST_GRADE_00].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE00_HS);
+
+        profile->grade[CONTRAST_GRADE_0].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE0_HT);
+        profile->grade[CONTRAST_GRADE_0].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE0_HM);
+        profile->grade[CONTRAST_GRADE_0].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE0_HS);
+
+        profile->grade[CONTRAST_GRADE_1].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE1_HT);
+        profile->grade[CONTRAST_GRADE_1].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE1_HM);
+        profile->grade[CONTRAST_GRADE_1].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE1_HS);
+
+        profile->grade[CONTRAST_GRADE_2].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE2_HT);
+        profile->grade[CONTRAST_GRADE_2].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE2_HM);
+        profile->grade[CONTRAST_GRADE_2].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE2_HS);
+
+        profile->grade[CONTRAST_GRADE_3].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE3_HT);
+        profile->grade[CONTRAST_GRADE_3].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE3_HM);
+        profile->grade[CONTRAST_GRADE_3].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE3_HS);
+
+        profile->grade[CONTRAST_GRADE_4].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE4_HT);
+        profile->grade[CONTRAST_GRADE_4].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE4_HM);
+        profile->grade[CONTRAST_GRADE_4].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE4_HS);
+
+        profile->grade[CONTRAST_GRADE_5].ht_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE5_HT);
+        profile->grade[CONTRAST_GRADE_5].hm_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE5_HM);
+        profile->grade[CONTRAST_GRADE_5].hs_lev100 = copy_to_s32(data + PAPER_PROFILE_GRADE5_HS);
+    }
 
     profile->paper_dmin = copy_to_f32(data + PAPER_PROFILE_DMIN);
     if (!isnan(profile->paper_dmin) && (!isnormal(profile->paper_dmin) || profile->paper_dmin < 0.0F)) {
@@ -1216,33 +1267,33 @@ void settings_paper_profile_populate_page(const paper_profile_t *profile, uint8_
 
     strncpy((char *)(data + PAPER_PROFILE_NAME), profile->name, PROFILE_NAME_LEN);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE00_HT, profile->grade[CONTRAST_GRADE_00].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE00_HM, profile->grade[CONTRAST_GRADE_00].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE00_HS, profile->grade[CONTRAST_GRADE_00].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE00_HT, profile->grade[CONTRAST_GRADE_00].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE00_HM, profile->grade[CONTRAST_GRADE_00].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE00_HS, profile->grade[CONTRAST_GRADE_00].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE0_HT, profile->grade[CONTRAST_GRADE_0].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE0_HM, profile->grade[CONTRAST_GRADE_0].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE0_HS, profile->grade[CONTRAST_GRADE_0].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE0_HT, profile->grade[CONTRAST_GRADE_0].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE0_HM, profile->grade[CONTRAST_GRADE_0].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE0_HS, profile->grade[CONTRAST_GRADE_0].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE1_HT, profile->grade[CONTRAST_GRADE_1].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE1_HM, profile->grade[CONTRAST_GRADE_1].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE1_HS, profile->grade[CONTRAST_GRADE_1].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE1_HT, profile->grade[CONTRAST_GRADE_1].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE1_HM, profile->grade[CONTRAST_GRADE_1].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE1_HS, profile->grade[CONTRAST_GRADE_1].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE2_HT, profile->grade[CONTRAST_GRADE_2].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE2_HM, profile->grade[CONTRAST_GRADE_2].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE2_HS, profile->grade[CONTRAST_GRADE_2].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE2_HT, profile->grade[CONTRAST_GRADE_2].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE2_HM, profile->grade[CONTRAST_GRADE_2].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE2_HS, profile->grade[CONTRAST_GRADE_2].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE3_HT, profile->grade[CONTRAST_GRADE_3].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE3_HM, profile->grade[CONTRAST_GRADE_3].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE3_HS, profile->grade[CONTRAST_GRADE_3].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE3_HT, profile->grade[CONTRAST_GRADE_3].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE3_HM, profile->grade[CONTRAST_GRADE_3].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE3_HS, profile->grade[CONTRAST_GRADE_3].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE4_HT, profile->grade[CONTRAST_GRADE_4].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE4_HM, profile->grade[CONTRAST_GRADE_4].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE4_HS, profile->grade[CONTRAST_GRADE_4].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE4_HT, profile->grade[CONTRAST_GRADE_4].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE4_HM, profile->grade[CONTRAST_GRADE_4].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE4_HS, profile->grade[CONTRAST_GRADE_4].hs_lev100);
 
-    copy_from_u32(data + PAPER_PROFILE_GRADE5_HT, profile->grade[CONTRAST_GRADE_5].ht_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE5_HM, profile->grade[CONTRAST_GRADE_5].hm_lev100);
-    copy_from_u32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE5_HT, profile->grade[CONTRAST_GRADE_5].ht_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE5_HM, profile->grade[CONTRAST_GRADE_5].hm_lev100);
+    copy_from_s32(data + PAPER_PROFILE_GRADE5_HS, profile->grade[CONTRAST_GRADE_5].hs_lev100);
 
     copy_from_f32(data + PAPER_PROFILE_DMIN, profile->paper_dmin);
     copy_from_f32(data + PAPER_PROFILE_DMAX, profile->paper_dmax);
