@@ -64,6 +64,11 @@ void display_draw_ndigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t dig
 void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);
 
 /**
+ * Draw a +/- sign on a 18x37 pixel digit grid
+ */
+void display_draw_digit_msign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool positive);
+
+/**
  * Draw a 14x25 pixel digit
  */
 void display_draw_tdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit);

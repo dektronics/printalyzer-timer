@@ -99,14 +99,14 @@ void convert_exposure_to_display_calibration(display_main_calibration_elements_t
         exposure_get_contrast_grade(exposure));
 
     if (exposure_has_meter_readings(exposure)) {
-        elements->cal_value = exposure_get_calibration_pev(exposure);
+        elements->cal_value = (int16_t)exposure_get_calibration_pev(exposure);
         float exposure_time = exposure_get_exposure_time(exposure);
         convert_exposure_float_to_display_timer(&(elements->time_elements), exposure_time);
 
         float min_exposure_time = exposure_get_min_exposure_time(exposure);
         elements->time_too_short = (min_exposure_time > 0) && (exposure_time < min_exposure_time);
     } else {
-        elements->cal_value = exposure_get_calibration_target_pev(exposure);
+        elements->cal_value = (int16_t)exposure_get_calibration_target_pev(exposure);
         elements->time_elements.time_seconds = UINT16_MAX;
         elements->time_elements.time_milliseconds = UINT16_MAX;
         elements->time_elements.fraction_digits = UINT8_MAX;
@@ -310,6 +310,28 @@ uint16_t value_adjust_with_rollover_u16(uint16_t value, int16_t increment, uint1
     } else if (increment < 0) {
         temp_value = (temp_value + ((temp_upper + 1) + increment)) % (temp_upper + 1);
         return (uint16_t)(temp_value + lower_bound);
+    } else {
+        return value;
+    }
+}
+
+int16_t value_adjust_with_rollover_s16(int16_t value, int16_t increment, int16_t lower_bound, int16_t upper_bound)
+{
+    int32_t temp_value = value - lower_bound;
+    int32_t temp_upper = upper_bound - lower_bound;
+
+    if (lower_bound > upper_bound) {
+        return value;
+    } else if (value < lower_bound) {
+        return lower_bound;
+    } else if (value > upper_bound) {
+        return upper_bound;
+    } else if (increment > 0) {
+        temp_value = (temp_value + increment) % (temp_upper + 1);
+        return (int16_t)(temp_value + lower_bound);
+    } else if (increment < 0) {
+        temp_value = (temp_value + ((temp_upper + 1) + increment)) % (temp_upper + 1);
+        return (int16_t)(temp_value + lower_bound);
     } else {
         return value;
     }

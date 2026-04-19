@@ -39,7 +39,7 @@ static void display_draw_burn_dodge_count(uint8_t count);
 static void display_draw_bw_elements(u8g2_uint_t x, const display_main_printing_bw_t *bw_elements);
 static void display_draw_color_elements(u8g2_uint_t x, const display_main_printing_color_t *color_elements);
 static void display_draw_time_icon(display_main_printing_time_icon_t time_icon, bool highlight);
-static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value);
+static void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, int16_t value);
 static void display_draw_contrast_grade(u8g2_uint_t x, u8g2_uint_t y, display_digit_t display_digit, contrast_grade_t grade);
 static void display_draw_density_prefix();
 static void display_draw_counter_time(u8g2_uint_t x, u8g2_uint_t y, const display_exposure_timer_t *time_elements);
@@ -645,7 +645,7 @@ void display_draw_time_icon(display_main_printing_time_icon_t time_icon, bool hi
     }
 }
 
-void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, uint16_t value)
+void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *title1, const char *title2, int16_t value)
 {
     u8g2_SetFont(&u8g2, u8g2_font_pressstart2p_8f);
     u8g2_SetFontMode(&u8g2, 0);
@@ -667,6 +667,20 @@ void display_draw_calibration_value(u8g2_uint_t x, u8g2_uint_t y, const char *ti
 
     if (value > 999) {
         value = 999;
+    } else if (value < -99) {
+        value = -99;
+    }
+
+    bool negative;
+    if (value < 0) {
+        negative = true;
+        value = (int16_t)abs(value);
+    } else {
+        negative = false;
+    }
+
+    if (negative) {
+        display_draw_digit_msign(&u8g2, (value < 10) ? (x + 22) : x, y, false);
     }
 
     if (value >= 100) {
@@ -1175,7 +1189,7 @@ void display_draw_timer_adj(const display_exposure_timer_t *elements, uint32_t t
     osMutexRelease(display_mutex);
 }
 
-void display_draw_pev_adj(uint32_t value)
+void display_draw_pev_adj(int32_t value)
 {
     osMutexAcquire(display_mutex, portMAX_DELAY);
 
@@ -1191,6 +1205,14 @@ void display_draw_pev_adj(uint32_t value)
     u8g2_uint_t x = 217;
     u8g2_uint_t y = 8;
 
+    bool negative;
+    if (value < 0) {
+        negative = true;
+        value = (int16_t)abs(value);
+    } else {
+        negative = false;
+    }
+
     display_draw_digit(&u8g2, x, y, value % 10);
     x -= 36;
 
@@ -1202,6 +1224,10 @@ void display_draw_pev_adj(uint32_t value)
     if (value >= 100) {
         display_draw_digit(&u8g2, x, y, (value % 1000) / 100);
         x -= 36;
+    }
+
+    if (negative) {
+        display_draw_digit_sign(&u8g2, x, y, false);
     }
 
     u8g2_SendBuffer(&u8g2);

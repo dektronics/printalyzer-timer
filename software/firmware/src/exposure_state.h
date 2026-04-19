@@ -105,10 +105,10 @@ void exposure_channel_decrease(exposure_state_t *state, int index, uint8_t amoun
 bool exposure_get_channel_wide_mode(const exposure_state_t *state);
 void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode);
 
-uint32_t exposure_get_calibration_target_pev(const exposure_state_t *state);
-void exposure_set_calibration_target_pev(exposure_state_t *state, uint32_t pev);
-uint32_t exposure_get_calibration_pev(const exposure_state_t *state);
-void exposure_set_calibration_pev(exposure_state_t *state, uint32_t pev);
+int32_t exposure_get_calibration_target_pev(const exposure_state_t *state);
+void exposure_set_calibration_target_pev(exposure_state_t *state, int32_t pev);
+int32_t exposure_get_calibration_pev(const exposure_state_t *state);
+void exposure_set_calibration_pev(exposure_state_t *state, int32_t pev);
 
 exposure_adjustment_increment_t exposure_adj_increment_get(const exposure_state_t *state);
 void exposure_adj_increment_set(exposure_state_t *state, exposure_adjustment_increment_t increment);
@@ -123,7 +123,7 @@ void exposure_burn_dodge_delete_all(exposure_state_t *state);
 float exposure_get_test_strip_time_incremental(const exposure_state_t *state,
     int patch_min, unsigned int patches_covered);
 float exposure_get_test_strip_time_complete(const exposure_state_t *state, int patch);
-uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch);
+int32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch);
 
 const char *exposure_adjustment_increment_name(exposure_adjustment_increment_t increment);
 float exposure_adjustment_increment_value(exposure_adjustment_increment_t increment);

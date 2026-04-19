@@ -69,8 +69,8 @@ typedef struct __exposure_state_t {
     int lux_reading_count;
     float dens_reading_base;
     float dens_reading_current;
-    uint32_t calibration_pev_target;
-    uint32_t calibration_pev;
+    int32_t calibration_pev_target;
+    int32_t calibration_pev;
     int paper_profile_index;
     paper_profile_t paper_profile;
     float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
@@ -79,7 +79,7 @@ typedef struct __exposure_state_t {
     int burn_dodge_count;
 } exposure_state_t;
 
-static float exposure_base_time_for_calibration_pev(float lux, uint32_t pev);
+static float exposure_base_time_for_calibration_pev(float lux, int32_t pev);
 static void exposure_recalculate(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks(exposure_state_t *state);
 static void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state,
@@ -150,7 +150,7 @@ void exposure_state_defaults(exposure_state_t *state)
     state->dens_reading_base = NAN;
     state->dens_reading_current = NAN;
     state->calibration_pev_target = CALIBRATION_BASE_PEV;
-    state->calibration_pev = 0;
+    state->calibration_pev = INT32_MAX;
 
     for (size_t i = 0; i < 3; i++) {
         state->channel_values[i] = state->channel_default_values[i];
@@ -299,11 +299,11 @@ void exposure_clear_active_paper_profile(exposure_state_t *state)
     paper_profile_set_defaults(&state->paper_profile);
 }
 
-float exposure_base_time_for_calibration_pev(float lux, uint32_t pev)
+float exposure_base_time_for_calibration_pev(float lux, int32_t pev)
 {
     float base_time = 0;
     if (isnormal(lux) && lux > 0) {
-        base_time = powf(10, pev / 100.0F) / lux;
+        base_time = powf(10, (float)pev / 100.0F) / lux;
     }
     if (base_time < 0.10F) {
         base_time = 0;
@@ -664,13 +664,13 @@ void exposure_set_channel_wide_mode(exposure_state_t *state, bool wide_mode)
 
 }
 
-uint32_t exposure_get_calibration_target_pev(const exposure_state_t *state)
+int32_t exposure_get_calibration_target_pev(const exposure_state_t *state)
 {
     if (!state) { return 0; }
     return state->calibration_pev_target;
 }
 
-void exposure_set_calibration_target_pev(exposure_state_t *state, uint32_t pev)
+void exposure_set_calibration_target_pev(exposure_state_t *state, int32_t pev)
 {
     if (!state) { return; }
 
@@ -693,13 +693,13 @@ void exposure_set_calibration_target_pev(exposure_state_t *state, uint32_t pev)
     }
 }
 
-uint32_t exposure_get_calibration_pev(const exposure_state_t *state)
+int32_t exposure_get_calibration_pev(const exposure_state_t *state)
 {
     if (!state) { return 0; }
     return state->calibration_pev;
 }
 
-void exposure_set_calibration_pev(exposure_state_t *state, uint32_t pev)
+void exposure_set_calibration_pev(exposure_state_t *state, int32_t pev)
 {
     if (!state) { return; }
 
@@ -879,7 +879,7 @@ float exposure_get_test_strip_time_complete(const exposure_state_t *state, int p
     return patch_time;
 }
 
-uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch)
+int32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int patch)
 {
     if (!state) { return 0; }
 
@@ -887,8 +887,8 @@ uint32_t exposure_get_test_strip_patch_pev(const exposure_state_t *state, int pa
         && state->lux_reading_count > 0
         && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
         float patch_time = exposure_get_test_strip_time_complete(state, patch);
-        float calculated_pev = log10f(patch_time * state->lux_readings[0]) * 100.0;
-        return (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
+        float calculated_pev = log10f(patch_time * state->lux_readings[0]) * 100.0F;
+        return lroundf(calculated_pev);
     } else {
         return 0;
     }
@@ -903,10 +903,10 @@ void exposure_recalculate(exposure_state_t *state)
         exposure_populate_tone_graph(state);
     } else if (state->mode == EXPOSURE_MODE_CALIBRATION) {
         if (state->lux_reading_count > 0 && isnormal(state->lux_readings[0]) && state->lux_readings[0] > 0) {
-            float calculated_pev = log10f(state->adjusted_time * state->lux_readings[0]) * 100.0;
-            state->calibration_pev = (calculated_pev > 0.5) ? lroundf(calculated_pev) : 0;
+            float calculated_pev = log10f(state->adjusted_time * state->lux_readings[0]) * 100.0F;
+            state->calibration_pev = lroundf(calculated_pev);
         } else {
-            state->calibration_pev = 0;
+            state->calibration_pev = INT32_MAX;
         }
         state->tone_graph = 0;
     }

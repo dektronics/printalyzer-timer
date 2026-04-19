@@ -382,6 +382,19 @@ void display_draw_mdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t dig
     display_digit_draw(u8g2, x, y, DIGIT_MEDIUM, digit);
 }
 
+void display_draw_digit_msign(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, bool positive)
+{
+    u8g2_DrawLine(u8g2, x + 2, y + 17, x + 14, y + 17);
+    u8g2_DrawLine(u8g2, x + 1, y + 18, x + 15, y + 18);
+    u8g2_DrawLine(u8g2, x + 2, y + 19, x + 14, y + 19);
+
+    if (positive) {
+        u8g2_DrawLine(u8g2, x + 7, y + 12, x + 7, y + 24);
+        u8g2_DrawLine(u8g2, x + 8, y + 11, x + 8, y + 25);
+        u8g2_DrawLine(u8g2, x + 9, y + 12, x + 9, y + 24);
+    }
+}
+
 void display_draw_tdigit(u8g2_t *u8g2, u8g2_uint_t x, u8g2_uint_t y, uint8_t digit)
 {
     display_digit_draw(u8g2, x, y, DIGIT_TINY, digit);

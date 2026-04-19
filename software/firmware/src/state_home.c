@@ -89,7 +89,7 @@ typedef struct {
 
 typedef struct {
     state_t base;
-    uint32_t working_value;
+    int32_t working_value;
     bool value_accepted;
 } state_home_adjust_pev_t;
 
@@ -177,7 +177,7 @@ static state_home_adjust_pev_t state_home_adjust_pev_data = {
         .state_process = state_home_adjust_pev_process,
         .state_exit = state_home_adjust_pev_exit
     },
-    .working_value = 0,
+    .working_value = INT32_MAX,
     .value_accepted = false
 };
 
@@ -516,8 +516,8 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
             if (exposure_has_meter_readings(exposure_state)) {
                 exposure_adj_increase(exposure_state);
             } else {
-                uint16_t working_value = exposure_get_calibration_target_pev(exposure_state);
-                working_value = value_adjust_with_rollover_u16(working_value, 10, 0, 999);
+                int16_t working_value = (int16_t)exposure_get_calibration_target_pev(exposure_state);
+                working_value = value_adjust_with_rollover_s16(working_value, 10, -99, 999);
                 exposure_set_calibration_target_pev(exposure_state, working_value);
             }
             state->display_dirty = true;
@@ -525,8 +525,8 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
             if (exposure_has_meter_readings(exposure_state)) {
                 exposure_adj_decrease(exposure_state);
             } else {
-                uint16_t working_value = exposure_get_calibration_target_pev(exposure_state);
-                working_value = value_adjust_with_rollover_u16(working_value, -10, 0, 999);
+                int16_t working_value = (int16_t)exposure_get_calibration_target_pev(exposure_state);
+                working_value = value_adjust_with_rollover_s16(working_value, -10, -99, 999);
                 exposure_set_calibration_target_pev(exposure_state, working_value);
             }
             state->display_dirty = true;
@@ -706,7 +706,7 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     if (result == METER_READING_OK) {
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_SUCCESS);
         updated_tone_element = exposure_add_meter_reading(exposure_state, lux);
-        log_i("Measured PEV=%lu (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
+        log_i("Measured PEV=%ld (Lux=%f)", exposure_get_calibration_pev(exposure_state), lux);
     } else if (result == METER_READING_LOW) {
         display_draw_mode_text("Light Low");
         buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
@@ -1146,17 +1146,17 @@ bool state_home_adjust_pev_process(state_t *state_base, state_controller_t *cont
     keypad_event_t keypad_event;
     if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
         if (keypad_event.key == KEYPAD_ENCODER_CW) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, keypad_event.count, 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, keypad_event.count, -99, 999);
         } else if (keypad_event.key == KEYPAD_ENCODER_CCW) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, (int16_t)(-1 * keypad_event.count), 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, (int16_t)(-1 * keypad_event.count), -99, 999);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, 1, 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, 1, -99, 999);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, -1, 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, -1, -99, 999);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, 10, 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, 10, -99, 999);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
-            state->working_value = value_adjust_with_rollover_u16(state->working_value, -10, 0, 999);
+            state->working_value = value_adjust_with_rollover_s16((int16_t)state->working_value, -10, -99, 999);
         } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ENCODER)
                    || (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
                    || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {

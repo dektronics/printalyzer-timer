@@ -146,6 +146,7 @@ void conv_u16_array(uint8_t *dst, uint16_t src);
 
 uint8_t value_adjust_with_rollover_u8(uint8_t value, int8_t increment, uint8_t lower_bound, uint8_t upper_bound);
 uint16_t value_adjust_with_rollover_u16(uint16_t value, int16_t increment, uint16_t lower_bound, uint16_t upper_bound);
+int16_t value_adjust_with_rollover_s16(int16_t value, int16_t increment, int16_t lower_bound, int16_t upper_bound);
 
 osStatus_t hal_to_os_status(HAL_StatusTypeDef hal_status);
 HAL_StatusTypeDef os_to_hal_status(osStatus_t os_status);
