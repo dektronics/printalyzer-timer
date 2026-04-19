@@ -109,10 +109,13 @@ void state_test_strip_prepare_elements(state_test_strip_t *state, state_controll
     }
 
     if (exposure_get_mode(exposure_state) == EXPOSURE_MODE_CALIBRATION) {
+        state->elements.has_patch_cal_values = true;
         for (int i = 0; i < state->exposure_patch_count; i++) {
             state->elements.patch_cal_values[i] =
-                exposure_get_test_strip_patch_pev(exposure_state, state->exposure_patch_min + i);
+                (int16_t)exposure_get_test_strip_patch_pev(exposure_state, state->exposure_patch_min + i);
         }
+    } else {
+        state->elements.has_patch_cal_values = false;
     }
 
     /* Iterate across all patch times and mark those that are too short */

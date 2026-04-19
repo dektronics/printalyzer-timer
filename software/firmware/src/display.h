@@ -92,7 +92,8 @@ typedef struct {
     display_patches_t patches;
     uint8_t covered_patches;
     uint8_t invalid_patches;
-    uint16_t patch_cal_values[7];
+    bool has_patch_cal_values;
+    int16_t patch_cal_values[7];
     const char *title1;
     const char *title2;
     display_exposure_timer_t time_elements;

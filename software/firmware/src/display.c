@@ -1441,13 +1441,13 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
                 u8g2_SetDrawColor(&u8g2, 0);
             }
 
-            if (elements->patch_cal_values[i] > 0) {
+            if (elements->has_patch_cal_values) {
                 if (elements->invalid_patches & (1 << (6 - i))) {
                     display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
                     u8g2_DrawXBM(&u8g2, x + 5, y + 5, asset.width, asset.height, asset.bits);
                 } else {
                     u8g2_SetFontDirection(&u8g2, 3);
-                    u8g2_DrawUTF8(&u8g2, x + 19, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                    u8g2_DrawUTF8(&u8g2, x + 19, y + 28, display_s16toa(elements->patch_cal_values[i], 3));
                     u8g2_SetFontDirection(&u8g2, 0);
                 }
                 y += 19;
@@ -1490,13 +1490,13 @@ void display_draw_test_strip_elements(const display_test_strip_elements_t *eleme
                 u8g2_SetDrawColor(&u8g2, 0);
             }
 
-            if (elements->patch_cal_values[i] > 0) {
+            if (elements->has_patch_cal_values) {
                 if (elements->invalid_patches & (1 << (6 - i))) {
                     display_asset_get(&asset, ASSET_TIMER_OFF_ICON_18);
                     u8g2_DrawXBM(&u8g2, x + 1, y + 5, asset.width, asset.height, asset.bits);
                 } else {
                     u8g2_SetFontDirection(&u8g2, 3);
-                    u8g2_DrawUTF8(&u8g2, x + 15, y + 28, display_u16toa(elements->patch_cal_values[i], 3));
+                    u8g2_DrawUTF8(&u8g2, x + 15, y + 28, display_s16toa(elements->patch_cal_values[i], 3));
                     u8g2_SetFontDirection(&u8g2, 0);
                 }
                 y += 19;
