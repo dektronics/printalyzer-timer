@@ -66,6 +66,8 @@ float exposure_get_highest_meter_reading(exposure_state_t *state);
 bool exposure_has_meter_readings(const exposure_state_t *state);
 void exposure_clear_meter_readings(exposure_state_t *state);
 
+bool exposure_has_tone_graph(const exposure_state_t *state);
+
 /*
  * Get the tone graph for the current exposure and readings.
  *

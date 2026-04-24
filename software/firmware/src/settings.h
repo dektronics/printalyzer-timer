@@ -153,12 +153,17 @@ uint8_t settings_get_default_enlarger_config_index();
 void settings_set_default_enlarger_config_index(uint8_t index);
 
 /**
- * Index of the default paper profile.
+ * Get the index of the default paper profile.
  *
- * @return An index value from 0 to 15
+ * @return An index value from 0 to 15, or UINT8_MAX if print metering is disabled
  */
 uint8_t settings_get_default_paper_profile_index();
 
+/**
+ * Set the index of the default paper profile.
+ *
+ * @param index An index value from 0 to 15, or UINT8_MAX to disable print metering
+ */
 void settings_set_default_paper_profile_index(uint8_t index);
 
 /**

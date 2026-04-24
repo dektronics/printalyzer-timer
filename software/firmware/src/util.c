@@ -20,7 +20,11 @@ void convert_exposure_to_display_printing(display_main_printing_elements_t *elem
     const exposure_mode_t mode = exposure_get_mode(exposure);
 
     if (mode == EXPOSURE_MODE_PRINTING_BW) {
-        elements->tone_graph = exposure_get_tone_graph(exposure);
+        if (exposure_get_active_paper_profile_index(exposure) >= 0 && !exposure_has_tone_graph(exposure)) {
+            elements->tone_graph = UINT32_MAX;
+        } else {
+            elements->tone_graph = exposure_get_tone_graph(exposure);
+        }
         elements->tone_graph_overlay = 0;
 
         int paper_index = exposure_get_active_paper_profile_index(exposure);

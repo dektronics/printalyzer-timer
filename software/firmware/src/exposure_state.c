@@ -74,6 +74,7 @@ typedef struct __exposure_state_t {
     int paper_profile_index;
     paper_profile_t paper_profile;
     float tone_graph_marks[TONE_GRAPH_MARKS_SIZE];
+    bool has_tone_graph;
     uint32_t tone_graph;
     exposure_burn_dodge_t burn_dodge_entry[EXPOSURE_BURN_DODGE_MAX];
     int burn_dodge_count;
@@ -107,8 +108,8 @@ exposure_state_t *exposure_state_create()
     // clears state.
     state->paper_profile_index = settings_get_default_paper_profile_index();
     if (!settings_get_paper_profile(&state->paper_profile, state->paper_profile_index)) {
+        log_i("Clear paper profile");
         exposure_clear_active_paper_profile(state);
-        log_i("Set default paper profile");
     } else {
         log_i("Loaded paper profile: [%d] => \"%s\"", state->paper_profile_index + 1, state->paper_profile.name);
     }
@@ -296,7 +297,7 @@ void exposure_clear_active_paper_profile(exposure_state_t *state)
 {
     if (!state) { return; }
     state->paper_profile_index = -1;
-    paper_profile_set_defaults(&state->paper_profile);
+    paper_profile_clear(&state->paper_profile);
 }
 
 float exposure_base_time_for_calibration_pev(float lux, int32_t pev)
@@ -407,6 +408,13 @@ void exposure_clear_meter_readings(exposure_state_t *state)
     }
     state->lux_reading_count = 0;
     exposure_recalculate(state);
+}
+
+bool exposure_has_tone_graph(const exposure_state_t *state)
+{
+    if (!state) { return false; }
+    if (state->paper_profile_index < 0) { return false; }
+    return state->has_tone_graph;
 }
 
 uint32_t exposure_get_tone_graph(const exposure_state_t *state)
@@ -914,7 +922,16 @@ void exposure_recalculate(exposure_state_t *state)
 
 void exposure_recalculate_tone_graph_marks(exposure_state_t *state)
 {
-    exposure_recalculate_tone_graph_marks_impl(state, state->contrast_grade, state->tone_graph_marks);
+    if (state->paper_profile_index != -1) {
+        exposure_recalculate_tone_graph_marks_impl(state, state->contrast_grade, state->tone_graph_marks);
+        state->has_tone_graph = !paper_profile_grade_is_empty(&state->paper_profile.grade[state->contrast_grade])
+                                && paper_profile_grade_is_valid(&state->paper_profile.grade[state->contrast_grade]);
+    } else {
+        for (size_t i = 0; i < TONE_GRAPH_MARKS_SIZE; i++) {
+            state->tone_graph_marks[i] = NAN;
+        }
+        state->has_tone_graph = false;
+    }
 }
 
 void exposure_recalculate_tone_graph_marks_impl(const exposure_state_t *state, contrast_grade_t contrast_grade, float *tone_graph_marks)

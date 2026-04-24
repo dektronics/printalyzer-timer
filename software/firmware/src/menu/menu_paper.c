@@ -100,17 +100,14 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
 
         for (size_t i = 0; i < profile_count; i++) {
             if (strlen(profile_list[i].name) > 0) {
-                sprintf(buf + offset, "%c%02d%c %s",
-                    (i == profile_default_index) ? '<' : '[',
+                sprintf(buf + offset, "%c[%02d] %s",
+                    (i == profile_default_index) ? 187 : ' ',
                     i + 1,
-                    (i == profile_default_index) ? '>' : ']',
                     profile_list[i].name);
             } else {
-                sprintf(buf + offset, "%c%02d%c Paper profile %d",
-                    (i == profile_default_index) ? '<' : '[',
-                    i + 1,
-                    (i == profile_default_index) ? '>' : ']',
-                    i + 1);
+                sprintf(buf + offset, "%c[%02d] Paper profile %d",
+                    (i == profile_default_index) ? 187 : ' ',
+                    i + 1, i + 1);
             }
             offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
             if (i < profile_count) {
@@ -118,6 +115,15 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 buf[offset] = '\0';
             }
         }
+
+        if (profile_count > 0) {
+            offset += sprintf(buf + offset, "%c[--] Disable Print Metering",
+                (profile_default_index == UINT8_MAX) ? 187 : ' ');
+            offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
+            buf[offset++] = '\n';
+            buf[offset] = '\0';
+        }
+
         if (profile_count < MAX_PAPER_PROFILES) {
             sprintf(buf + offset, "*** Add New Profile ***");
         }
@@ -130,7 +136,12 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
         if (option == 0) {
             menu_result = MENU_CANCEL;
             break;
-        } else if (option - 1 == profile_count) {
+        } else if (profile_count > 0 && option == profile_count + 1) {
+            log_i("Disable print metering");
+            settings_set_default_paper_profile_index(UINT8_MAX);
+            profile_default_index = UINT8_MAX;
+            default_profile_changed = true;
+        } else if (option == profile_count + (profile_count > 0 ? 2 : 1)) {
             paper_profile_t working_profile = {0};
 
             uint8_t add_option = display_selection_list("Add New Profile", 1,
@@ -177,7 +188,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                     menu_paper_delete_profile(option - 1, profile_count);
                     reload_profiles = true;
                 }
-            } else if (option_key == KEYPAD_ADD_ADJUSTMENT) {
+            } else if (option > 0 && option <= profile_count && option_key == KEYPAD_ADD_ADJUSTMENT) {
                 log_i("Set default profile at index: %d", option - 1);
                 settings_set_default_paper_profile_index(option - 1);
                 profile_default_index = option - 1;

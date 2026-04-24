@@ -304,12 +304,16 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
         state->display_dirty = false;
         state->tone_dirty = false;
     } else if (state->tone_dirty) {
-        uint32_t overlay_marks = 0;
-        uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
-        if (tone_graph && state->live_tone_element) {
-            overlay_marks = state->live_tone_element;
+        if (exposure_get_active_paper_profile_index(exposure_state) >= 0 && !exposure_has_tone_graph(exposure_state)) {
+            display_redraw_tone_graph(UINT32_MAX, 0);
+        } else {
+            uint32_t overlay_marks = 0;
+            uint32_t tone_graph = exposure_get_tone_graph(exposure_state);
+            if (tone_graph && state->live_tone_element) {
+                overlay_marks = state->live_tone_element;
+            }
+            display_redraw_tone_graph(tone_graph, overlay_marks);
         }
-        display_redraw_tone_graph(tone_graph, overlay_marks);
         state->tone_dirty = false;
     }
 
@@ -595,7 +599,7 @@ void state_home_select_paper_profile(state_controller_t *controller)
 
     char buf[640];
     size_t offset;
-    uint8_t profile_index = 0;
+    int profile_index = 0;
     size_t profile_count = 0;
     uint8_t option = 1;
 
@@ -614,8 +618,9 @@ void state_home_select_paper_profile(state_controller_t *controller)
         return;
     }
 
-    if (profile_index >= profile_count) {
-        option = 1;
+    if (profile_index < 0 || profile_index >= UINT8_MAX) {
+        profile_index = -1;
+        option = profile_count + 1;
     } else {
         option = profile_index + 1;
     }
@@ -632,16 +637,21 @@ void state_home_select_paper_profile(state_controller_t *controller)
                 i + 1);
         }
         offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
-        if (i < profile_count - 1) {
-            buf[offset++] = '\n';
-            buf[offset] = '\0';
-        }
+        buf[offset++] = '\n';
+        buf[offset] = '\0';
     }
+
+    offset += sprintf(buf + offset, "%s Disable Print Metering",
+        (profile_index == -1) ? "-->" : "   ");
+    offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
 
     do {
         option = display_selection_list("Paper Profiles", option, buf);
         if (option > 0 && option <= profile_count) {
             exposure_set_active_paper_profile_index(exposure_state, option - 1);
+            break;
+        } else if (option == profile_count + 1) {
+            exposure_clear_active_paper_profile(exposure_state);
             break;
         }
     } while (option != 0 && option != UINT8_MAX);
@@ -681,6 +691,22 @@ uint32_t state_home_take_reading(state_home_t *state, state_controller_t *contro
     meter_probe_result_t result = METER_READING_OK;
     float lux = 0;
     uint32_t updated_tone_element = 0;
+
+    /* Abort if no profile is selected */
+    if (exposure_get_active_paper_profile_index(exposure_state) < 0) {
+        display_draw_mode_text("No Profile");
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
+        osDelay(pdMS_TO_TICKS(2000));
+        return updated_tone_element;
+    }
+
+    /* Abort if there is no data for the current contrast grade */
+    if (!exposure_has_tone_graph(exposure_state)) {
+        display_draw_mode_text("Grade Missing");
+        buzzer_sequence(BUZZER_SEQUENCE_PROBE_WARNING);
+        osDelay(pdMS_TO_TICKS(2000));
+        return updated_tone_element;
+    }
 
     display_draw_mode_text("Measuring");
     buzzer_sequence(BUZZER_SEQUENCE_PROBE_START);

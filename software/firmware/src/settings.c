@@ -463,7 +463,7 @@ void settings_init_parse_config_page(const uint8_t *data)
     if (val < MAX_PAPER_PROFILES) {
         setting_paper_profile = val;
     } else {
-        setting_paper_profile = DEFAULT_PAPER_PROFILE;
+        setting_paper_profile = UINT8_MAX;
     }
 }
 
@@ -720,7 +720,7 @@ uint8_t settings_get_default_paper_profile_index()
 
 void settings_set_default_paper_profile_index(uint8_t index)
 {
-    if (setting_paper_profile != index && index < MAX_PAPER_PROFILES) {
+    if (setting_paper_profile != index && (index < MAX_PAPER_PROFILES || index == UINT8_MAX)) {
         if (write_u32(PAGE_CONFIG + CONFIG_PAPER_PROFILE, index)) {
             setting_paper_profile = index;
         }

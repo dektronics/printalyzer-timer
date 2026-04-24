@@ -33,6 +33,7 @@ static constexpr u8g2_uint_t COUNTER_TIME_Y = 8;
 static void display_set_freq(uint8_t value);
 
 static void display_draw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks);
+static void display_draw_tone_graph_placeholder();
 static void display_draw_split_tone_graph(uint32_t base_tone_graph, uint32_t adj_tone_graph, uint32_t overlay_marks);
 static void display_draw_paper_profile_num(uint8_t num);
 static void display_draw_burn_dodge_count(uint8_t count);
@@ -261,7 +262,11 @@ void display_redraw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks)
     u8g2_SetDrawColor(&u8g2, 1);
 
     /* Redraw the tone graph */
-    display_draw_tone_graph(tone_graph, overlay_marks);
+    if (tone_graph == UINT32_MAX) {
+        display_draw_tone_graph_placeholder();
+    } else {
+        display_draw_tone_graph(tone_graph, overlay_marks);
+    }
 
     /* Update just the modified display area */
     u8g2_UpdateDisplayArea(&u8g2, 0, 0, u8g2_GetDisplayWidth(&u8g2) / 8, 1);
@@ -347,6 +352,31 @@ void display_draw_tone_graph(uint32_t tone_graph, uint32_t overlay_marks)
         u8g2_DrawPixel(&u8g2, 253, 2);
         u8g2_DrawBox(&u8g2, 250, 1, 3, 3);
     }
+}
+
+void display_draw_tone_graph_placeholder()
+{
+    u8g2_DrawLine(&u8g2, 2, 0, 6, 0);
+    u8g2_DrawPixel(&u8g2, 1, 1);
+    u8g2_DrawPixel(&u8g2, 0, 2);
+    u8g2_DrawPixel(&u8g2, 1, 3);
+    u8g2_DrawLine(&u8g2, 2, 4, 6, 4);
+    u8g2_DrawLine(&u8g2, 6, 1, 6, 3);
+
+    uint32_t mask = 0x00000002UL;
+    uint16_t x_offset = 9;
+    do {
+        u8g2_DrawFrame(&u8g2, x_offset, 0, 14, 5);
+        x_offset += 16;
+        mask = mask << 1UL;
+    } while (mask != 0x00010000UL);
+
+    u8g2_DrawLine(&u8g2, 249, 0, 253, 0);
+    u8g2_DrawPixel(&u8g2, 254, 1);
+    u8g2_DrawPixel(&u8g2, 255, 2);
+    u8g2_DrawPixel(&u8g2, 254, 3);
+    u8g2_DrawLine(&u8g2, 249, 4, 253, 4);
+    u8g2_DrawLine(&u8g2, 249, 1, 249, 3);
 }
 
 void display_draw_split_tone_graph(uint32_t base_tone_graph, uint32_t adj_tone_graph, uint32_t overlay_marks)
@@ -963,7 +993,11 @@ void display_draw_main_elements_printing(const display_main_printing_elements_t 
     u8g2_SetDrawColor(&u8g2, 1);
     u8g2_SetBitmapMode(&u8g2, 1);
 
-    display_draw_tone_graph(elements->tone_graph, elements->tone_graph_overlay);
+    if (elements->tone_graph == UINT32_MAX) {
+        display_draw_tone_graph_placeholder();
+    } else {
+        display_draw_tone_graph(elements->tone_graph, elements->tone_graph_overlay);
+    }
     display_draw_paper_profile_num(elements->paper_profile_num);
     display_draw_burn_dodge_count(elements->burn_dodge_count);
 
