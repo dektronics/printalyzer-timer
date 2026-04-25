@@ -669,6 +669,10 @@ uint8_t keypad_usb_get_keycode(const keypad_event_t *event)
 keypad_key_t keypad_usb_get_keypad_equivalent(const keypad_event_t *event)
 {
     if (!event || event->key != KEYPAD_USB_KEYBOARD) { return 0; }
+
+    /* Skip handling keys that have an ASCII equivalent assigned */
+    if ((event->keypad_state & 0x00FF) != 0) { return 0; }
+
     uint8_t keycode = (uint8_t)((event->keypad_state & 0xFF00) >> 8);
     keypad_key_t keypad_key = 0;
 

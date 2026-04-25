@@ -375,6 +375,25 @@ void usbh_hid_keyboard_callback(void *arg, int nbytes)
 
 uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode)
 {
+    /* If numlock is not enabled, don't return an ASCII code for numeric keypad keys */
+    if ((report_state & HID_KBD_OUTPUT_REPORT_NUMLOCK) == 0) {
+        switch (keycode) {
+        case HID_KBD_USAGE_KPDEND:
+        case HID_KBD_USAGE_KPDDOWN:
+        case HID_KBD_USAGE_KPDPAGEDN:
+        case HID_KBD_USAGE_KPDLEFT:
+        case HID_KBD_USAGE_KPDRIGHT:
+        case HID_KBD_USAGE_KPDHOME:
+        case HID_KBD_USAGE_KPDUP:
+        case HID_KBD_USAGE_KPDPAGEUP:
+        case HID_KBD_USAGE_KPDINSERT:
+        case HID_KBD_USAGE_KPDDELETE:
+            return 0;
+        default:
+            break;
+        }
+    }
+
     uint8_t key = keyboard_keys[keyboard_codes[keycode]];
 
     if (((report_state & HID_KBD_OUTPUT_REPORT_CAPSLOCK) != 0
@@ -382,6 +401,7 @@ uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode
         (state & (HID_MODIFIER_LSHIFT | HID_MODIFIER_RSHIFT)) != 0) {
         key = keyboard_shift_keys[keyboard_codes[keycode]];
     }
+
     return key;
 }
 

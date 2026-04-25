@@ -129,20 +129,21 @@ uint16_t display_GetMenuEvent(u8x8_t *u8x8, display_menu_params_t params)
          * of the above logic, or that can't easily be done generically.
          */
         if (result == 0 && event.key == KEYPAD_USB_KEYBOARD && event.pressed) {
+            const bool ascii_input = (params & DISPLAY_MENU_INPUT_ASCII) != 0;
             uint8_t keycode = keypad_usb_get_keycode(&event);
             char keychar = keypad_usb_get_ascii(&event);
 
             if ((params & DISPLAY_MENU_ACCEPT_MENU) != 0 && keychar == '\n') {
                 result = ((uint16_t)KEYPAD_MENU << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && keychar == '+') {
+            } else if (!ascii_input && (params & DISPLAY_MENU_ACCEPT_ADD_ADJUSTMENT) != 0 && keychar == '+') {
                 result = ((uint16_t)KEYPAD_ADD_ADJUSTMENT << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && keychar == '*') {
+            } else if (!ascii_input && (params & DISPLAY_MENU_ACCEPT_TEST_STRIP) != 0 && keychar == '*') {
                 result = ((uint16_t)KEYPAD_TEST_STRIP << 8) | U8X8_MSG_GPIO_MENU_SELECT;
-            } else if ((params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && keychar == '\t') {
+            } else if (!ascii_input && (params & DISPLAY_MENU_ACCEPT_ENCODER) != 0 && keychar == '\t') {
                 result = ((uint16_t)KEYPAD_ENCODER << 8) | U8X8_MSG_GPIO_MENU_SELECT;
             } else if (keycode == 0x29 /* KEY_ESCAPE */) {
                 result = U8X8_MSG_GPIO_MENU_HOME;
-            } else if ((params & DISPLAY_MENU_INPUT_ASCII) != 0) {
+            } else if (ascii_input) {
                 if ((keychar >= 32 && keychar < 127) || keychar == '\n' || keychar == '\t') {
                     /* Handle normally printable characters that are correctly mapped */
                     result = ((uint16_t)keychar << 8) | U8X8_MSG_GPIO_MENU_INPUT_ASCII;
