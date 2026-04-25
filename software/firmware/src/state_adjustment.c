@@ -15,7 +15,19 @@
 #include "exposure_state.h"
 #include "display.h"
 #include "keypad.h"
+#include "keypad_action.h"
 #include "util.h"
+
+typedef enum : uint8_t {
+    ACTION_NONE = 0,
+    ACTION_ADJ_INC,
+    ACTION_ADJ_DEC,
+    ACTION_CONTRAST_INC,
+    ACTION_CONTRAST_DEC,
+    ACTION_ADD_EDIT_LIST,
+    ACTION_MENU,
+    ACTION_CANCEL
+} state_edit_adjustment_actions_t;
 
 typedef struct {
     state_t base;
@@ -93,6 +105,16 @@ void state_edit_adjustment_entry(state_t *state_base, state_controller_t *contro
 
     state->from_list = (prev_state == STATE_LIST_ADJUSTMENTS) || param_from_list;
     state->value_accepted = false;
+
+    /* Configure keypad actions */
+    keypad_action_clear();
+    keypad_action_add(KEYPAD_INC_EXPOSURE, ACTION_ADJ_INC, 0, true);
+    keypad_action_add(KEYPAD_DEC_EXPOSURE, ACTION_ADJ_DEC, 0, true);
+    keypad_action_add(KEYPAD_INC_CONTRAST, ACTION_CONTRAST_INC, 0, true);
+    keypad_action_add(KEYPAD_DEC_CONTRAST, ACTION_CONTRAST_DEC, 0, true);
+    keypad_action_add(KEYPAD_ADD_ADJUSTMENT, ACTION_ADD_EDIT_LIST, 0, false);
+    keypad_action_add(KEYPAD_MENU, ACTION_MENU, 0, false);
+    keypad_action_add(KEYPAD_CANCEL, ACTION_CANCEL, 0, true);
 }
 
 bool state_edit_adjustment_process(state_t *state_base, state_controller_t *controller)
@@ -158,9 +180,9 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
 
     display_draw_edit_adjustment_elements(&elements);
 
-    keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+    keypad_action_t keypad_action;
+    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
+        if (keypad_action.action_id == ACTION_ADJ_INC) {
             // Check if the main stops increment has changed
             if (state->working_value.denominator != state->stop_inc_den) {
                 // Convert the setting to a floating point stops value
@@ -182,7 +204,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     state->working_value.numerator++;
                 }
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+        } else if (keypad_action.action_id == ACTION_ADJ_DEC) {
             if (state->working_index == 0 || state->working_value.numerator > 0) {
                 // Check if the main stops increment has changed
                 if (state->working_value.denominator != state->stop_inc_den) {
@@ -206,7 +228,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     }
                 }
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+        } else if (keypad_action.action_id == ACTION_CONTRAST_INC) {
             if (state->working_value.numerator > 0) {
                 if (state->working_value.contrast_grade == CONTRAST_GRADE_MAX) {
                     state->working_value.contrast_grade = CONTRAST_GRADE_00;
@@ -214,7 +236,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     state->working_value.contrast_grade++;
                 }
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+        } else if (keypad_action.action_id == ACTION_CONTRAST_DEC) {
             if (state->working_value.numerator > 0) {
                 if (state->working_value.contrast_grade == CONTRAST_GRADE_00) {
                     state->working_value.contrast_grade = CONTRAST_GRADE_MAX;
@@ -222,7 +244,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     state->working_value.contrast_grade--;
                 }
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_ADD_ADJUSTMENT)) {
+        } else if (keypad_action.action_id == ACTION_ADD_EDIT_LIST) {
             if (state->working_value.numerator != 0) {
                 state->value_accepted = true;
                 if (state->working_index + 1 < EXPOSURE_BURN_DODGE_MAX) {
@@ -237,7 +259,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
             } else if (exposure_burn_dodge_count(exposure_state) > 0) {
                 state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, 0);
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_MENU)) {
+        } else if (keypad_action.action_id == ACTION_MENU) {
             if (state->working_value.numerator != 0) {
                 state->value_accepted = true;
                 if (state->from_list) {
@@ -246,8 +268,7 @@ bool state_edit_adjustment_process(state_t *state_base, state_controller_t *cont
                     state_controller_set_next_state(controller, STATE_HOME, 0);
                 }
             }
-        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
-                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+        } else if (keypad_action.action_id == ACTION_CANCEL) {
             state->value_accepted = false;
             if (state->from_list) {
                 state_controller_set_next_state(controller, STATE_LIST_ADJUSTMENTS, state->working_index);

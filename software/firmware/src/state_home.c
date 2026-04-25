@@ -39,6 +39,7 @@ typedef enum : uint8_t {
     ACTION_ADJUST_FINE,
     ACTION_ADJUST_ABSOLUTE,
     ACTION_MENU,
+    ACTION_CANCEL,
     ACTION_CLEAR_READINGS,
     ACTION_SET_DEFAULTS,
     ACTION_TAKE_READING,
@@ -784,6 +785,13 @@ void state_home_change_time_increment_entry(state_t *state_base, state_controlle
 
     state->working_value = exposure_adj_increment_get(exposure_state);
     state->value_accepted = false;
+
+    /* Configure keypad actions */
+    keypad_action_clear();
+    keypad_action_add(KEYPAD_INC_EXPOSURE, ACTION_INC_EXPOSURE, 0, true);
+    keypad_action_add(KEYPAD_DEC_EXPOSURE, ACTION_DEC_EXPOSURE, 0, true);
+    keypad_action_add(KEYPAD_MENU, ACTION_MENU, 0, false);
+    keypad_action_add(KEYPAD_CANCEL, ACTION_CANCEL, 0, false);
 }
 
 bool state_home_change_time_increment_process(state_t *state_base, state_controller_t *controller)
@@ -795,18 +803,16 @@ bool state_home_change_time_increment_process(state_t *state_base, state_control
     display_draw_stop_increment(stop_inc_den);
 
     /* Handle the next keypad event */
-    keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
-        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_EXPOSURE)) {
+    keypad_action_t keypad_action;
+    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
+        if (keypad_action.action_id == ACTION_INC_EXPOSURE) {
             state->working_value = exposure_adjustment_increment_next(state->working_value);
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_EXPOSURE)) {
+        } else if (keypad_action.action_id == ACTION_DEC_EXPOSURE) {
             state->working_value = exposure_adjustment_increment_prev(state->working_value);
-        } else if ((keypad_event.key == KEYPAD_MENU && !keypad_event.pressed)
-                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_MENU && keypad_event.pressed)) {
+        } else if (keypad_action.action_id == ACTION_MENU) {
             state->value_accepted = true;
             state_controller_set_next_state(controller, STATE_HOME, 0);
-        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
-                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+        } else if (keypad_action.action_id == ACTION_CANCEL) {
             state->value_accepted = false;
             state_controller_set_next_state(controller, STATE_HOME, 0);
         }
@@ -839,6 +845,13 @@ void state_home_change_mode_entry(state_t *state_base, state_controller_t *contr
     state->prev_state = prev_state;
     state->working_value = (prev_state == STATE_DENSITOMETER) ? EXPOSURE_MODE_DENSITOMETER : exposure_get_mode(exposure_state);
     state->accepted = false;
+
+    /* Configure keypad actions */
+    keypad_action_clear();
+    keypad_action_add(KEYPAD_INC_CONTRAST, ACTION_INC_CONTRAST, 0, true);
+    keypad_action_add(KEYPAD_DEC_CONTRAST, ACTION_DEC_CONTRAST, 0, true);
+    keypad_action_add(KEYPAD_MENU, ACTION_MENU, 0, false);
+    keypad_action_add(KEYPAD_CANCEL, ACTION_CANCEL, 0, false);
 }
 
 bool state_home_change_mode_process(state_t *state_base, state_controller_t *controller)
@@ -868,9 +881,9 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
     }
 
     /* Handle the next keypad event */
-    keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, STATE_KEYPAD_WAIT) == HAL_OK) {
-        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_INC_CONTRAST)) {
+    keypad_action_t keypad_action;
+    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
+        if (keypad_action.action_id == ACTION_INC_CONTRAST) {
             switch (state->working_value) {
             case EXPOSURE_MODE_PRINTING_BW:
                 state->working_value = has_color_mode ? EXPOSURE_MODE_PRINTING_COLOR : EXPOSURE_MODE_DENSITOMETER;
@@ -888,7 +901,7 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
                 state->working_value = EXPOSURE_MODE_PRINTING_BW;
                 break;
             }
-        } else if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_DEC_CONTRAST)) {
+        } else if (keypad_action.action_id == ACTION_DEC_CONTRAST) {
             switch (state->working_value) {
             case EXPOSURE_MODE_CALIBRATION:
                 state->working_value = EXPOSURE_MODE_DENSITOMETER;
@@ -906,15 +919,14 @@ bool state_home_change_mode_process(state_t *state_base, state_controller_t *con
                 state->working_value = EXPOSURE_MODE_PRINTING_BW;
                 break;
             }
-        } else if (keypad_event.key == KEYPAD_MENU && !keypad_event.pressed) {
+        } else if (keypad_action.action_id == ACTION_MENU) {
             state->accepted = true;
             if (state->working_value == EXPOSURE_MODE_DENSITOMETER) {
                 state_controller_set_next_state(controller, STATE_DENSITOMETER, 0);
             } else {
                 state_controller_set_next_state(controller, STATE_HOME, 0);
             }
-        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
-                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+        } else if (keypad_action.action_id == ACTION_CANCEL) {
             state_controller_set_next_state(controller, state->prev_state, 0);
         }
         return true;
