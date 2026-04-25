@@ -67,7 +67,6 @@ static void usbh_hid_keyboard_control_detach(struct usbh_hid *hid_class);
 static void usbh_hid_keyboard_callback(void *arg, int nbytes);
 static uint8_t keyboard_ascii_code(uint8_t report_state, uint8_t state, uint8_t keycode);
 static void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, const keyboard_info_t *info);
-static int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol);
 static int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen);
 
 static constexpr uint8_t keyboard_keys[] = {
@@ -254,6 +253,7 @@ void usbh_hid_keyboard_thread(void *argument)
 void usbh_hid_keyboard_control_attach(struct usbh_hid *hid_class)
 {
     int ret;
+    uint8_t initial_report_state = 0;
     usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
 
     if (handle->attached) {
@@ -262,10 +262,16 @@ void usbh_hid_keyboard_control_attach(struct usbh_hid *hid_class)
     }
 
     /* Set keyboard to "Boot Protocol" mode */
-    ret = hid_keyboard_set_protocol(hid_class, 0);
+    ret = usbh_hid_set_protocol(hid_class, 0);
     if (ret < 0) {
-        log_d("hid_keyboard_set_protocol error: %d", ret);
+        log_d("usbh_hid_set_protocol error: %d", ret);
         return;
+    }
+
+    /* Set an initial report to clear any leftover state */
+    ret = hid_keyboard_set_report(hid_class, HID_REPORT_OUTPUT, 0x00, &initial_report_state, 1);
+    if (ret < 0) {
+        log_d("hid_keyboard_set_report error: %d", ret);
     }
 
     memset(handle, 0, sizeof(usb_hid_keyboard_handle_t));
@@ -531,36 +537,14 @@ void keyboard_process_event(struct usbh_hid *hid_class, uint32_t event_time, con
     }
 }
 
-int hid_keyboard_set_protocol(struct usbh_hid *hid_class, uint8_t protocol)
-{
-    struct usb_setup_packet *setup = hid_class->hport->setup;
-
-    setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
-    setup->bRequest = HID_REQUEST_SET_PROTOCOL;
-    setup->wValue = protocol;
-    setup->wIndex = 0;
-    setup->wLength = 0;
-
-    return usbh_control_transfer(hid_class->hport, setup, NULL);
-}
-
 int hid_keyboard_set_report(struct usbh_hid *hid_class, uint8_t report_type, uint8_t report_id, uint8_t *buffer, uint32_t buflen)
 {
-    /*
-     * To send an output report, we need an aligned static buffer that lasts
-     * the duration of the transaction. Its easier to implement this code here,
-     * where we can be sure unrelated HID device drivers won't be trying to
-     * share the same buffer.
-     */
-    struct usb_setup_packet *setup = hid_class->hport->setup;
-    usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
-
-    setup->bmRequestType = USB_REQUEST_DIR_OUT | USB_REQUEST_CLASS | USB_REQUEST_RECIPIENT_INTERFACE;
-    setup->bRequest = HID_REQUEST_SET_REPORT;
-    setup->wValue = (uint16_t)(((uint32_t)report_type << 8U) | (uint32_t)report_id);
-    setup->wIndex = 0;
-    setup->wLength = buflen;
-
-    memcpy(handle->hid_out_buffer, buffer, buflen);
-    return usbh_control_transfer(hid_class->hport, setup, handle->hid_out_buffer);
+     /*
+      * To send an output report, we need an aligned static buffer that lasts
+      * the duration of the transaction. This wraps the library call using
+      * a buffer specific to this device handle.
+      */
+     usb_hid_keyboard_handle_t *handle = &keyboard_handles[hid_class->minor];
+     memcpy(handle->hid_out_buffer, buffer, buflen);
+     return usbh_hid_set_report(hid_class, HID_REPORT_OUTPUT, 0x00, handle->hid_out_buffer, buflen);
 }
