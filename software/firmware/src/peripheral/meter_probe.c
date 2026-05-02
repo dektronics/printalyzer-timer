@@ -1534,8 +1534,8 @@ meter_probe_result_t meter_probe_measure(meter_probe_handle_t *handle, float *lu
             if (!isnormal(reading_lux)) {
                 log_w("Could not calculate lux from sensor reading");
                 result = METER_READING_FAIL;
-            } else if (reading_lux < 0.0001F) {
-                log_w("Lux calculation result is too low: %f", reading_lux);
+            } else if (reading_lux < 0.0001F || reading.reading[0].data < 100) {
+                log_w("Lux calculation result is too low: %f (%d)", reading_lux, reading.reading[0].data);
                 result = METER_READING_LOW;
             } else {
                 result = METER_READING_OK;
