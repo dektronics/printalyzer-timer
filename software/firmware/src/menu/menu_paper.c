@@ -140,6 +140,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
             bool show_editor = false;
 
             if (add_option == 1) {
+                paper_profile_clear(&working_profile);
                 show_editor = true;
             } else if (add_option == 2) {
                 paper_profile_set_defaults(&working_profile);
