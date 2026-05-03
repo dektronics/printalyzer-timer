@@ -71,16 +71,12 @@ menu_result_t menu_enlarger_configs(state_controller_t *controller)
         for (size_t i = 0; i < config_count; i++) {
             const char *config_name = config_name_list + (i * PROFILE_NAME_LEN);
             if (config_name && strlen(config_name) > 0) {
-                sprintf(buf + offset, "%c%02d%c %s",
-                    ((i == config_default_index) ? '<' : '['),
-                    i + 1,
-                    ((i == config_default_index) ? '>' : ']'),
+                sprintf(buf + offset, "%c %s",
+                    ((i == config_default_index) ? 187 : ' '),
                     config_name);
             } else {
-                sprintf(buf + offset, "%c%02d%c Enlarger profile %d",
-                    ((i == config_default_index) ? '<' : '['),
-                    i + 1,
-                    ((i == config_default_index) ? '>' : ']'),
+                sprintf(buf + offset, "%c Enlarger profile %d",
+                    ((i == config_default_index) ? 187 : ' '),
                     i + 1);
             }
             offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
