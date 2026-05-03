@@ -628,25 +628,26 @@ void state_home_select_paper_profile(state_controller_t *controller)
     offset = 0;
     for (size_t i = 0; i < profile_count; i++) {
         if (strlen(profile_list[i].name) > 0) {
-            sprintf(buf + offset, "%s %s",
-                ((i == profile_index) ? "-->" : "   "),
+            sprintf(buf + offset, "%c[%02d] %s",
+                (i == profile_index) ? 187 : ' ',
+                i + 1,
                 profile_list[i].name);
         } else {
-            sprintf(buf + offset, "%s Paper profile %d",
-                ((i == profile_index) ? "-->" : "   "),
-                i + 1);
+            sprintf(buf + offset, "%c[%02d] Paper profile %d",
+                (i == profile_index) ? 187 : ' ',
+                i + 1, i + 1);
         }
         offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
         buf[offset++] = '\n';
         buf[offset] = '\0';
     }
 
-    offset += sprintf(buf + offset, "%s Disable Print Metering",
-        (profile_index == -1) ? "-->" : "   ");
-    offset += pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
+    offset += sprintf(buf + offset, "%c[--] Disable Print Metering",
+        (profile_index == UINT8_MAX) ? 187 : ' ');
+    pad_str_to_length(buf + offset, ' ', DISPLAY_MENU_ROW_LENGTH);
 
     do {
-        option = display_selection_list("Paper Profiles", option, buf);
+        option = display_selection_list("Active Paper Profile", option, buf);
         if (option > 0 && option <= profile_count) {
             exposure_set_active_paper_profile_index(exposure_state, option - 1);
             break;
