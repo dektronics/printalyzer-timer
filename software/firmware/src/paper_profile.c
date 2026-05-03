@@ -282,6 +282,9 @@ void paper_profile_set_defaults(paper_profile_t *profile)
     paper_profile_clear(profile);
     strcpy(profile->name, "Default");
 
+    profile->paper_dmin = 0.06F;
+    profile->paper_dmax = 2.05F;
+
     profile->grade[CONTRAST_GRADE_00].ht_lev100 = 14;
     profile->grade[CONTRAST_GRADE_00].hs_lev100 = 193;
 
