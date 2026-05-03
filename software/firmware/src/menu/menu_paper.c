@@ -145,8 +145,8 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
             paper_profile_t working_profile = {0};
 
             uint8_t add_option = display_selection_list("Add New Profile", 1,
-                "*** Add Profile Manually ***\n"
-                "*** Add Default Profile ***");
+                "*** Add Custom Profile ***\n"
+                "*** Add Stock Profile ***");
 
             bool show_editor = false;
 
@@ -154,7 +154,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 paper_profile_clear(&working_profile);
                 show_editor = true;
             } else if (add_option == 2) {
-                paper_profile_set_defaults(&working_profile);
+                paper_profile_set_stock_values(&working_profile);
                 working_profile.name[0] = '\0';
                 show_editor = true;
             }
@@ -164,7 +164,7 @@ menu_result_t menu_paper_profiles(state_controller_t *controller)
                 if (menu_result == MENU_SAVE) {
                     menu_result = MENU_OK;
                     if (settings_set_paper_profile(&working_profile, profile_count)) {
-                        log_i("New profile manually added at index: %d", profile_count);
+                        log_i("New profile added at index: %d", profile_count);
                         memcpy(&profile_list[profile_count], &working_profile, sizeof(paper_profile_t));
                         profile_count++;
                     }

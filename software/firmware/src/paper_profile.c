@@ -277,10 +277,10 @@ void paper_profile_grade_clear(paper_profile_grade_t *profile_grade)
     profile_grade->hs_lev100 = INT32_MAX;
 }
 
-void paper_profile_set_defaults(paper_profile_t *profile)
+void paper_profile_set_stock_values(paper_profile_t *profile)
 {
     paper_profile_clear(profile);
-    strcpy(profile->name, "Default");
+    strcpy(profile->name, "Stock Profile");
 
     profile->paper_dmin = 0.06F;
     profile->paper_dmax = 2.05F;

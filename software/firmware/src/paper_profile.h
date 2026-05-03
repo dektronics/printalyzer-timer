@@ -159,14 +159,14 @@ void paper_profile_clear(paper_profile_t *profile);
 void paper_profile_grade_clear(paper_profile_grade_t *profile_grade);
 
 /**
- * Set the paper profile to a series of default values.
+ * Set the paper profile to a series of stock values.
  *
- * These values should only be used as a fallback when no saved paper
- * profile is available, but should be avoided for any actual printing
- * use. They're roughly based on one interpretation of what an
+ * These values should only be used as a starting point for testing
+ * the device in lieu of creating a proper custom paper profile.
+ * They're roughly based on one interpretation of what an
  * Ilford MGIV RC paper profile should look like.
  */
-void paper_profile_set_defaults(paper_profile_t *profile);
+void paper_profile_set_stock_values(paper_profile_t *profile);
 
 /**
  * Check if the PEV is empty.
