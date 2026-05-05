@@ -20,7 +20,8 @@
 typedef enum : uint8_t {
     SAFELIGHT_MODE_OFF = 0, /*!< Safelight is always off */
     SAFELIGHT_MODE_ON,      /*!< Safelight is off when the enlarger is on */
-    SAFELIGHT_MODE_AUTO     /*!< Safelight is off during metering and printing */
+    SAFELIGHT_MODE_AUTO,    /*!< Safelight is off during metering and printing */
+    SAFELIGHT_MODE_METER    /*!< Safelight is only off during metering */
 } safelight_mode_t;
 
 typedef enum : uint8_t {

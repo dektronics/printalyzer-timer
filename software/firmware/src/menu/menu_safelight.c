@@ -46,6 +46,9 @@ menu_result_t menu_safelight_config()
         default:
             val_str = "Meter/Print";
             break;
+        case SAFELIGHT_MODE_METER:
+            val_str = "Metering";
+            break;
         }
         offset += menu_build_padded_str_row(buf + offset, "Safelight mode", val_str);
 
@@ -236,6 +239,9 @@ menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
     default:
         option = 3;
         break;
+    case SAFELIGHT_MODE_METER:
+        option = 4;
+        break;
     }
 
     do {
@@ -243,7 +249,8 @@ menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
             "Safelight Mode", option,
             "Safelight always off\n"
             "Off when the enlarger is on\n"
-            "Off for metering and printing");
+            "Off for metering and printing\n"
+            "Only off for metering");
 
         if (option == 1) {
             safelight_config->mode = SAFELIGHT_MODE_OFF;
@@ -253,6 +260,9 @@ menu_result_t menu_settings_safelight_mode(safelight_config_t *safelight_config)
             break;
         } else if (option == 3) {
             safelight_config->mode = SAFELIGHT_MODE_AUTO;
+            break;
+        } else if (option == 4) {
+            safelight_config->mode = SAFELIGHT_MODE_METER;
             break;
         } else if (option == 0) {
             menu_result = MENU_CANCEL;

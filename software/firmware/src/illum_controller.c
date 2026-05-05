@@ -120,6 +120,24 @@ static bool mode_safelight_enabled(illum_safelight_t mode)
             safelight_enabled = true;
             break;
         }
+    } else if (setting == SAFELIGHT_MODE_METER) {
+        switch (mode) {
+        case ILLUM_SAFELIGHT_HOME:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_FOCUS:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_EXPOSURE:
+            safelight_enabled = true;
+            break;
+        case ILLUM_SAFELIGHT_MEASUREMENT:
+            safelight_enabled = false;
+            break;
+        default:
+            safelight_enabled = true;
+            break;
+        }
     }
     return safelight_enabled;
 }

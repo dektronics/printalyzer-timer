@@ -744,7 +744,7 @@ bool settings_validate_safelight_config(const safelight_config_t *safelight_conf
     if (!safelight_config) { return false; }
 
     /* Validate field properties */
-    if (safelight_config->mode > SAFELIGHT_MODE_AUTO) {
+    if (safelight_config->mode > SAFELIGHT_MODE_METER) {
         return false;
     }
     if (safelight_config->control > SAFELIGHT_CONTROL_BOTH) {
