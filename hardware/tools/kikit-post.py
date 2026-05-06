@@ -26,7 +26,7 @@ def kikitPostprocess(panel, arg):
     dim.SetStart(tlAnchor)
     dim.SetEnd(trAnchor)
     dim.SetHeight(int(-2.5 * mm));
-    dim.SetUnits(pcbnew.EDA_UNITS_MILLIMETRES)
+    dim.SetUnits(pcbnew.EDA_UNITS_MM)
     dim.SetPrecision(pcbnew.DIM_PRECISION_X_X)
     dim.SetLayer(Layer.Cmts_User)
     panel.board.Add(dim)
@@ -36,7 +36,7 @@ def kikitPostprocess(panel, arg):
     dim.SetStart(tlAnchor)
     dim.SetEnd(blAnchor)
     dim.SetHeight(int(2.5 * mm));
-    dim.SetUnits(pcbnew.EDA_UNITS_MILLIMETRES)
+    dim.SetUnits(pcbnew.EDA_UNITS_MM)
     dim.SetPrecision(pcbnew.DIM_PRECISION_X_X)
     dim.SetLayer(Layer.Cmts_User)
     panel.board.Add(dim)
