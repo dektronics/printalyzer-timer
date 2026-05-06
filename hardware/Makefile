@@ -32,8 +32,24 @@ build/densistick-panel.kicad_pcb: densistick/densistick.kicad_pcb densistick/den
 %-gerber.zip: %-gerber
 	zip -j $@ `find $<`
 
+web: build/web/index.html
+
 build:
 	mkdir -p build
+
+build/web: build
+	mkdir -p build/web
+
+build/web/index.html: build/web $(BOARDFILES) $(PANELFILES)
+	$(KIKIT) present boardpage \
+		-d "../README.md" \
+		--name "Printalyzer Enlarging Timer" \
+		-b "Main Board" " " main-board/main-board.kicad_pcb \
+		-b "Power Board" " " power-board/power-board.kicad_pcb \
+		-b "Meter Probe Board" " " meter-probe/meter-probe.kicad_pcb \
+		-b "DensiStick Board" " " densistick/densistick.kicad_pcb \
+		--repository 'https://github.com/dektronics/printalyzer-timer' \
+		build/web
 
 clean:
 	rm -rf build
