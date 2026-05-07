@@ -2,12 +2,12 @@
 {
     "layout": {
         "type": "grid",
-        "rows": 4,
-        "cols": 2,
+        "rows": 1,
+        "cols": 6,
         "hspace": "2.5mm",
         "vspace": "2.5mm",
-        "rotation": "180deg",
-        "alternation": "cols",
+        "rotation": "270deg",
+        "alternation": "none",
         "renamenet": "Board_{n}-{orig}",
         "renameref": "{orig}"
     },
@@ -30,7 +30,7 @@
     },
     "tooling": {
         "type": "4hole",
-        "hoffset": "5mm",
+        "hoffset": "4.75mm",
         "voffset": "2.5mm",
         "size": "2.05mm"
     },
