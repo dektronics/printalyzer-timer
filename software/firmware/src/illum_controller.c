@@ -25,7 +25,17 @@ static safelight_config_t illum_safelight_config;
 static illum_safelight_t illum_safelight = ILLUM_SAFELIGHT_HOME;
 static bool illum_blackout = false;
 
+static uint16_t panel_led_normal = LED_ILLUM_ALL;
+static uint16_t panel_led_bright = 0;
+static uint16_t panel_led_dim = 0;
+
+static bool panel_led_normal_changed = true;
+static bool panel_led_bright_changed = true;
+static bool panel_led_dim_changed = true;
+
 static void illum_controller_set_safelight(bool enabled);
+static uint8_t panel_brightness_value(illum_panel_brightness_t panel_brightness);
+static void panel_brightness_update();
 
 void illum_controller_init()
 {
@@ -216,6 +226,76 @@ void illum_controller_set_safelight(bool enabled)
     }
 }
 
+void illum_controller_set_panel(led_t panel_led, illum_panel_brightness_t panel_brightness)
+{
+    osMutexAcquire(illum_mutex, portMAX_DELAY);
+
+    uint16_t updated_led_normal = panel_led_normal;
+    uint16_t updated_led_bright = panel_led_bright;
+    uint16_t updated_led_dim = panel_led_dim;
+
+    if (panel_brightness == ILLUM_BUTTON_BRIGHT) {
+        updated_led_normal &= ~panel_led;
+        updated_led_bright |= panel_led;
+        updated_led_dim &= ~panel_led;
+
+    } else if (panel_brightness == ILLUM_BUTTON_DIM) {
+        updated_led_normal &= ~panel_led;
+        updated_led_bright &= ~panel_led;
+        updated_led_dim |= panel_led;
+    } else {
+        updated_led_normal |= panel_led;
+        updated_led_bright &= ~panel_led;
+        updated_led_dim &= ~panel_led;
+    }
+
+    if (panel_led_normal != updated_led_normal) {
+        panel_led_normal = updated_led_normal;
+        panel_led_normal_changed = true;
+    }
+    if (panel_led_bright != updated_led_bright) {
+        panel_led_bright = updated_led_bright;
+        panel_led_bright_changed = true;
+    }
+    if (panel_led_dim != updated_led_dim) {
+        panel_led_dim = updated_led_dim;
+        panel_led_dim_changed = true;
+    }
+    panel_brightness_update();
+    osMutexRelease(illum_mutex);
+}
+
+uint8_t panel_brightness_value(illum_panel_brightness_t panel_brightness)
+{
+    uint8_t brightness = settings_get_led_brightness();
+    if (panel_brightness == ILLUM_BUTTON_BRIGHT) {
+        brightness = (brightness >= 64) ? 255 : brightness * 4;
+    } else if (panel_brightness == ILLUM_BUTTON_DIM) {
+        brightness = (brightness <= 4) ? 1 : brightness / 4;
+    }
+    return brightness;
+}
+
+void panel_brightness_update()
+{
+    osMutexAcquire(illum_mutex, portMAX_DELAY);
+    if (!illum_blackout) {
+        if (panel_led_normal_changed) {
+            led_set_value(panel_led_normal, panel_brightness_value(ILLUM_BUTTON_NORMAL));
+            panel_led_normal_changed = false;
+        }
+        if (panel_led_bright_changed) {
+            led_set_value(panel_led_bright, panel_brightness_value(ILLUM_BUTTON_BRIGHT));
+            panel_led_bright_changed = false;
+        }
+        if (panel_led_dim_changed) {
+            led_set_value(panel_led_bright, panel_brightness_value(ILLUM_BUTTON_DIM));
+            panel_led_dim_changed = false;
+        }
+    }
+    osMutexRelease(illum_mutex);
+}
+
 bool illum_controller_is_blackout()
 {
     bool result;
@@ -246,7 +326,10 @@ void illum_controller_keypad_blackout_callback(bool enabled, void *user_data)
     if (enabled) {
         led_set_value(LED_ILLUM_ALL, 0);
     } else {
-        led_set_value(LED_ILLUM_ALL, settings_get_led_brightness());
+        if (panel_led_normal != 0) { panel_led_normal_changed = true; }
+        if (panel_led_bright != 0) { panel_led_bright_changed = true; }
+        if (panel_led_dim != 0) { panel_led_dim_changed = true; }
+        panel_brightness_update();
     }
 
     osMutexRelease(illum_mutex);

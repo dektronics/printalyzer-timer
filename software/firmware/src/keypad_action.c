@@ -5,6 +5,7 @@
 #define LOG_TAG "keypad_action"
 #include <elog.h>
 
+#include "illum_controller.h"
 #include "util.h"
 
 #define MAX_KEY_ACTIONS 16
@@ -38,6 +39,8 @@ typedef struct {
 } keypad_action_state_t;
 
 static keypad_action_state_t action_state = {0};
+
+static led_t keypad_button_led(keypad_key_t key);
 
 osStatus_t keypad_action_add(keypad_key_t key, uint8_t action_id, uint8_t long_press_action_id, bool allow_repeat)
 {
@@ -80,6 +83,7 @@ osStatus_t keypad_action_add_combo(keypad_key_t key1, keypad_key_t key2, uint8_t
 void keypad_action_clear()
 {
     memset(&action_state, 0, sizeof(keypad_action_state_t));
+    illum_controller_set_panel(LED_ILLUM_ALL, ILLUM_BUTTON_NORMAL);
 }
 
 osStatus_t keypad_action_wait(keypad_action_t *action, int msecs_to_wait)
@@ -170,6 +174,9 @@ osStatus_t keypad_action_wait(keypad_action_t *action, int msecs_to_wait)
             if (key_action->long_press_counter < MAX_LONG_PRESS_COUNTER) {
                 key_action->long_press_counter++;
             }
+            if (key_action->long_press_counter > 2) {
+                illum_controller_set_panel(keypad_button_led(keypad_event.key), ILLUM_BUTTON_BRIGHT);
+            }
         } else {
             action->key = key_action->key;
             if (key_action->long_press_counter > 2) {
@@ -179,6 +186,7 @@ osStatus_t keypad_action_wait(keypad_action_t *action, int msecs_to_wait)
                 action->action_id = key_action->action_id;
             }
             key_action->long_press_counter = 0;
+            illum_controller_set_panel(keypad_button_led(keypad_event.key), ILLUM_BUTTON_NORMAL);
         }
         handled = true;
     }
@@ -218,4 +226,32 @@ osStatus_t keypad_action_wait(keypad_action_t *action, int msecs_to_wait)
     }
 
     return osOK;
+}
+
+led_t keypad_button_led(keypad_key_t key)
+{
+    switch (key) {
+    case KEYPAD_START:
+        return LED_START;
+    case KEYPAD_FOCUS:
+        return LED_FOCUS;
+    case KEYPAD_INC_EXPOSURE:
+        return LED_INC_EXPOSURE;
+    case KEYPAD_DEC_EXPOSURE:
+        return LED_DEC_EXPOSURE;
+    case KEYPAD_INC_CONTRAST:
+        return LED_INC_CONTRAST;
+    case KEYPAD_DEC_CONTRAST:
+        return LED_DEC_CONTRAST;
+    case KEYPAD_ADD_ADJUSTMENT:
+        return LED_ADD_ADJUSTMENT;
+    case KEYPAD_TEST_STRIP:
+        return LED_TEST_STRIP;
+    case KEYPAD_CANCEL:
+        return LED_CANCEL;
+    case KEYPAD_MENU:
+        return LED_MENU;
+    default:
+        return 0;
+    }
 }

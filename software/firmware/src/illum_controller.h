@@ -13,7 +13,7 @@
 #ifndef ILLUM_CONTROLLER_H
 #define ILLUM_CONTROLLER_H
 
-#include <stdbool.h>
+#include <led.h>
 
 typedef enum {
     ILLUM_SAFELIGHT_HOME = 0,
@@ -21,6 +21,12 @@ typedef enum {
     ILLUM_SAFELIGHT_EXPOSURE,
     ILLUM_SAFELIGHT_MEASUREMENT,
 } illum_safelight_t;
+
+typedef enum {
+    ILLUM_BUTTON_NORMAL = 0,
+    ILLUM_BUTTON_BRIGHT,
+    ILLUM_BUTTON_DIM
+} illum_panel_brightness_t;
 
 void illum_controller_init();
 
@@ -33,6 +39,8 @@ void illum_controller_init();
 void illum_controller_refresh();
 
 void illum_controller_safelight_state(illum_safelight_t mode);
+
+void illum_controller_set_panel(led_t panel_led, illum_panel_brightness_t panel_brightness);
 
 bool illum_controller_is_blackout();
 
