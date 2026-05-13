@@ -289,7 +289,7 @@ void panel_brightness_update()
             panel_led_bright_changed = false;
         }
         if (panel_led_dim_changed) {
-            led_set_value(panel_led_bright, panel_brightness_value(ILLUM_BUTTON_DIM));
+            led_set_value(panel_led_dim, panel_brightness_value(ILLUM_BUTTON_DIM));
             panel_led_dim_changed = false;
         }
     }
