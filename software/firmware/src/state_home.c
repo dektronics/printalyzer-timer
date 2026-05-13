@@ -183,6 +183,7 @@ static state_home_adjust_pev_t state_home_adjust_pev_data = {
 };
 
 static void update_display_highlight_element(display_main_printing_elements_t *elements, uint8_t highlight_element);
+static void warn_beep_timer_not_allowed(led_t led);
 
 state_t *state_home()
 {
@@ -325,7 +326,11 @@ bool state_home_process_printing(state_home_t *state, state_controller_t *contro
         } else if (keypad_action.action_id == ACTION_CHANGE_MODE) {
             state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
         } else if (keypad_action.action_id == ACTION_TIMER) {
-            state_controller_set_next_state(controller, STATE_TIMER, 0);
+            if (state_controller_is_enlarger_focus(controller)) {
+                warn_beep_timer_not_allowed(LED_ILLUM_CONTROL);
+            } else {
+                state_controller_set_next_state(controller, STATE_TIMER, 0);
+            }
         } else if (keypad_action.action_id == ACTION_FOCUS) {
             if (!state_controller_is_enlarger_focus(controller)) {
                 log_i("Focus mode enabled");
@@ -501,7 +506,13 @@ bool state_home_process_calibration(state_home_t *state, state_controller_t *con
             state_controller_set_next_state(controller, STATE_HOME_CHANGE_MODE, 0);
         } else if (keypad_action.action_id == ACTION_TIMER) {
             if (exposure_has_meter_readings(exposure_state)) {
-                state_controller_set_next_state(controller, STATE_TIMER, 0);
+                if (state_controller_is_enlarger_focus(controller)) {
+                    warn_beep_timer_not_allowed(LED_ILLUM_CONTROL);
+                } else {
+                    state_controller_set_next_state(controller, STATE_TIMER, 0);
+                }
+            } else {
+                warn_beep_timer_not_allowed(LED_START);
             }
         } else if (keypad_action.action_id == ACTION_FOCUS) {
             if (!state_controller_is_enlarger_focus(controller)) {
@@ -1244,4 +1255,16 @@ void update_display_highlight_element(display_main_printing_elements_t *elements
     } else {
         elements->time_icon_highlight = false;
     }
+}
+
+void warn_beep_timer_not_allowed(led_t led)
+{
+    buzzer_sequence(BUZZER_SEQUENCE_ABORT_EXPOSURE);
+    illum_controller_set_panel(led, ILLUM_BUTTON_BRIGHT);
+    osDelay(100);
+    illum_controller_set_panel(led, ILLUM_BUTTON_NORMAL);
+    osDelay(100);
+    illum_controller_set_panel(led, ILLUM_BUTTON_BRIGHT);
+    osDelay(100);
+    illum_controller_set_panel(led, ILLUM_BUTTON_NORMAL);
 }
