@@ -11,6 +11,7 @@
 
 #include "display.h"
 #include "keypad.h"
+#include "keypad_action.h"
 #include "led.h"
 #include "util.h"
 #include "illum_controller.h"
@@ -19,14 +20,23 @@
 #include "settings.h"
 #include "buzzer.h"
 
+typedef enum : uint8_t {
+    ACTION_NONE = 0,
+    ACTION_TIMER,
+    ACTION_FOCUS,
+    ACTION_CANCEL
+} state_teststrip_actions_t;
+
 typedef struct {
-    state_t base;
+    [[maybe_unused]] state_t base;
+    bool state_dirty;
     teststrip_patches_t teststrip_patches;
     teststrip_mode_t teststrip_mode;
     int exposure_patch_min;
     unsigned int exposure_patch_count;
     unsigned int exposure_patch_offset;
     unsigned int patches_covered;
+    uint32_t patch_time_ms;
     display_test_strip_elements_t elements;
 } state_test_strip_t;
 
@@ -52,7 +62,9 @@ state_t *state_test_strip()
 void state_test_strip_entry(state_t *state_base, state_controller_t *controller, state_identifier_t prev_state, uint32_t param)
 {
     state_test_strip_t *state = (state_test_strip_t *)state_base;
+    const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
 
+    state->state_dirty = true;
     state->teststrip_patches = settings_get_teststrip_patches();
     state->teststrip_mode = settings_get_teststrip_mode();
     state->exposure_patch_min = 0;
@@ -62,6 +74,15 @@ void state_test_strip_entry(state_t *state_base, state_controller_t *controller,
     memset(&state->elements, 0, sizeof(display_test_strip_elements_t));
 
     state_test_strip_prepare_elements(state, controller);
+
+    /* Configure keypad actions */
+    keypad_action_clear();
+    keypad_action_add(KEYPAD_START, ACTION_TIMER, 0, false);
+    keypad_action_add(KEYPAD_FOOTSWITCH, ACTION_TIMER, 0, false);
+    keypad_action_add(KEYPAD_FOCUS, ACTION_FOCUS, 0, false);
+    keypad_action_add(KEYPAD_CANCEL, ACTION_CANCEL, 0, false);
+
+    enlarger_control_set_state_safe(&enlarger_config->control, false);
 }
 
 void state_test_strip_prepare_elements(state_test_strip_t *state, state_controller_t *controller)
@@ -165,36 +186,42 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
     state_test_strip_t *state = (state_test_strip_t *)state_base;
     exposure_state_t *exposure_state = state_controller_get_exposure_state(controller);
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
-
-    enlarger_control_set_state_safe(&enlarger_config->control, false);
-
+    bool reset_inactivity = false;
     bool canceled = false;
-    float patch_time;
-    if (state->patches_covered == state->exposure_patch_count) {
-        patch_time = exposure_get_test_strip_time_complete(exposure_state, 0);
-        state->elements.covered_patches = 0xFF;
-        canceled = true;
-    } else if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
-        patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + state->patches_covered);
 
-        state->elements.covered_patches = 0xFF;
-        state->elements.covered_patches ^= (1 << (state->exposure_patch_count - state->patches_covered - 1));
-    } else {
-        patch_time = exposure_get_test_strip_time_incremental(exposure_state,
-            state->exposure_patch_min + state->exposure_patch_offset,
-            state->patches_covered - state->exposure_patch_offset);
-
-        state->elements.covered_patches = 0;
-        for (int i = 0; i < state->patches_covered; i++) {
-            state->elements.covered_patches |= (1 << (state->exposure_patch_count - i - 1));
+    if (state->state_dirty) {
+        if (!state_controller_is_enlarger_focus(controller)) {
+            enlarger_control_set_state_safe(&enlarger_config->control, false);
         }
+
+        float patch_time;
+        if (state->patches_covered == state->exposure_patch_count) {
+            patch_time = exposure_get_test_strip_time_complete(exposure_state, 0);
+            state->elements.covered_patches = 0xFF;
+            canceled = true;
+        } else if (state->teststrip_mode == TESTSTRIP_MODE_SEPARATE) {
+            patch_time = exposure_get_test_strip_time_complete(exposure_state, state->exposure_patch_min + state->patches_covered);
+
+            state->elements.covered_patches = 0xFF;
+            state->elements.covered_patches ^= (1 << (state->exposure_patch_count - state->patches_covered - 1));
+        } else {
+            patch_time = exposure_get_test_strip_time_incremental(exposure_state,
+                state->exposure_patch_min + state->exposure_patch_offset,
+                state->patches_covered - state->exposure_patch_offset);
+
+            state->elements.covered_patches = 0;
+            for (int i = 0; i < state->patches_covered; i++) {
+                state->elements.covered_patches |= (1 << (state->exposure_patch_count - i - 1));
+            }
+        }
+
+        state->patch_time_ms = rounded_exposure_time_ms(patch_time);
+
+        convert_exposure_to_display_timer(&(state->elements.time_elements), state->patch_time_ms);
+
+        display_draw_test_strip_elements(&state->elements);
+        state->state_dirty = false;
     }
-
-    uint32_t patch_time_ms = rounded_exposure_time_ms(patch_time);
-
-    convert_exposure_to_display_timer(&(state->elements.time_elements), patch_time_ms);
-
-    display_draw_test_strip_elements(&state->elements);
 
     /* Abort if the test strip can't be created */
     if (canceled) {
@@ -203,35 +230,60 @@ bool state_test_strip_process(state_t *state_base, state_controller_t *controlle
         osDelay(pdMS_TO_TICKS(450));
 
         state_controller_set_next_state(controller, STATE_HOME, 0);
-        return true;
+        reset_inactivity = true;
+        return reset_inactivity;
     }
 
-    keypad_event_t keypad_event;
-    if (keypad_wait_for_event(&keypad_event, -1) == HAL_OK) {
-        if (keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_START)
-            || keypad_is_key_released_or_repeated(&keypad_event, KEYPAD_FOOTSWITCH)) {
-
-            if (state_test_strip_countdown(exposure_state, enlarger_config, patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
-                if (state->patches_covered < state->exposure_patch_count) {
-                    state->patches_covered++;
-                }
+    keypad_action_t keypad_action;
+    if (keypad_action_wait(&keypad_action, STATE_KEYPAD_WAIT) == osOK) {
+        reset_inactivity = true;
+        if (keypad_action.action_id == ACTION_TIMER) {
+            if (state_controller_is_enlarger_focus(controller)) {
+                buzzer_sequence(BUZZER_SEQUENCE_ABORT_EXPOSURE);
+                illum_controller_set_panel(LED_ILLUM_CONTROL, ILLUM_BUTTON_BRIGHT);
+                osDelay(100);
+                illum_controller_set_panel(LED_ILLUM_CONTROL, ILLUM_BUTTON_NORMAL);
+                osDelay(100);
+                illum_controller_set_panel(LED_ILLUM_CONTROL, ILLUM_BUTTON_BRIGHT);
+                osDelay(100);
+                illum_controller_set_panel(LED_ILLUM_CONTROL, ILLUM_BUTTON_NORMAL);
             } else {
-                state_controller_set_next_state(controller, STATE_HOME, 0);
-                canceled = true;
+                state->state_dirty = true;
+                if (state_test_strip_countdown(exposure_state, enlarger_config, state->patch_time_ms, state->patches_covered == (state->exposure_patch_count - 1))) {
+                    if (state->patches_covered < state->exposure_patch_count) {
+                        state->patches_covered++;
+                    }
+                } else {
+                    state_controller_set_next_state(controller, STATE_HOME, 0);
+                    canceled = true;
+                }
             }
-        } else if ((keypad_event.key == KEYPAD_CANCEL && !keypad_event.pressed)
-                   || (keypad_usb_get_keypad_equivalent(&keypad_event) == KEYPAD_CANCEL && keypad_event.pressed)) {
+        } else if (keypad_action.action_id == ACTION_FOCUS && state->patches_covered == 0) {
+            if (!state_controller_is_enlarger_focus(controller)) {
+                log_i("Focus mode enabled");
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_FOCUS);
+                state_controller_set_enlarger_focus(controller, true);
+                state_controller_start_focus_timeout(controller);
+            } else {
+                log_i("Focus mode disabled");
+                state_controller_set_enlarger_focus(controller, false);
+                illum_controller_safelight_state(ILLUM_SAFELIGHT_HOME);
+                state_controller_stop_focus_timeout(controller);
+                state_controller_set_enable_meter_probe(controller, false);
+            }
+        } else if (keypad_action.action_id == ACTION_CANCEL) {
             state_controller_set_next_state(controller, STATE_HOME, 0);
             canceled = true;
         }
     }
 
     if (!canceled && state->patches_covered >= state->exposure_patch_count) {
+        reset_inactivity = true;
         osDelay(pdMS_TO_TICKS(500));
         state_controller_set_next_state(controller, STATE_HOME, 0);
     }
 
-    return true;
+    return reset_inactivity;
 }
 
 static bool state_test_strip_exposure_callback(exposure_timer_state_t state, uint32_t time_ms, void *user_data)
@@ -305,5 +357,7 @@ bool state_test_strip_countdown(const exposure_state_t *exposure_state, const en
 void state_test_strip_exit(state_t *state_base, state_controller_t *controller, state_identifier_t next_state)
 {
     const enlarger_config_t *enlarger_config = state_controller_get_enlarger_config(controller);
-    enlarger_control_set_state_off(&enlarger_config->control, false);
+    if (!state_controller_is_enlarger_focus(controller)) {
+        enlarger_control_set_state_off(&enlarger_config->control, false);
+    }
 }
