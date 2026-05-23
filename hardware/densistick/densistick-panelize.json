@@ -32,7 +32,8 @@
         "type": "4hole",
         "hoffset": "4.75mm",
         "voffset": "2.5mm",
-        "size": "2.05mm"
+        "size": "1.55mm",
+        "soldermaskmargin": "0.15mm"
     },
     "fiducials": {
         "type": "3fid",
