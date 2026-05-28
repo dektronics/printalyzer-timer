@@ -1,13 +1,13 @@
 // KiKit panelization for the Printalizer DensiStick
+// This produces a 187.5x135.0mm sized panel, containing 10 boards.
+// Edge rails are on all sides, and tooling holes are designed for 1.5mm pins.
 {
     "layout": {
         "type": "grid",
-        "rows": 1,
-        "cols": 6,
+        "rows": 5,
+        "cols": 2,
         "hspace": "2.5mm",
         "vspace": "2.5mm",
-        "rotation": "270deg",
-        "alternation": "none",
         "renamenet": "Board_{n}-{orig}",
         "renameref": "{orig}"
     },
@@ -24,9 +24,10 @@
         "spacing": "0.7mm"
     },
     "framing": {
-        "type": "railstb",
+        "type": "frame",
         "width": "5mm",
-        "space": "2.5mm"
+        "space": "2.5mm",
+        "cuts": "h"
     },
     "tooling": {
         "type": "4hole",
