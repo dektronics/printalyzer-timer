@@ -9,7 +9,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer DensiStick")
-		(date "2025-04-30")
+		(date "2026-05-28")
 		(rev "C")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg <dkonigsberg@dektronics.com>")
@@ -266,6 +266,12 @@
 		(path "/00000000-0000-0000-0000-00006056d9b6")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(zone_connect 2)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -405,7 +411,7 @@
 			(size 1 1)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/RLED2")
-			(pinfunction "K")
+			(pinfunction "K_1")
 			(pintype "passive")
 			(zone_connect 2)
 			(thermal_bridge_angle 45)
@@ -430,7 +436,7 @@
 			(size 1 1)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "+5V")
-			(pinfunction "A")
+			(pinfunction "A_2")
 			(pintype "passive")
 			(zone_connect 2)
 			(thermal_bridge_angle 45)
@@ -494,7 +500,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -524,6 +530,12 @@
 		(path "/00000000-0000-0000-0000-000060573be2")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -566,7 +578,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "53d7468e-5170-4c15-aafe-45ffdfa2ce6a")
 		)
@@ -577,7 +589,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "d043f0ec-4475-4f96-a40d-0c9c39a2ce03")
 		)
@@ -588,7 +600,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "d67209d9-6ef0-4d73-ad0d-b81ff08966b3")
 		)
@@ -599,7 +611,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "7fc91248-a55a-49f2-a912-a8db53f24b4f")
 		)
@@ -610,7 +622,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "8eba2a4c-395b-4997-82c9-fbc7d83baeee")
 		)
@@ -621,7 +633,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "89da6419-e50f-40e4-baac-6e90ca125f60")
 		)
@@ -632,7 +644,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "21616768-7588-428c-b583-ec82615d7de8")
 		)
@@ -643,7 +655,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "2769b62c-6560-4c0f-a560-ca7927100a20")
 		)
@@ -654,7 +666,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "bb7cf0ed-f422-4f38-98ef-380029286022")
 		)
@@ -691,7 +703,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -721,6 +733,12 @@
 		(path "/00000000-0000-0000-0000-000060573eb9")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1")
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -763,7 +781,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "cb0886b1-6c83-43f4-9af8-5be792f2a290")
 		)
@@ -774,7 +792,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "fa99f181-4f25-404d-a639-dd0fd04d00f4")
 		)
@@ -785,7 +803,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "e2defde1-f5e0-405a-b12e-716dc7c6b7b6")
 		)
@@ -796,7 +814,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "1d1c6b7a-b911-4a35-999f-5d6b390b1109")
 		)
@@ -807,7 +825,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "449b6fb6-576d-4efc-a545-30fa7ccd6a60")
 		)
@@ -818,7 +836,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "cdc7d354-16fc-4482-a35d-8572412cf063")
 		)
@@ -829,7 +847,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "cf042123-6cf2-432f-89df-a55fb447d687")
 		)
@@ -840,7 +858,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "411b20d5-c15b-44b6-ac4d-c3540ee5c400")
 		)
@@ -851,7 +869,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "input")
 			(uuid "747f8a6d-9e37-4fff-ac57-db510032352f")
 		)
@@ -960,10 +978,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "73b23b8b-71fb-45fe-a8a5-5edb3656d783")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/eec59d8f-2f64-4360-9a9c-454c22c58131")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1151,10 +1188,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aa2f7a80-4ba6-447f-a3f7-fabc286d224b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/061a929a-ccb2-40b0-abe7-c782b15811e9")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1342,10 +1398,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "53ecda8d-2452-4f31-9aa2-c964d4aabba7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/3abd9033-f587-43bd-9085-7f4d76fc12c7")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1538,6 +1613,12 @@
 		(path "/00000000-0000-0000-0000-00006056ceb5")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(zone_connect 2)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -1677,7 +1758,7 @@
 			(size 1 1)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/RLED1")
-			(pinfunction "K")
+			(pinfunction "K_1")
 			(pintype "passive")
 			(zone_connect 2)
 			(thermal_bridge_angle 45)
@@ -1702,7 +1783,7 @@
 			(size 1 1)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "+5V")
-			(pinfunction "A")
+			(pinfunction "A_2")
 			(pintype "passive")
 			(zone_connect 2)
 			(thermal_bridge_angle 45)
@@ -1838,10 +1919,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "21877237-7495-46b6-ba5b-44a3a65cb071")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/3392c53b-f1da-45ac-931b-a361d340da42")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2031,10 +2131,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4296f5e2-7316-41a7-8f71-b1b93291b79c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/abf3a64a-cdf4-4549-8674-9ab8c94b7539")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2227,6 +2346,12 @@
 		(path "/c8f9f9c9-2e2d-4a0a-aad3-4aa9b6ebe8be")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "2" "1")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2417,7 +2542,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.125)
 			(net "Earth")
-			(pinfunction "A")
+			(pinfunction "A_1")
 			(pintype "passive")
 			(uuid "0247e4f9-e349-48fe-8104-930a0fb55689")
 		)
@@ -2427,7 +2552,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.125)
 			(net "Net-(D5-K)")
-			(pinfunction "K")
+			(pinfunction "K_2")
 			(pintype "passive")
 			(uuid "d074bb77-698d-48ec-8f3b-6674b5e2b773")
 		)
@@ -2546,10 +2671,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "452acbcf-4acf-47bd-b3af-391292118c62")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/995eed07-9e9a-4246-b682-dcba7b4921e5")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2667,7 +2811,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2697,6 +2841,12 @@
 		(path "/00000000-0000-0000-0000-0000612fe793")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr smd exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -2773,7 +2923,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2803,6 +2953,12 @@
 		(path "/00000000-0000-0000-0000-0000612ff4c0")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr smd exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -2852,7 +3008,7 @@
 		(locked yes)
 		(layer "F.Cu")
 		(uuid "00000000-0000-0000-0000-0000612ecb78")
-		(at 119 58.25)
+		(at 119 58.5)
 		(descr "Circular Fiducial, 1mm bare copper, 2mm soldermask opening (Level A)")
 		(tags "fiducial")
 		(property "Reference" "FID3"
@@ -2879,7 +3035,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2909,6 +3065,12 @@
 		(path "/00000000-0000-0000-0000-000061300036")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr smd exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -3057,10 +3219,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yaego"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0afae62f-b609-4968-bcdc-a032d7cf0372")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/4ff973de-0a9f-408a-a719-76ce2b35df10")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3360,10 +3541,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3bb114f8-4b93-4929-85ef-c799ea420f2c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "Inductor_* L_* *Ferrite*")
 		(path "/ad0e9c93-ca1a-4cf0-8108-93445d1f0fc1")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3660,10 +3860,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9df53d39-0b87-4560-a1c0-b62386bdf165")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/54590678-24c2-4b8c-b6fb-4d727e789135")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3858,10 +4077,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c52f8ef4-de3d-4ecf-996a-3499de7e9ce7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/a00aa1ec-6715-467a-8658-81b4783c4d05")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4053,6 +4291,12 @@
 		(path "/c8b73868-8104-4347-9a77-2c53e0c17d0e")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "2" "3" "4" "5" "1" "6")
+			)
+		)
 		(solder_paste_margin -0.025)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -4179,7 +4423,7 @@
 			(chamfer_ratio 0.254545)
 			(chamfer bottom_right)
 			(net "/TSL_INT")
-			(pinfunction "INT")
+			(pinfunction "INT_1")
 			(pintype "open_collector")
 			(uuid "f84f1230-b1bd-4df5-bc7c-e1e4238efbdc")
 		)
@@ -4188,7 +4432,7 @@
 			(size 0.275 0.4)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "Net-(U1-VDD)")
-			(pinfunction "VDD")
+			(pinfunction "VDD_2")
 			(pintype "power_in")
 			(uuid "eaa3746b-638d-488f-8080-6912ba5a4c01")
 		)
@@ -4197,7 +4441,7 @@
 			(size 0.275 0.4)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "GND")
-			(pinfunction "VSS")
+			(pinfunction "VSS_3")
 			(pintype "power_in")
 			(uuid "582c85db-3c0a-4ece-9eec-e1094d418e5d")
 		)
@@ -4206,7 +4450,7 @@
 			(size 0.275 0.4)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/I2C_SCL")
-			(pinfunction "SCL")
+			(pinfunction "SCL_4")
 			(pintype "input")
 			(uuid "6b28e129-b903-4772-a7b4-b2838510f34e")
 		)
@@ -4215,7 +4459,7 @@
 			(size 0.275 0.4)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/I2C_SDA")
-			(pinfunction "SDA")
+			(pinfunction "SDA_5")
 			(pintype "bidirectional")
 			(uuid "59d69129-16de-46a0-a454-8c42c356ef8e")
 		)
@@ -4224,7 +4468,7 @@
 			(size 0.275 0.4)
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(net "/TSL_VSYNC")
-			(pinfunction "VSYNC/GPIO")
+			(pinfunction "VSYNC/GPIO_6")
 			(pintype "bidirectional")
 			(uuid "bd71d781-ee97-48ea-b0ec-3af9aeb7edbd")
 		)
@@ -4240,6 +4484,125 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(footprint "Fiducial:Fiducial_1mm_Mask2mm"
+		(layer "F.Cu")
+		(uuid "2509dd65-b1ce-4f7f-b4a8-1289b5329e6b")
+		(at 54 58.5)
+		(descr "Fiducial, circular marking, 1mm bare copper, 2mm soldermask opening (Level A)")
+		(tags "fiducial")
+		(property "Reference" "FID4"
+			(at 0 -1.95 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "69c6a127-b857-4165-ab1a-a9e06c155d3e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Fiducial"
+			(at 0 1.95 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4de9bc43-fdba-49d8-b54d-46de42b3e6b6")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "87042d3d-d894-4634-a648-909f9ab4aa84")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "173c81e3-efd9-4431-83c1-31593e9c2a33")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "KiLib_Generator" "fiducial"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "085d0a74-3f07-44aa-aae5-7ee8cc1a91fc")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Fiducial*")
+		(path "/d7e084af-ffc6-451c-a4d1-4115d91c01b8")
+		(sheetname "/")
+		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
+		(attr smd exclude_from_bom)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_circle
+			(center 0 0)
+			(end 1.25 0)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+			(uuid "89702123-1714-411e-8284-7d79af8e31fd")
+		)
+		(fp_circle
+			(center 0 0)
+			(end 1 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "30c1b1ce-a20a-443d-b675-0332317521c1")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "37f66226-c366-4188-9494-f06d21120fa6")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.08)
+				)
+			)
+		)
+		(pad "" smd circle
+			(at 0 0)
+			(size 1 1)
+			(layers "F.Cu" "F.Mask")
+			(solder_mask_margin 0.5)
+			(clearance 0.6)
+			(uuid "d347fa20-d3c4-4858-a64a-2270df7f1b20")
+		)
+		(embedded_fonts no)
 	)
 	(footprint "lib_fp:Micrel_MSOP-10-1EP_3x3mm_P0.5mm_EP1.73x1.7mm_ThermalVias"
 		(layer "F.Cu")
@@ -4346,6 +4709,12 @@
 		(path "/87302868-52b6-4139-80ea-947d25f2770c")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "2" "3" "1" "4" "11" "10" "9" "8" "7" "6" "5")
+			)
+		)
 		(zone_connect 2)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
@@ -4536,7 +4905,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+5V")
-			(pinfunction "VIN")
+			(pinfunction "VIN_1")
 			(pintype "power_in")
 			(uuid "bf3c9464-9457-4420-8964-e68fb04c8976")
 		)
@@ -4546,7 +4915,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/RLED_EN")
-			(pinfunction "EN")
+			(pinfunction "EN_2")
 			(pintype "input")
 			(uuid "5a57c2cb-3330-42bf-821f-a5a312c6ee93")
 		)
@@ -4556,7 +4925,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/RSET")
-			(pinfunction "RSET")
+			(pinfunction "RSET_3")
 			(pintype "passive")
 			(uuid "40bc9c3c-73cf-47fb-84d7-b0eac814a611")
 		)
@@ -4566,7 +4935,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "GND")
+			(pinfunction "GND_4")
 			(pintype "power_in")
 			(uuid "e6f700eb-03c4-4702-b953-a4015be5aa51")
 		)
@@ -4576,7 +4945,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U3-D6-Pad5)")
-			(pinfunction "D6")
+			(pinfunction "D6_5")
 			(pintype "open_collector+no_connect")
 			(uuid "b65c05e9-4cdc-43f7-9d03-1f5c397256ed")
 		)
@@ -4586,7 +4955,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U3-D5-Pad6)")
-			(pinfunction "D5")
+			(pinfunction "D5_6")
 			(pintype "open_collector+no_connect")
 			(uuid "700b7613-376e-4606-b1ae-c52ebe9614e0")
 		)
@@ -4596,7 +4965,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U3-D4-Pad7)")
-			(pinfunction "D4")
+			(pinfunction "D4_7")
 			(pintype "open_collector+no_connect")
 			(uuid "27cb3349-f3c3-4865-8444-938992a7e8a2")
 		)
@@ -4606,7 +4975,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U3-D3-Pad8)")
-			(pinfunction "D3")
+			(pinfunction "D3_8")
 			(pintype "open_collector+no_connect")
 			(uuid "9b42ca15-d047-4d2b-8d58-de4e9e749b0a")
 		)
@@ -4616,7 +4985,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/RLED1")
-			(pinfunction "D2")
+			(pinfunction "D2_9")
 			(pintype "open_collector")
 			(uuid "d338e37e-ad5c-43ca-8dec-2f40bc4c0c81")
 		)
@@ -4626,7 +4995,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/RLED2")
-			(pinfunction "D1")
+			(pinfunction "D1_10")
 			(pintype "open_collector")
 			(uuid "f4a81ba4-d544-458a-a2b9-9947c00a8b06")
 		)
@@ -4637,7 +5006,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_11")
 			(pintype "passive")
 			(uuid "1d7d3d15-8a0b-49df-beb9-8032e53b72b6")
 		)
@@ -4648,7 +5017,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_11")
 			(pintype "passive")
 			(uuid "b9f6adc9-0b2b-4d52-9bc4-23a332c71ffc")
 		)
@@ -4657,7 +5026,7 @@
 			(size 1 1)
 			(layers "F.Cu" "F.Mask")
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_11")
 			(pintype "passive")
 			(options
 				(clearance outline)
@@ -4682,7 +5051,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_11")
 			(pintype "passive")
 			(uuid "b1ef6d68-9181-4ebf-89a7-ccfba7248de4")
 		)
@@ -4693,7 +5062,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_11")
 			(pintype "passive")
 			(uuid "c797e838-ae53-4368-aeae-f10a4d551710")
 		)
@@ -4717,7 +5086,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C15"
-			(at 1.8 -0.1 0)
+			(at 1.8 0.5 0)
 			(layer "F.SilkS")
 			(uuid "33f8f189-a6c9-443c-8656-88216931deb9")
 			(effects
@@ -4818,10 +5187,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "55e1b193-59d7-47f8-afe3-e06524a0fa7b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/2a89f8e0-44f5-4948-9170-98c1667e0d7f")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5016,6 +5404,14 @@
 		(path "/fa441338-72cf-47b1-bf67-417bd3a2a458")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "20" "21" "1" "2" "3" "4" "5" "26" "25" "23" "24" "22" "19" "6"
+					"29" "7" "8" "9" "10" "11" "12" "13" "14" "15" "16" "17" "18" "27" "28"
+				)
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5280,7 +5676,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U4-DEBUGGER)")
-			(pinfunction "DEBUGGER")
+			(pinfunction "DEBUGGER_1")
 			(pintype "bidirectional")
 			(uuid "3cbce2c8-0097-4c79-879a-9ea3022420b7")
 		)
@@ -5290,7 +5686,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U4-~{STEST_RST})")
-			(pinfunction "~{STEST_RST}")
+			(pinfunction "~{STEST_RST}_2")
 			(pintype "input")
 			(uuid "f1a086d6-941e-4c88-9fc7-9388d846e5fd")
 		)
@@ -5300,7 +5696,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U4-~{RESET})")
-			(pinfunction "~{RESET}")
+			(pinfunction "~{RESET}_3")
 			(pintype "input")
 			(uuid "0776bf25-e16f-45ce-a0df-41ab0194cf5f")
 		)
@@ -5310,7 +5706,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DCNF0-Pad4)")
-			(pinfunction "DCNF0")
+			(pinfunction "DCNF0_4")
 			(pintype "input+no_connect")
 			(uuid "bca4bfbb-42af-4b14-ba7f-d668f2146931")
 		)
@@ -5320,7 +5716,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DCNF1-Pad5)")
-			(pinfunction "DCNF1")
+			(pinfunction "DCNF1_5")
 			(pintype "input+no_connect")
 			(uuid "91f6db14-513a-4e45-919d-8d1349c7512e")
 		)
@@ -5330,7 +5726,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+3V3")
-			(pinfunction "VCCIO")
+			(pinfunction "VCCIO_6")
 			(pintype "power_in")
 			(uuid "c0161300-2840-43ce-ae26-b1efd89b1a26")
 		)
@@ -5340,7 +5736,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U4-DIO0)")
-			(pinfunction "GPIOA")
+			(pinfunction "GPIOA_7")
 			(pintype "bidirectional")
 			(uuid "e3400b7a-dca1-4434-851d-361c9f35f5d5")
 		)
@@ -5350,7 +5746,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO1-Pad8)")
-			(pinfunction "DIO1")
+			(pinfunction "DIO1_8")
 			(pintype "bidirectional+no_connect")
 			(uuid "55be6a80-72ea-4e88-8f2d-bc0384f957e2")
 		)
@@ -5360,7 +5756,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO2-Pad9)")
-			(pinfunction "DIO2")
+			(pinfunction "DIO2_9")
 			(pintype "bidirectional+no_connect")
 			(uuid "0045893e-78d7-45de-9aa3-e04e398792c3")
 		)
@@ -5370,7 +5766,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO3-Pad10)")
-			(pinfunction "DIO3")
+			(pinfunction "DIO3_10")
 			(pintype "bidirectional+no_connect")
 			(uuid "4fe48b76-a3b5-4e30-a70b-9cbc64118f5b")
 		)
@@ -5380,7 +5776,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO4-Pad11)")
-			(pinfunction "DIO4")
+			(pinfunction "DIO4_11")
 			(pintype "bidirectional+no_connect")
 			(uuid "c0eafc3e-661e-490d-8e95-cdd605c86662")
 		)
@@ -5390,7 +5786,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SCL")
-			(pinfunction "SCL")
+			(pinfunction "SCL_12")
 			(pintype "bidirectional")
 			(uuid "f511eda4-81d6-483a-998e-2e7f4d480336")
 		)
@@ -5400,7 +5796,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SDA")
-			(pinfunction "SDA")
+			(pinfunction "SDA_13")
 			(pintype "bidirectional")
 			(uuid "588e8eec-adf9-4b46-bdad-3c872a5f885f")
 		)
@@ -5410,7 +5806,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO7-Pad14)")
-			(pinfunction "DIO7")
+			(pinfunction "DIO7_14")
 			(pintype "bidirectional+no_connect")
 			(uuid "ccb09c22-e7df-4395-8b20-24ea25992587")
 		)
@@ -5420,8 +5816,8 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/TSL_INT")
-			(pinfunction "INTRIN")
-			(pintype "bidirectional")
+			(pinfunction "INTRIN_15")
+			(pintype "input")
 			(uuid "aa649f22-0edd-400a-88ff-f6d49736b380")
 		)
 		(pad "16" smd roundrect
@@ -5430,7 +5826,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO9-Pad16)")
-			(pinfunction "DIO9")
+			(pinfunction "DIO9_16")
 			(pintype "bidirectional+no_connect")
 			(uuid "83ccd021-dcd3-40f5-86ea-25564fcf7208")
 		)
@@ -5440,8 +5836,8 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "DCD")
-			(pintype "bidirectional")
+			(pinfunction "DCD_17")
+			(pintype "input")
 			(uuid "197a20aa-9278-464c-9960-f1abf2024c6e")
 		)
 		(pad "18" smd roundrect
@@ -5450,8 +5846,8 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/PROBE_BTN")
-			(pinfunction "RI")
-			(pintype "bidirectional")
+			(pinfunction "RI_18")
+			(pintype "input")
 			(uuid "114d4f33-601a-4403-9bf7-c91a79e421d6")
 		)
 		(pad "19" smd roundrect
@@ -5460,7 +5856,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "GND")
+			(pinfunction "GND_19")
 			(pintype "power_in")
 			(uuid "359c8b5b-aba9-41c2-8b08-21b5f9c7f25c")
 		)
@@ -5470,7 +5866,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_D-")
-			(pinfunction "USB_DM")
+			(pinfunction "USB_DM_20")
 			(pintype "bidirectional")
 			(uuid "7aadfcc5-ee15-404d-bf43-d6fd4f04e20c")
 		)
@@ -5480,7 +5876,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_D+")
-			(pinfunction "USB_DP")
+			(pinfunction "USB_DP_21")
 			(pintype "bidirectional")
 			(uuid "762d273c-0f9a-4c86-a3d2-13ed8802a8b0")
 		)
@@ -5490,7 +5886,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+3V3")
-			(pinfunction "VOUT3V3")
+			(pinfunction "VOUT3V3_22")
 			(pintype "power_out")
 			(uuid "9f73a7fa-645e-438d-b873-cabc3e3d0bbb")
 		)
@@ -5500,7 +5896,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+5V")
-			(pinfunction "VCCIN")
+			(pinfunction "VCCIN_23")
 			(pintype "power_in")
 			(uuid "43ce2183-88ab-41c6-b80a-84ccd21dba21")
 		)
@@ -5510,7 +5906,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "AGND")
+			(pinfunction "AGND_24")
 			(pintype "power_in")
 			(uuid "9ce0fb0b-2726-499d-90da-e39aca06bc7e")
 		)
@@ -5520,7 +5916,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-FSOURCE-Pad25)")
-			(pinfunction "FSOURCE")
+			(pinfunction "FSOURCE_25")
 			(pintype "power_in+no_connect")
 			(uuid "bef055eb-248c-49fa-b473-a26e381ae8d1")
 		)
@@ -5530,7 +5926,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U4-VBUS_DET)")
-			(pinfunction "VBUS_DET")
+			(pinfunction "VBUS_DET_26")
 			(pintype "input")
 			(uuid "80124511-6b07-4c81-bafb-07fe7d0df0fd")
 		)
@@ -5540,7 +5936,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U4-DIO12-Pad27)")
-			(pinfunction "DIO12")
+			(pinfunction "DIO12_27")
 			(pintype "bidirectional+no_connect")
 			(uuid "0e39a21d-d84c-4b47-9f99-7b0e822fb1de")
 		)
@@ -5550,7 +5946,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/RLED_EN")
-			(pinfunction "GPIOH")
+			(pinfunction "GPIOH_28")
 			(pintype "bidirectional")
 			(uuid "41b84b59-cb80-4624-b9dd-ecc80dec7a9f")
 		)
@@ -5559,7 +5955,7 @@
 			(size 3.3 3.3)
 			(layers "F.Cu" "F.Mask")
 			(net "GND")
-			(pinfunction "EP")
+			(pinfunction "EP_29")
 			(pintype "power_in")
 			(uuid "8b440475-6fec-489e-818c-8ddb8d4b9a43")
 		)
@@ -5682,10 +6078,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "91802a3e-6780-4077-ac9e-d4fad6dc6f7d")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/6d7ac8cf-27b9-4f69-8f46-909b8e4a92d0")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5878,10 +6293,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4dc20b0d-b176-46e6-9d02-285c4c31a52f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/6accdce2-af30-422c-9ed2-f811c274d8bb")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6074,10 +6508,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "30d024c4-c0c6-41e6-9b3e-d83aeead3204")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/e68785c8-262a-4dbe-8840-6a56a08d54ac")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6272,10 +6725,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "81c187fb-da2a-4582-933d-e81172f08e77")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/9a889127-57bb-4a2f-9c08-3e9b0ebef8f0")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6575,10 +7047,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "28f3e58f-738c-44d0-ba60-74493fbd56fd")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/db08bdac-da30-4fe2-bd99-adb311502af0")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6766,10 +7257,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "723515b8-2bbd-48ae-bf3a-e28d27c98fad")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/6c4ffe27-1c74-4859-b38f-5dd7ebb233fb")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6959,10 +7469,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "499d4ab6-86ec-4cee-a334-9c436f49836f")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/56b0bf1e-46d6-4077-9adf-253f75aadd09")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7262,10 +7791,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "onsemi"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c47892ae-fda2-4784-b652-f2cdd0e4e3e2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOIC*3.9x4.9mm* TSSOP*4.4x3mm*P0.65mm* DFN*3x2mm*P0.5mm*")
 		(path "/b3480974-65f6-479c-8fef-4af6635c005f")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2" "3" "8" "4" "5" "6" "7")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7489,7 +8037,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "A0")
+			(pinfunction "A0_1")
 			(pintype "input")
 			(uuid "1d5172b4-c759-489d-89b3-e3267740e2c4")
 		)
@@ -7499,7 +8047,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "A1")
+			(pinfunction "A1_2")
 			(pintype "input")
 			(uuid "eb5760b6-36dd-443d-8239-f8c339741bb6")
 		)
@@ -7509,7 +8057,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "A2")
+			(pinfunction "A2_3")
 			(pintype "input")
 			(uuid "137f8ff9-366c-4b0a-b661-5920b750c3fc")
 		)
@@ -7519,7 +8067,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "GND")
+			(pinfunction "GND_4")
 			(pintype "power_in")
 			(uuid "21729c2b-0cff-4b22-8b4a-a7970029775b")
 		)
@@ -7529,7 +8077,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SDA")
-			(pinfunction "SDA")
+			(pinfunction "SDA_5")
 			(pintype "bidirectional")
 			(uuid "51e61b3f-5fc8-48ea-aaf0-9cb6ffa10787")
 		)
@@ -7539,7 +8087,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SCL")
-			(pinfunction "SCL")
+			(pinfunction "SCL_6")
 			(pintype "input")
 			(uuid "1ee57281-8506-4ba1-9dd4-edadf3eb7613")
 		)
@@ -7549,7 +8097,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "WP")
+			(pinfunction "WP_7")
 			(pintype "input")
 			(uuid "008d2870-a3c4-4078-9cc7-0f3539072de3")
 		)
@@ -7559,7 +8107,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+3V3")
-			(pinfunction "VCC")
+			(pinfunction "VCC_8")
 			(pintype "power_in")
 			(uuid "276746c4-931d-4c95-a269-a6cad05feae1")
 		)
@@ -7583,7 +8131,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R11"
-			(at -1.8 0 0)
+			(at -1.8 -0.5 0)
 			(layer "F.SilkS")
 			(uuid "787fd133-c965-4c26-bc62-437a69d191d1")
 			(effects
@@ -7684,10 +8232,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "66077461-1ce9-4503-b76f-49e922a04373")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/385835c2-960d-4ece-bc18-51ac0aed0831")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7880,10 +8447,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "40f25e08-d5e4-4f9d-a0a6-f3ba2d8fcbf7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/d6cbccb2-fbe8-4dc4-94e6-0b5796440093")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8076,10 +8662,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fe429d1d-208e-49bb-9604-2c401a48c0d4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/2e48e6e1-382a-4e5a-ae82-59c67d52cd40")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8272,10 +8877,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3c13a4a5-8e24-45bf-b412-39c535b2ddfe")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/6b9ac92c-8e35-4656-a955-b0ed6009c49d")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8468,10 +9092,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "32f1ca86-a9aa-40db-9389-7d7ff8f5f2e7")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/607870fa-eb90-4cef-84c7-1b9986cce284")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8666,10 +9309,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3cdbcc0a-cac2-4428-8c34-51b7e4cdd112")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/79b30f8f-baf2-49b7-9396-e3a80ed1f187")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -8862,10 +9524,29 @@
 				)
 			)
 		)
+		(property "Supplier PN" "C29936"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8a7ea177-6f04-4233-8c93-23f43e02fc78")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/4915b3d4-b4dd-458c-8f96-baaf97e1294a")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9058,10 +9739,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b6a5337c-b85b-4cee-b01f-c774e260f34b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/4e2dba13-5d5a-4692-88fb-ba5bf0fd76f2")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9258,6 +9958,12 @@
 		(path "/abe7b32a-219f-4b6c-9b7f-85dff0478a35")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "3" "4" "1" "2" "6" "5")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9399,7 +10105,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+3V3")
-			(pinfunction "VDD")
+			(pinfunction "VDD_1")
 			(pintype "power_in")
 			(uuid "8a19bfd5-bd7b-483c-82fa-b008649355a3")
 		)
@@ -9409,7 +10115,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "VSS")
+			(pinfunction "VSS_2")
 			(pintype "power_in")
 			(uuid "18e3eb84-97f5-4fbc-913c-c51789dc1751")
 		)
@@ -9419,7 +10125,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SCL")
-			(pinfunction "SCL")
+			(pinfunction "SCL_3")
 			(pintype "input")
 			(uuid "01502f59-add7-4116-8f9a-3f9c6c9ddab7")
 		)
@@ -9429,7 +10135,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/I2C_SDA")
-			(pinfunction "SDA")
+			(pinfunction "SDA_4")
 			(pintype "bidirectional")
 			(uuid "530979b3-c980-4457-b583-ca63e817c9fc")
 		)
@@ -9439,7 +10145,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "B")
+			(pinfunction "B_5")
 			(pintype "passive")
 			(uuid "8977334b-5f53-4a46-834d-6274d9e68c63")
 		)
@@ -9449,7 +10155,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Net-(U7-W)")
-			(pinfunction "W")
+			(pinfunction "W_6")
 			(pintype "passive")
 			(uuid "aa1770a2-0e66-41e3-9711-7b65e3da5d09")
 		)
@@ -9572,10 +10278,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e0dad8df-b5ce-4fc9-9cf1-8151debe8d81")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/e8954318-d89f-4da5-b1bb-8a2f1314a7ce")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "3" "5" "2" "6" "4")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -9799,7 +10524,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_CONN_D+")
-			(pinfunction "I/O1")
+			(pinfunction "I/O1_1")
 			(pintype "passive")
 			(uuid "f88518f8-69a3-4131-81e9-b142aa19f9a1")
 		)
@@ -9809,7 +10534,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Earth")
-			(pinfunction "GND")
+			(pinfunction "GND_2")
 			(pintype "passive")
 			(uuid "4193c0e1-b749-4803-9e61-eddcf60cb16a")
 		)
@@ -9819,7 +10544,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_CONN_D-")
-			(pinfunction "I/O2")
+			(pinfunction "I/O2_3")
 			(pintype "passive")
 			(uuid "6ec2bca0-41d6-45bc-8583-e798214c37a6")
 		)
@@ -9829,7 +10554,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_DI-")
-			(pinfunction "I/O2")
+			(pinfunction "I/O2_4")
 			(pintype "passive")
 			(uuid "dda5ccf1-d651-420d-a7e7-758e6b4aa419")
 		)
@@ -9839,7 +10564,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "VBUS")
-			(pinfunction "VBUS")
+			(pinfunction "VBUS_5")
 			(pintype "passive")
 			(uuid "72235399-1254-4a05-8dba-fbaa23caef9c")
 		)
@@ -9849,7 +10574,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_DI+")
-			(pinfunction "I/O1")
+			(pinfunction "I/O1_6")
 			(pintype "passive")
 			(uuid "68a7dbad-00ce-4643-b077-9639cd88e1c9")
 		)
@@ -9967,10 +10692,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "09de975e-da6a-4437-8c0d-3db525d0bb28")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/07f9542f-c68e-4114-aa0f-5ba8483fc91b")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10171,7 +10915,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R10"
-			(at -1.8 0 0)
+			(at -1.8 -0.5 0)
 			(layer "F.SilkS")
 			(uuid "921976f0-7f6d-4698-b7e2-d1da78eb8265")
 			(effects
@@ -10272,10 +11016,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "27495aeb-a022-4aee-8bec-7f539e9fd1e4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/f9ff2479-efab-4fdd-b311-c2ab88ee7286")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10468,10 +11231,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7b39292d-038f-42e0-a81c-2a635a8ceef2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/db7b34bf-c0e8-47ac-b618-b5ad6904fefe")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10565,7 +11347,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R12"
-			(at -1.8 0 0)
+			(at -1.8 -0.5 0)
 			(layer "F.SilkS")
 			(uuid "e7d45d48-ec17-4117-ac6a-c85dd37de546")
 			(effects
@@ -10666,10 +11448,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Vishay Dale"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0d93394b-53e4-4281-ae1e-6c616a2d77df")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/60df0bfe-b103-49de-9129-41a838dfcb17")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -10866,6 +11667,12 @@
 		(path "/ae032cc8-285d-4a9a-ba76-d29c2a173c17")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2" "3" "4" "5")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11240,7 +12047,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "Earth")
-			(pinfunction "Pin_1")
+			(pinfunction "Pin_1_1")
 			(pintype "passive")
 			(uuid "b7c70696-abde-45d8-a45b-bfd1c9abf1f0")
 		)
@@ -11250,7 +12057,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "Pin_2")
+			(pinfunction "Pin_2_2")
 			(pintype "passive")
 			(uuid "f70e40ed-89b5-4776-958d-76591267eaa3")
 		)
@@ -11260,7 +12067,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "VBUS")
-			(pinfunction "Pin_3")
+			(pinfunction "Pin_3_3")
 			(pintype "passive")
 			(uuid "6a04ee66-bc7e-4b05-9311-7607b0aeb50e")
 		)
@@ -11270,7 +12077,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_CONN_D-")
-			(pinfunction "Pin_4")
+			(pinfunction "Pin_4_4")
 			(pintype "passive")
 			(uuid "56487b24-5022-4411-9056-911328c3798e")
 		)
@@ -11280,7 +12087,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "/USB_CONN_D+")
-			(pinfunction "Pin_5")
+			(pinfunction "Pin_5_5")
 			(pintype "passive")
 			(uuid "8517710e-4b0d-40af-acc5-a4ff3e8e468f")
 		)
@@ -11318,7 +12125,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C8"
-			(at 1.8 0 0)
+			(at 1.8 0.5 0)
 			(layer "F.SilkS")
 			(uuid "c6243284-3fbd-43f2-989e-c54c2a18f758")
 			(effects
@@ -11419,10 +12226,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3d09d83f-d834-4c3b-9fe5-21fd45a08474")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/e7748651-6b04-4dae-ba43-903f1afb4a5c")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11610,10 +12436,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7157a349-396c-4519-95a9-b3b80d9056cb")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/e9799a8c-c735-4472-8cbc-81385cc36dfe")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11808,10 +12653,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4931b410-245d-40d4-bed7-9fd05730b8c2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/2707ed72-2e5d-4e6d-af17-0740a603e670")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -11905,7 +12769,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C14"
-			(at 1.8 0 0)
+			(at 1.8 0.5 0)
 			(layer "F.SilkS")
 			(uuid "7980aed2-5104-4b75-a009-ca733657a568")
 			(effects
@@ -12006,10 +12870,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "60644bad-cdc7-48f9-9f32-3ccd0e873c2c")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/9a3124d1-c2d6-46ed-aa6e-e8fab71ece30")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12202,10 +13085,29 @@
 				)
 			)
 		)
+		(property "Supplier" "Digi-Key"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4af2248f-5294-46e5-bd07-7ee8d749db65")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/60eb1503-64a0-4931-9e79-6adfe959a415")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12398,10 +13300,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Microchip Technology"
+			(at 0 0 180)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e55c2b60-da16-4668-8d42-b6b0d644b5ce")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT*353*SC*70*")
 		(path "/66bbbcf8-91ce-4e46-8955-1e4946e850a3")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "3" "2" "4" "5")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -12675,7 +13596,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+5V")
-			(pinfunction "VIN")
+			(pinfunction "VIN_1")
 			(pintype "power_in")
 			(uuid "7d024711-76e4-41bb-bf3d-2f32830bd08d")
 		)
@@ -12685,7 +13606,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "GND")
-			(pinfunction "GND")
+			(pinfunction "GND_2")
 			(pintype "power_in")
 			(uuid "fc84e9b1-ff11-4975-8a60-e9681509e35d")
 		)
@@ -12695,7 +13616,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+5V")
-			(pinfunction "EN")
+			(pinfunction "EN_3")
 			(pintype "input")
 			(uuid "99c7631d-3431-4ea5-b69e-bbb442e9d5b2")
 		)
@@ -12705,7 +13626,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "unconnected-(U5-NC-Pad4)")
-			(pinfunction "NC")
+			(pinfunction "NC_4")
 			(pintype "no_connect")
 			(uuid "dd75a562-74b0-412a-b57d-bd5e1f4e6b4e")
 		)
@@ -12715,7 +13636,7 @@
 			(layers "F.Cu" "F.Mask" "F.Paste")
 			(roundrect_rratio 0.25)
 			(net "+1V8")
-			(pinfunction "VOUT")
+			(pinfunction "VOUT_5")
 			(pintype "power_out")
 			(uuid "c8679d96-9cab-4f57-b941-71af61339621")
 		)
@@ -12762,7 +13683,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12844,6 +13765,12 @@
 		(path "/a406a54a-35b2-434a-85fe-581ff63e9cad")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
 		(net_tie_pad_groups "1, 2")
 		(duplicate_pad_numbers_are_jumpers no)
@@ -12864,7 +13791,7 @@
 			(size 0.5 0.5)
 			(layers "F.Cu")
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "passive")
 			(uuid "6fcde1e5-5f23-41e5-99d1-320ff7d24b96")
 		)
@@ -12873,7 +13800,7 @@
 			(size 0.5 0.5)
 			(layers "F.Cu")
 			(net "Earth")
-			(pinfunction "2")
+			(pinfunction "2_2")
 			(pintype "passive")
 			(uuid "c8072bdd-1eb8-45aa-b6c2-8ba5034aea76")
 		)
@@ -13094,10 +14021,29 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Yaego"
+			(at 0 0 270)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "7c4efeb5-633d-4808-a9fc-c182e4446443")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "R_*")
 		(path "/6d244e14-8705-4b37-8d20-ee571479a832")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13217,7 +14163,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -13249,6 +14195,12 @@
 		(path "/00000000-0000-0000-0000-000060572eab")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -13327,7 +14279,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -13359,6 +14311,12 @@
 		(path "/00000000-0000-0000-0000-000060573343")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -13437,7 +14395,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -13469,6 +14427,12 @@
 		(path "/00000000-0000-0000-0000-0000605736ba")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -13547,7 +14511,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" ""
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "B.Fab")
@@ -13579,6 +14543,12 @@
 		(path "/00000000-0000-0000-0000-0000605739b5")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
 		(attr exclude_from_pos_files exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_circle
@@ -13738,6 +14708,12 @@
 		(path "/00000000-0000-0000-0000-00006056ffda")
 		(sheetname "/")
 		(sheetfile "densistick.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins "1" "2")
+			)
+		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -13890,7 +14866,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "passive")
 			(uuid "70d3b5f9-1351-4df5-8d10-43c8f566939d")
 		)
@@ -13901,7 +14877,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "GND")
-			(pinfunction "1")
+			(pinfunction "1_1")
 			(pintype "passive")
 			(uuid "b6ecc5bd-7963-4ce6-adee-33a46a0bdce6")
 		)
@@ -13912,7 +14888,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "Net-(D5-K)")
-			(pinfunction "2")
+			(pinfunction "2_2")
 			(pintype "passive")
 			(teardrops
 				(best_length_ratio 0.5)
@@ -13934,7 +14910,7 @@
 			(layers "*.Cu" "*.Mask")
 			(remove_unused_layers no)
 			(net "Net-(D5-K)")
-			(pinfunction "2")
+			(pinfunction "2_2")
 			(pintype "passive")
 			(teardrops
 				(best_length_ratio 0.5)
@@ -23646,7 +24622,7 @@
 		(net "Net-(D5-K)")
 		(layer "F.Cu")
 		(hatch none 0.1)
-		(priority 30001)
+		(priority 30000)
 		(attr
 			(teardrop
 				(type padvia)
@@ -23679,7 +24655,7 @@
 		(net "Net-(D5-K)")
 		(layer "F.Cu")
 		(hatch none 0.1)
-		(priority 30000)
+		(priority 30001)
 		(attr
 			(teardrop
 				(type padvia)
