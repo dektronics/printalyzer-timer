@@ -29,6 +29,9 @@ typedef struct {
 static uint8_t mounted_drive_count();
 static menu_result_t drive_selection_impl(const char *title, uint8_t *num);
 static menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection, file_picker_filter_func_t filter_func);
+static UT_array *file_picker_build_entry_list(const char *path, file_picker_filter_func_t filter_func);
+static menu_result_t file_picker_selection_list(const char *title, uint8_t option, UT_array *file_entry_list, file_picker_selection_t *selection);
+static menu_result_t file_picker_empty_directory(const char *title);
 static void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno);
 static int file_entry_sort(const void *a, const void *b);
 
@@ -132,7 +135,7 @@ uint8_t mounted_drive_count()
 
 menu_result_t drive_selection_impl(const char *title, uint8_t *num)
 {
-    menu_result_t menu_result = MENU_CANCEL;
+    menu_result_t menu_result;
     char buf[256];
     uint8_t drive_num[8];
     uint8_t drive_count;
@@ -195,23 +198,40 @@ menu_result_t drive_selection_impl(const char *title, uint8_t *num)
 menu_result_t file_picker_impl(const char *title, const char *path, uint8_t option, file_picker_selection_t *selection, file_picker_filter_func_t filter_func)
 {
     menu_result_t menu_result = MENU_CANCEL;
+    UT_array *file_entry_list;
+
+    log_i("Preparing file picker");
+
+    file_entry_list = file_picker_build_entry_list(path, filter_func);
+
+    if (!file_entry_list) {
+        return menu_result;
+    }
+
+    if (utarray_len(file_entry_list) > 0) {
+        menu_result = file_picker_selection_list(title, option, file_entry_list, selection);
+    } else {
+        menu_result = file_picker_empty_directory(title);
+    }
+
+    utarray_free(file_entry_list);
+
+    return menu_result;
+}
+
+UT_array *file_picker_build_entry_list(const char *path, file_picker_filter_func_t filter_func)
+{
     FRESULT res;
     DIR dir;
     FILINFO fno;
     file_picker_entry_t file_entry;
     UT_array *file_entry_list = NULL;
-    file_picker_entry_t *p;
-    char *list_buf = NULL;
-    size_t list_size = 0;
-    size_t offset = 0;
-
-    log_i("Preparing file picker");
 
     res = f_opendir(&dir, path);
     if (res == FR_OK) {
         utarray_new(file_entry_list, &file_picker_entry_icd);
         if (!file_entry_list) {
-            return menu_result;
+            return nullptr;
         }
 
         for (;;) {
@@ -232,9 +252,16 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
         utarray_sort(file_entry_list, file_entry_sort);
     }
 
-    if (!file_entry_list) {
-        return menu_result;
-    }
+    return file_entry_list;
+}
+
+menu_result_t file_picker_selection_list(const char *title, uint8_t option, UT_array *file_entry_list, file_picker_selection_t *selection)
+{
+    menu_result_t menu_result = MENU_CANCEL;
+    char *list_buf = NULL;
+    size_t list_size = 0;
+    size_t offset = 0;
+    file_picker_entry_t *p;
 
     /*
      * Until the whole u8g2 selection list implementation is rewritten,
@@ -285,9 +312,17 @@ menu_result_t file_picker_impl(const char *title, const char *path, uint8_t opti
     }
 
     vPortFree(list_buf);
-    utarray_free(file_entry_list);
-
     return menu_result;
+}
+
+menu_result_t file_picker_empty_directory(const char *title)
+{
+    display_message(
+        title,
+        NULL,
+        "\n\nDirectory is empty\n",
+        " OK ");
+    return MENU_CANCEL;
 }
 
 void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno)
@@ -320,7 +355,7 @@ void build_file_list_entry(file_picker_entry_t *entry, const FILINFO *fno)
         if (fno->fsize > INT32_MAX) {
             fsize = INT32_MAX;
         } else {
-            fsize = fno->fsize;
+            fsize = (int32_t)fno->fsize;
         }
         memset(size_buf, 0, sizeof(size_buf));
         if (humanize_number(size_buf, sizeof(size_buf), fsize, "", HN_AUTOSCALE, HN_B | HN_NOSPACE | HN_DECIMAL) > 0) {
