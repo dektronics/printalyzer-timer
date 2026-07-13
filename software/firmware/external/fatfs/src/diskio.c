@@ -1,12 +1,9 @@
 /*-----------------------------------------------------------------------*/
-/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2023        */
-/*                                                                       */
-/*   Portions COPYRIGHT 2017-2023 STMicroelectronics                     */
-/*   Portions Copyright (C) 2013, ChaN, all right reserved               */
+/* Low level disk I/O module SKELETON for FatFs     (C)ChaN, 2025        */
 /*-----------------------------------------------------------------------*/
 /* If a working storage control module is available, it should be        */
 /* attached to the FatFs via a glue function rather than modifying it.   */
-/* This is an example of glue functions to attach various existing      */
+/* This is an example of glue functions to attach various exsisting      */
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
