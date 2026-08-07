@@ -17177,7 +17177,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "lib_fp:AMS_TSL2585_OLGA-6_2x1mm_P0.65mm"
+		(property "Footprint" "lib_fp:AMS_TSL2522_OLGA-6_2x1mm_P0.65mm"
 			(at 145.415 109.347 0)
 			(hide yes)
 			(show_name no)
