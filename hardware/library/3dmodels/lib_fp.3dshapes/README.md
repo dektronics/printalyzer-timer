@@ -404,6 +404,11 @@ this directory's `.gitignore` file.
 * Source: Created for project using Autodesk Fusion 360
 * Footprint: `lib_fp:AMS_TSL2585_OLGA-6_2x1mm_P0.65mm`
 
+### AMS\_TSL2522
+* Status: Included
+* Source: Created for project using Autodesk Fusion 360
+* Footprint: `lib_fp:AMS_TSL2522_OLGA-6_2x1mm_P0.65mm`
+
 ### RAC10E-SK\_277
 * Status: Included (No terms listed with download)
 * Source: Manufacturer <https://recom-power.com/en/products/ac-dc-power-supplies/ac-dc-pcb-mounted/rec-p-RAC10E-12SK!s277.html>
