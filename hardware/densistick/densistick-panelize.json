@@ -1,4 +1,4 @@
-// KiKit panelization for the Printalizer DensiStick
+// KiKit panelization for the Printalyzer DensiStick
 // This produces a 187.5x135.0mm sized panel, containing 10 boards.
 // Edge rails are on all sides, and tooling holes are designed for 1.5mm pins.
 {
