@@ -9,7 +9,7 @@
 	(paper "USLetter")
 	(title_block
 		(title "Printalyzer - Meter Probe")
-		(date "2025-04-30")
+		(date "2026-05-28")
 		(rev "G")
 		(company "Dektronics, Inc.")
 		(comment 1 "Derek Konigsberg")
@@ -5560,6 +5560,7 @@
 		(embedded_fonts no)
 	)
 	(footprint "Fiducial:Fiducial_1mm_Mask2mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "31ac54e7-cb57-4476-988c-1aa9c567adb6")
 		(at 138 79)
@@ -7020,6 +7021,113 @@
 			)
 		)
 	)
+	(footprint "PCM_kikit:Tab"
+		(layer "F.Cu")
+		(uuid "4f333354-002a-4b8f-97f7-77f4e4f5b37a")
+		(at 99.5 88)
+		(descr "A symbol representing annotation for tab placement")
+		(property "Reference" "REF**"
+			(at -0.25 -2 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "bf5ef6f3-3ef9-4b88-a604-1d4d03925b4b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Tab"
+			(at -3 -1 0)
+			(layer "Dwgs.User")
+			(uuid "f9d834f7-2415-4df3-99bd-d5710f8bca4a")
+			(effects
+				(font
+					(size 1.2 1.2)
+					(thickness 0.2)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1791506e-a77c-4165-87e6-ed5bc45e221a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "86714ea7-caa3-4867-be2a-e71323471374")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(attr board_only exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_line
+			(start 0 0)
+			(end -3 0)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "c30f58e2-22fd-4bb7-be69-1048baa06966")
+		)
+		(fp_line
+			(start 0 0)
+			(end -1 -1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "5c428674-4e3e-4a4f-bcf4-057f34c93e56")
+		)
+		(fp_line
+			(start 0 0)
+			(end -1 1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "ffd9958a-3c9a-413f-bdba-0ed24b1736f8")
+		)
+		(fp_line
+			(start 0 1)
+			(end 0 -1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "63580d69-93f0-47c6-a4bd-18f9c4ff9ed8")
+		)
+		(fp_text user "KIKIT: width: 3mm"
+			(at -5.5 0 90)
+			(layer "Dwgs.User")
+			(uuid "e9c69b38-8c7e-4105-a60c-994437bafe6e")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 	(footprint "Package_SO:TSSOP-8_4.4x3mm_P0.65mm"
 		(layer "F.Cu")
 		(uuid "52fb9c27-71da-4eca-8bd5-d020e989598e")
@@ -8091,6 +8199,7 @@
 		)
 	)
 	(footprint "Fiducial:Fiducial_1mm_Mask2mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "598825a3-721b-42e3-979e-8b6932a8dc97")
 		(at 102 120)
@@ -8459,6 +8568,177 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(footprint "Fiducial:Fiducial_1mm_Mask2mm"
+		(layer "F.Cu")
+		(uuid "7b539577-b30e-40be-955d-d2ce3589c829")
+		(at 113 70)
+		(descr "Fiducial, circular marking, 1mm bare copper, 2mm soldermask opening (Level A)")
+		(tags "fiducial")
+		(property "Reference" "FID4"
+			(at 0 -1.95 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "72b59b0d-ebf4-44f2-b658-1ec66ee8192b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Fiducial"
+			(at 0 1.95 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "79822a0c-6a6f-4e77-9c9f-dd819817d4ee")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "abea066d-f510-4ce9-b119-e58ec227e662")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0706bee0-c499-4322-b8ee-c98268aec445")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "KiLib_Generator" "fiducial"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "7472114f-af55-4ba6-b51a-717726335bb4")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5eff3be3-a10c-46a3-8ae6-4da5c54a11c5")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "2f1d4eca-5c50-4ba5-b658-46fd346707c0")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5d1a0325-1efd-4314-aa9c-61204fe28e11")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Supplier PN" ""
+			(at 0 0 0)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "153f78d1-0f0f-46eb-93a1-7fe18f46009b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property ki_fp_filters "Fiducial*")
+		(path "/cddc8a72-be6d-4c8d-8142-562bbe396f40")
+		(sheetname "/")
+		(sheetfile "meter-probe.kicad_sch")
+		(units
+			(unit
+				(name "A")
+				(pins)
+			)
+		)
+		(attr smd exclude_from_bom)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_circle
+			(center 0 0)
+			(end 1.25 0)
+			(stroke
+				(width 0.05)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+			(uuid "fad3f6e7-fc64-4450-ab8b-8d8fdf2cb9de")
+		)
+		(fp_circle
+			(center 0 0)
+			(end 1 0)
+			(stroke
+				(width 0.1)
+				(type solid)
+			)
+			(fill no)
+			(layer "F.Fab")
+			(uuid "d3983e9b-120b-4744-ac00-b60326759bec")
+		)
+		(fp_text user "${REFERENCE}"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(uuid "7ff16fa2-36ea-4d95-8606-1ccdcebe240d")
+			(effects
+				(font
+					(size 0.5 0.5)
+					(thickness 0.08)
+				)
+			)
+		)
+		(pad "" smd circle
+			(at 0 0)
+			(size 1 1)
+			(layers "F.Cu" "F.Mask")
+			(solder_mask_margin 0.5)
+			(clearance 0.6)
+			(uuid "6315c62b-a7ad-46b6-8acf-16d59efe11c7")
+		)
+		(embedded_fonts no)
 	)
 	(footprint "Resistor_SMD:R_0603_1608Metric"
 		(layer "F.Cu")
@@ -13039,7 +13319,7 @@
 	(footprint "PCM_kikit:Tab"
 		(layer "F.Cu")
 		(uuid "da9c92d5-82c7-4f55-868c-1c5faa3a38d7")
-		(at 140.5 98 180)
+		(at 140.5 118 180)
 		(descr "A symbol representing annotation for tab placement")
 		(property "Reference" "REF**"
 			(at -0.25 -2 0)
@@ -14127,6 +14407,7 @@
 		)
 	)
 	(footprint "Fiducial:Fiducial_1mm_Mask2mm"
+		(locked yes)
 		(layer "F.Cu")
 		(uuid "ea08e877-ee4d-4a21-a6c4-5af7f03da2db")
 		(at 138 120)
@@ -14287,7 +14568,7 @@
 	(footprint "PCM_kikit:Tab"
 		(layer "F.Cu")
 		(uuid "eff1feca-1169-4cf6-ae73-89c53c15c349")
-		(at 99.5 98)
+		(at 99.5 118)
 		(descr "A symbol representing annotation for tab placement")
 		(property "Reference" "REF**"
 			(at -0.25 -2 0)
@@ -14602,6 +14883,113 @@
 				(xyz 0 0 0)
 			)
 		)
+	)
+	(footprint "PCM_kikit:Tab"
+		(layer "F.Cu")
+		(uuid "f809acea-c07a-4cae-8770-57fb282908b9")
+		(at 140.5 88 180)
+		(descr "A symbol representing annotation for tab placement")
+		(property "Reference" "REF**"
+			(at -0.25 -2 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "485fd15d-2691-422a-81a7-afd2d75d4d3b")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Value" "Tab"
+			(at -3 -1 0)
+			(layer "Dwgs.User")
+			(uuid "ee661686-a25f-41af-bea5-69236b805059")
+			(effects
+				(font
+					(size 1.2 1.2)
+					(thickness 0.2)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "70c22f72-ad60-4fb0-abba-2c743a627e5f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "8dfed3e4-2cd4-4102-a076-b92a530ee8de")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(attr board_only exclude_from_pos_files exclude_from_bom allow_missing_courtyard)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_line
+			(start 0 1)
+			(end 0 -1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "8f790ea0-e347-4fca-b08c-28cacd322af3")
+		)
+		(fp_line
+			(start 0 0)
+			(end -1 1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "58814979-3360-4e88-8880-13de894d2953")
+		)
+		(fp_line
+			(start 0 0)
+			(end -1 -1)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "627bb004-7512-40e1-9911-d7dbf95f97d9")
+		)
+		(fp_line
+			(start 0 0)
+			(end -3 0)
+			(stroke
+				(width 0.3)
+				(type solid)
+			)
+			(layer "Dwgs.User")
+			(uuid "98575f6d-aee9-41fb-a7cd-3707997ee308")
+		)
+		(fp_text user "KIKIT: width: 3mm"
+			(at -5.5 0 90)
+			(layer "Dwgs.User")
+			(uuid "fede977c-1774-4549-a845-59861013a2a1")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(embedded_fonts no)
 	)
 	(footprint "Capacitor_SMD:C_0603_1608Metric"
 		(layer "F.Cu")

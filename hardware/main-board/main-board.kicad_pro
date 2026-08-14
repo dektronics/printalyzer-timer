@@ -51,7 +51,23 @@
         "silk_text_upright": false,
         "zones": {
           "45_degree_only": false,
-          "min_clearance": 0.0
+          "border_display_style": 2,
+          "border_hatch_pitch": 0.5,
+          "corner_radius": 0.0,
+          "corner_smoothing": 0,
+          "fill_mode": 0,
+          "hatch_gap": 1.5,
+          "hatch_orientation": 0.0,
+          "hatch_smoothing_level": 0,
+          "hatch_smoothing_value": 0.1,
+          "hatch_thickness": 1.0,
+          "min_clearance": 0.0,
+          "min_island_area": 10.0,
+          "min_thickness": 0.25,
+          "pad_connection": 1,
+          "remove_islands": 0,
+          "thermal_relief_gap": 0.5,
+          "thermal_relief_spoke_width": 0.5
         }
       },
       "diff_pair_dimensions": [
@@ -740,24 +756,12 @@
     },
     "net_colors": {
       "+12V": "rgb(221, 133, 0)",
-      "/Power Supply and Control/3V3_BOOT": "rgb(72, 72, 72)",
-      "/Power Supply and Control/3V3_FB": "rgb(255, 224, 128)",
-      "/Power Supply and Control/3V3_PHASE": "rgb(128, 216, 168)",
-      "/Power Supply and Control/3V3_VIN": "rgb(128, 216, 248)",
-      "/Power Supply and Control/5V_BOOT": "rgb(72, 72, 72)",
-      "/Power Supply and Control/5V_FB": "rgb(255, 224, 128)",
-      "/Power Supply and Control/5V_PHASE": "rgb(128, 216, 168)",
-      "/Power Supply and Control/5V_VIN": "rgb(128, 216, 248)",
       "/Power Supply and Control/BST1": "rgb(128, 216, 168)",
       "/Power Supply and Control/FB1": "rgb(255, 224, 128)",
       "/Power Supply and Control/FB2": "rgb(255, 224, 128)",
-      "/Power Supply and Control/GND_IN": "rgb(184, 152, 208)",
-      "/Power Supply and Control/PWR_IN": "rgb(255, 128, 128)",
       "/Power Supply and Control/SW1": "rgb(72, 72, 72)",
       "/Power Supply and Control/SW2": "rgb(128, 216, 248)",
-      "/Power Supply and Control/VIN": "rgb(128, 216, 248)",
-      "Net-(U4-EN1)": "rgb(72, 72, 72)",
-      "Net-(U4-EN2)": "rgb(128, 216, 168)"
+      "/Power Supply and Control/VIN": "rgb(128, 216, 248)"
     },
     "netclass_assignments": null,
     "netclass_patterns": [
