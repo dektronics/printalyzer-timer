@@ -1,12 +1,15 @@
 // KiKit panelization for the Printalyzer Meter Probe
+// This produces a 225.0x153.5mm sized panel, containing 10 boards.
+// Edge rails are on all sides, and tooling holes are designed for 2.0mm pins.
 {
     "layout": {
         "type": "grid",
-        "rows": 1,
-        "cols": 4,
+        "rows": 2,
+        "cols": 5,
         "hspace": "2.5mm",
         "vspace": "2.5mm",
-        "alternation": "none",
+        "rotation": "180deg",
+        "alternation": "rows",
         "renamenet": "Board_{n}-{orig}",
         "renameref": "{orig}"
     },
@@ -23,15 +26,16 @@
         "spacing": "0.7mm"
     },
     "framing": {
-        "type": "railstb",
+        "type": "frame",
         "width": "5mm",
-        "space": "2.5mm"
+        "space": "2.5mm",
+        "cuts": "h"
     },
     "tooling": {
         "type": "4hole",
         "hoffset": "4.75mm",
         "voffset": "2.5mm",
-        "size": "1.55mm",
+        "size": "2.05mm",
         "soldermaskmargin": "0.15mm"
     },
     "fiducials": {
