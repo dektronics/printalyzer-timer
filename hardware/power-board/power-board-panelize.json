@@ -1,4 +1,6 @@
 // KiKit panelization for the Printalyzer Enlarging Timer Power Board
+// This produces a 132.5x208.0mm sized panel, containing 2 boards.
+// Edge rails are on the top and bottom, and tooling holes are designed for 2.0mm pins.
 {
     "layout": {
         "type": "grid",
@@ -32,7 +34,7 @@
         "type": "4hole",
         "hoffset": "5mm",
         "voffset": "2.5mm",
-        "size": "1.55mm",
+        "size": "2.05mm",
         "soldermaskmargin": "0.15mm"
     },
     "fiducials": {
