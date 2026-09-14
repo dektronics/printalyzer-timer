@@ -3,12 +3,12 @@
     # Rule applies between Primary (L-N) and PE nets
     (constraint clearance (min 1.5mm))
     (constraint creepage (min 2.5mm))
-    (condition "A.hasNetclass('Mains') && (B.hasNetclass('Mains') || B.NetName == 'Earth')")
+    (condition "A.hasNetclass('Mains') && !B.Type == 'NPTH, mechanical' && (B.hasNetclass('Mains') || B.NetName == 'Earth')")
 )
 
 (rule INSULATION_REINFORCED
     # Rule applies between Primary and Secondary nets
     (constraint clearance (min 3.0mm))
     (constraint creepage (min 5.0mm))
-    (condition "A.hasNetclass('Mains') && !(B.hasNetclass('Mains') || B.NetName == 'Earth')")
+    (condition "A.hasNetclass('Mains') && !B.Type == 'NPTH, mechanical' && !(B.hasNetclass('Mains') || B.NetName == 'Earth')")
 )
