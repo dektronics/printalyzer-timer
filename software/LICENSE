@@ -128,3 +128,10 @@
  License:  Apache License 2.0
 
 ******************************************************************************
+
+ c-semver
+ Path:     firmware/src/c_semver.*
+ Upstream: https://github.com/iqyx/c-semver/
+ License:  Two-clause BSD license
+
+******************************************************************************
