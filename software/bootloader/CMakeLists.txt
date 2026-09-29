@@ -194,5 +194,14 @@ target_link_libraries(${EXECUTABLE} PRIVATE
 )
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.bin
-    COMMENT "Building ${EXECUTABLE}.bin")
+    COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/../firmware/tools/codesize.pl -s ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+
+# Post-build commands to embed the checksum
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} --gap-fill 0xff $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}-temp.elf
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE}-temp.elf ${EXECUTABLE}-temp.bin
+    COMMAND ${PERL_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/checksum.pl ${EXECUTABLE}-temp.bin ${EXECUTABLE}-desc.dat
+    COMMAND ${CMAKE_OBJCOPY} --update-section .boot_descriptor=${EXECUTABLE}-desc.dat --gap-fill 0xff ${EXECUTABLE}.elf ${EXECUTABLE}-out.elf
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE}-out.elf ${EXECUTABLE}-out.bin
+    BYPRODUCTS ${EXECUTABLE}-temp.elf ${EXECUTABLE}-temp.bin ${EXECUTABLE}-desc.dat
+)

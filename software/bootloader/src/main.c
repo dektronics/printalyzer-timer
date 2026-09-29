@@ -13,6 +13,7 @@
 #include "keypad.h"
 #include "bootloader.h"
 #include "bootloader_task.h"
+#include "app_descriptor.h"
 
 /* Uncomment for testing */
 /* #define FORCE_BOOTLOADER */
@@ -467,11 +468,13 @@ int main(void)
 
 void startup_messages()
 {
+    const boot_descriptor_t *boot_descriptor = boot_descriptor_get();
+
     BL_PRINTF("Starting Printalyzer bootloader...\r\n");
 
-    uint32_t hal_ver = HAL_GetHalVersion();
-    uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
-    uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
+    const uint32_t hal_ver = HAL_GetHalVersion();
+    const uint8_t hal_ver_code = ((uint8_t)(hal_ver)) & 0x0F;
+    const uint16_t *flash_size = (uint16_t*)(FLASHSIZE_BASE);
 
     BL_PRINTF("HAL Version: %d.%d.%d%c\r\n",
         ((uint8_t)(hal_ver >> 24)) & 0x0F,
@@ -488,8 +491,10 @@ void startup_messages()
         __bswap32(HAL_GetUIDw1()),
         __bswap32(HAL_GetUIDw2()));
 
-    BL_PRINTF("Bootloader build date: %s\r\n", BOOTLOADER_BUILD_DATE);
-    BL_PRINTF("Bootloader build describe: %s\r\n", BOOTLOADER_BUILD_DESCRIBE);
+    BL_PRINTF("Bootloader version: %s\r\n", boot_descriptor->version);
+    BL_PRINTF("Build date: %s\r\n", boot_descriptor->build_date);
+    BL_PRINTF("Build describe: %s\r\n", boot_descriptor->build_describe);
+    BL_PRINTF("Build checksum: %08lX\r\n", __bswap32(boot_descriptor->crc32));
     BL_PRINTF("\r\n");
 }
 
