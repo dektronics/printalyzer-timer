@@ -11,6 +11,7 @@
 #include "display.h"
 #include "enlarger_config.h"
 #include "exposure_state.h"
+#include "c_semver.h"
 
 static void convert_exposure_float_to_display_timer(display_exposure_timer_t *elements, float exposure_time);
 
@@ -473,4 +474,58 @@ bool scrub_export_filename(char *filename, const char *ext)
     }
 
     return changed;
+}
+
+bool parse_version(version_t *version, const char *str)
+{
+    struct semver_context s;
+    int32_t ret;
+    const char *p;
+    if (!version || !str) {
+        return false;
+    }
+
+    /* Adjust pointer to skip any version number prefix */
+    if (str[0] == 'v' && str[1] != '\0') {
+        p = str + 1;
+    } else {
+        p = str;
+    }
+
+    semver_init(&s, p);
+    ret = semver_parse(&s);
+    semver_free(&s);
+
+    if (ret != SEMVER_PARSE_OK) {
+        return false;
+    }
+
+    version->major = s.major;
+    version->minor = s.minor;
+    version->patch = s.patch;
+
+    return true;
+}
+
+static int bit_comparison(uint32_t x, uint32_t y) {
+    if (x == y) {
+        return 0;
+    }
+    if (x > y) {
+        return 1;
+    }
+    return -1;
+}
+
+int compare_versions(const version_t *v1, const version_t *v2)
+{
+    int res;
+
+    if ((res = bit_comparison(v1->major, v2->major)) == 0) {
+        if ((res = bit_comparison(v1->minor, v2->minor)) == 0) {
+            return bit_comparison(v1->patch, v2->patch);
+        }
+    }
+
+    return res;
 }

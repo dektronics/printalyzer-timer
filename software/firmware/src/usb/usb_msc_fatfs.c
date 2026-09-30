@@ -103,6 +103,11 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
         log_i("Drive label: \"%s\"", handle->label);
     }
 
+#if 0
+    /*
+     * Checking free space can be an extremely expensive operation,
+     * and we usually do not care about this value.
+     */
     FATFS *fs;
     DWORD free_clusters, free_sectors, total_sectors;
     fres = f_getfree((TCHAR const*)handle->usbh_path, &free_clusters, &fs);
@@ -111,6 +116,7 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
         free_sectors = free_clusters * fs->csize;
         log_i("Drive has %ld KB total space, %ld KB available", total_sectors / 2, free_sectors / 2);
     }
+#endif
 
     handle->ready = true;
 }
@@ -173,7 +179,7 @@ const char *usbh_msc_drive_label(uint8_t num)
     }
 }
 
-bool usbh_msc_drive_serial(uint8_t num, char *buf, size_t len)
+bool usbh_msc_drive_serial_fixed_index(uint8_t num, char *buf, size_t len)
 {
     int ret;
     uint8_t string_buffer[128];
@@ -197,6 +203,91 @@ bool usbh_msc_drive_serial(uint8_t num, char *buf, size_t len)
     } else {
         return false;
     }
+}
+
+bool usbh_msc_drive_serial(uint8_t num, char *buf, size_t len)
+{
+    int ret;
+    uint8_t string_buffer[128];
+
+    if (num < CONFIG_USBHOST_MAX_MSC_CLASS) {
+        uint8_t pathnum = msc_handles[num].usbh_path[0] - '0';
+        if (num != pathnum) {
+            log_d("Pathnum mismatch: dev=%d, path=\"%s\"", num, msc_handles[num].usbh_path);
+        }
+
+        memset(string_buffer, 0, 128);
+        ret = usbh_get_string_desc(
+            msc_handles[num].msc_class->hport,
+            msc_handles[num].msc_class->hport->device_desc.iSerialNumber,
+            string_buffer, sizeof(string_buffer));
+        if (ret < 0) {
+            log_e("Unable to get device serial number: %d", ret);
+            return false;
+        }
+
+        strncpy(buf, (char *)string_buffer, MIN(len, sizeof(string_buffer)));
+
+        return true;
+    } else {
+        return false;
+    }
+}
+
+static uint8_t hex_char_to_bin(const char ch)
+{
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    } else if (ch >= 'A' && ch <= 'F') {
+        return ch - 'A' + 10;
+    } else if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    } else {
+        return 0;
+    }
+}
+
+bool usbh_msc_drive_unique_id(uint8_t num, uint8_t *buf, size_t len)
+{
+    char serial_num[128] = {0};
+    size_t serial_len;
+    size_t offset;
+
+    const uint16_t vid = msc_handles[num].msc_class->hport->device_desc.idVendor;
+    const uint16_t pid = msc_handles[num].msc_class->hport->device_desc.idProduct;
+
+    if (len < 10) {
+        return false;
+    }
+
+    if (!usbh_msc_drive_serial(num, serial_num, sizeof(serial_num))) {
+        return false;
+    }
+
+    log_d("VID=%04X, PID=%04X, Serial=%s", vid, pid, serial_num);
+
+    memset(buf, 0, len);
+    buf[0] = (uint8_t)((vid & 0xFF00) >> 8);
+    buf[1] = (uint8_t)(vid & 0x00FF);
+    buf[2] = (uint8_t)((pid & 0xFF00) >> 8);
+    buf[3] = (uint8_t)(pid & 0x00FF);
+
+    serial_len = strnlen(serial_num, sizeof(serial_num));
+    if (serial_len < 12) {
+        offset = 0;
+    } else {
+        offset = serial_len - 12;
+    }
+
+    for (size_t i = 4; i < 16; i++) {
+        const uint8_t n1 = (offset < serial_len) ? (hex_char_to_bin(serial_num[offset]) << 4) & 0xF0 : 0;
+        offset++;
+        const uint8_t n2 = (offset < serial_len) ? hex_char_to_bin(serial_num[offset]) & 0x0F : 0;
+        offset++;
+        buf[i] = n1 + n2;
+    }
+
+    return true;
 }
 
 uint8_t usbh_msc_max_drives()

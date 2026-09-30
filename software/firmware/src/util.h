@@ -29,6 +29,12 @@ typedef struct __enlarger_config_t enlarger_config_t;
 /** Standard length for all profile name strings */
 #define PROFILE_NAME_LEN (32U)
 
+typedef struct {
+    uint32_t major;
+    uint32_t minor;
+    uint32_t patch;
+} version_t;
+
 /**
  * Convert the current exposure state into printing display elements.
  */
@@ -162,5 +168,9 @@ osStatus_t usb_to_os_status(int usb_status);
  * @return True if the filename was modified
  */
 bool scrub_export_filename(char *filename, const char *ext);
+
+bool parse_version(version_t *version, const char *str);
+
+int compare_versions(const version_t *v1, const version_t *v2);
 
 #endif /* UTIL_H */

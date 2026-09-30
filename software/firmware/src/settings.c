@@ -1432,14 +1432,14 @@ void settings_step_wedge_populate_page(const step_wedge_t *wedge, uint8_t *data)
     }
 }
 
-bool settings_set_bootloader_firmware(const char *dev_serial, uint32_t checksum, const char *file_path)
+bool settings_set_bootloader_firmware(const uint8_t *dev_serial, uint32_t checksum, const char *file_path)
 {
     HAL_StatusTypeDef ret = HAL_OK;
     uint8_t data[PAGE_SIZE] = {0};
 
     data[BOOTLOADER_COMMAND] = 0xBB;
 
-    strncpy((char *)(data + BOOTLOADER_FW_DEVICE), dev_serial, 21);
+    memcpy(data + BOOTLOADER_FW_DEVICE, dev_serial, 21);
     data[BOOTLOADER_FW_DEVICE + 20] = '\0';
 
     copy_from_u32(data + BOOTLOADER_FW_CHECKSUM, checksum);

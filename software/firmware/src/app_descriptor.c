@@ -6,6 +6,8 @@
 
 #include "ff.h"
 
+#define BOOT_DESCRIPTOR_ADDRESS 0x0800FF80UL
+
 const __attribute__((section(".app_descriptor"))) app_descriptor_t app_descriptor = {
     .magic_word = APP_DESCRIPTOR_MAGIC_WORD,
     .project_name = "Printalyzer",
@@ -20,9 +22,16 @@ _Static_assert(sizeof(APP_BUILD_DATE) <= sizeof(app_descriptor.build_date), "APP
 _Static_assert(sizeof(APP_BUILD_DESCRIBE) <= sizeof(app_descriptor.build_describe), "APP_BUILD_DESCRIBE is longer than version field in structure");
 #endif
 
+static const boot_descriptor_t *boot_descriptor = (const boot_descriptor_t *)BOOT_DESCRIPTOR_ADDRESS;
+
 const app_descriptor_t *app_descriptor_get()
 {
     return &app_descriptor;
+}
+
+const boot_descriptor_t *boot_descriptor_get()
+{
+    return boot_descriptor;
 }
 
 #ifdef APP_BUILD_DATE

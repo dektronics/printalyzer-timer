@@ -329,11 +329,29 @@ bool usb_msc_is_mounted()
     return false;
 }
 
+bool usb_msc_get_serial_fixed_index(uint8_t num, char *buf, size_t len)
+{
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_msc_drive_serial_fixed_index(num, buf, len);
+    osMutexRelease(usb_attach_mutex);
+    return result;
+}
+
 bool usb_msc_get_serial(uint8_t num, char *buf, size_t len)
 {
     bool result;
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     result = usbh_msc_drive_serial(num, buf, len);
+    osMutexRelease(usb_attach_mutex);
+    return result;
+}
+
+bool usb_msc_get_unique_id(uint8_t num, uint8_t *buf, size_t len)
+{
+    bool result;
+    osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
+    result = usbh_msc_drive_unique_id(num, buf, len);
     osMutexRelease(usb_attach_mutex);
     return result;
 }

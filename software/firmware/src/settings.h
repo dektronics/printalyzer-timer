@@ -286,6 +286,6 @@ bool settings_set_step_wedge(const step_wedge_t *wedge);
  *
  * @return True if the fields were successfully saved
  */
-bool settings_set_bootloader_firmware(const char *dev_serial, uint32_t checksum, const char *file_path);
+bool settings_set_bootloader_firmware(const uint8_t *dev_serial, uint32_t checksum, const char *file_path);
 
 #endif /* SETTINGS_H */

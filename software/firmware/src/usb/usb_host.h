@@ -10,7 +10,9 @@ bool usb_host_init();
 void usb_host_deinit();
 
 bool usb_msc_is_mounted();
+bool usb_msc_get_serial_fixed_index(uint8_t num, char *buf, size_t len);
 bool usb_msc_get_serial(uint8_t num, char *buf, size_t len);
+bool usb_msc_get_unique_id(uint8_t num, uint8_t *buf, size_t len);
 
 bool usb_serial_is_attached();
 bool usb_meter_probe_is_attached();
