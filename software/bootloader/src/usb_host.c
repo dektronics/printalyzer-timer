@@ -261,16 +261,18 @@ bool usb_msc_is_mounted()
     return result;
 }
 
-int usb_msc_find_device(const char *dev_serial)
+int usb_msc_find_device(const uint8_t *dev_serial, size_t len)
 {
     int num = -1;
+    uint8_t unique_id[21];
     osMutexAcquire(usb_attach_mutex, portMAX_DELAY);
     for (uint8_t i = 0; i < usbh_msc_max_drives(); i++) {
         if (usbh_msc_is_mounted(i)) {
-            const char *msc_serial = usbh_msc_drive_serial(i);
-            if (strcmp(msc_serial, dev_serial) == 0) {
-                num = i;
-                break;
+            if (usbh_msc_drive_unique_id(i, unique_id, sizeof(unique_id))) {
+                if (memcmp(dev_serial, unique_id, MIN(sizeof(unique_id), len)) == 0) {
+                    num = i;
+                    break;
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ _Static_assert(CONFIG_USBHOST_MAX_MSC_CLASS == FF_VOLUMES, "CherryUSB and FATFS 
 
 typedef struct {
     struct usbh_msc *msc_class;
-    char dev_serial[21];
+    char dev_serial[128];
     char usbh_path[4]; /* USBH logical drive path */
     char label[12];
     bool linked;
@@ -77,14 +77,16 @@ void usbh_msc_fatfs_attached(struct usbh_msc *msc_class)
     memset(&handle->usbh_fatfs, 0, sizeof(FATFS));
 
     /* Get the device serial number */
-    memset(string_buffer, 0, 128);
-    ret = usbh_get_string_desc(msc_class->hport, USB_STRING_SERIAL_INDEX, (uint8_t *)string_buffer);
+    memset(handle->dev_serial, 0, sizeof(string_buffer));
+    ret = usbh_get_string_desc(
+        msc_class->hport,
+        msc_class->hport->device_desc.iSerialNumber,
+        (uint8_t *) handle->dev_serial);
     if (ret < 0) {
         BL_PRINTF("Unable to get device serial number: %d\r\n", ret);
         return;
     }
-    strncpy(handle->dev_serial, string_buffer, 21);
-    handle->dev_serial[20] = '\0';
+    handle->dev_serial[127] = '\0';
     BL_PRINTF("Drive serial: \"%s\"\r\n", handle->dev_serial);
 
     /* Link the driver callbacks */
@@ -208,6 +210,63 @@ const char *usbh_msc_drive_serial(uint8_t num)
     } else {
         return NULL;
     }
+}
+
+static uint8_t hex_char_to_bin(const char ch)
+{
+    if (ch >= '0' && ch <= '9') {
+        return ch - '0';
+    } else if (ch >= 'A' && ch <= 'F') {
+        return ch - 'A' + 10;
+    } else if (ch >= 'a' && ch <= 'f') {
+        return ch - 'a' + 10;
+    } else {
+        return 0;
+    }
+}
+
+bool usbh_msc_drive_unique_id(uint8_t num, uint8_t *buf, size_t len)
+{
+    const char *serial_num;
+    size_t serial_len;
+    size_t offset;
+
+    const uint16_t vid = msc_handles[num].msc_class->hport->device_desc.idVendor;
+    const uint16_t pid = msc_handles[num].msc_class->hport->device_desc.idProduct;
+
+    if (len < 10) {
+        return false;
+    }
+
+    serial_num = usbh_msc_drive_serial(num);
+    if (!serial_num) {
+        return false;
+    }
+
+    BL_PRINTF("VID=%04X, PID=%04X, Serial=%s\r\n", vid, pid, serial_num);
+
+    memset(buf, 0, len);
+    buf[0] = (uint8_t)((vid & 0xFF00) >> 8);
+    buf[1] = (uint8_t)(vid & 0x00FF);
+    buf[2] = (uint8_t)((pid & 0xFF00) >> 8);
+    buf[3] = (uint8_t)(pid & 0x00FF);
+
+    serial_len = strlen(serial_num);
+    if (serial_len < 12) {
+        offset = 0;
+    } else {
+        offset = serial_len - 12;
+    }
+
+    for (size_t i = 4; i < 16; i++) {
+        const uint8_t n1 = (offset < serial_len) ? (hex_char_to_bin(serial_num[offset]) << 4) & 0xF0 : 0;
+        offset++;
+        const uint8_t n2 = (offset < serial_len) ? hex_char_to_bin(serial_num[offset]) & 0x0F : 0;
+        offset++;
+        buf[i] = n1 + n2;
+    }
+
+    return true;
 }
 
 uint8_t usbh_msc_max_drives()

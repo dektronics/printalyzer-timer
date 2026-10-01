@@ -51,7 +51,7 @@ typedef enum {
 
 typedef struct {
     uint8_t command;
-    char dev_serial[21];
+    uint8_t dev_serial[21];
     uint32_t checksum;
     char file_path[256];
 } bootloader_block_t;
@@ -191,8 +191,11 @@ void bootloader_loop_firmware_trigger()
     start_time = osKernelGetTickCount();
     do {
         osDelay(100);
-        dev_num = usb_msc_find_device(block.dev_serial);
-        if (dev_num >= 0) { break; }
+        dev_num = usb_msc_find_device(block.dev_serial, sizeof(block.dev_serial));
+        if (dev_num >= 0) {
+            BL_PRINTF("Found matching device\r\n");
+            break;
+        }
     } while(start_time + 10000 > osKernelGetTickCount());
 
     /* Device was not found */
@@ -236,8 +239,11 @@ void bootloader_loop_checksum_fail()
         start_time = osKernelGetTickCount();
         do {
             osDelay(100);
-            dev_num = usb_msc_find_device(block.dev_serial);
-            if (dev_num >= 0) { break; }
+            dev_num = usb_msc_find_device(block.dev_serial, sizeof(block.dev_serial));
+            if (dev_num >= 0) {
+                BL_PRINTF("Found matching device\r\n");
+                break;
+            }
         } while(start_time + 10000 < osKernelGetTickCount());
 
         if (dev_num >= 0) {
@@ -287,8 +293,7 @@ bool read_bootloader_block(bootloader_block_t *block)
 
     block->command = data[BOOTLOADER_COMMAND];
 
-    strncpy(block->dev_serial, (char *)(data + BOOTLOADER_FW_DEVICE), 21);
-    block->dev_serial[20] = '\0';
+    memcpy(block->dev_serial, data + BOOTLOADER_FW_DEVICE, 21);
 
     block->checksum = copy_to_u32(data + BOOTLOADER_FW_CHECKSUM);
 
