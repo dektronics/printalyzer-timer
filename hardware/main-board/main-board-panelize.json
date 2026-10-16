@@ -1,12 +1,15 @@
 // KiKit panelization for the Printalyzer Enlarging Timer Main Board
+// This produces a 203x222.5mm sized panel, containing 2 boards.
+// Edge rails are on the sides, and tooling holes are designed for 2.0mm pins.
 {
     "layout": {
         "type": "grid",
-        "rows": 1,
+        "rows": 2,
         "cols": 1,
         "hspace": "2.5mm",
         "vspace": "2.5mm",
-        "alternation": "cols",
+        "rotation": "180deg",
+        "alternation": "rows",
         "renamenet": "Board_{n}-{orig}",
         "renameref": "{orig}"
     },
@@ -23,34 +26,36 @@
         "spacing": "0.7mm"
     },
     "framing": {
-        "type": "railstb",
+        "type": "railslr",
         "width": "5mm",
-        "space": "2.5mm"
+        "space": "2.0mm"
     },
     "tooling": {
         "type": "4hole",
-        "hoffset": "5mm",
-        "voffset": "2.5mm",
-        "size": "1.55mm",
+        "hoffset": "2.5mm",
+        "voffset": "5mm",
+        "size": "2.05mm",
         "soldermaskmargin": "0.15mm"
     },
     "fiducials": {
         "type": "3fid",
-        "hoffset": "10mm",
-        "voffset": "2.5mm",
+        "hoffset": "2.5mm",
+        "voffset": "10mm",
         "coppersize": "1mm",
         "opening": "2mm"
     },
     "text": {
         "type": "simple",
         "text": "{boardTitle} Panel",
-        "anchor": "mt",
-        "voffset": "2.5mm",
+        "anchor": "ml",
+        "orientation": "90deg",
+        "hoffset": "2.5mm",
         "hjustify": "center"
     },
     "post": {
         "millradius": "1mm",
         "origin": "bl",
-        "script": "tools/kikit-post.py"
+        "script": "tools/kikit-post.py",
+        "scriptarg": "side"
     }
 }

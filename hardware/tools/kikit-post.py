@@ -5,10 +5,19 @@ import pcbnew
 import sys
 
 def kikitPostprocess(panel, arg):
-    # Add revision information to bottom rail
-    position = resolveAnchor("mb")(panel.boardSubstrate.boundingBox())
-    position.y -= int(2.5 * mm)
-    panel.addText("Rev: ${REVISION} [${ISSUE_DATE}]", position, hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER)
+    if arg == "side":
+        # Add revision information to the right side rail
+        position = resolveAnchor("mr")(panel.boardSubstrate.boundingBox())
+        position.x -= int(2.5 * mm)
+        panel.addText("Rev: ${REVISION} [${ISSUE_DATE}]", position,
+            orientation=pcbnew.EDA_ANGLE(90),
+            hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER)
+    else:
+        # Add revision information to bottom rail
+        position = resolveAnchor("mb")(panel.boardSubstrate.boundingBox())
+        position.y -= int(2.5 * mm)
+        panel.addText("Rev: ${REVISION} [${ISSUE_DATE}]", position,
+            hJustify=EDA_TEXT_HJUSTIFY_T.GR_TEXT_HJUSTIFY_CENTER)
 
     # Remove all dimension marks from the board
     for element in panel.board.GetDrawings():
