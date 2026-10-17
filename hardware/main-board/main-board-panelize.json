@@ -1,13 +1,13 @@
 // KiKit panelization for the Printalyzer Enlarging Timer Main Board
-// This produces a 203x222.5mm sized panel, containing 2 boards.
+// This produces a 202x222mm sized panel, containing 2 boards.
 // Edge rails are on the sides, and tooling holes are designed for 2.0mm pins.
 {
     "layout": {
         "type": "grid",
         "rows": 2,
         "cols": 1,
-        "hspace": "2.5mm",
-        "vspace": "2.5mm",
+        "hspace": "2.0mm",
+        "vspace": "2.0mm",
         "rotation": "180deg",
         "alternation": "rows",
         "renamenet": "Board_{n}-{orig}",
@@ -21,14 +21,12 @@
         "type": "annotation"
     },
     "cuts": {
-        "type": "mousebites",
-        "drill": "0.5mm",
-        "spacing": "0.7mm"
+        "type": "vcuts",
     },
     "framing": {
         "type": "railslr",
         "width": "5mm",
-        "space": "2.0mm"
+        "space": "2mm"
     },
     "tooling": {
         "type": "4hole",
