@@ -121,6 +121,14 @@
           ""
         ],
         [
+          "lib_footprint_mismatch|138000000|128760000|85184e6a-4531-411d-9260-25605d6a22d3|00000000-0000-0000-0000-000000000000",
+          "Edited MP paste layer"
+        ],
+        [
+          "lib_footprint_mismatch|167500000|128760000|0bbb3efa-630b-4edf-a9fa-5675a05c89aa|00000000-0000-0000-0000-000000000000",
+          "Edited MP paste layer"
+        ],
+        [
           "silk_edge_clearance|131340000|136000000|00000000-0000-0000-0000-00005faa9ed8|d043ebf0-92c0-439a-b7c1-5cc8f8b45119",
           ""
         ],
